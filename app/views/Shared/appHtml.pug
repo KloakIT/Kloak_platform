@@ -641,9 +641,13 @@
 		<!-- ko if: !showMain() && showSearchSimilarImagesResult () -->
 		.closeButton( style = "z-index: 999;top: 1.3em; left: 1em; position: fixed; width: 2em;" )
 			i.icon.left.chevron.link.circular.teal( data-bind = "click: closeSimilarImagesResult " )
+		//-.masonry-wrapper
+			.masonry( data-bind = " foreach: searchSimilarImagesList " style="margin: 2em; margin-top: 3em;")
+				.masonry-item
+					img( data-bind = "attr: { src: imgSrc }")
 		.ui.six.doubling.cards( data-bind = " foreach: searchSimilarImagesList " style="margin: 2em; margin-top: 3em;")
 			
-			.card
+			.card( data-bind = "attr: { 'kloak-id': order }")
 				a.ui.right.corner.label( data-bind = "click: function() { return $parents[0].imagesResultClick( $parents[0], $index (), 'img')},  class: showImageError() ? 'red' : ( snapshotImageReady() ? 'teal': 'grey')" )
 					<!-- ko if: !showImageLoading() && !showImageError() -->
 						i.icon.object.group.link

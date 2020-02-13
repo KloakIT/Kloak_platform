@@ -214,9 +214,20 @@ export default class localServer {
 				return _callBack ( 'systemError' )
 				
 			}
+			console.log ( Util.inspect ( this.imapConnectData, false, 3, true ))
 			if ( !this.imapConnectData.confirmRisk ) {
 				this.imapConnectData.confirmRisk = true
-				
+
+
+				/**
+				 * 
+				 * 		for Kloak test
+				 * 
+				 */
+				this.imapConnectData['testData'] = true
+
+				/** */
+
 				return Tool.saveEncryptoData (  Tool.imapDataFileName1, this.imapConnectData, this.config, this.savedPasswrod, err => {
 					return this.tryConnectCoNET ( socket, sessionHash )
 				})

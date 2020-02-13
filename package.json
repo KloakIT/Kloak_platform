@@ -1,8 +1,8 @@
 {
-  "name": "conet_client",
-  "version": "3.3.0",
+  "name": "Kloak_platform",
+  "version": "0.1.0",
   "license": "MIT",
-  "description": "CoNET platform",
+  "description": "Kloak platform",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
@@ -33,7 +33,7 @@
     "electron-builder-squirrel-windows": "22.3.3"
   },
   "build": {
-    "appId": "com.CoNET.Platform",
+    "appId": "com.Kloak.Platform",
     "win": {
       "target": [
         {
@@ -73,16 +73,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/QTGate/QTGate-Desktop-Client.git"
+    "url": "git+https://github.com/KloakIT/Kloak_platform.git"
   },
   "author": {
-    "name": "CoNET Technology Inc.",
-    "email": "info@CoNETTech.ca"
+    "name": "Kloak Information Technologies Inc.",
+    "email": "info@Ckloak.app"
   },
   "bugs": {
-    "url": "https://github.com/QTGate/QTGate-Desktop-Client/issues"
+    "url": "https://github.com/KloakIT/Kloak_platform/issues"
   },
-  "homepage": "https://www.CoNETTech.ca",
+  "homepage": "https://www.kloak.app",
   "dependencies": {
     "async": "^3.1.1",
     "cookie-parser": "^1.4.4",

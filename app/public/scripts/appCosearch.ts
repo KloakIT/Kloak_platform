@@ -128,7 +128,6 @@ let appScript = {
 		items.Result.forEach ( n => {
 			i++
 			
-			
 			n['showLoading'] = ko.observable ( false )
 			n['conetResponse'] = ko.observable ( false )
 			n['loadingGetResponse'] = ko.observable ( false )
@@ -158,6 +157,7 @@ let appScript = {
 			n['loadingImageGetResponse'] = ko.observable ( false )
 			n['conetImageResponse'] = ko.observable ( false )
 			n['imageErrorIndex'] = ko.observable (-1)
+			n['imgSrc'] = n['imgSrc'] || ''
 		})
 		
 	},

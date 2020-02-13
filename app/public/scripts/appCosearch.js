@@ -134,6 +134,7 @@ let appScript = {
             n['loadingImageGetResponse'] = ko.observable(false);
             n['conetImageResponse'] = ko.observable(false);
             n['imageErrorIndex'] = ko.observable(-1);
+            n['imgSrc'] = n['imgSrc'] || '';
         });
     },
     search_form: (self, event) => {
