@@ -224,7 +224,6 @@ class localServer {
                  * 		for Kloak test
                  *
                  *********************************************************************************************************************************/
-                this.imapConnectData['testData'] = '10.65.104.101';
                 /** */
                 return Tool.saveEncryptoData(Tool.imapDataFileName1, this.imapConnectData, this.config, this.savedPasswrod, err => {
                     return this.tryConnectCoNET(socket, sessionHash);

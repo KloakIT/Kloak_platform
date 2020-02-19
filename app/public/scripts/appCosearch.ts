@@ -149,6 +149,7 @@ let appScript = {
 			}
 			
 			n['webUrlHref'] = n.clickUrl
+			
 			n['imgUrlHref'] = n.imgSrc
 			
 			/* ====================================================================================================================
@@ -671,7 +672,7 @@ let appScript = {
 					currentItem.showLoading ( false )
 					currentItem.loadingGetResponse ( false )
 					currentItem.conetResponse ( false )
-					return currentItem.snapshotData = buffer
+					return currentItem.snapshotData = data
 					
 				})
 
@@ -1059,7 +1060,7 @@ let appScript = {
 						_img.showLoading ( false )
 						_img.loadingGetResponse ( false )
 						_img.conetResponse ( false )
-						return _img['snapshotData'] = buffer
+						return _img['snapshotData'] = data
 						
 					})
 	
@@ -1153,7 +1154,7 @@ let appScript = {
 						_img.showLoading ( false )
 						_img.loadingGetResponse ( false )
 						_img.conetResponse ( false )
-						return _img['snapshotData'] = buffer
+						return _img['snapshotData'] = data
 						
 					})
 	
@@ -1195,7 +1196,8 @@ let appScript = {
 		
 	}
 
-
+	//*** */
+	/** */
 }
 
 declare const TimelineMax
