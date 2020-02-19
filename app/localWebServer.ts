@@ -146,8 +146,16 @@ export default class localServer {
 		let sendMail = false
 		const _exitFunction = err => {
 			console.trace ( `makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err )
+
 			this.CoNETConnectCalss = null
-			
+			if ( err && err.message ) {
+				const errMessage = err.message
+				//		network error
+				if ( / ECONNRESET /i.test) {
+					return makeConnect()
+				}
+			}
+			return console.log (`_exitFunction doing nathing!`)
 		}
 
 		const makeConnect = () => {
@@ -219,12 +227,12 @@ export default class localServer {
 				this.imapConnectData.confirmRisk = true
 
 
-				/**
+				/********************************************************************************************************************************
 				 * 
 				 * 		for Kloak test
 				 * 
-				 */
-				this.imapConnectData['testData'] = true
+				 *********************************************************************************************************************************/
+				this.imapConnectData['testData'] = '10.65.104.101'
 
 				/** */
 
@@ -356,11 +364,13 @@ export default class localServer {
 		socket.on ( 'mime', ( _mime, CallBack1 ) => {
 			const _uuid = Uuid.v4()
 			CallBack1( _uuid )
-
+			console.log (`socket.on ( 'mime' ) [${ _mime }]`)
 			const _callBack = ( ...data ) => {
 				socket.emit ( _uuid, ...data )
 			}
 			let y = mime.lookup( _mime )
+
+			console.log ( y )
 			if ( !y ) {
 				return _callBack ( new Error ('no mime'))
 			}

@@ -32,7 +32,7 @@ import * as Fs from 'fs'
 import * as Tool from './initSystem'
 
 const MAX_INT = 9007199254740992
-const debug = false
+const debug = true
 const pingFailureTime = 1000 * 60
 const NoopLoopWaitingTime = 1000 * 1
 

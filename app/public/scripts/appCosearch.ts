@@ -132,6 +132,7 @@ let appScript = {
 			n['conetResponse'] = ko.observable ( false )
 			n['loadingGetResponse'] = ko.observable ( false )
 			n['snapshotReady'] = ko.observable ( false )
+			n['andy'] = 'Andy'
 			n['snapshotClass'] = null
 			n['snapshotData'] = null
 			n['snapshotUuid'] = null
@@ -150,7 +151,18 @@ let appScript = {
 			n['webUrlHref'] = n.clickUrl
 			n['imgUrlHref'] = n.imgSrc
 			
+			/* ====================================================================================================================
+			ANDY - MASONARY IMAGES
+			======================================================================================================================= */
+			n['showOptions'] = ko.observable(false);
+			n['imgUrlHrefSub'] =
+				'https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/2560x1280/landscape-1500925839-golden-retriever-puppy.jpg?resize=480:*';
+			n['webUrlHrefSub'] = 'https://www.google.ca';
+
+			/* ====================================================================================================================
 			
+			======================================================================================================================= */
+
 			n['showImageLoading'] = ko.observable ( false )
 			n['showImageError'] = ko.observable ( false )
 			n['snapshotImageReady'] = ko.observable ( false )
@@ -264,7 +276,7 @@ let appScript = {
 					self.showMain ( false )
 					self.showSnapshop ( true )
 					let y = null
-					self.showWebPage ( y = new showWebPageClass ( search_text, buffer, uuid , () => {
+					self.showWebPage ( y = new showWebPageClass ( search_text, data, uuid , () => {
 						self.showWebPage ( y = null )
 						self.showMain ( true )
 						self.showSnapshop ( false )

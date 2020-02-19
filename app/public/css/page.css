@@ -928,52 +928,221 @@ ul.plan-features {
 	animation: blink 1s step-end infinite;
   }
   
-  @-webkit-keyframes blink {
-	0% { opacity: 1.0; }
-	50% { opacity: 0.0; }
-	100% { opacity: 1.0; }
+
+  /* ====================================================================================================================
+ANDY - MASONARY IMAGES
+======================================================================================================================= */
+
+.image-info {
+	max-width: 100%;
+	padding: 0.25rem 1rem;
+	background-color: rgba(0, 0, 0, 0.4);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	z-index: 102;
+	border-top-right-radius: 13px;
+	display: flex;
+	align-items: center;
+	font-size: 0.85rem;
   }
   
-  @keyframes blink {
-	0% { opacity: 1.0; }
-	50% { opacity: 0.0; }
-	100% { opacity: 1.0; }
+  .image-text {
+	color: ghostwhite;
+	margin: 0;
   }
-  .masonry-wrapper {
-	padding: 1.5em;
-	max-width: 960px;
-	margin-right: auto;
-	margin-left: auto;
+  
+  .image-link {
+	color: #cacad0;
+	text-decoration: underline;
+	cursor: pointer;
+	margin-left: 0.5rem;
   }
-  .masonry {
-	display: grid;
-	grid-template-columns: repeat(1, minmax(100px,1fr));
-	grid-gap: 5px;
-	grid-auto-rows: 0;
+  
+  .image-link:hover {
+	color: ghostwhite;
+	text-decoration: underline;
   }
-  .masonry-item, .masonry-content {
-	border-radius: 4px;
+  
+  .image-overlay {
+	position: absolute;
+	background-color: rgba(0, 0, 0, 0.4);
+	opacity: 1;
+	content: '';
+	width: 100%;
+	height: 100%;
+	z-index: 101;
+	transition: opacity 200ms ease-in-out;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 13px;
+  }
+  
+  .image-btn-link {
+	background-color: ghostwhite;
+	color: #35383a;
+	border: none;
+	font-size: 1rem;
+	padding: 0.5rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	max-width: 70%;
+	height: 2rem;
+  }
+  
+  .border-left {
+	border-top-left-radius: 8px;
+	border-bottom-left-radius: 8px;
+  }
+  
+  .border-right {
+	border-top-right-radius: 8px;
+	border-bottom-right-radius: 8px;
+  }
+  
+  .image-btn-link:focus {
+	outline: none;
+  }
+  
+  .images-wrapper {
+	-webkit-column-count: 9;
+	-webkit-column-gap: 1rem;
+	-moz-column-count: 9;
+	-moz-column-gap: 1rem;
+	column-count: 9;
+	column-gap: 1rem;
+	padding: 6rem 8rem;
 	overflow: hidden;
   }
-  .masonry-item {
-	filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, .3));
-	transition: filter .25s ease-in-out;
+  
+  @media screen and (max-width: 1920px) {
+	.images-wrapper {
+	  column-count: 6;
+	  -webkit-column-count: 6;
+	  -moz-column-count: 6;
+	}
   }
-  .masonry-item:hover {
-	filter: drop-shadow(0px 5px 5px rgba(0, 0, 0, .3));
+  
+  @media screen and (max-width: 1600px) {
+	.images-wrapper {
+	  column-count: 5;
+	  -webkit-column-count: 5;
+	  -moz-column-count: 5;
+	  padding: 6rem 6rem;
+	  overflow: hidden;
+	}
+	.image-info {
+	  align-items: flex-start;
+	  justify-content: center;
+	  flex-direction: column;
+	}
+	.image-link {
+		margin: 0;
+	  }
   }
-  .masonry-footer {
-	font-size: .75em;
-	opacity: .25;
-	text-align: center;
-	padding-top: 3em; 
-	padding-bottom: 3em;
-	margin-bottom: -1.5em;
-	transition: opacity 1s ease-in-out;
+  
+  @media screen and (max-width: 1300px) {
+	.images-wrapper {
+	  column-count: 4;
+	  -webkit-column-count: 4;
+	  -moz-column-count: 4;
+	  padding: 6rem 4rem;
+	  overflow: hidden;
+	}
+	.image-info {
+	  align-items: flex-start;
+	  justify-content: center;
+	  flex-direction: column;
+	}
+	.image-link {
+		margin: 0;
+	  }
   }
-  .masonry-footer a {
-	color: currentColor;
+  
+  @media screen and (max-width: 1000px) {
+	.images-wrapper {
+	  column-count: 3;
+	  -webkit-column-count: 3;
+	  -moz-column-count: 3;
+	  padding: 6rem 3rem;
+	  overflow: hidden;
+	}
+	.image-info {
+	  align-items: flex-start;
+	  justify-content: center;
+	  flex-direction: column;
+	}
+	.image-link {
+		margin: 0;
+	  }
   }
-  .masonry-footer:hover, .masonry-footer:active, .masonry-footer:focus {
-	opacity: .75;
+  
+  @media screen and (max-width: 800px) {
+	.images-wrapper {
+	  column-count: 2;
+	  -webkit-column-count: 2;
+	  -moz-column-count: 2;
+	  padding: 6rem 3rem;
+	  overflow: hidden;
+	}
+	.image-info {
+	  align-items: flex-start;
+	  justify-content: center;
+	  flex-direction: column;
+	}
+	.image-link {
+		margin: 0;
+	  }
   }
+  
+  @media screen and (max-width: 600px) {
+	.images-wrapper {
+	  column-count: 1;
+	  -webkit-column-count: 1;
+	  -moz-column-count: 1;
+	  padding: 6rem 3rem;
+	  overflow: hidden;
+	}
+	.image-info {
+	  align-items: flex-start;
+	  justify-content: center;
+	  flex-direction: column;
+	}
+	.image-link {
+		margin: 0;
+	  }
+  }
+  
+  .image-wrapper {
+	display: inline-block;
+	margin: 0 0 2rem;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.15);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	border-radius: 13px;
+	overflow: hidden;
+	-webkit-column-break-inside: avoid;
+	page-break-inside: avoid;
+	break-inside: avoid;
+	position: relative;
+  }
+  
+  .image-item {
+	-webkit-column-break-inside: avoid;
+	page-break-inside: avoid;
+	break-inside: avoid;
+	width: 100%;
+	min-height: 6rem;
+	object-fit: cover;
+	object-position: center;
+	position: relative;
+  }
+  
+  /* ====================================================================================================================
+  ANDY - MASONARY IMAGES
+  ======================================================================================================================= */
+  

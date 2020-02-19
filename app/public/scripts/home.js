@@ -93,41 +93,47 @@ class showWebPageClass {
         this.png = ko.observable('');
         const self = this;
         _view.showIconBar(false);
-        _view.keyPairCalss.decryptMessageToZipStream(zipBase64Stream, (err, data) => {
+        showHTMLComplete(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
             if (err) {
                 return self.showErrorMessageProcess();
             }
-            showHTMLComplete(zipBase64StreamUuid, data, (err, data) => {
-                if (err) {
-                    return self.showErrorMessageProcess();
-                }
-                _view.bodyBlue(false);
-                const getData = (filename, _data) => {
-                    const regex = new RegExp(`${filename}`, 'g');
-                    const index = html.indexOf(`${filename}`);
-                    if (index > -1) {
-                        if (/js$/.test(filename)) {
-                            _data = _data.replace(/^data:text\/plain;/, 'data:application/javascript;');
-                        }
-                        else if (/css$/.test(filename)) {
-                            _data = _data.replace(/^data:text\/plain;/, 'data:text/css;');
-                        }
-                        else if (/html$|htm$/.test(filename)) {
-                            _data = _data.replace(/^data:text\/plain;/, 'data:text/html;');
-                        }
-                        else if (/pdf$/.test(filename)) {
-                            _data = _data.replace(/^data:text\/plain;/, 'data:text/html;');
-                        }
-                        else {
-                            const kkk = _data;
-                        }
-                        html = html.replace(regex, _data);
+            _view.bodyBlue(false);
+            let html = data.html;
+            let det = data.folder.shift();
+            const getData = (filename, _data, CallBack) => {
+                const regex = new RegExp(`./${filename}`, 'g');
+                const index = html.indexOf(`${filename}`);
+                const doCallBack = () => {
+                    det = data.folder.shift();
+                    if (!det) {
+                        return CallBack();
                     }
+                    return getData(det.filename, det.data, CallBack);
                 };
-                let html = data.html;
-                data.folder.forEach(n => {
-                    getData(n.filename, n.data);
-                });
+                if (index > -1) {
+                    return getFilenameMime(filename, (err, mime) => {
+                        if (mime) {
+                            /**
+                             *
+                             *          css link tag format support
+                             *
+                             */
+                            if (/css$/.test(mime)) {
+                                const blob = new Blob([Buffer.from(_data, 'base64').toString()], { type: mime });
+                                const link = (URL || webkitURL).createObjectURL(blob);
+                                html = html.replace(regex, link);
+                            }
+                            else {
+                                const data1 = `data:${mime};base64,` + _data;
+                                html = html.replace(regex, data1);
+                            }
+                        }
+                        doCallBack();
+                    });
+                }
+                doCallBack();
+            };
+            return getData(det.filename, det.data, err => {
                 self.png(data.img);
                 const htmlBolb = new Blob([html], { type: 'text/html' });
                 const _url = window.URL.createObjectURL(htmlBolb);

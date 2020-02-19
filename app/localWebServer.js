@@ -155,6 +155,14 @@ class localServer {
         const _exitFunction = err => {
             console.trace(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
             this.CoNETConnectCalss = null;
+            if (err && err.message) {
+                const errMessage = err.message;
+                //		network error
+                if (/ ECONNRESET /i.test) {
+                    return makeConnect();
+                }
+            }
+            return console.log(`_exitFunction doing nathing!`);
         };
         const makeConnect = () => {
             return this.CoNETConnectCalss = new coNETConnect_1.default(this.imapConnectData, this.socketServer, !this.imapConnectData.sendToQTGate, this.nodeList[0].email, this.openPgpKeyOption, this.keyPair.publicKey, (mail, uuid) => {
@@ -211,12 +219,12 @@ class localServer {
             console.log(Util.inspect(this.imapConnectData, false, 3, true));
             if (!this.imapConnectData.confirmRisk) {
                 this.imapConnectData.confirmRisk = true;
-                /**
+                /********************************************************************************************************************************
                  *
                  * 		for Kloak test
                  *
-                 */
-                this.imapConnectData['testData'] = true;
+                 *********************************************************************************************************************************/
+                this.imapConnectData['testData'] = '10.65.104.101';
                 /** */
                 return Tool.saveEncryptoData(Tool.imapDataFileName1, this.imapConnectData, this.config, this.savedPasswrod, err => {
                     return this.tryConnectCoNET(socket, sessionHash);
@@ -318,10 +326,12 @@ class localServer {
         socket.on('mime', (_mime, CallBack1) => {
             const _uuid = Uuid.v4();
             CallBack1(_uuid);
+            console.log(`socket.on ( 'mime' ) [${_mime}]`);
             const _callBack = (...data) => {
                 socket.emit(_uuid, ...data);
             };
             let y = mime.lookup(_mime);
+            console.log(y);
             if (!y) {
                 return _callBack(new Error('no mime'));
             }

@@ -129,63 +129,88 @@ class showWebPageClass {
 		const self = this
 		_view.showIconBar ( false )
 		
-		_view.keyPairCalss.decryptMessageToZipStream ( zipBase64Stream, ( err, data ) => {
-			if ( err ) {
-				return self.showErrorMessageProcess ()
-			}
-			showHTMLComplete ( zipBase64StreamUuid, data, ( err, data: { img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
-				if ( err ) {
-					return self.showErrorMessageProcess ()
-				}
-				_view.bodyBlue ( false )
-				const getData =  ( filename: string, _data: string ) => {
-					
-					const regex = new RegExp (`${ filename }`,'g')
-					
-					const index = html.indexOf ( `${ filename }` )
-					
-					if ( index > -1 ) {
-						if ( /js$/.test ( filename )) {
-							_data = _data.replace ( /^data:text\/plain;/, 'data:application/javascript;')
-						} else if ( /css$/.test ( filename )) {
-							_data = _data.replace ( /^data:text\/plain;/, 'data:text/css;')
-						} else if ( /html$|htm$/.test ( filename )) {
-							_data = _data.replace ( /^data:text\/plain;/, 'data:text/html;')
-						} else if ( /pdf$/.test ( filename )) {
-							_data = _data.replace ( /^data:text\/plain;/, 'data:text/html;')
-						} else {
-							const kkk = _data
-						}
+		showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+            if ( err ) {
+                return self.showErrorMessageProcess ()
+            }
+            
+            _view.bodyBlue ( false )
+        
 
-						html = html.replace ( regex, _data )
-						
-					}
-					
-					
-				}
+            let html = data.html
+            
+            
+            let det = data.folder.shift()
+            const getData =  ( filename: string, _data: string, CallBack ) => {
+            
+                const regex = new RegExp (`./${ filename }`,'g')
+                
+                const index = html.indexOf ( `${ filename }` )
+                
 
-				let html = data.html
-				
-				data.folder.forEach ( n => {
-					getData ( n.filename, n.data )
-				})
+                const doCallBack = () => {
+                    det = data.folder.shift()
+                    if ( ! det ) {
+                        return CallBack ()
+                    }
+                    return getData ( det.filename, det.data, CallBack )
+                }
+                
+                if ( index > -1 ) {
+                    
+                    return getFilenameMime ( filename, ( err, mime ) => {
 
-				
-				
-				self.png ( data.img )
-				
-				const htmlBolb = new Blob ([ html ], { type: 'text/html'})
-				const _url = window.URL.createObjectURL ( htmlBolb )
-				const fileReader = new FileReader()
-				fileReader.onloadend = evt => {
-					return window.URL.revokeObjectURL ( _url )
-				}
-				
-				self.showLoading ( false )
-				self.htmlIframe ( _url )
-				
-			})
-		})
+                        if ( mime ) {
+                            /**
+                             * 
+                             *          css link tag format support
+                             * 
+                             */
+
+                            if ( /css$/.test ( mime )) {
+                                const blob = new Blob ([Buffer.from ( _data,'base64' ).toString()], { type: mime })
+                                const link = ( URL || webkitURL ).createObjectURL( blob )
+                                html = html.replace ( regex, link )
+                                
+
+                            } else {
+                                const data1 = `data:${ mime };base64,` + _data
+                                html = html.replace ( regex, data1 )
+                            }
+
+                            
+                        }
+                        doCallBack ()
+                    })
+                    
+                    
+                }
+                
+                doCallBack ()
+                
+                
+            }
+
+            return getData ( det.filename, det.data, err => {
+                
+                self.png ( data.img )
+                
+                const htmlBolb = new Blob ([ html ], { type: 'text/html'})
+                const _url = window.URL.createObjectURL ( htmlBolb )
+                const fileReader = new FileReader()
+                fileReader.onloadend = evt => {
+                    return window.URL.revokeObjectURL ( _url )
+                }
+                
+                self.showLoading ( false )
+                self.htmlIframe ( _url )
+            })
+        
+        
+            
+            
+        })
+		
 		
 	}
 }
