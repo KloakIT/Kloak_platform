@@ -91,6 +91,7 @@ class showWebPageClass {
         this.showHtmlCodePage = ko.observable(false);
         this.showImgPage = ko.observable(true);
         this.png = ko.observable('');
+        this.urlBlobList = [];
         const self = this;
         _view.showIconBar(false);
         showHTMLComplete(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
@@ -101,8 +102,8 @@ class showWebPageClass {
             let html = data.html;
             let det = data.folder.shift();
             const getData = (filename, _data, CallBack) => {
-                const regex = new RegExp(`./${filename}`, 'g');
-                const index = html.indexOf(`${filename}`);
+                const regex = `./${filename}`;
+                const pointStart = html.indexOf(`${filename}`);
                 const doCallBack = () => {
                     det = data.folder.shift();
                     if (!det) {
@@ -110,7 +111,7 @@ class showWebPageClass {
                     }
                     return getData(det.filename, det.data, CallBack);
                 };
-                if (index > -1) {
+                if (pointStart > -1) {
                     return getFilenameMime(filename, (err, mime) => {
                         if (mime) {
                             /**
@@ -118,15 +119,16 @@ class showWebPageClass {
                              *          css link tag format support
                              *
                              */
-                            if (/css$/.test(mime)) {
-                                const blob = new Blob([Buffer.from(_data, 'base64').toString()], { type: mime });
-                                const link = (URL || webkitURL).createObjectURL(blob);
-                                html = html.replace(regex, link);
-                            }
-                            else {
+                            const hrefTest = html.substr(pointStart - 7, 3);
+                            if (/^src/i.test(hrefTest)) {
                                 const data1 = `data:${mime};base64,` + _data;
-                                html = html.replace(regex, data1);
+                                html = html.replace(regex, data1).replace(regex, data1);
+                                return doCallBack();
                             }
+                            const blob = new Blob([Buffer.from(_data, 'base64').toString()], { type: mime });
+                            const link = (URL || webkitURL).createObjectURL(blob);
+                            html = html.replace(regex, link).replace(regex, link);
+                            this.urlBlobList.push(link);
                         }
                         doCallBack();
                     });
@@ -136,13 +138,10 @@ class showWebPageClass {
             return getData(det.filename, det.data, err => {
                 self.png(data.img);
                 const htmlBolb = new Blob([html], { type: 'text/html' });
-                const _url = window.URL.createObjectURL(htmlBolb);
-                const fileReader = new FileReader();
-                fileReader.onloadend = evt => {
-                    return window.URL.revokeObjectURL(_url);
-                };
+                const _url = (URL || webkitURL).createObjectURL(htmlBolb);
                 self.showLoading(false);
                 self.htmlIframe(_url);
+                self.urlBlobList.push(_url);
             });
         });
     }
@@ -154,6 +153,10 @@ class showWebPageClass {
         this.showImgPage(false);
         this.showHtmlCodePage(false);
         this.png(null);
+        this.htmlIframe(null);
+        this.urlBlobList.forEach(n => {
+            (URL || webkitURL).revokeObjectURL(n);
+        });
         this.exit();
     }
     imgClick() {

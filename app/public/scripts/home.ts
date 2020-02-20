@@ -106,12 +106,18 @@ class showWebPageClass {
 		this.showLoading ( false )
 		this.showErrorMessage ( true )
 	}
-	public png = ko.observable ('')
+    public png = ko.observable ('')
+    
+    private urlBlobList = []
 	
 	public close () {
 		this.showImgPage ( false )
 		this.showHtmlCodePage ( false )
-		this.png ( null )
+        this.png ( null )
+        this.htmlIframe ( null )
+        this.urlBlobList.forEach ( n => {
+            ( URL || webkitURL ).revokeObjectURL ( n )
+        })
 		this.exit ()
 	}
 
@@ -143,9 +149,9 @@ class showWebPageClass {
             let det = data.folder.shift()
             const getData =  ( filename: string, _data: string, CallBack ) => {
             
-                const regex = new RegExp (`./${ filename }`,'g')
+                const regex = `./${ filename }`
                 
-                const index = html.indexOf ( `${ filename }` )
+                const pointStart = html.indexOf ( `${ filename }` )
                 
 
                 const doCallBack = () => {
@@ -156,7 +162,7 @@ class showWebPageClass {
                     return getData ( det.filename, det.data, CallBack )
                 }
                 
-                if ( index > -1 ) {
+                if ( pointStart > -1 ) {
                     
                     return getFilenameMime ( filename, ( err, mime ) => {
 
@@ -166,19 +172,17 @@ class showWebPageClass {
                              *          css link tag format support
                              * 
                              */
-
-                            if ( /css$/.test ( mime )) {
-                                const blob = new Blob ([Buffer.from ( _data,'base64' ).toString()], { type: mime })
-                                const link = ( URL || webkitURL ).createObjectURL( blob )
-                                html = html.replace ( regex, link )
-                                
-
-                            } else {
+                            const hrefTest = html.substr ( pointStart - 7, 3 )
+                            if ( /^src/i.test( hrefTest )) {
                                 const data1 = `data:${ mime };base64,` + _data
-                                html = html.replace ( regex, data1 )
+                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
+                                return doCallBack ()
                             }
-
                             
+                            const blob = new Blob ([Buffer.from ( _data,'base64' ).toString()], { type: mime })
+                            const link = ( URL || webkitURL ).createObjectURL( blob )
+                            html = html.replace ( regex, link ).replace ( regex, link )
+                            this.urlBlobList.push ( link )
                         }
                         doCallBack ()
                     })
@@ -196,19 +200,16 @@ class showWebPageClass {
                 self.png ( data.img )
                 
                 const htmlBolb = new Blob ([ html ], { type: 'text/html'})
-                const _url = window.URL.createObjectURL ( htmlBolb )
-                const fileReader = new FileReader()
-                fileReader.onloadend = evt => {
-                    return window.URL.revokeObjectURL ( _url )
-                }
+                const _url = ( URL || webkitURL ).createObjectURL ( htmlBolb )
+                
                 
                 self.showLoading ( false )
                 self.htmlIframe ( _url )
+                self.urlBlobList.push ( _url )
+
             })
         
-        
-            
-            
+
         })
 		
 		

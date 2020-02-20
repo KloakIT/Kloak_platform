@@ -43,11 +43,11 @@
           "target": "squirrel"
         }
       ],
-      "icon": "resources/icon.ico"
+      "icon": "build/icon.ico"
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "icon": "resources/qtgate"
+      "icon": "build/icon"
     },
     "dmg": {
       "backgroundColor": "#ffffff",

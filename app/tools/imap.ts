@@ -1046,6 +1046,8 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
 }
 
+
+const connectTimeOut = 15 * 1000
 export class qtGateImap extends Event.EventEmitter {
     public socket: Net.Socket
     public imapStream: ImapServerSwitchStream = new ImapServerSwitchStream ( this, this.deleteBoxWhenEnd, this.debug )
@@ -1074,7 +1076,7 @@ export class qtGateImap extends Event.EventEmitter {
 
     private connect () {
         const _connect = () => {
-            
+            clearTimeout ( timeout )
 			this.socket.setKeepAlive ( true )
 			
 			clearTimeout ( this.connectTimeOut )
@@ -1085,7 +1087,12 @@ export class qtGateImap extends Event.EventEmitter {
 				this.destroyAll ( null )
 			})
         }
-		console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
+        console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
+
+        const timeout = setTimeout (() => {
+            this.socket.destroy ( new Error ('connect time out!'))
+        }, connectTimeOut )
+
         if ( ! this.IMapConnect.imapSsl ) {
             this.socket = Net.createConnection ({ port: this.port, host: this.IMapConnect.imapServer }, _connect )
         } else {

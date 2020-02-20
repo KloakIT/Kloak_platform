@@ -851,6 +851,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         return this.imapServer.destroyAll(null);
     }
 }
+const connectTimeOut = 15 * 1000;
 class qtGateImap extends Event.EventEmitter {
     constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, writeFolder, debug, newMail) {
         super();
@@ -889,6 +890,7 @@ class qtGateImap extends Event.EventEmitter {
     }
     connect() {
         const _connect = () => {
+            timers_1.clearTimeout(timeout);
             this.socket.setKeepAlive(true);
             timers_1.clearTimeout(this.connectTimeOut);
             this.socket.pipe(this.imapStream).pipe(this.socket).once('error', err => {
@@ -898,6 +900,9 @@ class qtGateImap extends Event.EventEmitter {
             });
         };
         console.log(`qtGateImap connect mail server [${this.IMapConnect.imapServer}: ${this.port}]`);
+        const timeout = timers_1.setTimeout(() => {
+            this.socket.destroy(new Error('connect time out!'));
+        }, connectTimeOut);
         if (!this.IMapConnect.imapSsl) {
             this.socket = Net.createConnection({ port: this.port, host: this.IMapConnect.imapServer }, _connect);
         }
