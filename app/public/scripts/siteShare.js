@@ -1840,7 +1840,7 @@ const infoDefine = [
             accountError: 'Twitter return error: Invalid or expired token. error. Please check your account APP information and try again.'
         },
         thirdParty: {
-            information: 'Welcome to CoNET.',
+            information: 'Welcome to Kloak.',
             comesoon: 'Come soon.',
             qtgateGateway: 'CoGate gateway service. High speed, total privacy, ultra secure and easy to use. Your gateway to a secure and open internet.',
             app: ['CoGate', 'CoChat', 'CoBox', 'CoMail', 'CoNews', 'CoSearch', 'Co for', 'Co for', 'CoWallet', 'Co Custom'],
@@ -1987,7 +1987,7 @@ const infoDefine = [
                 }]
         },
         cover: {
-            firstTitle1: 'CoNET Platform',
+            firstTitle1: 'Kloak Platform',
             firstTitle2: 'Security Privacy And Freedom on the Internet',
             start: 'ENTER NOW',
             proxyStoped: 'Gateway server shutdown. Please rebuild try again.'
@@ -2231,7 +2231,7 @@ const infoDefine = [
             smtpServerInput: 'SMTP server name or IP address',
             emailServerPassword: 'Email account password ( app password )',
             Error_portNumber: 'Port number should be from 1 to 65535 and not be 22.',
-            imapAccountConform: function (imap, account) { return `<p class="ui small header brown">By clicking submit you are agreeing to:</p><p class="grey">This [<B class="red">${imap}</B>] email is a temporary account for use with CoNET services. CoNET may have full access to this account in use of CoNET’s services.</p><p>CoNET platform will send a email include: [<B class="red">${imap}</B>] & APP password, email [<B class="red">${account}</B>] address, public key, timezone, used language.</p><p>You may receive emails from CoNET.</p>`; },
+            imapAccountConform: function (imap, account) { return `<p class="ui small header brown">By clicking submit you are agreeing to:</p><p class="grey">This [<B class="red">${imap}</B>] email is a temporary account for use with CoNET services. CoNET may have full access to this account in use of CoNET’s services.</p><p>Kloak platform will send a email include: [<B class="red">${imap}</B>] & APP password, email [<B class="red">${account}</B>] address, public key, timezone, used language.</p><p>You may receive emails from CoNET.</p>`; },
             agree: `I understand and agree to continue.`,
             imapOtherCheckError: 'Cannot connect to email server! Server name, IP address or Port number may have a mistake. Please check the details of your email setup!',
             CertificateError: 'Certificate for this email server is not trusted. Please select "Keep connected even if certificate is not trusted" in settings if you still want to connect. Your email login information maybe leaked to this email server!',
@@ -2351,7 +2351,7 @@ const infoDefine = [
         },
         emailConform: {
             activeViewTitle: 'Active your keypair.',
-            emailTitle: 'Welcome to CoNET.',
+            emailTitle: 'Welcome to Kloak.',
             info1_1: `Please complete key pair verification. Click the button 'Request verification email' to request mail. Please check your [`,
             info1_2: '] mailbox. If you received more then one email from CoNET, please choose the newest email. If you not find the email, please double check your key pair email address. If you have an error, you may delete your key pair and generate a new key pair.',
             info2: 'Copy all content from [-----BEGIN PGP MESSAGE-----] ... to [-----END PGP MESSAGE-----]. Paste into this text box.',
@@ -2375,7 +2375,7 @@ const infoDefine = [
                 'Selected region is unavailable, try again later.',
                 'Your IMAP account recieved an error. Please restart CoNET and try again. If the error is not fixed, You may need check your IMAP account setting to enable third party IMAP applications.',
                 'The page session has expired! Refresh page or restart CoNET plesee.',
-                'Sorry looks CoNET platform failure, please restart CoNET.'
+                'Sorry looks Kloak platform failure, please restart CoNET.'
             ],
             activeing: 'sending...'
         },

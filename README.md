@@ -7,20 +7,20 @@
 
 ![http protocol](/resources/CoPlatform4.png?raw=true)
 
-CoNET Platform is cross-platform software, provids a suite of APP that developed for use on [CoNET](https://github.com/QTGate/CoNET).
+Kloak Platform is cross-platform software, provids a suite of APP that developed for use on [CoNET](https://github.com/QTGate/CoNET).
 
-CoNETプラットフォームは複数のAPPを提供して[CoNET](https://github.com/QTGate/CoNET)を使います。
+Kloakプラットフォームは複数のAPPを提供して[CoNET](https://github.com/QTGate/CoNET)を使います。
 
-CoNET平台集成了一系列應用來使用[CoNET](https://github.com/QTGate/CoNET)網絡
+Kloak平台集成了一系列應用來使用[CoNET](https://github.com/QTGate/CoNET)網絡
 
 ## Download ダウンロード 下載
 
 # Come soon./準備中/即將推出
-CoNET official node have not ready yet./CoNET公式ノード準備中/CoNET官方節點停機中
+CoNET official node have not ready yet./Kloak公式ノード準備中/CoNET官方節點停機中
 
 ## CoNET APPs
 
-### CoSearch
+### KloSearch
 1）Web or Images search/ウェブと画像検索/網頁和圖片檢索
 
 2）Get any web page screenshot/任意のWebページのスクリーンショット/抓取任意網站截圖
