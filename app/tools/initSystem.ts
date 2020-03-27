@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CoNET_version = '3.2.0'
+export const CoNET_version = '0.1.2'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'
@@ -189,7 +189,7 @@ export const getQTGateSign = ( user: OpenPgp.key.users ) => {
 	}
 	let Certification = false
 	user.otherCertifications.forEach ( n => {
-		console.log (`user.otherCertifications\n${ n.issuerKeyId.toHex ().toLowerCase() }`)
+		//console.log (`user.otherCertifications\n${ n.issuerKeyId.toHex ().toLowerCase() }`)
 		if ( QTGateSignKeyID.test ( n.issuerKeyId.toHex ().toLowerCase())) {
 			return Certification = true
 		}

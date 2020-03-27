@@ -33,7 +33,6 @@ Express.static.mime.define({ 'multipart/related': ['mht'] });
 Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
 Express.static.mime.define({ 'multipart/related': ['mhtml', 'mht'] });
 let logFileFlag = 'w';
-const conetImapAccount = /^qtgate_test\d\d?@icloud.com$/i;
 const saveLog = (err) => {
     if (!err) {
         return;
@@ -108,6 +107,9 @@ class localServer {
         this.expressServer.use(Express.static(Path.join(__dirname, 'html')));
         this.expressServer.get('/', (req, res) => {
             res.render('home', { title: 'home', proxyErr: false });
+        });
+        this.expressServer.get('/message', (req, res) => {
+            res.render('home/message', { title: 'message', proxyErr: false });
         });
         this.socketServer.on('connection', socker => {
             return this.socketServerConnected(socker);

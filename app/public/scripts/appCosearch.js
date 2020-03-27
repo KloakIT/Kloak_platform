@@ -112,7 +112,6 @@ let appScript = {
             n['conetResponse'] = ko.observable(false);
             n['loadingGetResponse'] = ko.observable(false);
             n['snapshotReady'] = ko.observable(false);
-            n['andy'] = 'Andy';
             n['snapshotClass'] = null;
             n['snapshotData'] = null;
             n['snapshotUuid'] = null;
@@ -133,9 +132,6 @@ let appScript = {
             ANDY - MASONARY IMAGES
             ======================================================================================================================= */
             n['showOptions'] = ko.observable(false);
-            n['imgUrlHrefSub'] =
-                'https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/2560x1280/landscape-1500925839-golden-retriever-puppy.jpg?resize=480:*';
-            n['webUrlHrefSub'] = 'https://www.google.ca';
             /* ====================================================================================================================
             
             ======================================================================================================================= */
@@ -488,11 +484,23 @@ let appScript = {
         self.showMain(false);
         self.showSearchSimilarImagesResult(true);
     },
-    getSnapshotClick: (self, index) => {
-        const currentItem = self.searchItemList()[index];
-        currentItem.showLoading(true);
+    // CHANGED ============================================
+    // CHANGED ============================================
+    // CHANGED ============================================
+    getSnapshotClick: (self, index, isImage) => {
+        let currentItem = null;
+        if (isImage) {
+            currentItem = self.searchSimilarImagesList()[index];
+            currentItem.showImageLoading(true);
+        }
+        else {
+            currentItem = self.searchItemList()[index];
+            currentItem.showLoading(true);
+        }
         const showError = err => {
-            currentItem.showLoading(false);
+            isImage
+                ? currentItem.showImageLoading(false)
+                : currentItem.showLoading(false);
             currentItem.loadingGetResponse(false);
             currentItem.conetResponse(false);
             currentItem.errorIndex(_view.connectInformationMessage.getErrorIndex(err));
@@ -532,15 +540,19 @@ let appScript = {
                     if (err) {
                         return showError(err);
                     }
-                    currentItem.snapshotReady(true);
-                    currentItem.showLoading(false);
+                    isImage
+                        ? currentItem.snapshotImageReady(true)
+                        : currentItem.snapshotReady(true);
+                    isImage
+                        ? currentItem.showImageLoading(false)
+                        : currentItem.showLoading(false);
                     currentItem.loadingGetResponse(false);
                     currentItem.conetResponse(false);
-                    return currentItem.snapshotData = data;
+                    return (currentItem.snapshotData = data);
                 });
             });
         };
-        const url = currentItem.url;
+        const url = isImage ? currentItem.clickUrl : currentItem.url;
         const width = $(window).width();
         const height = $(window).height();
         const com = {
@@ -551,17 +563,26 @@ let appScript = {
         };
         return _view.keyPairCalss.emitRequest(com, callBack);
     },
-    showSnapshotClick: (self, index) => {
+    showSnapshotClick: (self, index, isImage) => {
         self.showMain(false);
         self.showSnapshop(true);
-        const currentItem = self.searchItemList()[index];
+        let currentItem = null;
+        if (isImage) {
+            currentItem = self.searchSimilarImagesList()[index];
+        }
+        else {
+            currentItem = self.searchItemList()[index];
+        }
         let y = null;
-        self.showWebPage(y = new showWebPageClass(currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, () => {
-            self.showWebPage(y = null);
+        self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, () => {
+            self.showWebPage((y = null));
             self.showMain(true);
             self.showSnapshop(false);
-        }));
+        })));
     },
+    // CHANGED ============================================
+    // CHANGED ============================================
+    // CHANGED ============================================
     searchesRelatedSelect: (self, index) => {
         self.searchInputText(self.searchItem().searchesRelated[index].text);
         self.showSearchesRelated(false);

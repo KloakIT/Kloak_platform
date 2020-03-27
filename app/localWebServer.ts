@@ -40,7 +40,6 @@ interface localConnect {
 }
 
 let logFileFlag = 'w'
-const conetImapAccount = /^qtgate_test\d\d?@icloud.com$/i
 
 const saveLog = ( err: {} | string ) => {
 	if ( !err ) {
@@ -648,6 +647,11 @@ export default class localServer {
 		this.expressServer.get ( '/', ( req, res ) => {
 
             res.render( 'home', { title: 'home', proxyErr: false  })
+		})
+
+		this.expressServer.get ( '/message', ( req, res ) => {
+
+            res.render( 'home/message', { title: 'message', proxyErr: false  })
 		})
 
 		this.socketServer.on ( 'connection', socker => {

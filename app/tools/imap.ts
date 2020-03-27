@@ -47,7 +47,7 @@ const saveLog = ( log: string, _console: boolean = true ) => {
 }
 const debugOut = ( text: string, isIn: boolean, serialID: string ) => {
     const log = `【${ new Date().toISOString()}】【${ serialID }】${ isIn ? '<=' : '=>'} 【${ text }】`
-    saveLog ( log )
+    console.log ( log )
 
 }
 
@@ -867,10 +867,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                         if ( /\{\d+\}/.test ( text1 )) {
 							
 							this.imapServer.fetching = parseInt ( text1.split('{')[1].split('}')[0] )
-							this.appendWaitResponsrTimeOut = setTimeout (() => {
-								//this.imapServer.emit ( 'error', new Error (`${ this.cmd } timeout!`))
-								return this.doCommandCallback ( new Error (`${ this.cmd } timeout!`))
-							}, this.imapServer.fetching / 1000 + 30000 )
+							
                         } 
 						
 						this.debug ? console.log ( `${ text1 } doing length [${ this.imapServer.fetching }]` ) : null
@@ -891,6 +888,12 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.Tag = `A${ this.imapServer.TagCount1() }`
         this.cmd = `${ this.Tag } ${ this.cmd }`
         this.debug ? debugOut ( this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
+        
+        this.appendWaitResponsrTimeOut = setTimeout (() => {
+            //this.imapServer.emit ( 'error', new Error (`${ this.cmd } timeout!`))
+            return this.doCommandCallback ( new Error (`${ this.cmd } timeout!`))
+        }, this.imapServer.fetching / 1000 + 30000 )
+
         if ( this.writable ) {
 			
             return this.push ( this.cmd + '\r\n' )
@@ -1047,7 +1050,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 }
 
 
-const connectTimeOut = 15 * 1000
+const connectTimeOut = 10 * 1000
 export class qtGateImap extends Event.EventEmitter {
     public socket: Net.Socket
     public imapStream: ImapServerSwitchStream = new ImapServerSwitchStream ( this, this.deleteBoxWhenEnd, this.debug )
@@ -1076,18 +1079,25 @@ export class qtGateImap extends Event.EventEmitter {
 
     private connect () {
         const _connect = () => {
+            
             clearTimeout ( timeout )
-			this.socket.setKeepAlive ( true )
+            this.socket.setKeepAlive ( true )
+            
+            this.socket.once ( 'error', err => {
+                if ( typeof this.socket.end === 'function') {
+                    this.socket.end ()
+                }
+                
+            })
 			
-			clearTimeout ( this.connectTimeOut )
-			
-            this.socket .pipe ( this.imapStream ).pipe ( this.socket ).once ( 'error', err => {
+            this.socket.pipe ( this.imapStream ).pipe ( this.socket ).once ( 'error', err => {
 				this.destroyAll ( err )
 			}).once ( 'end', () => {
 				this.destroyAll ( null )
 			})
         }
-        console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
+
+        //console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
 
         const timeout = setTimeout (() => {
             this.socket.destroy ( new Error ('connect time out!'))
@@ -1096,23 +1106,10 @@ export class qtGateImap extends Event.EventEmitter {
         if ( ! this.IMapConnect.imapSsl ) {
             this.socket = Net.createConnection ({ port: this.port, host: this.IMapConnect.imapServer }, _connect )
         } else {
-            this.socket  = Tls.connect ({ rejectUnauthorized: ! this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, port: this.port }, _connect )
+            this.socket  = Tls.connect ({ rejectUnauthorized: ! this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect )
         }
-        this.socket.once ( 'error', err => {
-			if ( typeof this.socket.end === 'function') {
-				this.socket.end ()
-			}
-			
-		})
-    
-        this.connectTimeOut = setTimeout (() => {
-            console.log (`qtGateImap on connect socket tiemout! this.imapStream.end`)
-            if ( this.socket && typeof this.socket.end === 'function' ) {
-                this.socket.end ()
-            }
-            this.imapStream.end ()
-            this.emit ( 'error', new Error ('Connect timeout!'))
-        }, socketTimeOut )
+
+        
 
 
     }
@@ -1311,7 +1308,7 @@ export const imapGetMediaFile = ( IMapConnect: imapConnect, fileName: string, Ca
     })
 }
 
-const pingPongTimeOut = 1000 * 15
+const pingPongTimeOut = 1000 * 30
 
 
 interface mailPool {
@@ -1321,18 +1318,15 @@ interface mailPool {
 }
 
 export class imapPeer extends Event.EventEmitter {
-    private mailPool: mailPool[] = []
+
     public domainName = this.imapData.imapUserName.split('@')[1]
     private waitingReplyTimeOut: NodeJS.Timer = null
     private pingUuid = null
     private doingDestroy = false
     
     public peerReady = false
-    private readyForSendMail = false
     public newMail: ( data: any, subject ) => void
-    private makeWImap = false
     private makeRImap = false
-    private pingCount = 1
     public needPing = false
     public needPingTimeOut = null
 

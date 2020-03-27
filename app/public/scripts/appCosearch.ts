@@ -132,7 +132,6 @@ let appScript = {
 			n['conetResponse'] = ko.observable ( false )
 			n['loadingGetResponse'] = ko.observable ( false )
 			n['snapshotReady'] = ko.observable ( false )
-			n['andy'] = 'Andy'
 			n['snapshotClass'] = null
 			n['snapshotData'] = null
 			n['snapshotUuid'] = null
@@ -156,9 +155,7 @@ let appScript = {
 			ANDY - MASONARY IMAGES
 			======================================================================================================================= */
 			n['showOptions'] = ko.observable(false);
-			n['imgUrlHrefSub'] =
-				'https://hips.hearstapps.com/ghk.h-cdn.co/assets/17/30/2560x1280/landscape-1500925839-golden-retriever-puppy.jpg?resize=480:*';
-			n['webUrlHrefSub'] = 'https://www.google.ca';
+		
 
 			/* ====================================================================================================================
 			
@@ -621,95 +618,128 @@ let appScript = {
 		
 	},
 
-	getSnapshotClick: ( self, index ) => {
-		const currentItem = self.searchItemList()[ index ]
-		currentItem.showLoading ( true )
-		const showError = err => {
-			currentItem.showLoading ( false )
-			currentItem.loadingGetResponse ( false )
-			currentItem.conetResponse ( false )
-			currentItem.errorIndex ( _view.connectInformationMessage.getErrorIndex ( err ))
-			currentItem.showError ( true )
-			const currentElm = $(`#${ currentItem.id }`)
-			return currentElm.popup ({
-				on: 'click',
-				inline: true,
-				onHidden: function () {
-					currentItem.showError ( false )
-					currentItem.errorIndex ( null )
-					
-				}
-			})
-		}
+	// CHANGED ============================================
+  // CHANGED ============================================
+  // CHANGED ============================================
+  getSnapshotClick: (self, index, isImage?: boolean) => {
+    let currentItem = null
+    if (isImage) {
+      currentItem = self.searchSimilarImagesList()[index]
+      currentItem.showImageLoading(true)
+    } else {
+      currentItem = self.searchItemList()[index]
+      currentItem.showLoading(true)
+    }
 
-		const callBack = ( err?, com?: QTGateAPIRequestCommand ) => {
-			if ( err ) {
-				return showError ( err )
-			}
-			if ( !com ) {
-				currentItem.loadingGetResponse ( true )
-				return currentItem.conetResponse ( false )
-			}
-			if ( com.error === -1 ) {
-				currentItem.loadingGetResponse ( false )
-				return currentItem.conetResponse ( true )
-			}
-			if ( com.error ) {
-				return showError ( com.error )
-			}
-			
-			const arg: string = com.Args[0]
-			currentItem.snapshotUuid = arg.split(',')[0].split ('.')[0]
-			return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
-				if ( err ) {
-					return showError ( err )
-				}
-				return _view.keyPairCalss.decryptMessageToZipStream ( buffer, ( err, data ) => {
-					if ( err ) {
-						return showError ( err )
-					}
-					currentItem.snapshotReady ( true )
-					currentItem.showLoading ( false )
-					currentItem.loadingGetResponse ( false )
-					currentItem.conetResponse ( false )
-					return currentItem.snapshotData = data
-					
-				})
+    const showError = err => {
+      isImage
+        ? currentItem.showImageLoading(false)
+        : currentItem.showLoading(false)
+      currentItem.loadingGetResponse(false)
+      currentItem.conetResponse(false)
+      currentItem.errorIndex(
+        _view.connectInformationMessage.getErrorIndex(err)
+      )
+      currentItem.showError(true)
+      const currentElm = $(`#${currentItem.id}`)
+      return currentElm.popup({
+        on: 'click',
+        inline: true,
+        onHidden: function() {
+          currentItem.showError(false)
+          currentItem.errorIndex(null)
+        }
+      })
+    }
 
-				
-			})
-			
-			
-		}
+    const callBack = (err?, com?: QTGateAPIRequestCommand) => {
+      if (err) {
+        return showError(err)
+      }
+      if (!com) {
+        currentItem.loadingGetResponse(true)
+        return currentItem.conetResponse(false)
+      }
+      if (com.error === -1) {
+        currentItem.loadingGetResponse(false)
+        return currentItem.conetResponse(true)
+      }
+      if (com.error) {
+        return showError(com.error)
+      }
 
-		const url = currentItem.url
-		const width = $(window).width()
-		const height = $(window).height()
-		
-		const com: QTGateAPIRequestCommand = {
-			command: 'CoSearch',
-			Args: [ url, width, height ],
-			error: null,
-			subCom: 'getSnapshop'
-		}
+      const arg: string = com.Args[0]
+      currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
+      return _view.connectInformationMessage.sockEmit(
+        'getFilesFromImap',
+        arg,
+        (err, buffer: string) => {
+          if (err) {
+            return showError(err);
+          }
+          return _view.keyPairCalss.decryptMessageToZipStream(
+            buffer,
+            (err, data) => {
+              if (err) {
+                return showError(err);
+              }
+              isImage
+                ? currentItem.snapshotImageReady(true)
+                : currentItem.snapshotReady(true);
+              isImage
+                ? currentItem.showImageLoading(false)
+                : currentItem.showLoading(false);
+              currentItem.loadingGetResponse(false);
+              currentItem.conetResponse(false);
+              return (currentItem.snapshotData = data);
+            }
+          );
+        }
+      );
+    };
 
-		return _view.keyPairCalss.emitRequest ( com, callBack )
-	},
+    const url = isImage ? currentItem.clickUrl : currentItem.url;
+    const width = $(window).width();
+    const height = $(window).height();
 
-	showSnapshotClick: ( self, index ) => {
-		self.showMain ( false )
-		self.showSnapshop ( true )
-		const currentItem = self.searchItemList()[ index ]
-		let y = null
-		
+    const com: QTGateAPIRequestCommand = {
+      command: 'CoSearch',
+      Args: [url, width, height],
+      error: null,
+      subCom: 'getSnapshop'
+    };
 
-		self.showWebPage ( y = new showWebPageClass ( currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid , () => {
-			self.showWebPage ( y = null )
-			self.showMain ( true )
-			self.showSnapshop ( false )
-			
-		}))
-	},
+    return _view.keyPairCalss.emitRequest(com, callBack);
+  },
+
+  showSnapshotClick: (self, index, isImage?: boolean) => {
+    self.showMain(false);
+    self.showSnapshop(true);
+    let currentItem = null;
+    if (isImage) {
+      currentItem = self.searchSimilarImagesList()[index];
+    } else {
+      currentItem = self.searchItemList()[index];
+    }
+    let y = null;
+
+    self.showWebPage(
+      (y = new showWebPageClass(
+        isImage ? currentItem.clickUrl : currentItem.url,
+        currentItem.snapshotData,
+        currentItem.snapshotUuid,
+        () => {
+          self.showWebPage((y = null));
+          self.showMain(true);
+          self.showSnapshop(false);
+        }
+      ))
+    );
+  },
+
+  // CHANGED ============================================
+  // CHANGED ============================================
+  // CHANGED ============================================
 
 	searchesRelatedSelect: ( self, index ) => {
 

@@ -145,11 +145,12 @@ class showWebPageClass {
 
             let html = data.html
             
-            
+            html = html.replace ( / srcset="[^"]+" /ig, ' ').replace ( / srcset='[^']+' /ig, ' ')
             let det = data.folder.shift()
             const getData =  ( filename: string, _data: string, CallBack ) => {
             
-                const regex = `./${ filename }`
+                
+                
                 
                 const pointStart = html.indexOf ( `${ filename }` )
                 
@@ -166,22 +167,27 @@ class showWebPageClass {
                     
                     return getFilenameMime ( filename, ( err, mime ) => {
 
-                        if ( mime ) {
+                        if ( mime && ! /javascript/.test( mime ) ) {
                             /**
                              * 
                              *          css link tag format support
                              * 
                              */
-                            const hrefTest = html.substr ( pointStart - 7, 3 )
-                            if ( /^src/i.test( hrefTest )) {
+                            const _filename = filename.replace(/\-/g,'\\-').replace(/\//g,'\\/').replace(/\./g,'\\.').replace(/\(/g,'\\(').replace(/\)/g,'\\)')
+                            const regex = new RegExp (` src=("|')\.\/${ _filename }("|')`, 'g')
+                            const regex1 = new RegExp (` href=("|')\.\/${ _filename }("|')`, 'g')
+                            /*
+                            if ( /^ src/i.test( hrefTest )) {
+                                
                                 const data1 = `data:${ mime };base64,` + _data
                                 html = html.replace ( regex, data1 ).replace ( regex, data1 )
                                 return doCallBack ()
+                                
                             }
-                            
-                            const blob = new Blob ([Buffer.from ( _data,'base64' ).toString()], { type: mime })
+                            */
+                            const blob = new Blob ([ /^image/.test( mime ) ? Buffer.from ( _data,'base64' ) : Buffer.from ( _data,'base64' ).toString()], { type: mime })
                             const link = ( URL || webkitURL ).createObjectURL( blob )
-                            html = html.replace ( regex, link ).replace ( regex, link )
+                            html = html.replace ( regex, ` src="${ link }"` ).replace ( regex1, ` href="${ link }"` )
                             this.urlBlobList.push ( link )
                         }
                         doCallBack ()
@@ -189,7 +195,7 @@ class showWebPageClass {
                     
                     
                 }
-                
+
                 doCallBack ()
                 
                 

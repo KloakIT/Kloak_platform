@@ -98,7 +98,7 @@ class default_1 extends Imap.imapPeer {
     setTimeWaitAfterSentrequestMail() {
         this.timeoutWaitAfterSentrequestMail = setTimeout(() => {
             return this.sockerServer.emit('tryConnectCoNETStage', null, 0);
-        }, 1000 * 60 * 1.5);
+        }, requestTimeOut * 2);
     }
     sendRequestMail() {
         return Tool.sendCoNETConnectRequestEmail(this.imapData, this.openKeyOption, this.publicKey, this.nodeEmailAddress, (err) => {
@@ -118,16 +118,23 @@ class default_1 extends Imap.imapPeer {
         }
         const rImap = new Imap.qtGateImapRead(this.imapData, fileName, true, mail => {
             const attr = Imap.getMailAttached(mail);
-            CallBack(null, attr);
-            callback = true;
-            return rImap.logout();
+            if (!callback) {
+                callback = true;
+                CallBack(null, attr);
+            }
+            return rImap.destroyAll(null);
         });
         rImap.once('error', err => {
-            rImap.destroyAll(null);
-            return this.getFile(fileName, CallBack);
+            return rImap.destroyAll(null);
         });
-        rImap.once('end', () => {
-            return console.log(`Connect Class GetFile_rImap on end!`);
+        rImap.once('end', err => {
+            if (err) {
+                if (!callback) {
+                    saveLog(`getFile got error [${err}]\nDoing getFile again!\n`);
+                    return this.getFile(fileName, CallBack);
+                }
+            }
+            return saveLog(`getFile [${fileName}] success!`);
         });
     }
 }

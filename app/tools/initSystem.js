@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.CoNET_version = '3.2.0';
+exports.CoNET_version = '0.1.2';
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -169,7 +169,7 @@ exports.getQTGateSign = (user) => {
     }
     let Certification = false;
     user.otherCertifications.forEach(n => {
-        console.log(`user.otherCertifications\n${n.issuerKeyId.toHex().toLowerCase()}`);
+        //console.log (`user.otherCertifications\n${ n.issuerKeyId.toHex ().toLowerCase() }`)
         if (exports.QTGateSignKeyID.test(n.issuerKeyId.toHex().toLowerCase())) {
             return Certification = true;
         }
