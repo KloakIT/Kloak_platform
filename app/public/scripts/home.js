@@ -210,6 +210,16 @@ var view_layout;
             this.newVersion = ko.observable(null);
             this.sessionHash = '';
             this.showLanguageSelect = ko.observable(true);
+            /*************************************
+             *
+             *          for New York Times
+             */
+            this.nytSection = ko.observable(false);
+            this.nytloader = ko.observable(true);
+            this.iframShow = ko.observable(false);
+            this.nyt_news = ko.observable(false);
+            this.nyt_detail = ko.observable(false);
+            this.nyt_menu = ko.observable(false);
             this.socketListen();
             this.CanadaBackground.subscribe(val => {
                 if (val) {
@@ -221,6 +231,7 @@ var view_layout;
                 }
             });
         }
+        /*** */
         afterInitConfig() {
             this.keyPair(this.localServerConfig().keypair);
             if (this.keyPair() && this.keyPair().keyPairPassword() && typeof this.keyPair().keyPairPassword().inputFocus === 'function') {
@@ -333,8 +344,17 @@ var view_layout;
                 return this.sectionAgreement ( true )
             }
             */
-            this.sectionLogin(true);
-            return initPopupArea();
+            /*
+            this.sectionLogin ( true )
+            return initPopupArea ()
+            
+            setTimeout (() => {
+                this.nytloader ( false )
+            }, 3000 )
+            */
+            new Date().toDateString;
+            this.nyt_menu(true);
+            return this.nytSection(true);
         }
         deletedKeypairResetView() {
             this.imapSetup(null);

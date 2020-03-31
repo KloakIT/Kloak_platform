@@ -261,7 +261,17 @@ module view_layout {
 		public showLanguageSelect = ko.observable ( true )
 		private demoTimeout
 		private demoMainElm
-
+        /*************************************
+         * 
+         *          for New York Times
+         */
+        public nytSection = ko.observable ( false )
+        public nytloader = ko.observable ( true )
+        public iframShow = ko.observable ( false )
+        public nyt_news = ko.observable ( false )
+        public nyt_detail = ko.observable ( false )
+        public nyt_menu = ko.observable ( false )
+        /*** */
 		
         private afterInitConfig ( ) {
             
@@ -411,9 +421,19 @@ module view_layout {
             if ( this.localServerConfig().firstRun ) {
                 return this.sectionAgreement ( true )
 			}
-			*/
+            */
+            /*
             this.sectionLogin ( true )
             return initPopupArea ()
+            
+            setTimeout (() => {
+                this.nytloader ( false )
+            }, 3000 )
+            */
+           new Date().toDateString
+           this.nyt_menu ( true )
+            return this.nytSection ( true )
+            
             
         }
 

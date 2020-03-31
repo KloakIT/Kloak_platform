@@ -23,8 +23,8 @@ block jumbotron1
 	section#welcome.content
 		.welcome-bg
 			.welcome( style="color: white;")
-				h1( data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle1, animate:{ animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 0 }" )
-				h1( style="padding-right:1em;padding-left:1em;" data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle2, animate: { animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 70 }")
+				h1.shadowText1( data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle1, animate:{ animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 0 }" )
+				h3.shadowText1( style="padding-right:1em;padding-left:1em;" data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle2, animate: { animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 70 }")
 				//-.ui.primary.basic.big.button( data-bind="click: openClick, text: infoDefine [ languageIndex() ].cover.start" style="margin-top: 2em;" )
 				.button(style="position: relative;width: 4em;height: 4em;")
 					a.play-btn(data-bind="click: openClick" href="#")
@@ -405,7 +405,6 @@ block jumbotron1
 	<!-- /ko -->
 
 	<!-- /ko -->
-	
 
 
 
@@ -422,4 +421,123 @@ block jumbotron1
 
 	<!-- /ko -->
 	<!-- /ko -->
+
 	
+	<!-- ko if: nytSection -->
+
+	section#nyt.content
+		.menu( data-bind = "click: function() { nyt_menu( true ); nyt_detail ( false ); iframShow(false); nytloader (true)}" style=" padding: 1em; width: 100%;" )
+			img.CoContent( src="/images/nyt.svg" style="width: 20em;")
+		
+		<!-- ko if: nyt_menu -->
+		.image( style=" position: absolute;right: 1em;")
+			img( style="width: 5em;position: relative;" src="images/kloak_platform.png")
+		.menu(style=" padding: 1em; width: 100%;")
+			.ui.image.green.label
+				img( src="https://pbs.twimg.com/profile_images/887661330832003072/Zp6rA_e2_400x400.jpg")
+				span Adam Wathan
+		.ui.vertical.massive.blue.inverted.menu( style=" width: 100%;" )
+			.item.active
+				b Channels
+			a.item(href="#")
+				span # General
+			a.item(href="#")
+				span # Metro
+			a.item(href="#")
+				span # Sports
+			a.item(href="#")
+				span # Magazine
+			a.item( href="#" data-bind = "click: function() { nyt_menu( false ); nyt_detail ( true ) }")
+				span # Newsroom
+				.ui.label.red.left.pointing 10
+			.item.active
+				b Direct Messages
+			a.item(href="#") David Hemphill
+			a.item(href="#") Steve Schoger
+			a.item.active( href="#")
+			a.item( href="#" data-bind = "click: function() { nyt_menu( false ); nyt_detail ( false ); iframShow ( true ); setTimeout(() => { nytloader(false)}, 1000 ) }")
+				h5.ui.header( style = "color: white;")
+					i.icon.home
+					.content New York Times
+
+
+		<!-- /ko -->
+		<!-- ko if: nyt_detail -->
+		.ui.segment.orange.bottom.attached.pushable
+			.pusher(style="  padding: 1em; width: 100%;")
+				h4.ui.header( data-bind = "click: function() { nyt_detail( false );nyt_menu( true ) }" style="margin-top: 0px;" ) Newsroom
+					.sub.header Got a confidential news tip?
+				.ui.right.floated.menu
+					a.item
+						i.icon.info.circle
+					a.item
+						i.icon.search
+					a.item( data-bind = "click: function() { nyt_detail( false );nyt_menu( true ) }" href="#" )
+						i.bars.icon
+				.detail
+				.ui.vertical.segment
+					.ui.feed
+						.event
+							.label
+								img.ui.mini.circular.image( src="https://pbs.twimg.com/profile_images/782548497954398208/TdpbQU5u_400x400.jpg")
+							.content
+								.summary
+									a.user Samrat Aanand
+									.date 3 Hour Ago
+								.extra.text
+									span Thanks China for creating and hiding COVID-19......Zero Accountability !!
+								.meta
+									a.like
+										i.like.icon
+										span 13 Likes
+						.event
+							.label
+								img.ui.mini.circular.image( src="https://pbs.twimg.com/profile_images/1239030614738665473/IuVFSQr-_400x400.jpg")
+							.content
+								.summary
+									a.user Steven
+									.date 2 Hour Ago
+								.extra.text
+									span China gov didn’t hide this time, they are pretty transparent.
+								.extra.images
+									img( src="https://pbs.twimg.com/media/ETuH0pXWAAUK_KJ?format=jpg&name=small")
+								.meta
+									a.like
+										i.like.icon
+										span 63 Likes
+						.event
+							.label
+								img.ui.mini.circular.image( src="https://pbs.twimg.com/profile_images/881171921131364353/rVKkr-dX_400x400.jpg")
+							.content
+								.summary
+									a.user Marion Daze
+									.date 2 Hour Ago
+								.extra.text
+									span They actually did in the beginning. And the doctor that called it out passed away from the virus. He is now getting the recognition he deserves.
+								.meta
+									a.like
+										i.like.icon
+										span 3 Likes
+						.event
+							.label
+								img.ui.mini.circular.image( src="https://pbs.twimg.com/profile_images/1236387672/_________________400x400.jpg")
+							.content
+								.summary
+									a.user Marion Daze
+									.date 2 Hour Ago
+								.extra.text
+									p
+										span
+											a( href="#") http://news.v.daum.net/v/20200121104919057…
+					
+										span Continue / In the den of criminals South korea, First new coronavirus patients touched with 44 peoples. ...
+								.meta
+									a.like
+										i.like.icon
+										span 8 Likes
+		<!-- /ko -->
+		.ifram( data-bind = "visible: iframShow")
+			iframe( data-bind = "visible: !nytloader() " src="https://www.nytimes.com/" style = "border: none; width: 100%; height: 90em;" )
+			.ui.loader( data-bind = "css: { 'active': nytloader }")
+			
+	<!-- /ko -->
