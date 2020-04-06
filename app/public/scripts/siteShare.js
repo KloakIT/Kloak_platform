@@ -606,8 +606,8 @@ const infoDefine = [
                 }]
         },
         cover: {
-            firstTitle1: '纽约时报中文网',
-            firstTitle2: '我们追求真理，帮助人们了解世界',
+            firstTitle1: 'Kloak OS',
+            firstTitle2: '人类成就这互联网，互联网也属于人类',
             start: '开门',
             proxyStoped: 'CoGate定制代理服务器已经停止，如需使用请重新定制代理服务器。'
         },
@@ -1412,8 +1412,8 @@ const infoDefine = [
                 }]
         },
         cover: {
-            firstTitle1: 'ニューヨーク・タイムズ',
-            firstTitle2: '私たちは真実を求め、人々が世界を理解するのを助けます',
+            firstTitle1: 'Kloak OS',
+            firstTitle2: '人がインターネットで集めた、人がインターネットを所有する',
             start: 'オプンドア',
             proxyStoped: 'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。'
         },
@@ -1987,8 +1987,8 @@ const infoDefine = [
                 }]
         },
         cover: {
-            firstTitle1: 'The New York Times',
-            firstTitle2: 'We seek the truth and help people understand the world.',
+            firstTitle1: 'Kloak OS',
+            firstTitle2: 'All for the Internet, the Internet for All',
             start: 'ENTER NOW',
             proxyStoped: 'Gateway server shutdown. Please rebuild try again.'
         },
@@ -2811,8 +2811,8 @@ const infoDefine = [
                 }]
         },
         cover: {
-            firstTitle1: '紐約時報中文網',
-            firstTitle2: '我們追求真理，幫助人們了解世界',
+            firstTitle1: 'Kloak OS',
+            firstTitle2: '人類成就這互聯網，互聯網也屬於人類',
             start: '開門',
             proxyStoped: 'CoGate定制代理伺服器已經停止，如需使用請重新定制代理伺服器。'
         },

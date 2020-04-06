@@ -91,6 +91,7 @@ class showWebPageClass {
         this.showHtmlCodePage = ko.observable(false);
         this.showImgPage = ko.observable(true);
         this.png = ko.observable('');
+        this.mHtml = ko.observable('');
         this.urlBlobList = [];
         const self = this;
         _view.showIconBar(false);
@@ -100,55 +101,61 @@ class showWebPageClass {
             }
             _view.bodyBlue(false);
             let html = data.html;
-            html = html.replace(/ srcset="[^"]+" /ig, ' ').replace(/ srcset='[^']+' /ig, ' ');
-            let det = data.folder.shift();
-            const getData = (filename, _data, CallBack) => {
-                const pointStart = html.indexOf(`${filename}`);
-                const doCallBack = () => {
-                    det = data.folder.shift();
-                    if (!det) {
-                        return CallBack();
-                    }
-                    return getData(det.filename, det.data, CallBack);
-                };
-                if (pointStart > -1) {
-                    return getFilenameMime(filename, (err, mime) => {
-                        if (mime && !/javascript/.test(mime)) {
-                            /**
-                             *
-                             *          css link tag format support
-                             *
-                             */
-                            const _filename = filename.replace(/\-/g, '\\-').replace(/\//g, '\\/').replace(/\./g, '\\.').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-                            const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
-                            const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
-                            /*
-                            if ( /^ src/i.test( hrefTest )) {
-                                
-                                const data1 = `data:${ mime };base64,` + _data
-                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                return doCallBack ()
-                                
-                            }
-                            */
-                            const blob = new Blob([/^image/.test(mime) ? Buffer.from(_data, 'base64') : Buffer.from(_data, 'base64').toString()], { type: mime });
-                            const link = (URL || webkitURL).createObjectURL(blob);
-                            html = html.replace(regex, ` src="${link}"`).replace(regex1, ` href="${link}"`);
-                            this.urlBlobList.push(link);
+            //      support HTMLComplete
+            if (html) {
+                html = html.replace(/ srcset="[^"]+" /ig, ' ').replace(/ srcset='[^']+' /ig, ' ');
+                let det = data.folder.shift();
+                const getData = (filename, _data, CallBack) => {
+                    const pointStart = html.indexOf(`${filename}`);
+                    const doCallBack = () => {
+                        det = data.folder.shift();
+                        if (!det) {
+                            return CallBack();
                         }
-                        doCallBack();
-                    });
-                }
-                doCallBack();
-            };
-            return getData(det.filename, det.data, err => {
-                self.png(data.img);
-                const htmlBolb = new Blob([html], { type: 'text/html' });
-                const _url = (URL || webkitURL).createObjectURL(htmlBolb);
-                self.showLoading(false);
-                self.htmlIframe(_url);
-                self.urlBlobList.push(_url);
-            });
+                        return getData(det.filename, det.data, CallBack);
+                    };
+                    if (pointStart > -1) {
+                        return getFilenameMime(filename, (err, mime) => {
+                            if (mime && !/javascript/.test(mime)) {
+                                /**
+                                 *
+                                 *          css link tag format support
+                                 *
+                                 */
+                                const _filename = filename.replace(/\-/g, '\\-').replace(/\//g, '\\/').replace(/\./g, '\\.').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+                                const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
+                                const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
+                                /*
+                                if ( /^ src/i.test( hrefTest )) {
+                                    
+                                    const data1 = `data:${ mime };base64,` + _data
+                                    html = html.replace ( regex, data1 ).replace ( regex, data1 )
+                                    return doCallBack ()
+                                    
+                                }
+                                */
+                                const blob = new Blob([/^image/.test(mime) ? Buffer.from(_data, 'base64') : Buffer.from(_data, 'base64').toString()], { type: mime });
+                                const link = (URL || webkitURL).createObjectURL(blob);
+                                html = html.replace(regex, ` src="${link}"`).replace(regex1, ` href="${link}"`);
+                                this.urlBlobList.push(link);
+                            }
+                            doCallBack();
+                        });
+                    }
+                    doCallBack();
+                };
+                return getData(det.filename, det.data, err => {
+                    self.png(data.img);
+                    const htmlBolb = new Blob([html], { type: 'text/html' });
+                    const _url = (URL || webkitURL).createObjectURL(htmlBolb);
+                    self.showLoading(false);
+                    self.htmlIframe(_url);
+                    self.urlBlobList.push(_url);
+                });
+            }
+            self.png(data.img);
+            self.showLoading(false);
+            self.mHtml(data.mhtml);
         });
     }
     showErrorMessageProcess() {
@@ -172,6 +179,15 @@ class showWebPageClass {
     htmlClick() {
         this.showHtmlCodePage(true);
         this.showImgPage(false);
+    }
+}
+class workerManager {
+    constructor(list) {
+        this.workers = new Map();
+        list.forEach(n => {
+            const work = new Worker(`scripts/${n}.js`);
+            this.workers.set(n, work);
+        });
     }
 }
 var view_layout;
@@ -203,6 +219,9 @@ var view_layout;
             this.CoNETConnect = ko.observable(null);
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
+            this.worker = new workerManager([
+                'mHtml2Html'
+            ]);
             this.keyPairCalss = null;
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);
@@ -344,17 +363,18 @@ var view_layout;
                 return this.sectionAgreement ( true )
             }
             */
+            this.sectionLogin(true);
+            return initPopupArea();
             /*
-            this.sectionLogin ( true )
-            return initPopupArea ()
-            
             setTimeout (() => {
                 this.nytloader ( false )
             }, 3000 )
+           
+           
+           new Date().toDateString
+           this.nyt_menu ( true )
+            return this.nytSection ( true )
             */
-            new Date().toDateString;
-            this.nyt_menu(true);
-            return this.nytSection(true);
         }
         deletedKeypairResetView() {
             this.imapSetup(null);

@@ -107,6 +107,7 @@ class showWebPageClass {
 		this.showErrorMessage ( true )
 	}
     public png = ko.observable ('')
+    public mHtml = ko.observable ('')
     
     private urlBlobList = []
 	
@@ -135,7 +136,7 @@ class showWebPageClass {
 		const self = this
 		_view.showIconBar ( false )
 		
-		showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+		showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
             if ( err ) {
                 return self.showErrorMessageProcess ()
             }
@@ -144,82 +145,138 @@ class showWebPageClass {
         
 
             let html = data.html
-            
-            html = html.replace ( / srcset="[^"]+" /ig, ' ').replace ( / srcset='[^']+' /ig, ' ')
-            let det = data.folder.shift()
-            const getData =  ( filename: string, _data: string, CallBack ) => {
-            
+            //      support HTMLComplete
+            if ( html ) {
+                html = html.replace ( / srcset="[^"]+" /ig, ' ').replace ( / srcset='[^']+' /ig, ' ')
+                let det = data.folder.shift()
+                const getData =  ( filename: string, _data: string, CallBack ) => {
                 
-                
-                
-                const pointStart = html.indexOf ( `${ filename }` )
-                
-
-                const doCallBack = () => {
-                    det = data.folder.shift()
-                    if ( ! det ) {
-                        return CallBack ()
-                    }
-                    return getData ( det.filename, det.data, CallBack )
-                }
-                
-                if ( pointStart > -1 ) {
+                    const pointStart = html.indexOf ( `${ filename }` )
                     
-                    return getFilenameMime ( filename, ( err, mime ) => {
 
-                        if ( mime && ! /javascript/.test( mime ) ) {
-                            /**
-                             * 
-                             *          css link tag format support
-                             * 
-                             */
-                            const _filename = filename.replace(/\-/g,'\\-').replace(/\//g,'\\/').replace(/\./g,'\\.').replace(/\(/g,'\\(').replace(/\)/g,'\\)')
-                            const regex = new RegExp (` src=("|')\.\/${ _filename }("|')`, 'g')
-                            const regex1 = new RegExp (` href=("|')\.\/${ _filename }("|')`, 'g')
-                            /*
-                            if ( /^ src/i.test( hrefTest )) {
-                                
-                                const data1 = `data:${ mime };base64,` + _data
-                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                return doCallBack ()
-                                
-                            }
-                            */
-                            const blob = new Blob ([ /^image/.test( mime ) ? Buffer.from ( _data,'base64' ) : Buffer.from ( _data,'base64' ).toString()], { type: mime })
-                            const link = ( URL || webkitURL ).createObjectURL( blob )
-                            html = html.replace ( regex, ` src="${ link }"` ).replace ( regex1, ` href="${ link }"` )
-                            this.urlBlobList.push ( link )
+                    const doCallBack = () => {
+                        det = data.folder.shift()
+                        if ( ! det ) {
+                            return CallBack ()
                         }
-                        doCallBack ()
-                    })
+                        return getData ( det.filename, det.data, CallBack )
+                    }
+                    
+                    if ( pointStart > -1 ) {
+                        
+                        return getFilenameMime ( filename, ( err, mime ) => {
+
+                            if ( mime && ! /javascript/.test( mime ) ) {
+                                /**
+                                 * 
+                                 *          css link tag format support
+                                 * 
+                                 */
+                                const _filename = filename.replace(/\-/g,'\\-').replace(/\//g,'\\/').replace(/\./g,'\\.').replace(/\(/g,'\\(').replace(/\)/g,'\\)')
+                                const regex = new RegExp (` src=("|')\.\/${ _filename }("|')`, 'g')
+                                const regex1 = new RegExp (` href=("|')\.\/${ _filename }("|')`, 'g')
+                                /*
+                                if ( /^ src/i.test( hrefTest )) {
+                                    
+                                    const data1 = `data:${ mime };base64,` + _data
+                                    html = html.replace ( regex, data1 ).replace ( regex, data1 )
+                                    return doCallBack ()
+                                    
+                                }
+                                */
+                                const blob = new Blob ([ /^image/.test( mime ) ? Buffer.from ( _data,'base64' ) : Buffer.from ( _data,'base64' ).toString()], { type: mime })
+                                const link = ( URL || webkitURL ).createObjectURL( blob )
+                                html = html.replace ( regex, ` src="${ link }"` ).replace ( regex1, ` href="${ link }"` )
+                                this.urlBlobList.push ( link )
+                            }
+                            doCallBack ()
+                        })
+                        
+                        
+                    }
+
+                    doCallBack ()
                     
                     
                 }
 
-                doCallBack ()
-                
-                
+                return getData ( det.filename, det.data, err => {
+                    
+                    self.png ( data.img )
+                    
+                    const htmlBolb = new Blob ([ html ], { type: 'text/html'})
+                    const _url = ( URL || webkitURL ).createObjectURL ( htmlBolb )
+                    
+                    
+                    self.showLoading ( false )
+                    self.htmlIframe ( _url )
+                    self.urlBlobList.push ( _url )
+
+                })
             }
-
-            return getData ( det.filename, det.data, err => {
-                
-                self.png ( data.img )
-                
-                const htmlBolb = new Blob ([ html ], { type: 'text/html'})
-                const _url = ( URL || webkitURL ).createObjectURL ( htmlBolb )
-                
-                
-                self.showLoading ( false )
-                self.htmlIframe ( _url )
-                self.urlBlobList.push ( _url )
-
-            })
-        
-
+            
+            self.png ( data.img )
+            self.showLoading ( false )
+            self.mHtml ( data.mhtml )
         })
 		
 		
 	}
+}
+
+class workerManager {
+    public workers: Map<string, Worker > = new Map()
+    private callbackPool: Map< string, any > = new Map ()
+
+    private doEvent ( evt: MessageEvent ) {
+        const jsonData = Buffer.from ( evt.data, 'base64' ).toString ()
+        try {
+
+        } catch ( ex ) {
+
+        }
+
+        const data: workerDataEvent = evt.data
+        const callBack = this.callbackPool.get ( data.uuid )
+        if ( !callBack ) {
+            return console.log (`workerManager: [${ new Date().toLocaleTimeString()}] have not callback about message from [${ data.workerName }] content = [${ data.data }]`)
+        }
+        return callBack ( null, data )
+    }
+
+	constructor ( list: string[] ) {
+		list.forEach ( n => {
+            const work = new Worker(`scripts/${ n }.js`)
+            work.onmessage = evt => {
+                return this.doEvent ( evt )
+            }
+			return this.workers.set ( n, work )
+		})
+    }
+    /**
+     * 
+     * 
+     */
+
+     
+    public postFun ( workerName: string, data: any, CallBack ) {
+        const worker = this.workers.get ( workerName )
+        if ( !worker ) {
+            return CallBack ( new Error ('no worker'))
+        }
+
+        const callback: workerDataEvent  = {
+            data: data,
+            uuid: uuid_generate (),
+            workerName: workerName
+        }
+
+        const kk = Buffer.from ( Buffer.from ( JSON.stringify( callback )).toString ('base64'))
+
+        worker.postMessage ( kk, [ kk.buffer ] )
+        return this.callbackPool.set ( callback.uuid, callback )
+
+    }
 }
 
 module view_layout {
@@ -248,7 +305,11 @@ module view_layout {
         public imapFormClass: imapForm = null
         public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
 		public bodyBlue = ko.observable ( true )
-		public CanadaBackground = ko.observable ( false )
+        public CanadaBackground = ko.observable ( false )
+        
+        public worker = new workerManager ([
+            'mHtml2Html'
+        ])
 		
 		public keyPairCalss: encryptoClass = null
 
@@ -422,18 +483,19 @@ module view_layout {
                 return this.sectionAgreement ( true )
 			}
             */
-            /*
+            
             this.sectionLogin ( true )
             return initPopupArea ()
-            
+            /*
             setTimeout (() => {
                 this.nytloader ( false )
             }, 3000 )
-            */
+           
+           
            new Date().toDateString
            this.nyt_menu ( true )
             return this.nytSection ( true )
-            
+            */
             
         }
 

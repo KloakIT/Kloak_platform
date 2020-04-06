@@ -709,3 +709,10 @@ interface JQueryStatic<TElement extends Node = HTMLElement> {
     //'langEH', this.tLang(), { expires: 180, path: '/' }
     cookie( ...obj:any): any
 }
+
+interface workerDataEvent {
+    uuid: string
+    data: any
+    workerName: string
+
+}

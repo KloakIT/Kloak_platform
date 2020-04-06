@@ -25,7 +25,8 @@ const showHTMLComplete = (uuid, zipStream, CallBack) => {
         const ret = {
             img: null,
             html: null,
-            folder: []
+            folder: [],
+            mhtml: null
         };
         const allFiles = Object.keys(zip.files);
         let currentFileName = allFiles.shift();
@@ -38,6 +39,9 @@ const showHTMLComplete = (uuid, zipStream, CallBack) => {
                         }
                         case `${uuid}.png`: {
                             return ret.img = Buffer.from(content, 'base64').toString();
+                        }
+                        case `${uuid}.mhtml`: {
+                            return ret.mhtml = Buffer.from(content, 'base64').toString();
                         }
                         default: {
                             return ret.folder.push({ filename: currentFileName, data: content });
