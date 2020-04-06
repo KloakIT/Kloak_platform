@@ -230,13 +230,13 @@ class workerManager {
 
     private doEvent ( evt: MessageEvent ) {
         const jsonData = Buffer.from ( evt.data, 'base64' ).toString ()
+        let data: workerDataEvent = null
         try {
-
+            data = JSON.parse ( jsonData )
         } catch ( ex ) {
-
+            return new EvalError ( `workerManager JSON.parse error [${ ex.message }]`)
         }
-
-        const data: workerDataEvent = evt.data
+        
         const callBack = this.callbackPool.get ( data.uuid )
         if ( !callBack ) {
             return console.log (`workerManager: [${ new Date().toLocaleTimeString()}] have not callback about message from [${ data.workerName }] content = [${ data.data }]`)
@@ -258,7 +258,7 @@ class workerManager {
      * 
      */
 
-     
+
     public postFun ( workerName: string, data: any, CallBack ) {
         const worker = this.workers.get ( workerName )
         if ( !worker ) {

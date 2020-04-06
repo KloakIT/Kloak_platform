@@ -4,7 +4,7 @@ self.onmessage = evt => {
 	try {
 		data = JSON.parse ( jsonData )
 	} catch ( ex ) {
-		return new EvalError (``)
+		return new EvalError ( `mHtm2Html JSON.parse error [${ ex.message }]`)
 	}
 	console.log ( evt )
 	data.data = converts
