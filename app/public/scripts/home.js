@@ -1,18 +1,3 @@
-/*!
- * Copyright 2018 CoNET Technology Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 const InitKeyPair = function () {
     const keyPair = {
         publicKey: null,
@@ -153,9 +138,10 @@ class showWebPageClass {
                     self.urlBlobList.push(_url);
                 });
             }
+            html = mhtml2html.convert(data.mhtml);
             self.png(data.img);
             self.showLoading(false);
-            self.mHtml(data.mhtml);
+            self.mHtml(html);
         });
     }
     showErrorMessageProcess() {
@@ -179,15 +165,57 @@ class showWebPageClass {
     htmlClick() {
         this.showHtmlCodePage(true);
         this.showImgPage(false);
+        const docu = this.mHtml();
+        if (docu) {
+            $('iframe').contents().find("head").html(docu.window.document.head.outerHTML);
+            $('iframe').contents().find("body").html(docu.window.document.body.outerHTML);
+        }
     }
 }
 class workerManager {
     constructor(list) {
         this.workers = new Map();
+        this.callbackPool = new Map();
         list.forEach(n => {
             const work = new Worker(`scripts/${n}.js`);
-            this.workers.set(n, work);
+            work.onmessage = evt => {
+                return this.doEvent(evt);
+            };
+            return this.workers.set(n, work);
         });
+    }
+    doEvent(evt) {
+        const jsonData = Buffer.from(Buffer.from(evt.data).toString(), 'base64').toString();
+        let data = null;
+        try {
+            data = JSON.parse(jsonData);
+        }
+        catch (ex) {
+            return new EvalError(`workerManager JSON.parse error [${ex.message}]`);
+        }
+        const callBack = this.callbackPool.get(data.uuid);
+        if (!callBack) {
+            return console.log(`workerManager: [${new Date().toLocaleTimeString()}] have not callback about message from [${data.workerName}] content = [${data.data}]`);
+        }
+        return callBack(null, data);
+    }
+    /**
+     *
+     *
+     */
+    postFun(workerName, data, CallBack) {
+        const worker = this.workers.get(workerName);
+        if (!worker) {
+            return CallBack(new Error('no worker'));
+        }
+        const callback = {
+            data: data,
+            uuid: uuid_generate(),
+            workerName: workerName
+        };
+        const kk = Buffer.from(Buffer.from(JSON.stringify(callback)).toString('base64'));
+        this.callbackPool.set(callback.uuid, CallBack);
+        return worker.postMessage(kk, [kk.buffer]);
     }
 }
 var view_layout;
@@ -219,9 +247,11 @@ var view_layout;
             this.CoNETConnect = ko.observable(null);
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
-            this.worker = new workerManager([
+            /*
+            public worker = new workerManager ([
                 'mHtml2Html'
-            ]);
+            ])
+            */
             this.keyPairCalss = null;
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);

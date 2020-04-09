@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+declare const mhtml2html
 
 const InitKeyPair = function () {
 	const keyPair: keypair = {
@@ -128,8 +128,14 @@ class showWebPageClass {
 	}
 	
 	public htmlClick () {
+        
 		this.showHtmlCodePage ( true )
-		this.showImgPage ( false )
+        this.showImgPage ( false )
+        const docu = this.mHtml()
+        if ( docu ) {
+            $('iframe').contents().find( "head" ).html ( docu.window.document.head.outerHTML )
+            $('iframe').contents().find( "body" ).html ( docu.window.document.body.outerHTML )
+        }
 	}
 
 	constructor ( public showUrl: string, private zipBase64Stream: string, private zipBase64StreamUuid: string, private exit: ()=> void ) {
@@ -214,10 +220,10 @@ class showWebPageClass {
 
                 })
             }
-            
+            html = mhtml2html.convert( data.mhtml )
             self.png ( data.img )
             self.showLoading ( false )
-            self.mHtml ( data.mhtml )
+            self.mHtml ( html )
         })
 		
 		
@@ -229,7 +235,7 @@ class workerManager {
     private callbackPool: Map< string, any > = new Map ()
 
     private doEvent ( evt: MessageEvent ) {
-        const jsonData = Buffer.from ( evt.data, 'base64' ).toString ()
+        const jsonData = Buffer.from ( Buffer.from ( evt.data ).toString(), 'base64').toString()
         let data: workerDataEvent = null
         try {
             data = JSON.parse ( jsonData )
@@ -258,7 +264,6 @@ class workerManager {
      * 
      */
 
-
     public postFun ( workerName: string, data: any, CallBack ) {
         const worker = this.workers.get ( workerName )
         if ( !worker ) {
@@ -273,8 +278,9 @@ class workerManager {
 
         const kk = Buffer.from ( Buffer.from ( JSON.stringify( callback )).toString ('base64'))
 
-        worker.postMessage ( kk, [ kk.buffer ] )
-        return this.callbackPool.set ( callback.uuid, callback )
+        
+        this.callbackPool.set ( callback.uuid, CallBack )
+        return worker.postMessage ( kk, [ kk.buffer ] )
 
     }
 }
@@ -306,11 +312,11 @@ module view_layout {
         public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
 		public bodyBlue = ko.observable ( true )
         public CanadaBackground = ko.observable ( false )
-        
+        /*
         public worker = new workerManager ([
             'mHtml2Html'
         ])
-		
+		*/
 		public keyPairCalss: encryptoClass = null
 
         public appsManager: KnockoutObservable< appsManager > = ko.observable ( null )

@@ -461,6 +461,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.commandProcess = (  text: string, cmdArray: string[], next, callback ) => {
 			//console.log (`idleNoop commandProcess coming ${ text }\n${ cmdArray }`)
             switch ( cmdArray[0] ) {
+                case `${ this.Tag }*`:
                 case '+':
                 case '*': {
                     clearTimeout ( this.idleResponsrTime )
@@ -1083,24 +1084,18 @@ export class qtGateImap extends Event.EventEmitter {
             clearTimeout ( timeout )
             this.socket.setKeepAlive ( true )
             
-            this.socket.once ( 'error', err => {
-                if ( typeof this.socket.end === 'function') {
-                    this.socket.end ()
-                }
-                
-            })
 			
             this.socket.pipe ( this.imapStream ).pipe ( this.socket ).once ( 'error', err => {
-				this.destroyAll ( err )
+				return this.destroyAll ( err )
 			}).once ( 'end', () => {
-				this.destroyAll ( null )
+				return this.destroyAll ( null )
 			})
         }
 
         //console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
 
         const timeout = setTimeout (() => {
-            this.socket.destroy ( new Error ('connect time out!'))
+            return this.socket.destroy ( new Error ('connect time out!'))
         }, connectTimeOut )
 
         if ( ! this.IMapConnect.imapSsl ) {
@@ -1109,7 +1104,9 @@ export class qtGateImap extends Event.EventEmitter {
             this.socket  = Tls.connect ({ rejectUnauthorized: ! this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect )
         }
 
-        
+        return this.socket.once ( 'error', err => {
+            return this.destroyAll ( err )
+        })
 
 
     }
@@ -1120,7 +1117,7 @@ export class qtGateImap extends Event.EventEmitter {
         this.once ( `error`, err => {
             debug ? saveLog ( `[${ this.imapSerialID }] this.on error ${ err && err.message ? err.message : null }`) : null
             this.imapEnd = true
-            this.destroyAll ( err )
+            return this.destroyAll ( err )
             
         })
         
@@ -1135,7 +1132,7 @@ export class qtGateImap extends Event.EventEmitter {
 			this.socket.end ()
 		}
 		
-        this.emit ( 'end', err )
+        return this.emit ( 'end', err )
         
     }
 

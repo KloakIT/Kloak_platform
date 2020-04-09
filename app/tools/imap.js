@@ -380,6 +380,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.commandProcess = (text, cmdArray, next, callback) => {
             //console.log (`idleNoop commandProcess coming ${ text }\n${ cmdArray }`)
             switch (cmdArray[0]) {
+                case `${this.Tag}*`:
                 case '+':
                 case '*': {
                     timers_1.clearTimeout(this.idleResponsrTime);
@@ -880,7 +881,7 @@ class qtGateImap extends Event.EventEmitter {
         this.once(`error`, err => {
             debug ? saveLog(`[${this.imapSerialID}] this.on error ${err && err.message ? err.message : null}`) : null;
             this.imapEnd = true;
-            this.destroyAll(err);
+            return this.destroyAll(err);
         });
     }
     TagCount1() {
@@ -892,20 +893,15 @@ class qtGateImap extends Event.EventEmitter {
         const _connect = () => {
             timers_1.clearTimeout(timeout);
             this.socket.setKeepAlive(true);
-            this.socket.once('error', err => {
-                if (typeof this.socket.end === 'function') {
-                    this.socket.end();
-                }
-            });
             this.socket.pipe(this.imapStream).pipe(this.socket).once('error', err => {
-                this.destroyAll(err);
+                return this.destroyAll(err);
             }).once('end', () => {
-                this.destroyAll(null);
+                return this.destroyAll(null);
             });
         };
         //console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
         const timeout = timers_1.setTimeout(() => {
-            this.socket.destroy(new Error('connect time out!'));
+            return this.socket.destroy(new Error('connect time out!'));
         }, connectTimeOut);
         if (!this.IMapConnect.imapSsl) {
             this.socket = Net.createConnection({ port: this.port, host: this.IMapConnect.imapServer }, _connect);
@@ -913,6 +909,9 @@ class qtGateImap extends Event.EventEmitter {
         else {
             this.socket = Tls.connect({ rejectUnauthorized: !this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect);
         }
+        return this.socket.once('error', err => {
+            return this.destroyAll(err);
+        });
     }
     destroyAll(err) {
         //console.trace (`class qtGateImap on destroyAll`, err )
@@ -920,7 +919,7 @@ class qtGateImap extends Event.EventEmitter {
         if (this.socket && typeof this.socket.end === 'function') {
             this.socket.end();
         }
-        this.emit('end', err);
+        return this.emit('end', err);
     }
     logout(CallBack = null) {
         const _end = () => {
