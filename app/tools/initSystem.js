@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.CoNET_version = '0.1.2';
+exports.CoNET_version = '0.1.4';
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -62,7 +62,6 @@ exports.ErrorLogFile = Path.join(exports.QTGateFolder, 'systemError.log');
 exports.CoNETConnectLog = Path.join(exports.QTGateFolder, 'CoNETConnect.log');
 exports.imapDataFileName1 = Path.join(exports.QTGateFolder, 'imapData.pem');
 exports.CoNET_Home = Path.join(__dirname);
-exports.CoNET_PublicKey = Path.join(exports.CoNET_Home, '1231B119.pem');
 exports.LocalServerPortNumber = 3000;
 exports.configPath = Path.join(exports.QTGateFolder, 'config.json');
 //const packageFilePath = Path.join ( __dirname,'package.json')
@@ -100,22 +99,6 @@ exports.convertByte = (byte) => {
     }
     const tbyte = Math.round(mbyte / 10) / 100;
     return `${tbyte} TB`;
-};
-exports.checkSystemFolder = CallBack => {
-    const callback = (err, kkk) => {
-        if (err) {
-            console.log(`checkSystemFolder return error`, err);
-            return CallBack(err);
-        }
-        console.log(`checkSystemFolder QTGateFolder = [${exports.QTGateFolder}]`);
-        return CallBack();
-    };
-    return Async.series([
-        next => exports.checkFolder(exports.QTGateFolder, next),
-        next => exports.checkFolder(exports.QTGateLatest, next),
-        next => exports.checkFolder(exports.QTGateTemp, next),
-        next => exports.checkFolder(exports.QTGateVideo, next)
-    ], callback);
 };
 exports.getLocalInterface = () => {
     const ifaces = Os.networkInterfaces();
@@ -176,7 +159,7 @@ exports.getQTGateSign = (user) => {
     });
     return Certification;
 };
-async function getKeyPairInfo(publicKey, privateKey, password, CallBack) {
+exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     if (!publicKey || !privateKey) {
         return CallBack(new Error('publicKey or privateKey empty!'));
     }
@@ -217,8 +200,24 @@ async function getKeyPairInfo(publicKey, privateKey, password, CallBack) {
             return CallBack(null, ret);
         }
     });
-}
-exports.getKeyPairInfo = getKeyPairInfo;
+};
+exports.getPublicKeyInfo = (publicKey, CallBack) => {
+    return OpenPgp.key.readArmored(publicKey).then(_key => {
+        const key = _key.keys[0];
+        const user = key.users[0];
+        const ret = {
+            nikeName: exports.getNickName(user.userId.userid),
+            email: exports.getEmailAddress(user.userId.userid),
+            keyID: key.primaryKey.getFingerprint().toUpperCase(),
+            otherValid: user.otherCertifications.map(n => { return n.issuerKeyId.toHex().toUpperCase(); }),
+            KloakValid: exports.getQTGateSign(user),
+            publicKeys: _key.keys
+        };
+        return CallBack(null, ret);
+    }).catch(ex => {
+        return CallBack(ex);
+    });
+};
 exports.emitConfig = (config, passwordOK) => {
     if (!config) {
         return null;
@@ -269,7 +268,7 @@ exports.checkConfig = CallBack => {
         if (!config.keypair || !config.keypair.publicKey) {
             return CallBack(null, config);
         }
-        return getKeyPairInfo(config.keypair.publicKey, config.keypair.privateKey, null, (err, key) => {
+        return exports.getKeyPairInfo(config.keypair.publicKey, config.keypair.privateKey, null, (err, key) => {
             if (err) {
                 CallBack(err);
                 return console.log(`checkConfig getKeyPairInfo error`, err);
@@ -291,11 +290,15 @@ exports.newKeyPair = (emailAddress, nickname, password, CallBack) => {
         aead_protect: true,
         aead_protect_version: 4
     };
-    return OpenPgp.generateKey(option).then((keypair) => {
+    return OpenPgp.generateKey(option).then(async (keypair) => {
         const ret = {
-            publicKey: keypair.publicKeyArmored,
-            privateKey: keypair.privateKeyArmored
+            publicKey: await (OpenPgp.key.readArmored(keypair.publicKeyArmored)),
+            privateKey: await (OpenPgp.key.readArmored(keypair.privateKeyArmored)),
+            public: keypair.publicKeyArmored
         };
+        await ret.privateKey.keys[0].decrypt(password);
+        ret.publicKey = ret.publicKey.keys;
+        ret.privateKey = ret.privateKey.keys;
         return CallBack(null, ret);
     }).catch(err => {
         // ERROR
@@ -537,24 +540,29 @@ exports.smtpVerify = (imapData, CallBack) => {
 exports.getPbkdf2 = (config, passwrod, CallBack) => {
     return Crypto.pbkdf2(passwrod, config.salt, config.iterations, config.keylen, config.digest, CallBack);
 };
-async function makeGpgKeyOption(config, passwrod, CallBack) {
+exports.makeGpgKeyOption = (config, passwrod, CallBack) => {
     const option = {
-        privateKeys: (await OpenPgp.key.readArmored(config.keypair.privateKey)).keys,
-        publicKeys: (await OpenPgp.key.readArmored(Fs.readFileSync(exports.CoNET_PublicKey, 'utf8'))).keys
+        publicKeys: null,
+        privateKeys: null
     };
-    return exports.getPbkdf2(config, passwrod, (err, data) => {
-        if (err) {
-            return CallBack(err);
-        }
-        return option.privateKeys[0].decrypt(data.toString('hex')).then(keyOK => {
-            if (keyOK) {
-                return CallBack(null, option);
-            }
-            return CallBack(new Error('password!'));
-        }).catch(CallBack);
+    OpenPgp.key.readArmored(CoNET_PublicKey).then(data => {
+        option.publicKeys = data.keys;
+        return OpenPgp.key.readArmored(CoNET_PublicKey).then(data => {
+            option.privateKeys = data.keys;
+            return exports.getPbkdf2(config, passwrod, (err, data) => {
+                if (err) {
+                    return CallBack(err);
+                }
+                return option.privateKeys[0].decrypt(data.toString('hex')).then(keyOK => {
+                    if (keyOK) {
+                        return CallBack(null, option);
+                    }
+                    return CallBack(new Error('password!'));
+                }).catch(CallBack);
+            });
+        });
     });
-}
-exports.makeGpgKeyOption = makeGpgKeyOption;
+};
 async function saveEncryptoData(fileName, data, config, password, CallBack) {
     if (!data) {
         return Fs.unlink(fileName, CallBack);
@@ -665,10 +673,10 @@ async function readEncryptoFile(filename, savedPasswrod, config, CallBack) {
     });
 }
 exports.readEncryptoFile = readEncryptoFile;
-exports.encryptMessage = (openKeyOption, message, CallBack) => {
+exports.encryptMessage = (publickeys, privatekeys, message, CallBack) => {
     const option = {
-        privateKeys: openKeyOption.privateKeys[0],
-        publicKeys: openKeyOption.publicKeys,
+        privateKeys: privatekeys,
+        publicKeys: publickeys,
         message: OpenPgp.message.fromText(message),
         compression: OpenPgp.enums.compression.zip
     };
@@ -676,26 +684,21 @@ exports.encryptMessage = (openKeyOption, message, CallBack) => {
         return CallBack(null, ciphertext.data);
     }).catch(CallBack);
 };
-async function decryptoMessage(openKeyOption, message, CallBack) {
+async function decryptoMessage(publickeys, privatekeys, message, CallBack) {
     const option = {
-        privateKeys: openKeyOption.privateKeys,
-        publicKeys: openKeyOption.publicKeys,
-        message: null
+        privateKeys: privatekeys,
+        publicKeys: publickeys,
+        message: await OpenPgp.message.readArmored(message)
     };
-    option.message = await OpenPgp.message.readArmored(message);
     return OpenPgp.decrypt(option).then(async (data) => {
         /**
          * 		verify signatures
          */
-        await data.signatures[0].verified;
-        //console.log ( Util.inspect ( data, false, 3, true ))
-        if (data.signatures[0].verified) {
+        if (data.signatures[0].valid) {
             return CallBack(null, data.data);
         }
         return CallBack(new Error('signatures error!'));
     }).catch(err => {
-        console.trace(err);
-        console.log(JSON.stringify(message));
         return CallBack(err);
     });
 }
@@ -716,21 +719,10 @@ const testSmtpAndSendMail = (imapData, CallBack) => {
         return CallBack();
     });
 };
-exports.sendCoNETConnectRequestEmail = (imapData, openKeyOption, publicKey, toEmail, CallBack) => {
-    const qtgateCommand = {
-        account: imapData.account,
-        QTGateVersion: exports.CoNET_version,
-        imapData: imapData,
-        command: 'connect',
-        error: null,
-        callback: null,
-        language: imapData.language,
-        publicKey: publicKey
-    };
+exports.sendCoNETConnectRequestEmail = (imapData, toEmail, message, CallBack) => {
     return Async.waterfall([
         next => testSmtpAndSendMail(imapData, next),
-        next => exports.encryptMessage(openKeyOption, JSON.stringify(qtgateCommand), next),
-        (_data, next) => {
+        next => {
             const option = {
                 host: Net.isIP(imapData.smtpServer) ? null : imapData.smtpServer,
                 hostname: Net.isIP(imapData.smtpServer) ? imapData.smtpServer : null,
@@ -754,19 +746,10 @@ exports.sendCoNETConnectRequestEmail = (imapData, openKeyOption, publicKey, toEm
                 to: toEmail,
                 subject: 'node',
                 attachments: [{
-                        content: _data
+                        content: message
                     }]
             };
-            //console.log ( Util.inspect ( mailOptions ) )
             return transporter.sendMail(mailOptions, next);
         }
     ], CallBack);
-};
-const testPingTimes = 5;
-exports.deleteImapFile = () => {
-    return Fs.unlink(exports.imapDataFileName1, err => {
-        if (err) {
-            console.log(`deleteImapFile get err`, err);
-        }
-    });
 };

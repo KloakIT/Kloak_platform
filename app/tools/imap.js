@@ -43,7 +43,7 @@ const debugOut = (text, isIn, serialID) => {
     const log = `【${new Date().toISOString()}】【${serialID}】${isIn ? '<=' : '=>'} 【${text}】`;
     console.log(log);
 };
-const idleInterval = 1000 * 180; // 3 mins
+const idleInterval = 1000 * 30; // 3 mins
 const socketTimeOut = 1000 * 60;
 class ImapServerSwitchStream extends Stream.Transform {
     constructor(imapServer, exitWithDeleteBox, debug) {
@@ -115,6 +115,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 case 'I': //  IDLE
                 case 'D': //  NODE
                 case 'N': //  NOOP
+                case 'O': //	OK
                 case 'A': { /////       A
                     timers_1.clearTimeout(this.appendWaitResponsrTimeOut);
                     timers_1.clearTimeout(this.idleResponsrTime);
@@ -122,7 +123,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     if (this.Tag !== cmdArray[0]) {
                         return this.serverCommandError(new Error(`this.Tag[${this.Tag}] !== cmdArray[0] [${cmdArray[0]}]\ncommandLine[${commandLine}]`), callback);
                     }
-                    if (/^ok$/i.test(cmdArray[1])) {
+                    if (/^ok$/i.test(cmdArray[1]) || /^ok$/i.test(cmdArray[0])) {
                         this.doCommandCallback(null, commandLine);
                         return callback();
                     }
@@ -396,8 +397,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     return callback();
             }
         };
-        const name = this.imapServer.idleSupport ? 'IDLE' : 'NOOP';
-        this.Tag = `A${this.imapServer.TagCount1()}`;
+        const name = this.Tag = this.imapServer.idleSupport ? 'IDLE' : 'NOOP';
         this.cmd = `${this.Tag} ${name}`;
         this.debug ? debugOut(this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (this.writable) {
@@ -899,7 +899,7 @@ class qtGateImap extends Event.EventEmitter {
                 return this.destroyAll(null);
             });
         };
-        //console.log (`qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }]`)
+        console.log(`qtGateImap connect mail server [${this.IMapConnect.imapServer}: ${this.port}]`);
         const timeout = timers_1.setTimeout(() => {
             return this.socket.destroy(new Error('connect time out!'));
         }, connectTimeOut);
@@ -944,6 +944,7 @@ exports.qtGateImap = qtGateImap;
 exports.seneMessageToFolder = (IMapConnect, writeFolder, message, subject, CallBack) => {
     const wImap = new qtGateImap(IMapConnect, null, false, writeFolder, debug, null);
     let _callback = false;
+    console.log(`seneMessageToFolder !!!`);
     wImap.once('error', err => {
         wImap.destroyAll(err);
         if (!_callback) {
@@ -1066,7 +1067,6 @@ class imapPeer extends Event.EventEmitter {
         this.doingDestroy = false;
         this.peerReady = false;
         this.makeRImap = false;
-        this.needPing = false;
         this.needPingTimeOut = null;
         this.rImap = null;
         debug ? saveLog(`doing peer account [${imapData.imapUserName}] listen with[${listenBox}], write with [${writeBox}] `) : null;
@@ -1104,18 +1104,17 @@ class imapPeer extends Event.EventEmitter {
     AppendWImap1(mail, uuid, CallBack) {
         return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, CallBack);
     }
-    setTimeOutOfPing() {
+    setTimeOutOfPing(sendMail) {
         timers_1.clearTimeout(this.waitingReplyTimeOut);
         timers_1.clearTimeout(this.needPingTimeOut);
-        this.needPing = false;
         debug ? saveLog(`Make Time Out for a Ping, ping ID = [${this.pingUuid}]`, true) : null;
         return this.waitingReplyTimeOut = timers_1.setTimeout(() => {
             debug ? saveLog(`ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true) : null;
             return this.emit('pingTimeOut');
-        }, pingPongTimeOut);
+        }, sendMail ? pingPongTimeOut * 4 : pingPongTimeOut);
     }
-    Ping() {
-        if (this.pingUuid) {
+    Ping(sendMail) {
+        if (this.pingUuid && !sendMail) {
             return debug ? saveLog(`Ping already waiting other ping, STOP!`) : null;
         }
         this.emit('ping');
@@ -1125,7 +1124,7 @@ class imapPeer extends Event.EventEmitter {
                 return this.destroy(err);
             }
             this.pingUuid = pingUuid;
-            return this.setTimeOutOfPing();
+            return this.setTimeOutOfPing(sendMail);
         });
     }
     newReadImap() {
@@ -1140,7 +1139,7 @@ class imapPeer extends Event.EventEmitter {
         this.rImap.once('ready', () => {
             this.makeRImap = false;
             debug ? saveLog(`this.rImap.once on ready `) : null;
-            this.Ping();
+            this.Ping(false);
         });
         this.rImap.once('error', err => {
             this.makeRImap = false;

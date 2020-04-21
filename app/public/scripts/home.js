@@ -16,22 +16,26 @@ const InitKeyPair = function () {
 const makeKeyPairData = function (view, keypair) {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
-    let keyPairPasswordClass = new keyPairPassword(function (_imapData, passwd, sessionHash) {
+    let keyPairPasswordClass = new keyPairPassword(keypair.privateKey, function (passwd) {
         //      password OK
         keypair.keyPairPassword(keyPairPasswordClass = null);
         keypair.passwordOK = true;
-        keypair._password = passwd;
+        view.password = passwd;
         keypair.showLoginPasswordField(false);
-        view.keyPairCalss = new encryptoClass(keypair);
-        view.showKeyPair(false);
-        if (_imapData && _imapData.imapTestResult) {
-            return view.imapSetupClassExit(_imapData, sessionHash);
-        }
-        let uu = null;
-        return view.imapSetup(uu = new imapForm(keypair.email, _imapData, function (imapData) {
-            view.imapSetup(uu = null);
-            view.imapSetupClassExit(imapData, sessionHash);
-        }));
+        return view.keyPairCalss = new encryptoClass(keypair, view.password, view.connectInformationMessage, err => {
+            view.showKeyPair(false);
+            if (view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult) {
+                return view.imapSetupClassExit(view.keyPairCalss.imapData);
+            }
+            let uu = null;
+            return view.imapSetup(uu = new imapForm(keypair.email, view.keyPairCalss.imapData, function (imapData) {
+                view.imapSetup(uu = null);
+                view.keyPairCalss.imapData = imapData;
+                return view.keyPairCalss.saveImapIInputData(err => {
+                    return view.imapSetupClassExit(imapData);
+                });
+            }));
+        });
     });
     keypair.keyPairPassword = ko.observable(keyPairPasswordClass);
     keypair.showLoginPasswordField = ko.observable(false);
@@ -43,15 +47,17 @@ const makeKeyPairData = function (view, keypair) {
         return keypair.showConform(true);
     };
     keypair.deleteKeyPairNext = function () {
-        view.connectInformationMessage.sockEmit('deleteKeyPairNext', () => {
-            view.showIconBar(false);
-            view.connectedCoNET(false);
-            view.connectToCoNET(false);
-            view.CoNETConnect(view.CoNETConnectClass = null);
-            view.imapSetup(view.imapFormClass = null);
-            keypair.showDeleteKeyPairNoite(false);
-            return keypair.delete_btn_view(false);
-        });
+        localStorage.setItem("config", JSON.stringify({}));
+        view.localServerConfig(null);
+        view.showIconBar(false);
+        view.connectedCoNET(false);
+        view.connectToCoNET(false);
+        view.CoNETConnect(view.CoNETConnectClass = null);
+        view.imapSetup(view.imapFormClass = null);
+        keypair.showDeleteKeyPairNoite(false);
+        keypair.delete_btn_view(false);
+        localStorage.clear();
+        return view.reFreshLocalServer();
     };
 };
 const initPopupArea = function () {
@@ -167,8 +173,8 @@ class showWebPageClass {
         this.showImgPage(false);
         const docu = this.mHtml();
         if (docu) {
-            $('iframe').contents().find("head").html(docu.window.document.head.outerHTML);
-            $('iframe').contents().find("body").html(docu.window.document.body.outerHTML);
+            $('iframe').contents().find("head").html(docu["window"].document.head.outerHTML);
+            $('iframe').contents().find("body").html(docu["window"].document.body.outerHTML);
         }
     }
 }
@@ -247,6 +253,7 @@ var view_layout;
             this.CoNETConnect = ko.observable(null);
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
+            this.password = null;
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -257,7 +264,6 @@ var view_layout;
             this.AppList = ko.observable(false);
             this.imapData = null;
             this.newVersion = ko.observable(null);
-            this.sessionHash = '';
             this.showLanguageSelect = ko.observable(true);
             /*************************************
              *
@@ -291,7 +297,7 @@ var view_layout;
         initConfig(config) {
             const self = this;
             this.showKeyPair(true);
-            if (config.keypair && config.keypair.publicKeyID) {
+            if (config && config.keypair && config.keypair.publicKeyID) {
                 /**
                  *
                  *      Key pair ready
@@ -301,59 +307,65 @@ var view_layout;
                 if (!config.keypair.passwordOK) {
                     config.keypair.showLoginPasswordField(true);
                 }
+                this.localServerConfig(config);
+                return this.afterInitConfig();
+                //this.keyPairGenerateForm ( _keyPairGenerateForm )
             }
-            else {
+            /**
+             *
+             *      No key pair
+             *
+             */
+            this.svgDemo_showLanguage();
+            config["account"] = config["keypair"] = null;
+            let _keyPairGenerateForm = new keyPairGenerateForm((_keyPair) => {
+                self.keyPairGenerateForm(_keyPairGenerateForm = null);
                 /**
-                 *
-                 *      No key pair
-                 *
+                 *      key pair ready
                  */
-                this.svgDemo_showLanguage();
-                this.clearImapData();
-                config.keypair = null;
-                let _keyPairGenerateForm = new keyPairGenerateForm(function (_keyPair, sessionHash) {
-                    /**
-                     *      key pair ready
-                     */
-                    makeKeyPairData(self, _keyPair);
-                    _keyPair.passwordOK = true;
-                    let keyPairPassword = _keyPair.keyPairPassword();
-                    _keyPair.keyPairPassword(keyPairPassword = null);
-                    config.keypair = _keyPair;
-                    self.keyPair(_keyPair);
+                self.showKeyPair(false);
+                self.password = _keyPair._password;
+                _keyPair._password = null;
+                config.account = _keyPair.email;
+                config.keypair = _keyPair;
+                localStorage.setItem("config", JSON.stringify(config));
+                _keyPair.passwordOK = true;
+                //self.localServerConfig ( config )
+                self.keyPair(_keyPair);
+                return self.keyPairCalss = new encryptoClass(_keyPair, self.password, self.connectInformationMessage, err => {
                     self.showKeyPair(false);
-                    initPopupArea();
                     let uu = null;
-                    self.keyPairCalss = new encryptoClass(self.keyPair());
-                    self.imapSetup(uu = new imapForm(config.account, null, function (imapData) {
+                    return self.imapSetup(uu = new imapForm(_keyPair.email, self.keyPairCalss.imapData, function (imapData) {
                         self.imapSetup(uu = null);
-                        return self.imapSetupClassExit(imapData, sessionHash);
+                        self.keyPairCalss.imapData = imapData;
+                        return self.keyPairCalss.saveImapIInputData(err => {
+                            return self.imapSetupClassExit(imapData);
+                        });
                     }));
-                    return self.keyPairGenerateForm(_keyPairGenerateForm = null);
                 });
-                this.keyPairGenerateForm(_keyPairGenerateForm);
-            }
+                //initPopupArea ()
+            });
             this.localServerConfig(config);
             this.afterInitConfig();
+            this.keyPairGenerateForm(_keyPairGenerateForm);
         }
-        clearImapData() {
-            let imap = this.imapSetup();
-            this.imapSetup(imap = null);
+        getConfigFromLocalStorage() {
+            const configStr = localStorage.getItem("config");
+            if (!configStr) {
+                return this.initConfig({});
+            }
+            let config = null;
+            try {
+                config = JSON.parse(configStr);
+            }
+            catch (ex) {
+                return this.initConfig({});
+            }
+            return this.initConfig(config);
         }
         socketListen() {
             let self = this;
-            this.connectInformationMessage.sockEmit('init', (err, config) => {
-                if (err) {
-                    return;
-                }
-                return self.initConfig(config);
-            });
-            this.connectInformationMessage.socketIo.on('init', (err, config) => {
-                if (err) {
-                    return;
-                }
-                return self.initConfig(config);
-            });
+            return this.getConfigFromLocalStorage();
         }
         //          change language
         selectItem(that, site) {
@@ -431,16 +443,15 @@ var view_layout;
             this.AppList(false);
             this.appsManager(null);
         }
-        imapSetupClassExit(_imapData, sessionHash) {
+        imapSetupClassExit(_imapData) {
             const self = this;
             this.imapData = _imapData;
-            this.sessionHash = sessionHash;
-            return this.CoNETConnect(this.CoNETConnectClass = new CoNETConnect(_imapData.imapUserName, this.keyPair().verified, _imapData.confirmRisk, this.keyPair().email, function ConnectReady(err) {
+            return this.CoNETConnect(this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
                     self.CoNETConnect(this.CoNETConnectClass = null);
                     return self.imapSetup(this.imapFormClass = new imapForm(_imapData.account, null, function (imapData) {
                         self.imapSetup(this.imapFormClass = null);
-                        return self.imapSetupClassExit(imapData, sessionHash);
+                        return self.imapSetupClassExit(imapData);
                     }));
                 }
                 self.connectedCoNET(true);
@@ -519,3 +530,6 @@ var view_layout;
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');
+openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js';
+window[`${"indexedDB"}`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+const CoNET_version = "0.1.4";

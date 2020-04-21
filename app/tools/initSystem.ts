@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CoNET_version = '0.1.2'
+export const CoNET_version = '0.1.4'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'
@@ -50,6 +50,7 @@ const InitKeyPair = () => {
 	}
 	return keyPair
 }
+
 export const checkUrl = ( url ) => {
 
     const urlCheck = Url.parse ( url )
@@ -70,7 +71,6 @@ export const CoNETConnectLog = Path.join ( QTGateFolder, 'CoNETConnect.log' )
 export const imapDataFileName1 = Path.join ( QTGateFolder, 'imapData.pem' )
 
 export const CoNET_Home = Path.join ( __dirname )
-export const CoNET_PublicKey = Path.join ( CoNET_Home, '1231B119.pem')
 
 export const LocalServerPortNumber = 3000
 export const configPath = Path.join ( QTGateFolder, 'config.json' )
@@ -114,23 +114,6 @@ export const convertByte = ( byte: number ) => {
 	return `${ tbyte } TB`
 }
 
-export const checkSystemFolder = CallBack => {
-	
-	const callback = ( err, kkk ) => {
-		if ( err ) {
-			console.log ( `checkSystemFolder return error`, err )
-			return CallBack ( err )
-		}
-		console.log (`checkSystemFolder QTGateFolder = [${ QTGateFolder }]`)
-		return CallBack ()
-	}
-	return Async.series ([
-		next => checkFolder ( QTGateFolder, next ),
-        next => checkFolder ( QTGateLatest, next ),
-        next => checkFolder ( QTGateTemp, next ),
-        next => checkFolder ( QTGateVideo, next )
-	], callback )
-}
 
 export const getLocalInterface = () => {
 	const ifaces = Os.networkInterfaces()
@@ -197,7 +180,7 @@ export const getQTGateSign = ( user: OpenPgp.key.users ) => {
 	return Certification
 }
 
-export async function getKeyPairInfo ( publicKey: string, privateKey: string, password: string, CallBack: ( err?: Error, keyPair?: keypair ) => void ) {
+export const getKeyPairInfo = async ( publicKey: string, privateKey: string, password: string, CallBack: ( err?: Error, keyPair?: keypair ) => void ) => {
 
 	if ( ! publicKey || ! privateKey ) {
 		return CallBack ( new Error ('publicKey or privateKey empty!'))
@@ -244,6 +227,25 @@ export async function getKeyPairInfo ( publicKey: string, privateKey: string, pa
 	})
 	
 }
+
+export const getPublicKeyInfo = ( publicKey: string, CallBack ) => {
+	return OpenPgp.key.readArmored ( publicKey ).then ( _key => {
+		const key = _key.keys[0]
+		const user = key.users[0]
+		const ret: Kloak_LocalServer_keyInfo = {
+			nikeName: getNickName ( user.userId.userid ),
+			email: getEmailAddress ( user.userId.userid ),
+			keyID: key.primaryKey.getFingerprint().toUpperCase(),
+			otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
+			KloakValid: getQTGateSign ( user ),
+			publicKeys: _key.keys
+		}
+		return CallBack ( null, ret )
+	}).catch ( ex => {
+		return CallBack ( ex )
+	})
+}
+
 
 export const emitConfig = ( config: install_config, passwordOK: boolean ) => {
 	if ( !config ) {
@@ -325,12 +327,18 @@ export const newKeyPair = ( emailAddress: string, nickname: string, password: st
 		aead_protect: true,
 		aead_protect_version: 4
 	}
-	return OpenPgp.generateKey ( option ).then (( keypair: { publicKeyArmored: string, privateKeyArmored: string }) => {
+
+	return OpenPgp.generateKey ( option ).then ( async ( keypair: { publicKeyArmored, privateKeyArmored }) => {
 		
-		const ret: keyPair = {
-			publicKey: keypair.publicKeyArmored,
-			privateKey: keypair.privateKeyArmored
+		const ret = {
+			publicKey: await ( OpenPgp.key.readArmored ( keypair.publicKeyArmored )),
+			privateKey: await ( OpenPgp.key.readArmored ( keypair.privateKeyArmored)),
+			public: keypair.publicKeyArmored
 		}
+		
+		await ret.privateKey.keys[0].decrypt( password )
+		ret.publicKey = ret.publicKey.keys
+		ret.privateKey = ret.privateKey.keys
 		return CallBack ( null, ret )
 	}).catch ( err => {
 		// ERROR
@@ -602,23 +610,32 @@ export const getPbkdf2 = ( config: install_config, passwrod: string, CallBack ) 
 	return Crypto.pbkdf2 ( passwrod, config.salt, config.iterations, config.keylen, config.digest, CallBack )
 }
 
-export async function makeGpgKeyOption ( config: install_config, passwrod: string, CallBack ) {
+export const makeGpgKeyOption = ( config: install_config, passwrod: string, CallBack ) => {
 	const option = {
-		privateKeys: ( await OpenPgp.key.readArmored ( config.keypair.privateKey )).keys,
-		publicKeys: ( await OpenPgp.key.readArmored ( Fs.readFileSync ( CoNET_PublicKey, 'utf8'))).keys
+		publicKeys: null,
+		privateKeys:null
+		
 	}
-
-	return getPbkdf2 ( config, passwrod, ( err, data ) => {
-		if ( err ) {
-			return CallBack ( err )
-		}
-		return option.privateKeys[0].decrypt ( data.toString( 'hex' )).then ( keyOK => {
-			if ( keyOK ) {
-				return CallBack ( null, option )
-			}
-			return CallBack ( new Error ('password!'))
-		}).catch ( CallBack )
+	OpenPgp.key.readArmored ( CoNET_PublicKey).then ( data => {
+		option.publicKeys = data.keys
+		return OpenPgp.key.readArmored ( CoNET_PublicKey).then ( data => {
+			option.privateKeys = data.keys
+			return getPbkdf2 ( config, passwrod, ( err, data ) => {
+				if ( err ) {
+					return CallBack ( err )
+				}
+				return option.privateKeys[0].decrypt ( data.toString( 'hex' )).then ( keyOK => {
+					if ( keyOK ) {
+						return CallBack ( null, option )
+					}
+					return CallBack ( new Error ('password!'))
+				}).catch ( CallBack )
+			})
+		})
 	})
+	
+
+	
 }
 
 export async function saveEncryptoData ( fileName: string, data: any, config: install_config, password: string, CallBack ) {
@@ -743,10 +760,10 @@ export async function readEncryptoFile ( filename: string, savedPasswrod, config
 	
 }
 
-export const encryptMessage = ( openKeyOption, message: string, CallBack ) => {
+export const encryptMessage = ( publickeys, privatekeys, message: string, CallBack ) => {
 	const option = {
-		privateKeys: openKeyOption.privateKeys[0],
-		publicKeys: openKeyOption.publicKeys,
+		privateKeys: privatekeys,
+		publicKeys: publickeys,
 		message: OpenPgp.message.fromText ( message ),
 		compression: OpenPgp.enums.compression.zip
 	}
@@ -757,34 +774,28 @@ export const encryptMessage = ( openKeyOption, message: string, CallBack ) => {
 	}).catch ( CallBack )
 }
 
-export async function decryptoMessage ( openKeyOption, message: string, CallBack ) {
+export async function decryptoMessage ( publickeys, privatekeys, message: string, CallBack ) {
 	const option = {
-		privateKeys: openKeyOption.privateKeys,
-		publicKeys: openKeyOption.publicKeys,
-		message: null
+		privateKeys: privatekeys,
+		publicKeys: publickeys,
+		message: await OpenPgp.message.readArmored ( message )
 	}
-	
-	option.message = await OpenPgp.message.readArmored ( message )
-	
-	
+
 	return OpenPgp.decrypt ( option ).then ( async data => {
 		
 		/**
 		 * 		verify signatures
 		 */
-		await data.signatures[0].verified
-		//console.log ( Util.inspect ( data, false, 3, true ))
-		if (  data.signatures[0].verified ) {
-			return CallBack ( null, data.data )
+		
+		
+		if ( data.signatures[0].valid ) {
 			
+			return CallBack ( null, data.data )
 		}
 
-		
-		return CallBack ( new Error ('signatures error!'))
+		return CallBack ( new Error ( 'signatures error!' ))
 	}).catch ( err => {
-
-		console.trace ( err )
-		console.log ( JSON.stringify ( message ))
+		
 		return CallBack ( err )
 	})
 }
@@ -806,22 +817,11 @@ const testSmtpAndSendMail = ( imapData: IinputData, CallBack ) => {
 	})
 }
 
-export const sendCoNETConnectRequestEmail = ( imapData: IinputData, openKeyOption, publicKey, toEmail: string, CallBack ) => {
+export const sendCoNETConnectRequestEmail = ( imapData: IinputData, toEmail: string, message: string, CallBack ) => {
 
-	const qtgateCommand: QTGateCommand = {
-		account: imapData.account,
-		QTGateVersion: CoNET_version,
-		imapData: imapData,
-		command: 'connect',
-		error: null,
-		callback: null,
-		language: imapData.language,
-		publicKey: publicKey
-	}
 	return Async.waterfall ([
 		next => testSmtpAndSendMail ( imapData, next ),
-		next => encryptMessage ( openKeyOption, JSON.stringify ( qtgateCommand ), next ),
-		( _data, next ) => {
+		next => {
 			const option = {
 				host:  Net.isIP ( imapData.smtpServer ) ? null : imapData.smtpServer,
 				hostname:  Net.isIP ( imapData.smtpServer ) ? imapData.smtpServer : null,
@@ -845,23 +845,12 @@ export const sendCoNETConnectRequestEmail = ( imapData: IinputData, openKeyOptio
 				to: toEmail,
 				subject:'node',
 				attachments: [{
-					content: _data
+					content: message
 				}]
 			}
-			//console.log ( Util.inspect ( mailOptions ) )
+			
 			return transporter.sendMail ( mailOptions, next )
 		}
 	], CallBack )
 
 }
-
-const testPingTimes = 5
-
-export const deleteImapFile = () => {
-	return Fs.unlink ( imapDataFileName1, err => {
-		if ( err ) {
-			console.log (`deleteImapFile get err`, err )
-		}
-	})
-}
-

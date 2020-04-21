@@ -20,8 +20,9 @@ const port = 3000;
 const path_1 = require("path");
 const url_1 = require("url");
 const { app, BrowserWindow, Tray, Menu, dialog, autoUpdater, desktopCapturer, shell } = require('electron');
+app.allowRendererProcessReuse = true;
+app.commandLine.appendArgument("--enable-features=Metal");
 // squirrel event handled and app will exit in 1000ms, so don't do anything else
-const version = app.getVersion();
 let localServer1 = null;
 let tray = null;
 let doReady = false;
@@ -180,7 +181,7 @@ const appReady = () => {
         createWindow();
     }
     if (!tray) {
-        tray = new Tray(path_1.join(__dirname, '16x16.png'));
+        tray = new Tray(path_1.join(__dirname, '16.png'));
         tray.on('click', () => {
             return createWindow();
         });

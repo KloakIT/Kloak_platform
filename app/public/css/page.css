@@ -903,20 +903,35 @@ ul.plan-features {
 	animation-timing-function: ease-in;
 	animation-fill-mode: forwards;
 }
+/**
+
+		terminalText 
+**/
+@-webkit-keyframes blink {
+	0% { opacity: 1.0; }
+	50% { opacity: 0.0; }
+	100% { opacity: 1.0; }
+}
+  
+@keyframes blink {
+	0% { opacity: 1.0; }
+	50% { opacity: 0.0; }
+	100% { opacity: 1.0; }
+}
 .terminalText { 
 	position: relative;
 	display: inline-block;
 	min-width: 360px;
-  }
+}
   
-  .terminalText::after {
+.terminalText::after {
 	content: "";
 	position: absolute;
 	/* Remove display: inline-block if not required to be on the same line as text etc */
 	display: inline-block;
 	background-color:grey;
 	top: 14px;
-	margin-left: 2px;
+	margin-left: 3px;
 	width: 10px;
 	/* Set height to the line height of .text */
 	height: 2px;
@@ -929,7 +944,7 @@ ul.plan-features {
 	*/
 	-webkit-animation: blink 1s step-end infinite;
 	animation: blink 1s step-end infinite;
-  }
+}
   
 
   /* ====================================================================================================================

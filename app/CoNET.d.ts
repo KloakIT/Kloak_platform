@@ -716,3 +716,12 @@ interface workerDataEvent {
     workerName: string
 
 }
+
+interface Kloak_LocalServer_keyInfo {
+	nikeName: string
+	email: string
+	keyID: string
+    KloakValid: boolean
+    otherValid: string[]
+	publicKeys: object
+}

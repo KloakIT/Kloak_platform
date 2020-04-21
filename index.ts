@@ -21,9 +21,10 @@ import { join } from  'path'
 import { format } from 'url'
 
 const { app, BrowserWindow, Tray, Menu, dialog, autoUpdater, desktopCapturer, shell } = require ( 'electron' )
-  
+app.allowRendererProcessReuse = true
+app.commandLine.appendArgument ( "--enable-features=Metal" )
+
 // squirrel event handled and app will exit in 1000ms, so don't do anything else
-const version = app.getVersion()
 
 let localServer1 = null
 
@@ -210,7 +211,7 @@ const appReady = () => {
     }
 
     if ( !tray ) {
-        tray = new Tray ( join ( __dirname, '16x16.png' ))
+        tray = new Tray ( join ( __dirname, '16.png' ))
         tray.on( 'click', () => {
             
             return createWindow ()
@@ -231,8 +232,9 @@ const initialize = () => {
 
 		return app.quit()
 
-	}
-
+    }
+    
+    
 	app.on('second-instance', ( event, commandLine, workingDirectory) => {
 		createWindow ()
 	})
