@@ -82,9 +82,11 @@ const createLocalBrowser = () => {
 }
 
 const createWindow = () => {
+	/*
 	if ( process.platform === 'win32' ) {
 		return createLocalBrowser ()
 	}
+	*/
     shell.openExternal (`http://localhost:${ port }`)
 
 }
@@ -190,7 +192,7 @@ const appReady = () => {
 
             setTimeout (() => {
                 createWindow ()
-            }, 2000 )
+            }, 1000 )
 
             /*
             setTimeout (() => {

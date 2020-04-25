@@ -77,8 +77,6 @@ const makeKeyPairData = function ( view: view_layout.view, keypair: keypair ) {
     
     
     keypair.deleteKeyPairNext = function () {
-        
-
 
         localStorage.setItem ( "config", JSON.stringify ({}))
         view.localServerConfig ( null )

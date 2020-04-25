@@ -399,14 +399,18 @@ export default class localServer {
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'html' )))
 		
 		this.expressServer.get ( '/', ( req, res ) => {
-
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
 
 		this.expressServer.get ( '/message', ( req, res ) => {
-
             res.render( 'home/message', { title: 'message', proxyErr: false  })
 		})
+
+		this.expressServer.get ( '/browserNotSupport', ( req, res ) => {
+            res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
+		})
+
+		
 
 		this.socketServer.on ( 'connection', socker => {
 			return this.socketServerConnected ( socker )
