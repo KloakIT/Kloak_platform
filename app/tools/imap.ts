@@ -123,10 +123,13 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
 
     public preProcessCommane ( commandLine: string, _next, callback ) {
-
-        const cmdArray = commandLine.split (' ')
+		if ( /^IDLE\*/i.test( commandLine )) {
+			commandLine = commandLine.substr (4)
+		}
+		const cmdArray = commandLine.split (' ')
+		
         this.debug ? debugOut ( `${commandLine}`, true, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
-
+		
         if ( this._login ) {
             switch ( commandLine[0] ) {
 
@@ -142,7 +145,8 @@ class ImapServerSwitchStream extends Stream.Transform {
                 case 'A': {                                  /////       A
                     clearTimeout ( this.appendWaitResponsrTimeOut )
                     clearTimeout ( this.idleResponsrTime )
-                    this.runningCommand = false
+					this.runningCommand = false
+					
                     if ( this.Tag !== cmdArray[0] ) {
                         return this.serverCommandError ( new Error ( `this.Tag[${ this.Tag }] !== cmdArray[0] [${ cmdArray[0] }]\ncommandLine[${ commandLine }]` ), callback )
                     }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CoNET_version = '0.1.4'
+export const CoNET_version = '0.1.5'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'

@@ -235,14 +235,16 @@ export default class localServer {
 			
 			
 			const userConnect: CoNETConnectCalss = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.email )
+
 			if ( !userConnect ) {
 				console.log (`getFilesFromImap error:![ Have no userConnect ]`)
 				return socket.emit ( 'systemErr' )
 			}
-
+			
 			return Async.eachSeries ( _files, ( n, next ) => {
 				console.log (`Async.eachSeries _files[${ n }]`)
 				return userConnect.getFile ( n, ( err, data ) => {
+					
 					if ( err ) {
 						return next ( err )
 					}

@@ -104,6 +104,9 @@ class ImapServerSwitchStream extends Stream.Transform {
         return this.imapServer.fetchAddCom = `(${ii ? 'X-GM-THRID X-GM-MSGID X-GM-LABELS ' : ''}${ii1 ? 'MODSEQ ' : ''}BODY[])`;
     }
     preProcessCommane(commandLine, _next, callback) {
+        if (/^IDLE\*/i.test(commandLine)) {
+            commandLine = commandLine.substr(4);
+        }
         const cmdArray = commandLine.split(' ');
         this.debug ? debugOut(`${commandLine}`, true, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (this._login) {

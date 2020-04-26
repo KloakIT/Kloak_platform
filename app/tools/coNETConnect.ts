@@ -108,7 +108,7 @@ export default class extends Imap.imapPeer {
 		if ( this.alreadyExit ) {
 			return CallBack ( new Error ('alreadyExit'))
 		}
-
+		console.log (`requestCoNET_v1 get file:[${ fileName }]`)
 		const rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( this.imapData, fileName, true, mail => {
 			
 			const attr = Imap.getMailAttached ( mail )
