@@ -1,7 +1,7 @@
 
 
 
-let appScript = {
+const appScript = {
 	info: {
 		totalResults: ['大约有','約','About','大約有'],
 		totalResults1: ['条记录','件','results','條記錄'],
@@ -251,9 +251,9 @@ let appScript = {
 				const args = com.Args
 				self.searchInputTextShow ( search_text )
 				
-				self.returnSearchResultItemsInit ( args.param )
-				self.searchItemsArray ( args.param )
-				self.showResultItems ( self, args.param )
+				self.returnSearchResultItemsInit ( args )
+				self.searchItemsArray ( args )
+				self.showResultItems ( self, args )
 				_view.CanadaBackground ( false )
 				return self.showMainSearchForm ( false )
 			}
@@ -451,9 +451,9 @@ let appScript = {
 			self.nextButtonLoadingGetResponse ( false )
 			self.nextButtonConetResponse ( false )
 			const args = com.Args
-			self.returnSearchResultItemsInit ( args.param )
-			currentArray.Result.push ( ...args.param.Result )
-			currentArray.nextPage = args.param.nextPage
+			self.returnSearchResultItemsInit ( args )
+			currentArray.Result.push ( ...args.Result )
+			currentArray.nextPage = args.nextPage
 			return self.showResultItems ( self, currentArray )
 
 		})
@@ -624,78 +624,78 @@ let appScript = {
   getSnapshotClick: (self, index, isImage?: boolean) => {
     let currentItem = null
     if (isImage) {
-      currentItem = self.searchSimilarImagesList()[index]
-      currentItem.showImageLoading(true)
+		currentItem = self.searchSimilarImagesList()[index]
+		currentItem.showImageLoading(true)
     } else {
-      currentItem = self.searchItemList()[index]
-      currentItem.showLoading(true)
+		currentItem = self.searchItemList()[index]
+		currentItem.showLoading(true)
     }
 
     const showError = err => {
-      isImage
-        ? currentItem.showImageLoading(false)
-        : currentItem.showLoading(false)
-      currentItem.loadingGetResponse(false)
-      currentItem.conetResponse(false)
-      currentItem.errorIndex(
-        _view.connectInformationMessage.getErrorIndex(err)
-      )
-      currentItem.showError(true)
-      const currentElm = $(`#${currentItem.id}`)
-      return currentElm.popup({
-        on: 'click',
-        inline: true,
-        onHidden: function() {
-          currentItem.showError(false)
-          currentItem.errorIndex(null)
-        }
-      })
+		isImage
+			? currentItem.showImageLoading(false)
+			: currentItem.showLoading(false)
+		currentItem.loadingGetResponse(false)
+		currentItem.conetResponse(false)
+		currentItem.errorIndex(
+			_view.connectInformationMessage.getErrorIndex(err)
+		)
+		currentItem.showError(true)
+		const currentElm = $(`#${currentItem.id}`)
+		return currentElm.popup({
+			on: 'click',
+			inline: true,
+			onHidden: function() {
+			currentItem.showError(false)
+			currentItem.errorIndex(null)
+			}
+		})
     }
 
     const callBack = (err?, com?: QTGateAPIRequestCommand) => {
-      if (err) {
-        return showError(err)
-      }
-      if (!com) {
-        currentItem.loadingGetResponse(true)
-        return currentItem.conetResponse(false)
-      }
-      if (com.error === -1) {
-        currentItem.loadingGetResponse(false)
-        return currentItem.conetResponse(true)
-      }
-      if (com.error) {
-        return showError(com.error)
-      }
+		if (err) {
+			return showError(err)
+		}
+		if (!com) {
+			currentItem.loadingGetResponse(true)
+			return currentItem.conetResponse(false)
+		}
+		if (com.error === -1) {
+			currentItem.loadingGetResponse(false)
+			return currentItem.conetResponse(true)
+		}
+		if (com.error) {
+			return showError(com.error)
+		}
 
-      const arg: string = com.Args[0]
-      currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
-      return _view.connectInformationMessage.sockEmit(
-        'getFilesFromImap',
-        arg,
-        (err, buffer: string) => {
-          if (err) {
-            return showError(err);
-          }
-          return _view.keyPairCalss.decryptMessageToZipStream(
-            buffer,
-            (err, data) => {
-              if (err) {
-                return showError(err);
-              }
-              isImage
-                ? currentItem.snapshotImageReady(true)
-                : currentItem.snapshotReady(true);
-              isImage
-                ? currentItem.showImageLoading(false)
-                : currentItem.showLoading(false);
-              currentItem.loadingGetResponse(false);
-              currentItem.conetResponse(false);
-              return (currentItem.snapshotData = data);
-            }
-          );
-        }
-      );
+		const arg: string = com.Args[0]
+		currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
+		return _view.connectInformationMessage.sockEmit(
+			'getFilesFromImap',
+			arg,
+			(err, buffer: string) => {
+			if (err) {
+				return showError(err);
+			}
+			return _view.keyPairCalss.decryptMessageToZipStream(
+				buffer,
+				(err, data) => {
+				if (err) {
+					return showError(err);
+				}
+				isImage
+					? currentItem.snapshotImageReady(true)
+					: currentItem.snapshotReady(true);
+				isImage
+					? currentItem.showImageLoading(false)
+					: currentItem.showLoading(false);
+				currentItem.loadingGetResponse(false);
+				currentItem.conetResponse(false);
+				return (currentItem.snapshotData = data);
+				}
+			);
+			}
+		);
     };
 
     const url = isImage ? currentItem.clickUrl : currentItem.url;
@@ -703,38 +703,38 @@ let appScript = {
     const height = $(window).height();
 
     const com: QTGateAPIRequestCommand = {
-      command: 'CoSearch',
-      Args: [url, width, height],
-      error: null,
-      subCom: 'getSnapshop'
+		command: 'CoSearch',
+		Args: [url, width, height],
+		error: null,
+		subCom: 'getSnapshop'
     };
 
     return _view.keyPairCalss.emitRequest(com, callBack);
   },
 
-  showSnapshotClick: (self, index, isImage?: boolean) => {
-    self.showMain(false);
-    self.showSnapshop(true);
-    let currentItem = null;
-    if (isImage) {
-      currentItem = self.searchSimilarImagesList()[index];
-    } else {
-      currentItem = self.searchItemList()[index];
-    }
-    let y = null;
+  	showSnapshotClick: (self, index, isImage?: boolean) => {
+		self.showMain(false);
+		self.showSnapshop(true);
+		let currentItem = null;
+		if (isImage) {
+		currentItem = self.searchSimilarImagesList()[index];
+		} else {
+		currentItem = self.searchItemList()[index];
+		}
+		let y = null;
 
-    self.showWebPage(
-      (y = new showWebPageClass(
-        isImage ? currentItem.clickUrl : currentItem.url,
-        currentItem.snapshotData,
-        currentItem.snapshotUuid,
-        () => {
-          self.showWebPage((y = null));
-          self.showMain(true);
-          self.showSnapshop(false);
-        }
-      ))
-    );
+		self.showWebPage(
+		(y = new showWebPageClass(
+			isImage ? currentItem.clickUrl : currentItem.url,
+			currentItem.snapshotData,
+			currentItem.snapshotUuid,
+			() => {
+			self.showWebPage((y = null));
+			self.showMain(true);
+			self.showSnapshop(false);
+			}
+		))
+		);
   },
 
   // CHANGED ============================================

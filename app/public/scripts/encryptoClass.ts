@@ -2,7 +2,7 @@ declare const openpgp: any
 
 const requestTimeOut = 1000 * 180
 
-const CoNET_PublicKey = 
+const KloakNode_publicKey = 
 `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mDMEXjMkUBYJKwYBBAHaRw8BAQdAFD5n6LecvYdEOn65nCjOvn/C2bco7JPkGg2a
@@ -193,6 +193,21 @@ PT17OWXpUfDuuSaA+2Px8WMtc9trMDIiGCEM
 =mdDQ
 -----END PGP PUBLIC KEY BLOCK-----
 `
+const Kloak_API_PublicKey =
+`
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEXqT4zhYJKwYBBAHaRw8BAQdA7/0QRxAraH+3wvR4nWaAW9cFl32CS5J9JC+B
+vUspCDm0E0FQSSA8QVBJQEtsb2FrLmFwcD6IeAQQFgoAIAUCXqT4zgYLCQcIAwIE
+FQgKAgQWAgEAAhkBAhsDAh4BAAoJEF9YG3WhPvBOzkcA/3f9B3e8PE78qFJHPy37
+Cd6BIESJmXEGqheucTRczOOLAQCCChwHN8zArHRKdE+4bZ42iqKCW84fM8sXazbe
+XPFQDbg4BF6k+M4SCisGAQQBl1UBBQEBB0B7NFm+kreqw0D9mUp9qPDK54xeKmor
+/hnICKjiRxtpVAMBCAeIYQQYFggACQUCXqT4zgIbDAAKCRBfWBt1oT7wTkycAQC7
+LLsNzS2Zra2hm9kvKafeTYpTmiEUQbxIuyPEySP9xQEAkB70RnDuoJQzKuEeeAEd
+ToNMnoWOMu0xq5gTORcSDgI=
+=jcgy
+-----END PGP PUBLIC KEY BLOCK-----
+`
 
 /**
  * 
@@ -242,15 +257,16 @@ const signPublicKey = ( public_key, private_key ) => {
 
 class encryptoClass {
 	private _privateKey = null
-	private CoNET_publicKey = CoNET_PublicKey
-	private myPublicKey = null 
+	private KloakNode_publicKey = null
+	private Kloak_API_PublicKey = null
+	private Kloak_AP_publicKey = null
+	private myPublicKey = null
 	public imapData: IinputData = null
 	public localServerPublicKey = ""
 
 	private requestPool: Map < string, { CallBack: ( err?: Error, cmd?: QTGateAPIRequestCommand ) => void, cmd: QTGateAPIRequestCommand, timeOut: NodeJS.Timeout } > = new Map ()
 
 	private makeKeyReady = ( CallBack ) => {
-		//this.CoNET_publicKey = ( await openpgp.key.readArmored ( CoNET_publicKey )).keys
 
 		openpgp.key.readArmored ( this._keypair.privateKey ).then ( data => {
 			this._privateKey = data.keys
@@ -259,9 +275,13 @@ class encryptoClass {
 				return openpgp.key.readArmored ( this._keypair.publicKey ).then ( data => {
 
 					this.myPublicKey = data.keys
-					return openpgp.key.readArmored ( this.CoNET_publicKey ).then ( data => {
-						this.CoNET_publicKey = data.keys
-						return this.readImapIInputData ( CallBack )
+					return openpgp.key.readArmored ( KloakNode_publicKey ).then ( data => {
+						this.KloakNode_publicKey = data.keys
+						return openpgp.key.readArmored ( Kloak_API_PublicKey ).then ( data => {
+							this.Kloak_API_PublicKey = data
+							return this.readImapIInputData ( CallBack )
+						})
+						
 					})
 					
 				})
@@ -277,10 +297,10 @@ class encryptoClass {
 				return CallBack ( err )
 			}
 			let ret = null
-			const data = Buffer.from ( _data, 'base64').toString ()
+			const data = Buffer.from ( _data, 'base64' ).toString ()
 			if ( /^-----BEGIN PGP/i.test ( data )) {
 				CallBack ()
-				return this.CoNET_publicKey = ( await openpgp.key.readArmored( data )).keys
+				return this.Kloak_AP_publicKey = ( await openpgp.key.readArmored( data )).keys
 			}
 
 			try {
@@ -296,22 +316,30 @@ class encryptoClass {
 	public decryptMessageToZipStream ( encryptoText: string, CallBack ) {
 		const option = {
 			privateKeys: this._privateKey,
-			publicKeys: this.CoNET_publicKey,
+			publicKeys: this.Kloak_API_PublicKey,
 			message: null
 		}
-
-
-		let ret = null
+		let ret = false
 		return openpgp.message.readArmored ( encryptoText ).then ( data => {
 			option.message = data
 			return openpgp.decrypt( option )
 		}).then ( _plaintext => {
+
+			if ( !ret) {
+				ret = true
+				return CallBack ( null, _plaintext.data )
+			}
 			
-			return CallBack ( null, _plaintext.data )
 		})
+		/*
 		.catch ( ex => {
-			return CallBack ( ex )
+			if ( !ret) {
+				ret = true
+				return CallBack ( ex )
+			}
+			
 		})
+		*/
 
 	}
 
@@ -370,7 +398,7 @@ class encryptoClass {
 		
 		const option = {
 			privateKeys: this._privateKey,
-			publicKeys: this.CoNET_publicKey,
+			publicKeys: this.KloakNode_publicKey,
 			message: openpgp.message.fromText ( message ),
 			compression: openpgp.enums.compression.zip
 		}
@@ -389,7 +417,7 @@ class encryptoClass {
 		const self = this
 		const option = {
 			privateKeys: this._privateKey,
-			publicKeys: this.CoNET_publicKey,
+			publicKeys: this.Kloak_AP_publicKey,
 			message: openpgp.message.fromText ( JSON.stringify ( cmd )),
 			compression: openpgp.enums.compression.zip
 		}

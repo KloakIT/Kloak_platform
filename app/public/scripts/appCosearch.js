@@ -1,4 +1,4 @@
-let appScript = {
+const appScript = {
     info: {
         totalResults: ['大约有', '約', 'About', '大約有'],
         totalResults1: ['条记录', '件', 'results', '條記錄'],
@@ -203,9 +203,9 @@ let appScript = {
                 self.showInputLoading(false);
                 const args = com.Args;
                 self.searchInputTextShow(search_text);
-                self.returnSearchResultItemsInit(args.param);
-                self.searchItemsArray(args.param);
-                self.showResultItems(self, args.param);
+                self.returnSearchResultItemsInit(args);
+                self.searchItemsArray(args);
+                self.showResultItems(self, args);
                 _view.CanadaBackground(false);
                 return self.showMainSearchForm(false);
             }
@@ -364,9 +364,9 @@ let appScript = {
             self.nextButtonLoadingGetResponse(false);
             self.nextButtonConetResponse(false);
             const args = com.Args;
-            self.returnSearchResultItemsInit(args.param);
-            currentArray.Result.push(...args.param.Result);
-            currentArray.nextPage = args.param.nextPage;
+            self.returnSearchResultItemsInit(args);
+            currentArray.Result.push(...args.Result);
+            currentArray.nextPage = args.nextPage;
             return self.showResultItems(self, currentArray);
         });
     },

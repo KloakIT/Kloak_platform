@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.CoNET_version = '0.1.4';
+exports.CoNET_version = '0.1.6';
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");

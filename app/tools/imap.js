@@ -73,6 +73,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.isImapUserLoginSuccess = false;
         this.waitingDoingIdleStop = false;
         this.idleDoingDone = false;
+        this.newSwitchRet = false;
     }
     commandProcess(text, cmdArray, next, callback) { }
     serverCommandError(err, CallBack) {
@@ -298,13 +299,13 @@ class ImapServerSwitchStream extends Stream.Transform {
                         return getNewMail(_uid, next);
                     }
                     return next();
-                }, (err) => {
+                }, (err, newM) => {
                     this.runningCommand = null;
                     if (err) {
                         debug ? saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err.message}]`) : null;
                         return this.imapServer.destroyAll(err);
                     }
-                    if (haveMoreNewMail || havemore) {
+                    if (haveMoreNewMail || havemore || newM) {
                         return this.doNewMail();
                     }
                     return this.idleNoop();
@@ -343,7 +344,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             return console.log(`idleNoop have this.isWaitLogout but have not this.idleCallBack ${typeof this.idleCallBack}`);
         }
         this.canDoLogout = true;
-        let newSwitchRet = false;
+        this.newSwitchRet = false;
         this.idleDoingDone = false;
         this.runningCommand = 'idle';
         if (!this.ready) {
@@ -361,7 +362,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 return this.idleCallBack = null;
             }
             //console.log(`IDLE DONE newSwitchRet = [${newSwitchRet}] nextRead = [${this.nextRead}]`)
-            if (newSwitchRet || this.reNewCount > 0) {
+            if (this.newSwitchRet || this.reNewCount > 0) {
                 return this.doNewMail();
             }
             if (this.imapServer.idleSupport) {
@@ -389,7 +390,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 case '*': {
                     timers_1.clearTimeout(this.idleResponsrTime);
                     if (/^RECENT$|^EXISTS$/i.test(cmdArray[2]) || this.isWaitLogout) {
-                        newSwitchRet = true;
+                        this.newSwitchRet = true;
                         if (this.imapServer.idleSupport) {
                             this.idleDoingDown();
                         }
@@ -472,13 +473,13 @@ class ImapServerSwitchStream extends Stream.Transform {
         return this.imapServer.destroyAll(null);
     }
     openBox(CallBack) {
-        let newSwitchRet = false;
+        this.newSwitchRet = false;
         let UID = 0;
         this.doCommandCallback = (err) => {
             if (err) {
                 return this.createBox(true, this.imapServer.listenFolder, CallBack);
             }
-            CallBack(null, newSwitchRet, UID);
+            CallBack(null, this.newSwitchRet, UID);
         };
         this.commandProcess = (text, cmdArray, next, _callback) => {
             switch (cmdArray[0]) {
@@ -488,7 +489,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                         if (_num) {
                             UID = parseInt(_num.split(']')[0]);
                         }
-                        newSwitchRet = true;
+                        this.newSwitchRet = true;
                     }
                     return _callback();
                 }
@@ -696,9 +697,9 @@ class ImapServerSwitchStream extends Stream.Transform {
     fetch(fetchNum, callback) {
         this.doCommandCallback = (err) => {
             //console.log (`ImapServerSwitchStream doing doCommandCallback [${ newSwitchRet }]`)
-            return callback(err, newSwitchRet);
+            return callback(err, this.newSwitchRet);
         };
-        let newSwitchRet = false;
+        this.newSwitchRet = false;
         this.commandProcess = (text1, cmdArray, next, _callback) => {
             switch (cmdArray[0]) {
                 case '*': {
@@ -709,7 +710,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                         this.debug ? console.log(`${text1} doing length [${this.imapServer.fetching}]`) : null;
                     }
                     if (/^RECENT$/i.test(cmdArray[2]) && parseInt(cmdArray[1]) > 0) {
-                        newSwitchRet = true;
+                        this.newSwitchRet = true;
                     }
                     return _callback();
                 }
@@ -791,7 +792,22 @@ class ImapServerSwitchStream extends Stream.Transform {
             return CallBack(err);
         };
         this.commandProcess = (text1, cmdArray, next, _callback) => {
-            return _callback();
+            switch (cmdArray[0]) {
+                case '*': {
+                    if (/^FETCH$/i.test(cmdArray[2])) {
+                        if (/\{\d+\}/.test(text1)) {
+                            this.imapServer.fetching = parseInt(text1.split('{')[1].split('}')[0]);
+                        }
+                        this.debug ? console.log(`${text1} doing length [${this.imapServer.fetching}]`) : null;
+                    }
+                    if (/^EXISTS$/i.test(cmdArray[2]) && parseInt(cmdArray[1]) > 0) {
+                        this.newSwitchRet = true;
+                    }
+                    return _callback();
+                }
+                default:
+                    return _callback();
+            }
         };
         this.cmd = `UID STORE ${num} FLAGS.SILENT (\\Deleted)`;
         this.Tag = `A${this.imapServer.TagCount1()}`;
@@ -902,7 +918,7 @@ class qtGateImap extends Event.EventEmitter {
                 return this.destroyAll(null);
             });
         };
-        console.log(`qtGateImap connect mail server [${this.IMapConnect.imapServer}: ${this.port}]`);
+        console.log(`qtGateImap connect mail server [${this.IMapConnect.imapServer}: ${this.port}] setTimeout [${connectTimeOut / 1000}] !`);
         const timeout = timers_1.setTimeout(() => {
             return this.socket.destroy(new Error('connect time out!'));
         }, connectTimeOut);
@@ -1056,7 +1072,7 @@ exports.imapGetMediaFile = (IMapConnect, fileName, CallBack) => {
         return CallBack(null, retText);
     });
 };
-const pingPongTimeOut = 1000 * 30;
+const pingPongTimeOut = 1000 * 15;
 class imapPeer extends Event.EventEmitter {
     constructor(imapData, listenBox, writeBox, exit) {
         super();
@@ -1092,7 +1108,7 @@ class imapPeer extends Event.EventEmitter {
                 timers_1.clearTimeout(this.waitingReplyTimeOut);
                 return this.emit('CoNETConnected', attr);
             }
-            console.log(`this.newMail\n${email.toString()}`);
+            //console.log (`this.newMail\n${ email.toString() }`)
             return this.newMail(attr, subject);
         }
         console.log(`get mail have not subject\n\n`, email.toString());
@@ -1114,7 +1130,7 @@ class imapPeer extends Event.EventEmitter {
         return this.waitingReplyTimeOut = timers_1.setTimeout(() => {
             debug ? saveLog(`ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true) : null;
             return this.emit('pingTimeOut');
-        }, sendMail ? pingPongTimeOut * 4 : pingPongTimeOut);
+        }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut);
     }
     Ping(sendMail) {
         if (this.pingUuid && !sendMail) {
