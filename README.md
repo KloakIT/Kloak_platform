@@ -1,11 +1,11 @@
 # Kloak Platform/Kloakプラットフォーム/Kloak平台
 
-[![Build Status](https://travis-ci.org/KloakIT/Kloak_platform?branch=master)](https://travis-ci.org/KloakIT/Kloak_platform)
+[![Build Status](https://travis-ci.org/KloakIT/Kloak_platform.svg?branch=master)](https://travis-ci.org/github/KloakIT/Kloak_platform)
 [![Gitter](https://img.shields.io/badge/chat-on%20gitter-blue.svg)](https://gitter.im/QTGate/Lobby)
 [![Known Vulnerabilities](https://snyk.io/test/github/KloakIT/Kloak_platform/badge.svg)](https://snyk.io/test/github/KloakIT/Kloak_platform)
 [![Telegram](https://img.shields.io/badge/telebot-community%20group-blue.svg)](https://t.me/joinchat/IpX64hGK_95XDTXit42vOg)
 
-![http protocol](/resources/CoPlatform4.png?raw=true)
+![http protocol](/resources/KloakPlatform.png?raw=true)
 
 Kloak Platform is cross-platform software, provids a suite of APP that developed for use on [CoNET](https://github.com/QTGate/CoNET).
 
