@@ -137,7 +137,7 @@ class CoNETConnect {
     returnToImapSetup() {
         return this.ready(0);
     }
-    sendConnectMail(CallBack) {
+    sendConnectMail() {
         const self = this;
         this.Loading(true);
         this.showTryAgain(false);
@@ -156,12 +156,7 @@ class CoNETConnect {
             if (err) {
                 return self.listingConnectStage(null, -1, "");
             }
-            return _view.connectInformationMessage.sockEmit('sendRequestMail', data, self.imapData, this.nodeEmail, err => {
-                if (err) {
-                    return self.listingConnectStage(null, -1, null);
-                }
-                return CallBack();
-            });
+            return _view.connectInformationMessage.sockEmit('sendRequestMail', data, self.imapData, this.nodeEmail);
         });
     }
     tryAgain() {

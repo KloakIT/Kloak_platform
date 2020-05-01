@@ -117,7 +117,7 @@ export default class localServer {
 	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean ) {
 		console.log (`doing tryConnectCoNET`)
 		//		have CoGate connect
-		let userConnet = socket ["userConnet"] = socket ["userConnet"] || this.imapConnectPool.get ( imapData.account )
+		let userConnet: CoNETConnectCalss = socket ["userConnet"] = socket ["userConnet"] || this.imapConnectPool.get ( imapData.account )
 
 		if ( userConnet ) {
 			console.log (`tryConnectCoNET already have room;[${ userConnet.socket.id }]`)

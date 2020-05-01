@@ -367,7 +367,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 						debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err.message }]`) : null
 						return this.imapServer.destroyAll ( err )
 					}
-					if ( haveMoreNewMail || havemore || newM ) {
+					if ( haveMoreNewMail || havemore || this.newSwitchRet ) {
 						
 						return this.doNewMail ()
 					}
@@ -428,9 +428,13 @@ class ImapServerSwitchStream extends Stream.Transform {
 		}
 		
         this.doCommandCallback = ( err => {
+
+			
             if ( err ) {
+				console.log (`IDLE doCommandCallback! error`, err )
                 return this.imapServer.destroyAll ( err )
-            }
+			}
+			console.log (`IDLE doCommandCallback!` )
             this.waitingDoingIdleStop = false
             this.runningCommand = null
             if ( this.idleCallBack ) {
@@ -473,6 +477,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     
 					if ( /^RECENT$|^EXISTS$/i.test ( cmdArray[2] ) || this.isWaitLogout ) {
 						this.newSwitchRet = true
+						
 						if ( this.imapServer.idleSupport ) {
 							this.idleDoingDown()
 						}
@@ -1017,17 +1022,18 @@ class ImapServerSwitchStream extends Stream.Transform {
 
     public expunge ( CallBack ) {
 
-        let newSwitchRet = false
+        
         this.doCommandCallback = err => {
             
-            return CallBack ( err, newSwitchRet )
+            return CallBack ( err, this.newSwitchRet )
         }
         this.commandProcess = ( text: string, cmdArray: string[], next , _callback ) => {
             switch ( cmdArray[0] ) {
                 case '*': {
                     
-                    if ( /^RECENT$|^EXPUNGE$/i.test ( cmdArray[2]) && parseInt (cmdArray[1]) > 0 ) {
-                        newSwitchRet = true
+                    if ( /^RECENT$|^EXPUNGE$|^EXISTS$/i.test ( cmdArray[2]) && parseInt (cmdArray[1]) > 0 ) {
+						console.log (`\n\nexpunge this.newSwitchRet = true\n\n`)
+                        this.newSwitchRet = true
                     }
                     return _callback ()
                 }
@@ -1355,7 +1361,7 @@ export class imapPeer extends Event.EventEmitter {
 
     private mail ( email: Buffer ) {
         
-		//console.log (`imapPeer new mail:\n\n${ email.toString()}`)
+		console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = getMailSubject ( email )
         
 
@@ -1375,7 +1381,7 @@ export class imapPeer extends Event.EventEmitter {
                 clearTimeout ( this.waitingReplyTimeOut )
                 return this.emit ('CoNETConnected', attr )
             }
-            //console.log (`this.newMail\n${ email.toString() }`)
+            console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail ( attr, subject )
 
         }
@@ -1415,7 +1421,7 @@ export class imapPeer extends Event.EventEmitter {
     public Ping ( sendMail: boolean ) {
         
         if ( this.pingUuid && !sendMail ) {
-            return debug ? saveLog ( `Ping already waiting other ping, STOP!`): null
+            return debug ? saveLog ( `Ping already waiting other ping, STOP!\nthis.pingUuid = [${ this.pingUuid }], sendMail = [${ sendMail }]`, ): null
 		}
 		
 		this.emit ('ping')

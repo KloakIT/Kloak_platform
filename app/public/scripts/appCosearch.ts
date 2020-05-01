@@ -252,6 +252,7 @@ const appScript = {
 				self.searchInputTextShow ( search_text )
 				
 				self.returnSearchResultItemsInit ( args )
+				args.totalResults = args.totalResults.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 				self.searchItemsArray ( args )
 				self.showResultItems ( self, args )
 				_view.CanadaBackground ( false )
@@ -529,7 +530,8 @@ const appScript = {
 				self.newsLoadingGetResponse ( false )
 
 				const args = com.Args
-				self.newsItemsArray ( self.createNewsResult( self, args.param ))
+				args.totalResults = args.totalResults.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+				self.newsItemsArray ( self.createNewsResult( self, args ))
 				self.returnSearchResultItemsInit ( self.newsItemsArray () )
 	
 			})
