@@ -1,6 +1,6 @@
 # Kloak Platform/Kloakプラットフォーム/Kloak平台
 
-[![Build Status](https://travis-ci.org/QTGate/QTGate-Desktop-Client.svg?branch=master)](https://travis-ci.org/QTGate/QTGate-Desktop-Client)
+[![Build Status](https://travis-ci.org/KloakIT/Kloak_platform?branch=master)](https://travis-ci.org/KloakIT/Kloak_platform)
 [![Gitter](https://img.shields.io/badge/chat-on%20gitter-blue.svg)](https://gitter.im/QTGate/Lobby)
 [![Known Vulnerabilities](https://snyk.io/test/github/KloakIT/Kloak_platform/badge.svg)](https://snyk.io/test/github/KloakIT/Kloak_platform)
 [![Telegram](https://img.shields.io/badge/telebot-community%20group-blue.svg)](https://t.me/joinchat/IpX64hGK_95XDTXit42vOg)
