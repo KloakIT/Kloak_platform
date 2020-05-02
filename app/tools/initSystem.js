@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.CoNET_version = '0.1.6';
+exports.CoNET_version = '0.1.8';
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -539,29 +539,6 @@ exports.smtpVerify = (imapData, CallBack) => {
 };
 exports.getPbkdf2 = (config, passwrod, CallBack) => {
     return Crypto.pbkdf2(passwrod, config.salt, config.iterations, config.keylen, config.digest, CallBack);
-};
-exports.makeGpgKeyOption = (config, passwrod, CallBack) => {
-    const option = {
-        publicKeys: null,
-        privateKeys: null
-    };
-    OpenPgp.key.readArmored(CoNET_PublicKey).then(data => {
-        option.publicKeys = data.keys;
-        return OpenPgp.key.readArmored(CoNET_PublicKey).then(data => {
-            option.privateKeys = data.keys;
-            return exports.getPbkdf2(config, passwrod, (err, data) => {
-                if (err) {
-                    return CallBack(err);
-                }
-                return option.privateKeys[0].decrypt(data.toString('hex')).then(keyOK => {
-                    if (keyOK) {
-                        return CallBack(null, option);
-                    }
-                    return CallBack(new Error('password!'));
-                }).catch(CallBack);
-            });
-        });
-    });
 };
 async function saveEncryptoData(fileName, data, config, password, CallBack) {
     if (!data) {

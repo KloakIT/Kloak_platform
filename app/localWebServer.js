@@ -220,7 +220,7 @@ class localServer {
                 return socket.emit('systemErr');
             }
             return Async.eachSeries(_files, (n, next) => {
-                console.log(`Async.eachSeries _files[${n}]`);
+                console.log(`Async.eachSeries _files[${n}] typeof userConnect.getFile = [${typeof userConnect.getFile}]`);
                 return userConnect.getFile(n, (err, data) => {
                     if (err) {
                         return next(err);

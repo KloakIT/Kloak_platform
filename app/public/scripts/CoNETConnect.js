@@ -174,9 +174,7 @@ class CoNETConnect {
         if (!this.view.imapData.confirmRisk) {
             this.view.imapData.confirmRisk = true;
             this.view.keyPairCalss.saveImapIInputData(err => { });
-            return this.sendConnectMail(() => {
-                this.imapConform();
-            });
+            return this.sendConnectMail();
         }
         const self = this;
         this.showSendImapDataWarning(false);

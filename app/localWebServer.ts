@@ -242,7 +242,7 @@ export default class localServer {
 			}
 			
 			return Async.eachSeries ( _files, ( n, next ) => {
-				console.log (`Async.eachSeries _files[${ n }]`)
+				console.log (`Async.eachSeries _files[${ n }] typeof userConnect.getFile = [${ typeof userConnect.getFile }]`)
 				return userConnect.getFile ( n, ( err, data ) => {
 					
 					if ( err ) {

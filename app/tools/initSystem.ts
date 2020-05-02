@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CoNET_version = '0.1.6'
+export const CoNET_version = '0.1.8'
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'
@@ -608,34 +608,6 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 export const getPbkdf2 = ( config: install_config, passwrod: string, CallBack ) => {
 	
 	return Crypto.pbkdf2 ( passwrod, config.salt, config.iterations, config.keylen, config.digest, CallBack )
-}
-
-export const makeGpgKeyOption = ( config: install_config, passwrod: string, CallBack ) => {
-	const option = {
-		publicKeys: null,
-		privateKeys:null
-		
-	}
-	OpenPgp.key.readArmored ( CoNET_PublicKey).then ( data => {
-		option.publicKeys = data.keys
-		return OpenPgp.key.readArmored ( CoNET_PublicKey).then ( data => {
-			option.privateKeys = data.keys
-			return getPbkdf2 ( config, passwrod, ( err, data ) => {
-				if ( err ) {
-					return CallBack ( err )
-				}
-				return option.privateKeys[0].decrypt ( data.toString( 'hex' )).then ( keyOK => {
-					if ( keyOK ) {
-						return CallBack ( null, option )
-					}
-					return CallBack ( new Error ('password!'))
-				}).catch ( CallBack )
-			})
-		})
-	})
-	
-
-	
 }
 
 export async function saveEncryptoData ( fileName: string, data: any, config: install_config, password: string, CallBack ) {

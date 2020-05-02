@@ -212,9 +212,7 @@ class CoNETConnect {
 			
 			this.view.keyPairCalss.saveImapIInputData ( err => {})
 			
-			return this.sendConnectMail (() => {
-				this.imapConform ()
-			})
+			return this.sendConnectMail ()
 		}
 		const self = this
 		this.showSendImapDataWarning ( false )

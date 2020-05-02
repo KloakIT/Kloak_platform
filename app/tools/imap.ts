@@ -123,9 +123,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
 
     public preProcessCommane ( commandLine: string, _next, callback ) {
-		if ( /^IDLE\*/i.test( commandLine )) {
-			commandLine = commandLine.substr (4)
-		}
+		commandLine = commandLine.replace( /^ +/g,'').replace (/^IDLE\*/, '*')
 		const cmdArray = commandLine.split (' ')
 		
         this.debug ? debugOut ( `${commandLine}`, true, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
@@ -147,14 +145,15 @@ class ImapServerSwitchStream extends Stream.Transform {
                     clearTimeout ( this.idleResponsrTime )
 					this.runningCommand = false
 					
-                    if ( this.Tag !== cmdArray[0] ) {
-                        return this.serverCommandError ( new Error ( `this.Tag[${ this.Tag }] !== cmdArray[0] [${ cmdArray[0] }]\ncommandLine[${ commandLine }]` ), callback )
-                    }
+                    
                     if ( /^ok$/i.test ( cmdArray[1] ) || /^ok$/i.test ( cmdArray[0] )) {
                         
                         this.doCommandCallback ( null, commandLine )
                         return callback ()
 					}
+					if ( this.Tag !== cmdArray[0] ) {
+                        return this.serverCommandError ( new Error ( `this.Tag[${ this.Tag }] !== cmdArray[0] [${ cmdArray[0] }]\ncommandLine[${ commandLine }]` ), callback )
+                    }
 					console.log (`IMAP preProcessCommane on NO Tag!`, commandLine )
                     const errs = cmdArray.slice (2).join(' ')
                     this.doCommandCallback ( new Error ( errs ))
@@ -1426,13 +1425,13 @@ export class imapPeer extends Event.EventEmitter {
 		
 		this.emit ('ping')
 
-        const pingUuid = Uuid.v4 ()
+        this.pingUuid = Uuid.v4 ()
         
-        return  this.AppendWImap1 ( null, pingUuid, err => {
+        return  this.AppendWImap1 ( null, this.pingUuid, err => {
             if ( err ) {
+				this.pingUuid = null
                 return this.destroy ( err )
             }
-            this.pingUuid = pingUuid
             return this.setTimeOutOfPing ( sendMail )
         })
     }
