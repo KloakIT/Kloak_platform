@@ -1,6 +1,6 @@
 {
 	"name": "kloak_platform",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"license": "MIT",
 	"description": "Kloak platform",
 	"scripts": {
@@ -23,7 +23,7 @@
 		"@types/asn1js": "^0.0.1",
 		"@types/cookie-parser": "^1.4.2",
 		"@types/express": "^4.17.6",
-		"@types/jquery": "^3.3.36",
+		"@types/jquery": "^3.3.38",
 		"@types/knockout": "^3.4.67",
 		"@types/node": "^13.13.4",
 		"@types/node-uuid": "^0.0.28",
@@ -37,15 +37,15 @@
 	"build": {
 		"appId": "com.Kloak.Platform",
 		"win": {
-		"target": [
-			{
-				"target": "nsis"
-			},
-			{
-				"target": "squirrel"
-			}
-		],
-		"icon": "build/icon.ico"
+			"target": [
+				{
+					"target": "nsis"
+				},
+				{
+					"target": "squirrel"
+				}
+			],
+			"icon": "build/icon.ico"
 		},
 		"mac": {
 			"category": "public.app-category.utilities",
@@ -91,7 +91,7 @@
 		"core-js": "^3.6.5",
 		"express": "^4.17.1",
 		"jimp": "^0.10.3",
-		"jquery": "^3.5.0",
+		"jquery": "^3.5.1",
 		"jszip": "^3.4.0",
 		"knockout": "^3.5.1",
 		"mime-types": "^2.1.27",
@@ -100,7 +100,7 @@
 		"openpgp": "^4.10.4",
 		"pug": "^2.0.4",
 		"snapsvg": "^0.5.1",
-		"snyk": "^1.316.1",
+		"snyk": "^1.317.0",
 		"socket.io": "^2.3.0",
 		"socket.io-client": "^2.3.0"
 	},

@@ -137,12 +137,13 @@ class localServer {
         }
         const _exitFunction = err => {
             console.trace(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
-            userConnet = null;
             if (err && err.message) {
-                const errMessage = err.message;
                 //		network error
                 if (/ ECONNRESET /i.test) {
-                    return makeConnect();
+                    if (typeof userConnet.destroy === 'function') {
+                        userConnet.destroy();
+                    }
+                    this.imapConnectPool.set(imapData.account, userConnet = socket["userConnet"] = makeConnect());
                 }
             }
             return console.log(`_exitFunction doing nathing!`);

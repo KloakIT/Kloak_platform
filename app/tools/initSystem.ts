@@ -131,30 +131,6 @@ export const getLocalInterface = () => {
 	return ret
 }
 
-export const InitConfig = () => {
-	const ret: install_config = {
-		firstRun: true,
-		alreadyInit: false,
-		multiLogin: false,
-		version: CoNET_version,
-		newVersion: null,
-		newVerReady: false,
-		keypair: InitKeyPair (),
-		salt: Crypto.randomBytes ( 64 ),
-		iterations: 2000 + Math.round ( Math.random () * 2000 ),
-		keylen: Math.round ( 16 + Math.random() * 30 ),
-		digest: 'sha512',
-		freeUser: true,
-		account: null,
-		serverGlobalIpAddress: null,
-		serverPort: LocalServerPortNumber,
-		connectedQTGateServer: false,
-		localIpAddress: getLocalInterface (),
-		lastConnectType: 1,
-		connectedImapDataUuid: null
-	}
-	return ret
-}
 
 export const getNickName = ( str: string ) => {
 	const uu = str.split ('<')
@@ -276,44 +252,6 @@ export const saveConfig = ( config: install_config, CallBack ) => {
 	return Fs.writeFile ( configPath, JSON.stringify ( config ), CallBack )
 }
 
-export const checkConfig = CallBack => {
-	Fs.access ( configPath, err => {
-		
-		if ( err ) {
-			return CallBack ( null, InitConfig ())
-		}
-		let config: install_config = null
-
-		try {
-			config = require ( configPath )
-		} catch ( e ) {
-			return CallBack ( null, InitConfig ())
-		}
-		config.salt = Buffer.from ( config.salt['data'] )
-		
-		//		update?
-
-		config.version = CoNET_version
-		config.newVerReady = false
-		config.newVersion = null
-		config.serverPort = LocalServerPortNumber
-		config.localIpAddress = getLocalInterface ()
-		config.firstRun = false
-		if ( !config.keypair || ! config.keypair.publicKey ) {
-			return CallBack ( null, config )
-		}
-		return getKeyPairInfo ( config.keypair.publicKey, config.keypair.privateKey, null, ( err, key: keypair ) => {
-			if ( err ) {
-				CallBack ( err )
-				return console.log (`checkConfig getKeyPairInfo error`, err )
-			}
-			
-			config.keypair = key
-			return CallBack ( null, config )			
-		})
-
-	})
-}
 
 export const newKeyPair = ( emailAddress: string, nickname: string, password: string, CallBack ) => {
 	const userId = {
@@ -602,133 +540,6 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 		}
 		console.log (`smtpVerify already did CallBack!`)
 	})
-	
-}
-
-export const getPbkdf2 = ( config: install_config, passwrod: string, CallBack ) => {
-	
-	return Crypto.pbkdf2 ( passwrod, config.salt, config.iterations, config.keylen, config.digest, CallBack )
-}
-
-export async function saveEncryptoData ( fileName: string, data: any, config: install_config, password: string, CallBack ) {
-		
-	if ( ! data ) {
-		return Fs.unlink ( fileName, CallBack )
-	}
-	const _data = JSON.stringify ( data )
-	const publicKeys = ( await OpenPgp.key.readArmored ( config.keypair.publicKey )).keys
-	const privateKeys = ( await OpenPgp.key.readArmored ( config.keypair.privateKey )).keys[0]
-	const options = {
-		message: OpenPgp.message.fromText ( _data ),
-		//compression: OpenPgp.enums.compression.zip,
-		publicKeys: publicKeys,
-		privateKeys: [ privateKeys ]
-	}
-	//console.log (`saveEncryptoData Encrypto data with public key[${ Util.inspect (publicKeys[0].users[0].userId.userid, false, 2, true )}]`)
-	return getPbkdf2 ( config, password, ( err, data: Buffer ) => {
-		if ( err ) {
-			return CallBack ( err )
-		}
-		return privateKeys.decrypt ( data.toString( 'hex' ))
-		.then ( keyOK => {
-			console.log (`keyOK = [${ keyOK }]`)
-			return OpenPgp.encrypt ( options )
-				.then ( ciphertext => {
-					
-
-					return Fs.writeFile ( fileName, ciphertext.data, { encoding: 'utf8' }, async err => {
-						//		test 
-						/*
-						console.log (`Fs.writeFile success! doing test!\n${ ciphertext.data }\n${ JSON.stringify(ciphertext.data)}`)
-						const option11 = {
-							privateKeys: [privateKeys],
-							publicKeys: publicKeys,
-							message: await OpenPgp.message.readArmored( ciphertext.data )
-						}
-
-						console.log (`${ Util.inspect(option11, false, 2, true )}`)
-						OpenPgp.decrypt( option11 ).then ( plaintext => {
-							console.log ( `OpenPgp.decrypt success!`,plaintext.data )
-							return CallBack ()
-						})
-						/** */
-						return CallBack ( err )
-					})
-				})
-		}).catch ( CallBack )
-		
-		
-	})
-
-}
-
-export async function readEncryptoFile ( filename: string, savedPasswrod, config: install_config, CallBack ) {
-	if ( ! savedPasswrod || ! savedPasswrod.length || ! config || ! config.keypair || ! config.keypair.createDate ) {
-		return CallBack ( new Error ('readImapData no password or keypair data error!'))
-	}
-	const options11 = {
-		message: null,
-		publicKeys: ( await OpenPgp.key.readArmored ( config.keypair.publicKey )).keys,
-		privateKeys: ( await OpenPgp.key.readArmored ( config.keypair.privateKey )).keys
-	}
-
-	return Async.waterfall ([
-		next => Fs.access ( filename, next ),
-		( acc, next ) => {
-			/**
-			 * 		support old nodejs 
-			 */
-			
-			let _next = acc
-			if ( typeof _next !== 'function') {
-				//console.trace (` _next !== 'function' [${ typeof _next}]`)
-				_next = next
-			}
-			getPbkdf2 ( config, savedPasswrod, _next )
-		},
-		( data: Buffer, next ) => {
-			
-			return options11.privateKeys[0].decrypt ( data.toString( 'hex' )).then ( keyOk => {
-				
-				if ( !keyOk ) {
-					return next ( new Error ( 'key password not OK!' ))
-				}
-				return next ()
-			}).catch ( err => {
-				console.log ( `options.privateKey.decrypt err`, err )
-				next ( err )
-			})
-			
-		},
-		next => {
-			Fs.readFile ( filename, 'utf8', next )
-		}], async ( err, data ) => {
-			if ( err ) {
-				return CallBack ( err )
-			}
-			
-			try {
-				options11.message = await OpenPgp.message.readArmored ( data.toString ())
-			} catch ( ex ) {
-				console.log (`options.message error!\n${ data.toString ()}`)
-				return CallBack ( ex )
-			}
-			let _return = false
-			return OpenPgp.decrypt ( options11 ).then ( async data => {
-				
-				_return = true
-				await data.signatures[0].verified
-				if ( data.signatures[0].verified ) {
-					return CallBack ( null, data.data )
-				}
-				return CallBack ( new Error ( 'signatures error!' ))
-			}).catch ( ex => {
-				if ( !_return ) {
-					return CallBack ( ex )
-				}	
-				console.log (`OpenPgp.decrypt catch Error`, ex )
-			})
-		})
 	
 }
 

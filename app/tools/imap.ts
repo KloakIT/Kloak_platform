@@ -1350,7 +1350,7 @@ export class imapPeer extends Event.EventEmitter {
 
     public domainName = this.imapData.imapUserName.split('@')[1]
     private waitingReplyTimeOut: NodeJS.Timer = null
-    private pingUuid = null
+    public pingUuid = null
     private doingDestroy = false
     
     public peerReady = false

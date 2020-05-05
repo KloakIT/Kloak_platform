@@ -21,7 +21,6 @@ import * as SocketIo from 'socket.io'
 import * as Tool from './tools/initSystem'
 import * as Async from 'async'
 import * as Fs from 'fs'
-import * as Util from 'util'
 import * as Uuid from 'node-uuid'
 import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
@@ -129,12 +128,18 @@ export default class localServer {
 		const _exitFunction = err => {
 			console.trace ( `makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err )
 
-			userConnet = null
+			
 			if ( err && err.message ) {
-				const errMessage = err.message
+				
 				//		network error
 				if ( / ECONNRESET /i.test) {
-					return makeConnect()
+					if ( typeof userConnet.destroy === 'function' ) {
+						userConnet.destroy ()
+					}
+					
+					this.imapConnectPool.set ( imapData.account, userConnet = socket [ "userConnet" ] = makeConnect ())
+					
+					
 				}
 			}
 			return console.log (`_exitFunction doing nathing!`)
