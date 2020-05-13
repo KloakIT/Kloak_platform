@@ -10,7 +10,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${file}",
+            "program": "${workspaceRoot}/app/tools/imapNetworkTest.js",
             "outFiles": [
                 "${workspaceRoot}/out/**/*.js"
             ]
