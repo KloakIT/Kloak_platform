@@ -33,14 +33,18 @@ const imapData = {
   }
 
 
-const newRead = ( imapData: IinputData, listenFolder, mailRead, CallBack ) => {
-
-	const rImap = new Imap.qtGateImapRead ( imapData, listenFolder, DEBUG, mail => {
+const newRead = ( imapData: IinputData, listenFolder, mailRead ) => {
+	let _err = null
+	const rImap = new Imap.qtGateImapRead ( imapData, listenFolder, false, mail => {
 		DEBUG ? Imap.saveLog ( `rImap newRead ON 'mail' )`, true ): null
-        mailRead ( mail, rImap )
+		mailRead ( mail, _err )
+		rImap.logout ( err => {
+
+		})
     })
 
     rImap.once ( 'end', err => {
+		_err = err
 		DEBUG ? Imap.saveLog ( `---------------------------------------------------------- rImap newRead ON 'END' ) err = [${ err }]`, true ): null
     })
 
@@ -59,48 +63,38 @@ const _testImap = ( imapData: IinputData, data, CallBack ) => {
 	}
 	let startTime = null
 	
-	const readMail = ( mail, imap ) => {
+	const readMail = ( mail, err ) => {
+		if ( err ) {
+			return CallBack ( null, result )
+		}
 		result.download = new Date().getTime () - startTime
 		
-		return _exit ( imap )
+		return  CallBack ( null, result )
+
 	}
 
-	const _exit = ( rImap: Imap.qtGateImapRead ) => {
-		
-		console.log (`---------------------------------------------------------- now _exit, imap = [${ typeof rImap }]`)
-		rImap.logout (() => {
-			return CallBack( null, result )
-		})
-	}
-	
-	const exit = err => {
-		
+	const ddTime = new Date().getTime()
+	return Imap.seneMessageToFolder ( imapData, listenFolder, data, listenFolder, err => {
 		if ( err ) {
 			return CallBack ( err )
 		}
-		
-	}
-	const ddTime = new Date().getTime()
-	Async.series( [
-		next => Imap.seneMessageToFolder ( imapData, listenFolder, data, listenFolder, next ),
-		next => {
-			
-			startTime = new Date().getTime()
-			result.upload = startTime - ddTime
-			newRead ( imapData, listenFolder, readMail, next )
-		}
-	], exit )
 
+		startTime = new Date().getTime()
+		result.upload = startTime - ddTime
+		return newRead ( imapData, listenFolder, readMail )
+	})
 }
-const startLength = 1024 * 2000 //	Mb
-const testImap = () => {
-	const buffData = Buffer.alloc ( startLength ).toString('base64')
-	_testImap ( imapData, buffData, ( err, data ) => {
+const startLength = 1024 * 100 //	100 KB
+
+const testImap = ( firstLength: number ) => {
+	const buffData = Buffer.alloc ( startLength ).toString ('base64')
+	return _testImap ( imapData, buffData, ( err, data ) => {
 		if ( err ) {
 			return console.log ( err )
 		}
 		return console.log (`---------------------------------------------------------- IMAP test success!`, data )
+		
 	})
 }
 
-testImap ()
+testImap ( startLength )

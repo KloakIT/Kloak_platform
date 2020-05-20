@@ -70,8 +70,7 @@ const imapErrorCallBack = (message) => {
     return -1;
 };
 class localServer {
-    constructor(cmdResponse, test) {
-        this.cmdResponse = cmdResponse;
+    constructor(folderName = '') {
         this.expressServer = Express();
         this.httpServer = HTTP.createServer(this.expressServer);
         this.socketServer = SocketIo(this.httpServer);
@@ -92,13 +91,15 @@ class localServer {
         this.expressServer.use(Express.static(Tool.QTGateFolder));
         this.expressServer.use(Express.static(Path.join(__dirname, 'public')));
         this.expressServer.use(Express.static(Path.join(__dirname, 'html')));
-        this.expressServer.get('/', (req, res) => {
+        this.expressServer.get(`${folderName}/`, (req, res) => {
             res.render('home', { title: 'home', proxyErr: false });
         });
-        this.expressServer.get('/message', (req, res) => {
-            res.render('home/message', { title: 'message', proxyErr: false });
-        });
-        this.expressServer.get('/browserNotSupport', (req, res) => {
+        /*
+        this.expressServer.get ( `${ folderName }/message`, ( req, res ) => {
+            res.render( 'home/message', { title: 'message', proxyErr: false  })
+        })
+        */
+        this.expressServer.get(`${folderName}/browserNotSupport`, (req, res) => {
             res.render('home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false });
         });
         this.socketServer.on('connection', socker => {

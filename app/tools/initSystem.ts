@@ -490,7 +490,6 @@ const _smtpVerify = ( imapData: IinputData, CallBack: ( err?: Error, success?: a
 export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) => {
 	console.log (`doing smtpVerify!`)
 	let testArray: IinputData[] = null
-	let _ret = false
 	let err1 = null
 	if ( typeof imapData.smtpPortNumber === 'object' ) {
 		testArray = imapData.smtpPortNumber.map ( n => { 
@@ -519,24 +518,27 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 				}
 				return next ()
 			}
-			console.log (success)
-			if ( ! _ret ) {
-				_ret = true
+			console.log ( success )
+			if ( typeof CallBack === 'function' ) {
+
 				imapData.smtpPortNumber = n.smtpPortNumber
 				imapData.smtpSsl = n.smtpSsl
 				imapData.ciphers = n.ciphers
-				return CallBack ()
+				CallBack ()
+				CallBack = null
 			}
-			
+			return next ()
 		})
 	}, ( err: Error ) => {
 		if ( err ) {
 			console.log ( `smtpVerify ERROR = [${ err.message }]`)
 			return CallBack ( err )
 		}
-		if ( ! _ret ) {
+
+		if ( typeof CallBack === 'function' ) {
 			console.log ( `smtpVerify success Async!`)
-			return CallBack ()
+			CallBack ()
+			return CallBack = null
 		}
 		console.log (`smtpVerify already did CallBack!`)
 	})

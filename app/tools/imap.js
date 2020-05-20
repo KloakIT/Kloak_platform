@@ -288,7 +288,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                         return getNewMail(_uid, next);
                     }
                     return next();
-                }, (err, newM) => {
+                }, err => {
                     this.runningCommand = null;
                     if (err) {
                         debug ? exports.saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err.message}]`) : null;
@@ -563,7 +563,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.Tag = `A${this.imapServer.TagCount1()}`;
         this.cmd = `APPEND "${this.imapServer.writeFolder}" {${out.length}${this.imapServer.literalPlus ? '+' : ''}}`;
         this.cmd = `${this.Tag} ${this.cmd}`;
-        const time = out.length / 1000 + 20000;
+        const time = out.length + 30000;
         this.debug ? debugOut(this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (!this.writable) {
             //console.log (`[${ this.imapServer.imapSerialID }] ImapServerSwitchStream append !this.writable doing imapServer.socket.end ()`)
@@ -632,7 +632,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.Tag = `A${this.imapServer.TagCount1()}`;
         this.cmd = `APPEND "${folderName}" {${_length}${this.imapServer.literalPlus ? '+' : ''}}`;
         this.cmd = `${this.Tag} ${this.cmd}`;
-        const _time = _length / 1000 + 20000;
+        const _time = _length + 1000 * 60;
         this.debug ? debugOut(this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (!this.writable) {
             return this.doCommandCallback(new Error('! imap.writable '));
@@ -717,11 +717,11 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.appendWaitResponsrTimeOut = timers_1.setTimeout(() => {
             //this.imapServer.emit ( 'error', new Error (`${ this.cmd } timeout!`))
             return this.doCommandCallback(new Error(`${this.cmd} timeout!`));
-        }, this.imapServer.fetching / 1000);
+        }, this.imapServer.fetching + 1000 * 60);
         if (this.writable) {
             return this.push(this.cmd + '\r\n');
         }
-        return this.imapServer.logout();
+        return this.imapServer.destroyAll(null);
     }
     deleteBox(CallBack) {
         this.doCommandCallback = CallBack;

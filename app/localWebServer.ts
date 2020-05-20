@@ -394,7 +394,7 @@ export default class localServer {
 		return this.listenAfterPassword ( socket )
 	}
 
-	constructor( private cmdResponse: ( cmd: QTGateAPIRequestCommand ) => void, test: boolean ) {
+	constructor ( folderName: string = '' ) {
 		//Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
 		//Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
 		Express.static.mime.define ({ 'application/x-mimearchive' : ['mhtml','mht'] })
@@ -404,15 +404,15 @@ export default class localServer {
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'public' )))
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'html' )))
 		
-		this.expressServer.get ( '/', ( req, res ) => {
+		this.expressServer.get ( `${ folderName }/`, ( req, res ) => {
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
-
-		this.expressServer.get ( '/message', ( req, res ) => {
+		/*
+		this.expressServer.get ( `${ folderName }/message`, ( req, res ) => {
             res.render( 'home/message', { title: 'message', proxyErr: false  })
 		})
-
-		this.expressServer.get ( '/browserNotSupport', ( req, res ) => {
+		*/
+		this.expressServer.get ( `${ folderName }/browserNotSupport`, ( req, res ) => {
             res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
 		})
 
