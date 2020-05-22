@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const DEBUG = false;
+const DEBUG = true;
 const port = 3000;
 const path_1 = require("path");
 const url_1 = require("url");
@@ -56,16 +56,6 @@ const _doUpdate = (tag_name, _port) => {
     });
     autoUpdater.setFeedURL(url);
     autoUpdater.checkForUpdates();
-};
-const createLocalBrowser = () => {
-    const localServer = new BrowserWindow({
-        show: true,
-        webPreferences: {
-            nodeIntegration: true
-        }
-    });
-    DEBUG ? localServer.webContents.openDevTools() : null;
-    localServer.loadURL(`http://localhost:${port}`);
 };
 const createWindow = () => {
     /*
@@ -135,16 +125,6 @@ const getLocalLanguage = (lang) => {
 };
 let localLanguage = getLocalLanguage(app.getLocale());
 const isMacOS = process.platform === 'darwin';
-const template = [{
-        submenu: [
-            { role: 'undo', visible: isMacOS },
-            { role: 'redo', visible: isMacOS },
-            { role: 'selectall', visible: isMacOS },
-            { role: 'copy', visible: isMacOS },
-            { role: 'paste', visible: isMacOS },
-            { role: 'quit', visible: isMacOS }
-        ]
-    }];
 const appReady = () => {
     //const menu = Menu.buildFromTemplate( template )
     //Menu.setApplicationMenu ( menu)

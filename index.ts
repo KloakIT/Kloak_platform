@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const DEBUG = false
+const DEBUG = true
 const port = 3000
 
 import { join } from  'path'
@@ -67,18 +67,6 @@ const _doUpdate = ( tag_name: string, _port ) => {
 
     autoUpdater.setFeedURL ( url )
     autoUpdater.checkForUpdates ()
-}
-
-const createLocalBrowser = () => {
-	const localServer = new BrowserWindow (
-		{ 
-			show: true,
-			webPreferences: {
-				nodeIntegration: true
-			}
-		})
-	DEBUG ? localServer.webContents.openDevTools() : null
-	localServer.loadURL ( `http://localhost:${ port }`)
 }
 
 const createWindow = () => {
@@ -156,17 +144,6 @@ let localLanguage = getLocalLanguage ( app.getLocale ())
 
 const isMacOS = process.platform === 'darwin'
 
-const template = [{
-        submenu:[
-        { role: 'undo', visible: isMacOS },
-        { role: 'redo', visible: isMacOS },
-        { role: 'selectall', visible: isMacOS },
-        { role: 'copy', visible: isMacOS },
-        { role: 'paste', visible: isMacOS },
-        { role: 'quit', visible: isMacOS }
-        ]
-    }]
-
 const appReady = () => {
     
     //const menu = Menu.buildFromTemplate( template )
@@ -230,7 +207,7 @@ const appReady = () => {
 const initialize = () => {
 	const gotTheLock = app.requestSingleInstanceLock()
 
-	if (!gotTheLock) {
+	if ( ! gotTheLock ) {
 
 		return app.quit()
 

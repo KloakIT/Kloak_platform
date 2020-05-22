@@ -16,5 +16,6 @@
  */
 
 import localWebServer from './app/localWebServer'
-const folderName = process.argv[2] || ''
-new localWebServer ( folderName )
+const folderName = process.argv[3] || ''
+const portNumber = parseInt ( process.argv[2] )|| 3000
+new localWebServer ( portNumber, folderName )

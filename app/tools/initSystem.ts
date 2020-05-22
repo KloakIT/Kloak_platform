@@ -15,21 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const CoNET_version = '0.1.10'
+
 import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'
 import * as Async from 'async'
-import * as Crypto from 'crypto'
 import * as OpenPgp from 'openpgp'
-import * as Util from 'util'
 import * as Http from 'http'
 import * as Https from 'https'
 import * as Net from 'net'
 import * as Nodemailer from 'nodemailer'
 import * as Url from 'url'
-import { StringDecoder } from 'string_decoder'
-import { DH_CHECK_P_NOT_SAFE_PRIME } from 'constants';
 /**
  * 		define
  */

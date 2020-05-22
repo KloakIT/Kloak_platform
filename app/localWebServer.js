@@ -26,6 +26,7 @@ const Uuid = require("node-uuid");
 const Imap = require("./tools/imap");
 const coNETConnect_1 = require("./tools/coNETConnect");
 const mime = require("mime-types");
+const Package = require('../package.json');
 let logFileFlag = 'w';
 const saveLog = (err) => {
     if (!err) {
@@ -37,13 +38,13 @@ const saveLog = (err) => {
         return logFileFlag = 'a';
     });
 };
-const saveServerStartup = (localIpaddress) => {
-    const info = `\n*************************** Kloak Platform [ ${Tool.CoNET_version} ] server start up *****************************\n` +
-        `Access url: http://${localIpaddress}:${Tool.LocalServerPortNumber}\n`;
+const saveServerStartup = (postNumber, rootPath) => {
+    const info = `\n*************************** Kloak Platform [ ${Package.version} ] server start up *****************************\n` +
+        `Access url: http://localhost:${postNumber}${rootPath}\n`;
     saveLog(info);
 };
 const saveServerStartupError = (err) => {
-    const info = `\n*************************** Kloak Platform [ ${Tool.CoNET_version} ] server startup falied *****************************\n` +
+    const info = `\n*************************** Kloak Platform [ ${Package.version} ] server startup falied *****************************\n` +
         `platform ${process.platform}\n` +
         `${err['message']}\n`;
     saveLog(info);
@@ -70,7 +71,7 @@ const imapErrorCallBack = (message) => {
     return -1;
 };
 class localServer {
-    constructor(folderName = '') {
+    constructor(postNumber = 3000, folderName = '') {
         this.expressServer = Express();
         this.httpServer = HTTP.createServer(this.expressServer);
         this.socketServer = SocketIo(this.httpServer);
@@ -91,7 +92,8 @@ class localServer {
         this.expressServer.use(Express.static(Tool.QTGateFolder));
         this.expressServer.use(Express.static(Path.join(__dirname, 'public')));
         this.expressServer.use(Express.static(Path.join(__dirname, 'html')));
-        this.expressServer.get(`${folderName}/`, (req, res) => {
+        const localPath = `/${folderName}`;
+        this.expressServer.get(localPath, (req, res) => {
             res.render('home', { title: 'home', proxyErr: false });
         });
         /*
@@ -114,8 +116,8 @@ class localServer {
             if (err) {
                 return saveServerStartupError(err);
             }
-            return this.httpServer.listen(Tool.LocalServerPortNumber, () => {
-                saveServerStartup(`localhost`);
+            return this.httpServer.listen(postNumber, () => {
+                saveServerStartup(postNumber, localPath);
             });
         });
     }

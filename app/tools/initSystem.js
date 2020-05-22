@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /*!
  * Copyright 2018 CoNET Technology Inc. All Rights Reserved.
  *
@@ -15,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.CoNET_version = '0.1.10';
+Object.defineProperty(exports, "__esModule", { value: true });
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -202,7 +201,7 @@ exports.emitConfig = (config, passwordOK) => {
         firstRun: config.firstRun,
         alreadyInit: config.alreadyInit,
         newVerReady: config.newVerReady,
-        version: exports.CoNET_version,
+        version: CoNET_version,
         multiLogin: config.multiLogin,
         freeUser: config.freeUser,
         account: config.keypair && config.keypair.email ? config.keypair.email : null,
