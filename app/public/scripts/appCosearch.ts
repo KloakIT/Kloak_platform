@@ -245,6 +245,17 @@ const appScript = {
 				return errorProcess ( com.error )
 			}
 
+			/**
+			 * 
+			 * 		for fileDownload
+			 * 
+			 */
+
+			if ( com.subCom === "downloadFile") {
+
+				return 
+			}
+
 			if ( com.subCom === 'webSearch') {
 				self.showInputLoading ( false )
 				
