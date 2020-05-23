@@ -17,6 +17,7 @@ Kloak平台集成了一系列應用來使用[CoNET](https://github.com/QTGate/Co
 
 [WIndows, MacOS, Linux](https://github.com/KloakIT/Kloak_platform/releases/latest)
 
+NodeJS
 ```
 npm install kloak_platform -g
 ```
