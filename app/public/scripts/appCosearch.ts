@@ -246,9 +246,16 @@ const appScript = {
 			}
 
 			/**
+			 * 		
+			 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
+			 * 		{
+			 * 		 	Content-Type: string
+			 * 			fileExpansion: string
+			 * 			fileName: string
+			 * 			length: string ( If null server have not support breakpoint resume )
+			 * 			url: string
 			 * 
-			 * 		for fileDownload
-			 * 
+			 * 		}
 			 */
 
 			if ( com.subCom === "downloadFile") {
