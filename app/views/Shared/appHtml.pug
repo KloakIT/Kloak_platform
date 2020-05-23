@@ -496,12 +496,17 @@
 									.meta( style="margin:unset;")
 										span
 											
-											<!-- ko if: !showLoading() && ! snapshotReady() && !showError() -->
+											<!-- ko if: !showLoading() && ! snapshotReady() && !showError() && ! showDownload() -->
 											i.icon.object.group.grey.link( data-bind = "click: function() { $parents[0].getSnapshotClick( $parents[0], $index ())}")
 											<!-- /ko -->
 
 											<!-- ko if: showLoading -->
 											i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }")
+											<!-- /ko -->
+
+											<!-- ko if: showDownload -->
+											spam( style = "position: relative; padding-right: 25px;")
+												img( src = "/images/downloads1.gif" style = "width: 20px; position: absolute;" )
 											<!-- /ko -->
 
 											<!-- ko if: snapshotReady -->
@@ -520,7 +525,7 @@
 										<!-- ko if: newsBrand -->
 										p
 											span
-												<!-- ko if: !showLoading() && ! snapshotReady() && !showError() -->
+												<!-- ko if: !showLoading() && ! snapshotReady() && !showError() && !showDownload() -->
 												a.ui.image.mini( data-bind = "click: function() { $parents[0].getSnapshotClick( $parents[0], $index ())}" href="#")
 													img( data-bind="attr: { src: newsBrandImg }")
 												//-i.icon.object.group.grey.link( data-bind = "click: function() { $parents[0].getSnapshotClick( $parents[0], $index ())}")
@@ -531,6 +536,11 @@
 												i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }" )
 												<!-- /ko -->
 
+												<!-- ko if: showDownload -->
+												spam( style = "position: relative; padding-right: 25px;")
+													img( src = "/images/downloads1.gif" style = "width: 20px; position: absolute;" )
+												<!-- /ko -->
+
 												<!-- ko if: snapshotReady -->
 												i.icon.file.image.outline.olive.link( data-bind = "click: function() { $parents[0].showSnapshotClick( $parents[0], $index())}" )
 												<!-- /ko -->
@@ -539,16 +549,16 @@
 												i.icon.info.circle.red.link( data-bind = "attr: { id: id, 'data-content': messageBoxDefine [ errorIndex()] [ $root.languageIndex()]}")
 												<!-- /ko -->
 
-											span( data-bind = " text: newsBrand " style = "font-weight: bolder; color: #906363db;" )
+											span( data-bind = "text: newsBrand, style: { color: snapshotReady() ? '#b5cc18' : '#906363db'}" style = "font-weight: bolder;" )
 											<!-- ko if: beforeTime -->
 											<!-- ko with: beforeTime -->
 
 											<!-- ko if: timeNumber -->
-											span( data-bind = "text: ' - ' + timeNumber + ' ' + infoDefine[ $root.languageIndex() ].coSearch.timeUnit[ timeUnit ]" style = "font-weight: bolder; color: #906363db;")
+											span( data-bind = "text: ' - ' + timeNumber + ' ' + infoDefine[ $root.languageIndex() ].coSearch.timeUnit[ timeUnit ], style: { color: snapshotReady() ? '#b5cc18' : '#906363db'}" style = "font-weight: bolder; color: #906363db;")
 											<!-- /ko -->
 
 											<!-- ko if: time -->
-											span( data-bind = "text: ' - ' + infoDefine[ $root.languageIndex() ].coSearch.TimeTolocalTime ( time )" style = "font-weight: bolder; color: #906363db;")
+											span( data-bind = "text: ' - ' + infoDefine[ $root.languageIndex() ].coSearch.TimeTolocalTime ( time ), style: { color: snapshotReady() ? '#b5cc18' : '#906363db'}" style = "font-weight: bolder; color: #906363db;")
 											<!-- /ko -->
 
 											<!-- /ko -->
@@ -593,7 +603,7 @@
 
 		<!-- /ko -->
 
-		<!-- ko if: !showMain() && showSnapshop () -->
+		<!-- ko if: showSnapshop () -->
 		#subPage( data-bind = " with: showWebPage ")
 			
 			.ui.top.fixed.menu.borderless
@@ -638,10 +648,11 @@
 
 		<!-- /ko -->
 
-		<!-- ko if: !showMain() && showSearchSimilarImagesResult () -->
+		<!-- ko if: showSearchSimilarImagesResult () -->
 		.closeButton( style = "z-index: 999;top: 1.3em; left: 1em; position: fixed; width: 2em;" )
 			i.icon.left.chevron.link.circular.teal( data-bind = "click: closeSimilarImagesResult " )
-		<!-- ko if: !showMain() && !showSnapshop()-->
+		
+		<!-- ko if: !showSnapshop() -->
 		.images-wrapper( data-bind = " foreach: searchSimilarImagesList ")
 			.image-wrapper(data-bind="event: {mouseleave: function(){showOptions(false)}, mouseenter: function() {showOptions(true)}}")
 				<!-- ko if: showOptions() -->
@@ -669,6 +680,10 @@
 					a.image-link(data-bind="text: domain, attr: {'href': domain, 'target': '_blank'}")
 				img.image-item( data-bind = "attr: { src: imgSrc }")
 		<!-- /ko -->
+		<!-- /ko -->
+
+		<!-- ko if: showDownloadProcess -->
+		
 		<!-- /ko -->
 	
 	<!-- /ko -->

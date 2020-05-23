@@ -76,7 +76,8 @@ const appScript = {
 	nextButtonErrorIndex: ko.observable ( false ),
 	nextButtonConetResponse: ko.observable ( false ),
 	nextButtonLoadingGetResponse: ko.observable ( false ),
-
+	showDownloadProcess: ko.observable ( false ),
+	showDownload: ko.observable ( false ),
 
 	//	['originImage']
 
@@ -150,6 +151,7 @@ const appScript = {
 			n['webUrlHref'] = n.clickUrl
 			
 			n['imgUrlHref'] = n.imgSrc
+			n['showDownload'] = ko.observable ( false )
 			
 			/* ====================================================================================================================
 			ANDY - MASONARY IMAGES
@@ -244,7 +246,7 @@ const appScript = {
 			if ( com.error ) {
 				return errorProcess ( com.error )
 			}
-
+			self.showInputLoading ( false )
 			/**
 			 * 		
 			 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
@@ -259,12 +261,15 @@ const appScript = {
 			 */
 
 			if ( com.subCom === "downloadFile") {
-
+				
+				self.showMain ( false )
+				const args = com.Args[0]
+				self.showDownloadProcess ( true )
 				return 
 			}
 
 			if ( com.subCom === 'webSearch') {
-				self.showInputLoading ( false )
+				
 				
 				const args = com.Args
 				self.searchInputTextShow ( search_text )
@@ -279,7 +284,10 @@ const appScript = {
 			
 			const arg: string = com.Args[0]
 			const uuid = arg.split(',')[0].split ('.')[0]
+
+			self.showDownload ( true )
 			return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
+				self.showDownload ( false )
 				if ( err ) {
 					return errorProcess ( err )
 				}
@@ -643,7 +651,7 @@ const appScript = {
   // CHANGED ============================================
   getSnapshotClick: (self, index, isImage?: boolean) => {
     let currentItem = null
-    if (isImage) {
+    if ( isImage ) {
 		currentItem = self.searchSimilarImagesList()[index]
 		currentItem.showImageLoading(true)
     } else {
@@ -676,47 +684,44 @@ const appScript = {
 		if (err) {
 			return showError(err)
 		}
-		if (!com) {
+		if ( !com ) {
 			currentItem.loadingGetResponse(true)
 			return currentItem.conetResponse(false)
 		}
-		if (com.error === -1) {
+		if ( com.error === -1 ) {
 			currentItem.loadingGetResponse(false)
 			return currentItem.conetResponse(true)
 		}
-		if (com.error) {
+		if ( com.error ) {
 			return showError(com.error)
 		}
 
 		const arg: string = com.Args[0]
 		currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
-		return _view.connectInformationMessage.sockEmit(
-			'getFilesFromImap',
-			arg,
-			(err, buffer: string) => {
-			if (err) {
+		currentItem.showDownload ( true )
+		currentItem.showLoading ( false )
+		return _view.connectInformationMessage.sockEmit( 'getFilesFromImap', arg, ( err, buffer: string ) => {
+			currentItem.showDownload ( false )
+			if ( err ) {
 				return showError(err);
 			}
-			return _view.keyPairCalss.decryptMessageToZipStream(
-				buffer,
-				(err, data) => {
-				if (err) {
-					return showError(err);
+			return _view.keyPairCalss.decryptMessageToZipStream( buffer, ( err, data ) => {
+				if ( err ) {
+					return showError( err )
 				}
 				isImage
-					? currentItem.snapshotImageReady(true)
-					: currentItem.snapshotReady(true);
+					? currentItem.snapshotImageReady ( true )
+					: currentItem.snapshotReady (true )
 				isImage
-					? currentItem.showImageLoading(false)
-					: currentItem.showLoading(false);
-				currentItem.loadingGetResponse(false);
-				currentItem.conetResponse(false);
-				return (currentItem.snapshotData = data);
+					? currentItem.showImageLoading ( false )
+					: currentItem.showLoading ( false ) 
+				currentItem.loadingGetResponse ( false ) 
+				currentItem.conetResponse ( false )
+				return ( currentItem.snapshotData = data )
 				}
-			);
-			}
-		);
-    };
+			)}
+		)
+    }
 
     const url = isImage ? currentItem.clickUrl : currentItem.url;
     const width = $(window).width();

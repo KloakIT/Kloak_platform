@@ -230,6 +230,7 @@ export default class localServer {
 			CallBack1( uuid )
 			let ret = ''
 			const _callBack = ( err ) => {
+				console.timeEnd (`getFilesFromImap ${ _files }`)
 				socket.emit ( uuid, err, ret  )
 			}
 			
@@ -246,7 +247,7 @@ export default class localServer {
 				console.log (`getFilesFromImap error:![ Have no userConnect ]`)
 				return socket.emit ( 'systemErr' )
 			}
-			
+			console.time (`getFilesFromImap ${ _files }`)
 			return Async.eachSeries ( _files, ( n, next ) => {
 				console.log (`Async.eachSeries _files[${ n }] typeof userConnect.getFile = [${ typeof userConnect.getFile }]`)
 				return userConnect.getFile ( n, ( err, data ) => {

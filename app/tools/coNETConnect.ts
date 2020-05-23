@@ -103,13 +103,23 @@ export default class extends Imap.imapPeer {
 		return this.sendDataToANewUuidFolder ( Buffer.from ( text).toString ( 'base64' ), this.imapData.serverFolder, uuid, CallBack )
 	}
 
+	/**
+	 * 1:18.254
+	 */
+
 	public getFile ( fileName: string, CallBack ) {
 		let callback = false
 		if ( this.alreadyExit ) {
 			return CallBack ( new Error ('alreadyExit'))
 		}
 		console.log (`requestCoNET_v1 get file:[${ fileName }]`)
-		const rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( this.imapData, fileName, true, mail => {
+		console.log (`this.imapData.imapServer = [${ this.imapData.imapServer }]`)
+		const imapClone: IinputData = JSON.parse ( JSON.stringify ( this.imapData ))
+		if ( /^imap\.mail\.me\.com/.test ( this.imapData.imapServer )) {
+			imapClone.imapServer = 'p03-imap.mail.me.com'
+		}
+
+		const rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( imapClone, fileName, true, mail => {
 			
 			const attr = Imap.getMailAttached ( mail )
 			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
@@ -121,7 +131,7 @@ export default class extends Imap.imapPeer {
 		})
 
 		rImap.once ( 'error', err => {
-		
+			console.log (`CoNetConnect.getFile on error`, err )
 			return rImap.destroyAll( null )
 		})
 
