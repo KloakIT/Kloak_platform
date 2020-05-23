@@ -13,7 +13,13 @@ Kloakプラットフォームは複数のAPPを提供して[CoNET](https://githu
 
 Kloak平台集成了一系列應用來使用[CoNET](https://github.com/QTGate/CoNET)網絡
 
-## Download ダウンロード 下載
+## Install インストール　安裝
+
+[WIndows, MacOS, Linux](https://github.com/KloakIT/Kloak_platform/releases/latest)
+
+```
+npm install kloak_platform -g
+```
 
 # Come soon./準備中/即將推出
 CoNET official node have not ready yet./Kloak公式ノード準備中/CoNET官方節點停機中

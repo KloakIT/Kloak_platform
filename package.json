@@ -29,7 +29,7 @@
 		"@types/snapsvg": "^0.5.0",
 		"@types/socket.io": "^2.1.8",
 		"@types/socket.io-client": "^1.4.33",
-		"electron": "^8.3.0",
+		"electron": "^9.0.0",
 		"electron-builder-squirrel-windows": "^22.6.1"
 	},
 	"build": {
