@@ -38,7 +38,7 @@ http://localhost:3000/
 1）Web or Images search/ウェブと画像検索/網頁和圖片檢索
 ![http protocol](/resources/KloakSearchGIF.gif?raw=true)
 2）Get any web page screenshot/任意のWebページのスクリーンショット/抓取任意網站截圖
-
+![http protocol](/resources/KloakSearch_snapShop.gif?raw=true)
 3）Provide major website media file download link support live stream/メーインサイドメディアファイルをダウンロードリンクアドレスを提供し、ライブストリームを対応/提供主要多媒體網站視頻音頻文件，直播視頻流下載連結
 
 [Download supported sites/タウンロードをサポートするサイド/支持下載的多媒體網站列表](https://ytdl-org.github.io/youtube-dl/supportedsites.html)
