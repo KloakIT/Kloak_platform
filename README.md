@@ -27,6 +27,7 @@ Kloak平台完全使用JavaScript開發，輕巧可運行在任意的系統中�
 ### NodeJS
 ```
 # npm install kloak_platform -g
+
 /********* RUNNING 実行　運行 ***********/
 # kloak_platform
 
@@ -35,7 +36,7 @@ http://localhost:3000/
 
 ### KloSearch
 1）Web or Images search/ウェブと画像検索/網頁和圖片檢索
-
+![http protocol](/resources/KloakSearchGIF.gif?raw=true)
 2）Get any web page screenshot/任意のWebページのスクリーンショット/抓取任意網站截圖
 
 3）Provide major website media file download link support live stream/メーインサイドメディアファイルをダウンロードリンクアドレスを提供し、ライブストリームを対応/提供主要多媒體網站視頻音頻文件，直播視頻流下載連結
