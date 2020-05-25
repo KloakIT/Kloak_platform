@@ -35,6 +35,7 @@ http://localhost:3000/
 ```
 
 ### KloSearch
+![http protocol](/resources/KloakSearch.png?raw=true)
 1）Web or Images search/ウェブと画像検索/網頁和圖片檢索
 ![http protocol](/resources/KloakSearchGIF.gif?raw=true)
 2）Get any web page screenshot/任意のWebページのスクリーンショット/抓取任意網站截圖
