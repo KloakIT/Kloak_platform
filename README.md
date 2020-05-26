@@ -24,7 +24,7 @@ Kloak平台完全使用JavaScript開發，輕巧可運行在任意的系統中�
 
 [WIndows, MacOS, Linux](https://github.com/KloakIT/Kloak_platform/releases/latest)
 
-### NodeJS
+### NodeJS ([Support OpenWrt](https://openwrt.org/packages/pkgdata/node))
 ```
 # sudo npm install kloak_platform -g
 
