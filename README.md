@@ -26,15 +26,22 @@ Kloak平台完全使用JavaScript開發，輕巧可運行在任意的系統中�
 
 ### NodeJS
 ```
-# npm install kloak_platform -g
+# sudo npm install kloak_platform -g
 
 /********* RUNNING 実行　運行 ***********/
 # kloak_platform
 
 http://localhost:3000/
+
+```
+### Uninstalling
+```
+# sudo npm uninstall kloak_platform -g
+
 ```
 
-### KloSearch
+
+### Kloak Search
 ![http protocol](/resources/KloakSearch.png?raw=true)
 1）Web or Images search/ウェブと画像検索/網頁和圖片檢索
 ![http protocol](/resources/KloakSearchGIF.gif?raw=true)
