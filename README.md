@@ -1,4 +1,4 @@
-# Kloak Platform/Kloakプラットフォーム/Kloak平台
+# Kloak Platform / Kloakプラットフォーム / Kloak平台
 [![Build Status](https://travis-ci.org/KloakIT/Kloak_platform.svg?branch=master)](https://travis-ci.org/github/KloakIT/Kloak_platform)
 [![npm version](https://badge.fury.io/js/kloak_platform.svg)](https://badge.fury.io/js/kloak_platform)
 [![Known Vulnerabilities](https://snyk.io/test/github/KloakIT/Kloak_platform/badge.svg)](https://snyk.io/test/github/KloakIT/Kloak_platform)
@@ -24,7 +24,7 @@ Kloak平台完全使用JavaScript開發，輕巧可運行在任意的系統中�
 
 [WIndows, MacOS, Linux](https://github.com/KloakIT/Kloak_platform/releases/latest)
 
-### NodeJS ([Support OpenWrt](https://openwrt.org/packages/pkgdata/node))
+### NodeJS ([Support OpenWrt / ワイファイルーターOpenWRTに対応 / 路由器系統OpenWRT的安裝 ](https://openwrt.org/packages/pkgdata/node))
 ```
 # sudo npm install kloak_platform -g
 
