@@ -49,6 +49,7 @@ class default_1 extends Imap.imapPeer {
         this.alreadyExit = false;
         this.timeoutWaitAfterSentrequestMail = null;
         this.roomEmit = this.server.to(this.socket.id);
+        this.timeoutCount = {};
         saveLog(`=====================================  new CoNET connect()`, true);
         this.roomEmit.emit('tryConnectCoNETStage', null, 5);
         this.newMail = (mail, hashCode) => {
@@ -95,6 +96,9 @@ class default_1 extends Imap.imapPeer {
      */
     getFile(fileName, CallBack) {
         let callback = false;
+        if (!this.timeoutCount[fileName]) {
+            this.timeoutCount[fileName] = 1;
+        }
         if (this.alreadyExit) {
             return CallBack(new Error('alreadyExit'));
         }
@@ -120,8 +124,12 @@ class default_1 extends Imap.imapPeer {
         rImap.once('end', err => {
             if (err) {
                 if (!callback) {
-                    saveLog(`getFile got error [${err}]\nDoing getFile again!\n`);
-                    return this.getFile(fileName, CallBack);
+                    if (this.timeoutCount["fileName"]++ < 3) {
+                        saveLog(`getFile got error [${err}]\nDoing getFile again!\n`);
+                        return this.getFile(fileName, CallBack);
+                    }
+                    callback = true;
+                    return CallBack(err);
                 }
             }
             return saveLog(`getFile [${fileName}] success!`);

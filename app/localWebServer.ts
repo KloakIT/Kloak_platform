@@ -241,13 +241,13 @@ export default class localServer {
 			console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
 			
 			
-			const userConnect: CoNETConnectCalss = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.email )
+			const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.email )
 
 			if ( !userConnect ) {
-				console.log (`getFilesFromImap error:![ Have no userConnect ]`)
+				console.log ( `getFilesFromImap error:![ Have no userConnect ]` )
 				return socket.emit ( 'systemErr' )
 			}
-			console.time (`getFilesFromImap ${ _files }`)
+			console.time ( `getFilesFromImap ${ _files }` )
 			return Async.eachSeries ( _files, ( n, next ) => {
 				console.log (`Async.eachSeries _files[${ n }] typeof userConnect.getFile = [${ typeof userConnect.getFile }]`)
 				return userConnect.getFile ( n, ( err, data ) => {

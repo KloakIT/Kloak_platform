@@ -12,7 +12,7 @@
 				.field
 					.ui.search
 						.ui.input.huge.icon( data-bind = "css : { animationSearchInput: hasFocus, 'error': showSearchError(), 'loading disabled': showInputLoading }" style = "width: 100%;border-radius: 500rem;" )
-							input( style = "color:rgba(0,0,0,0.5); border-radius: 500rem; width: 100%;" type = "text"
+							input( style = "color:rgba(0,0,0,0.5); border-radius: 500rem; width: 100%; padding-right: 5.3em!important;" type = "text"
 								data-bind = "attr: { placeholder: showSearchError() ? ( messageBoxDefine [ errorMessageIndex() ][ $root.languageIndex() ]): infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }, css : { backgroundTransparent: ! backGroundBlue ()}, textInput: searchInputText, hasFocus: hasFocus")
 							
 							<!-- ko if: !showSearchError() -->

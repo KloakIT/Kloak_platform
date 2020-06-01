@@ -40,6 +40,7 @@ export default class extends Imap.imapPeer {
 	public alreadyExit = false
 	private timeoutWaitAfterSentrequestMail: NodeJS.Timeout = null
 	private roomEmit = this.server.to ( this.socket.id )
+	private timeoutCount = {}
 
 	public exit1 ( err ) {
 		console.trace (`imapPeer doing exit! this.sockerServer.emit ( 'tryConnectCoNETStage', null, -1 )`)
@@ -109,6 +110,9 @@ export default class extends Imap.imapPeer {
 
 	public getFile ( fileName: string, CallBack ) {
 		let callback = false
+		if ( !this.timeoutCount[ fileName ]) {
+			this.timeoutCount[ fileName ] = 1
+		}
 		if ( this.alreadyExit ) {
 			return CallBack ( new Error ('alreadyExit'))
 		}
@@ -138,8 +142,12 @@ export default class extends Imap.imapPeer {
 		rImap.once( 'end', err => {
 			if ( err ) {
 				if ( !callback ) {
-					saveLog (`getFile got error [${ err }]\nDoing getFile again!\n`)
-					return this.getFile ( fileName, CallBack  )
+					if ( this.timeoutCount[ "fileName" ] ++ < 3 ) {
+						saveLog (`getFile got error [${ err }]\nDoing getFile again!\n`)
+						return this.getFile ( fileName, CallBack  )
+					}
+					callback = true
+					return CallBack ( err )
 				}
 				
 			}
