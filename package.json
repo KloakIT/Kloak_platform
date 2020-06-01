@@ -1,107 +1,107 @@
 {
-	"name": "kloak_platform",
-	"version": "0.1.32",
-	"license": "MIT",
-	"description": "Kloak platform",
-	"scripts": {
-		"start": "electron .",
-		"pack": "electron-builder --dir",
-		"win": "electron-builder --x64",
-		"win32": "electron-builder --ia32",
-		"linux": "electron-builder --linux",
-		"unix": "",
-		"mac": "electron-builder",
-		"pre": "electron-builder install-app-deps",
-		"release": "electron-builder --win && electron-builder --mac && electron-builder --linux",
-		"snyk-protect": "snyk protect",
-		"prepublish": "npm run snyk-protect"
-	},
-	"devDependencies": {
-		"@types/asn1js": "^0.0.1",
-		"@types/async": "3.2.3",
-		"@types/cookie-parser": "^1.4.2",
-		"@types/express": "^4.17.6",
-		"@types/jquery": "^3.3.38",
-		"@types/knockout": "^3.4.67",
-		"@types/node": "^13.13.9",
-		"@types/node-uuid": "^0.0.28",
-		"@types/pkijs": "^0.0.3",
-		"@types/snapsvg": "^0.5.0",
-		"@types/socket.io": "^2.1.8",
-		"@types/socket.io-client": "^1.4.33",
-		"electron": "^9.0.0",
-		"electron-builder-squirrel-windows": "^22.7.0"
-	},
-	"build": {
-		"appId": "com.Kloak.Platform",
-		"win": {
-			"target": [
-				{
-					"target": "nsis"
-				},
-				{
-					"target": "squirrel"
-				}
-			],
-			"icon": "build/icon.ico"
-		},
-		"mac": {
-			"category": "public.app-category.utilities",
-			"icon": "build/icon"
-		},
-		"dmg": {
-			"backgroundColor": "#ffffff",
-			"contents": [
-				{
-					"x": 110,
-					"y": 220
-				},
-				{
-					"x": 420,
-					"y": 220,
-					"type": "link",
-					"path": "/Applications"
-				}
-			]
-		},
-		"linux": {
-			"target": [
-				"deb",
-				"pacman"
-			]
-		}
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/KloakIT/Kloak_platform.git"
-	},
-	"author": {
-		"name": "Kloak Information Technologies Inc.",
-		"email": "info@kloak.app"
-	},
-	"bugs": {
-		"url": "https://github.com/KloakIT/Kloak_platform/issues"
-	},
-	"homepage": "https://www.kloak.app",
-	"dependencies": {
-		"async": "^3.2.0",
-		"cookie-parser": "^1.4.5",
-		"core-js": "^3.6.5",
-		"express": "^4.17.1",
-		"jimp": "^0.12.1",
-		"jquery": "^3.5.1",
-		"jszip": "^3.4.0",
-		"knockout": "^3.5.1",
-		"mime-types": "^2.1.27",
-		"node-uuid": "^1.4.8",
-		"nodemailer": "^6.4.8",
-		"openpgp": "^4.10.4",
-		"pug": "^3.0.0",
-		"snapsvg": "^0.5.1",
-		"snyk": "^1.334.0",
-		"socket.io": "^2.3.0",
-		"socket.io-client": "^2.3.0"
-	},
-	"snyk": true,
-	"bin": "cli.js"
+  "name": "kloak_platform",
+  "version": "0.1.32",
+  "license": "MIT",
+  "description": "Kloak platform",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "win": "electron-builder --x64",
+    "win32": "electron-builder --ia32",
+    "linux": "electron-builder --linux",
+    "unix": "",
+    "mac": "electron-builder",
+    "pre": "electron-builder install-app-deps",
+    "release": "electron-builder --win && electron-builder --mac && electron-builder --linux",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "devDependencies": {
+    "@types/asn1js": "^0.0.1",
+    "@types/async": "3.2.3",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/express": "^4.17.6",
+    "@types/jquery": "^3.3.38",
+    "@types/knockout": "^3.4.67",
+    "@types/node": "^13.13.9",
+    "@types/node-uuid": "^0.0.28",
+    "@types/pkijs": "^0.0.3",
+    "@types/snapsvg": "^0.5.0",
+    "@types/socket.io": "^2.1.8",
+    "@types/socket.io-client": "^1.4.33",
+    "electron": "^9.0.0",
+    "electron-builder-squirrel-windows": "^22.7.0"
+  },
+  "build": {
+    "appId": "com.Kloak.Platform",
+    "win": {
+      "target": [
+        {
+          "target": "nsis"
+        },
+        {
+          "target": "squirrel"
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "build/icon"
+    },
+    "dmg": {
+      "backgroundColor": "#ffffff",
+      "contents": [
+        {
+          "x": 110,
+          "y": 220
+        },
+        {
+          "x": 420,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "pacman"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KloakIT/Kloak_platform.git"
+  },
+  "author": {
+    "name": "Kloak Information Technologies Inc.",
+    "email": "info@kloak.app"
+  },
+  "bugs": {
+    "url": "https://github.com/KloakIT/Kloak_platform/issues"
+  },
+  "homepage": "https://www.kloak.app",
+  "dependencies": {
+    "async": "^3.2.0",
+    "cookie-parser": "^1.4.5",
+    "core-js": "^3.6.5",
+    "express": "^4.17.1",
+    "jimp": "^0.12.1",
+    "jquery": "^3.5.1",
+    "jszip": "^3.4.0",
+    "knockout": "^3.5.1",
+    "mime-types": "^2.1.27",
+    "node-uuid": "^1.4.8",
+    "nodemailer": "^6.4.8",
+    "openpgp": "^4.10.4",
+    "pug": "^3.0.0",
+    "snapsvg": "^0.5.1",
+    "snyk": "^1.334.0",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0"
+  },
+  "snyk": true,
+  "bin": "cli.js"
 }

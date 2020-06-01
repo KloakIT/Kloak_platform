@@ -10,3 +10,13 @@ patch:
         patched: '2020-05-01T05:57:50.404Z'
     - pug > pug-code-gen > pug-attrs > constantinople > babel-types > lodash:
         patched: '2020-05-01T05:57:50.404Z'
+    - pug > pug-code-gen > constantinople > @babel/types > lodash:
+        patched: '2020-06-01T17:38:52.742Z'
+    - pug > pug-filters > constantinople > @babel/types > lodash:
+        patched: '2020-06-01T17:38:52.742Z'
+    - pug > pug-code-gen > with > @babel/types > lodash:
+        patched: '2020-06-01T17:38:52.742Z'
+    - pug > pug-code-gen > pug-attrs > constantinople > @babel/types > lodash:
+        patched: '2020-06-01T17:38:52.742Z'
+    - pug > pug-code-gen > with > babel-walk > @babel/types > lodash:
+        patched: '2020-06-01T17:38:52.742Z'
