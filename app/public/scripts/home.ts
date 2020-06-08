@@ -44,24 +44,30 @@ const makeKeyPairData = function ( view: view_layout.view, keypair: keypair ) {
 		keypair.passwordOK = true
 		view.password = passwd
         keypair.showLoginPasswordField ( false )
-        return view.keyPairCalss = new encryptoClass ( keypair, view.password, view.connectInformationMessage, err => {
-            view.showKeyPair ( false )
+		return view.keyPairCalss = new encryptoClass ( keypair, view.password, view.connectInformationMessage,
+			/**
+			 * 
+			 * 		encryptoClass ready
+			 * 
+			 */
+			err => {
 
-            if ( view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult ) {
-                return view.imapSetupClassExit ( view.keyPairCalss.imapData )
-            }
-            let uu = null
-            return view.imapSetup ( uu = new imapForm ( keypair.email, view.keyPairCalss.imapData, function ( imapData: IinputData ) {
-                view.imapSetup ( uu = null )
-                view.keyPairCalss.imapData = imapData
-                return view.keyPairCalss.saveImapIInputData ( err => {
-                    return view.imapSetupClassExit ( imapData )
-                })
-            }))
-        })
-
-        
-        
+				view.showKeyPair ( false )
+				/*
+				if ( view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult ) {
+					return view.imapSetupClassExit ( view.keyPairCalss.imapData )
+				}
+				*/
+				let uu = null
+				return view.imapSetup ( uu = new imapForm ( keypair.email, view.keyPairCalss.imapData, function ( imapData: IinputData ) {
+					view.imapSetup ( uu = null )
+					view.keyPairCalss.imapData = imapData
+					return view.keyPairCalss.saveImapIInputData ( err => {
+						return view.imapSetupClassExit ( imapData )
+					})
+				}))
+			}
+		)
     })
     
     keypair.keyPairPassword = ko.observable( keyPairPasswordClass )
@@ -73,7 +79,6 @@ const makeKeyPairData = function ( view: view_layout.view, keypair: keypair ) {
         keypair.delete_btn_view ( false )
         return keypair.showConform ( true )
     }
-    
     
     keypair.deleteKeyPairNext = function () {
 
@@ -88,22 +93,7 @@ const makeKeyPairData = function ( view: view_layout.view, keypair: keypair ) {
         keypair.delete_btn_view ( false )
         localStorage.clear()
         return view.reFreshLocalServer()
-        
-        
     }
-
-    
-}
-
-const initPopupArea = function () {
-    const popItem = $( '.activating.element' ).popup('hide')
-    const inline = popItem.hasClass ('inline')
-    return popItem.popup({
-        on: 'focus',
-        movePopup: false,
-        position: 'top left',
-        inline: inline
-    })
 }
 
 class showWebPageClass {
@@ -530,7 +520,7 @@ module view_layout {
         }
 
         public deletedKeypairResetView () {
-            this.imapSetup (null)
+            this.imapSetup ( null )
             
         }
     
@@ -559,8 +549,16 @@ module view_layout {
             this.sectionLogin ( true )
             this.showKeyPair ( true )
             this.AppList ( false )
-            this.appsManager ( null )
-        }
+			this.appsManager ( null )
+			//this.showImapSetup ()
+		}
+		
+		private showImapSetup () {
+			return this.imapSetup ( this.imapFormClass = new imapForm ( this.imapData.account, this.imapData, function ( imapData: IinputData ) {
+				this.imapSetup ( this.imapFormClass = null )
+				return this.imapSetupClassExit ( imapData )
+			}))
+		}
 
         public imapSetupClassExit ( _imapData: IinputData ) {
             const self = this
@@ -568,13 +566,7 @@ module view_layout {
             return this.CoNETConnect ( this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified, ( err ) => {
                 if ( typeof err ==='number' && err > -1 ) {
                     self.CoNETConnect ( this.CoNETConnectClass = null )
-                    return self.imapSetup ( this.imapFormClass = new imapForm ( _imapData.account, null, function ( imapData: IinputData ) {
-                        self.imapSetup ( this.imapFormClass = null )
-                        return self.imapSetupClassExit ( imapData )
-                    }))
-                    
-                    
-                    
+                    return self.showImapSetup ()
                 }
                 self.connectedCoNET ( true )
 				self.homeClick ()

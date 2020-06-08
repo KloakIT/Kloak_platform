@@ -291,6 +291,7 @@ class keyPairSign {
 class imapForm {
     constructor(account, imapData, exit) {
         this.account = account;
+        this.imapData = imapData;
         this.exit = exit;
         this.emailAddress = ko.observable('');
         this.password = ko.observable('');
@@ -424,6 +425,9 @@ class imapForm {
     }
     imapAccountGoCheckClick() {
         const self = this;
+        if (this.emailAddress() === this.imapData.imapUserName && this.password() === this.imapData.imapUserPassword) {
+            return self.exit(this.imapData);
+        }
         this.checkEmailAddress(this.emailAddress());
         if (this.emailAddressShowError() || !this.password().length) {
             return;

@@ -265,7 +265,7 @@ const appScript = {
 				self.showMain ( false )
 				const args = com.Args[0]
 				self.showDownloadProcess ( true )
-				return 
+				return console.dir ( args )
 			}
 
 			if ( com.subCom === 'webSearch') {
@@ -700,6 +700,30 @@ const appScript = {
 		currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
 		currentItem.showDownload ( true )
 		currentItem.showLoading ( false )
+
+		return fetchFiles ( arg, ( err, buffer: string ) => {
+			currentItem.showDownload ( false )
+			if ( err ) {
+				return showError ( err )
+			}
+			return _view.keyPairCalss.decryptMessageToZipStream( buffer, ( err, data ) => {
+				if ( err ) {
+					return showError( err )
+				}
+				isImage
+					? currentItem.snapshotImageReady ( true )
+					: currentItem.snapshotReady (true )
+				isImage
+					? currentItem.showImageLoading ( false )
+					: currentItem.showLoading ( false ) 
+				currentItem.loadingGetResponse ( false ) 
+				currentItem.conetResponse ( false )
+				return ( currentItem.snapshotData = data )
+				
+			})
+		})
+  	
+		/*
 		return _view.connectInformationMessage.sockEmit( 'getFilesFromImap', arg, ( err, buffer: string ) => {
 			currentItem.showDownload ( false )
 			if ( err ) {
@@ -721,6 +745,7 @@ const appScript = {
 				}
 			)}
 		)
+		*/
     }
 
     const url = isImage ? currentItem.clickUrl : currentItem.url;
@@ -732,19 +757,19 @@ const appScript = {
 		Args: [url, width, height],
 		error: null,
 		subCom: 'getSnapshop'
-    };
+    }
 
-    return _view.keyPairCalss.emitRequest(com, callBack);
+    return _view.keyPairCalss.emitRequest ( com, callBack )
   },
 
   	showSnapshotClick: (self, index, isImage?: boolean) => {
 		self.showMain(false);
 		self.showSnapshop(true);
 		let currentItem = null;
-		if (isImage) {
-		currentItem = self.searchSimilarImagesList()[index];
+		if ( isImage ) {
+			currentItem = self.searchSimilarImagesList()[index];
 		} else {
-		currentItem = self.searchItemList()[index];
+			currentItem = self.searchItemList()[index];
 		}
 		let y = null;
 
@@ -759,7 +784,7 @@ const appScript = {
 			self.showSnapshop(false);
 			}
 		))
-		);
+		)
   },
 
   // CHANGED ============================================

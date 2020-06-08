@@ -33,7 +33,7 @@ class CoNETConnect {
 	public showNetworkError = ko.observable ( false )
 	public infoTextArray: KnockoutObservableArray < connectInfo > = ko.observableArray ([])
 	public keyPairSign: KnockoutObservable< keyPairSign > = ko.observable ( null )
-	private imapData:IinputData = this.view.imapData
+	private imapData: IinputData = this.view.imapData
 	public account = this.imapData.account
 	public email = this.imapData.imapUserName
 	public nodeEmail = "node@Kloak.app"
@@ -44,6 +44,7 @@ class CoNETConnect {
 
 	constructor ( private view: view_layout.view, private isKeypairBeSign: boolean, private ready: ( err ) => void ) {
 		const self = this
+		this.imapData.publicKeyID = view.keyPair().publicKeyID
 		if ( !this.view.imapData.confirmRisk ) {
 			this.showSendImapDataWarning ( true )
 		} else {

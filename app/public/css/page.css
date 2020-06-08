@@ -49,13 +49,7 @@
 	transition: opacity 0.4s ease-in-out;
 	opacity: 0.6;
 }
-#languageArea {
-	z-index: 100;
-	width: 160px;
-	top: 15px;
-	left: 20px;
-	position: fixed;
-}
+
 .languageItem {
 	cursor: pointer;
 	color: white!important;

@@ -22,11 +22,19 @@ const makeKeyPairData = function (view, keypair) {
         keypair.passwordOK = true;
         view.password = passwd;
         keypair.showLoginPasswordField(false);
-        return view.keyPairCalss = new encryptoClass(keypair, view.password, view.connectInformationMessage, err => {
+        return view.keyPairCalss = new encryptoClass(keypair, view.password, view.connectInformationMessage, 
+        /**
+         *
+         * 		encryptoClass ready
+         *
+         */
+        err => {
             view.showKeyPair(false);
-            if (view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult) {
-                return view.imapSetupClassExit(view.keyPairCalss.imapData);
+            /*
+            if ( view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult ) {
+                return view.imapSetupClassExit ( view.keyPairCalss.imapData )
             }
+            */
             let uu = null;
             return view.imapSetup(uu = new imapForm(keypair.email, view.keyPairCalss.imapData, function (imapData) {
                 view.imapSetup(uu = null);
@@ -59,16 +67,6 @@ const makeKeyPairData = function (view, keypair) {
         localStorage.clear();
         return view.reFreshLocalServer();
     };
-};
-const initPopupArea = function () {
-    const popItem = $('.activating.element').popup('hide');
-    const inline = popItem.hasClass('inline');
-    return popItem.popup({
-        on: 'focus',
-        movePopup: false,
-        position: 'top left',
-        inline: inline
-    });
 };
 class showWebPageClass {
     constructor(showUrl, zipBase64Stream, zipBase64StreamUuid, exit) {
@@ -442,6 +440,13 @@ var view_layout;
             this.showKeyPair(true);
             this.AppList(false);
             this.appsManager(null);
+            //this.showImapSetup ()
+        }
+        showImapSetup() {
+            return this.imapSetup(this.imapFormClass = new imapForm(this.imapData.account, this.imapData, function (imapData) {
+                this.imapSetup(this.imapFormClass = null);
+                return this.imapSetupClassExit(imapData);
+            }));
         }
         imapSetupClassExit(_imapData) {
             const self = this;
@@ -449,10 +454,7 @@ var view_layout;
             return this.CoNETConnect(this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
                     self.CoNETConnect(this.CoNETConnectClass = null);
-                    return self.imapSetup(this.imapFormClass = new imapForm(_imapData.account, null, function (imapData) {
-                        self.imapSetup(this.imapFormClass = null);
-                        return self.imapSetupClassExit(imapData);
-                    }));
+                    return self.showImapSetup();
                 }
                 self.connectedCoNET(true);
                 self.homeClick();

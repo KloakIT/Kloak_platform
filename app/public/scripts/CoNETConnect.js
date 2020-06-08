@@ -37,6 +37,7 @@ class CoNETConnect {
         this.nodeEmail = "node@Kloak.app";
         this.inSendMail = false;
         const self = this;
+        this.imapData.publicKeyID = view.keyPair().publicKeyID;
         if (!this.view.imapData.confirmRisk) {
             this.showSendImapDataWarning(true);
         }

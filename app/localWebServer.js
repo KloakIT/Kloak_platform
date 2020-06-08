@@ -130,11 +130,10 @@ class localServer {
         socket.emit('doingRequest', mail, uuid);
     }
     tryConnectCoNET(socket, imapData, sendMail) {
-        console.log(`doing tryConnectCoNET`);
         //		have CoGate connect
-        let userConnet = socket["userConnet"] = socket["userConnet"] || this.imapConnectPool.get(imapData.account);
+        let userConnet = socket["userConnet"] = socket["userConnet"] || this.imapConnectPool.get(imapData.publicKeyID);
         if (userConnet) {
-            console.log(`tryConnectCoNET already have room;[${userConnet.socket.id}]`);
+            console.log(`tryConnectCoNET already have room; [${userConnet.socket.id}]`);
             socket.join(userConnet.socket.id);
             return userConnet.Ping(sendMail);
         }
@@ -146,7 +145,7 @@ class localServer {
                     if (typeof userConnet.destroy === 'function') {
                         userConnet.destroy();
                     }
-                    this.imapConnectPool.set(imapData.account, userConnet = socket["userConnet"] = makeConnect());
+                    this.imapConnectPool.set(imapData.publicKeyID, userConnet = socket["userConnet"] = makeConnect());
                 }
             }
             return console.log(`_exitFunction doing nathing!`);
@@ -156,7 +155,7 @@ class localServer {
                 return this.catchCmd(mail, uuid);
             }, _exitFunction);
         };
-        return this.imapConnectPool.set(imapData.account, userConnet = socket["userConnet"] = makeConnect());
+        return this.imapConnectPool.set(imapData.publicKeyID, userConnet = socket["userConnet"] = makeConnect());
     }
     listenAfterPassword(socket) {
         const self = this;

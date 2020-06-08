@@ -219,27 +219,30 @@ var lang;
     lang[lang["en"] = 2] = "en";
     lang[lang["tw"] = 3] = "tw";
 })(lang || (lang = {}));
-const initLanguageCookie = function () {
-    var cc = $.cookie(cookieName);
+const initLanguageCookie = () => {
+    var cc = localStorage.getItem("lang");
     if (!cc) {
         cc = window.navigator.language;
     }
-    if (!cc)
-        cc = 'en';
     cc = cc.substr(0, 2).toLocaleLowerCase();
     switch (cc) {
-        case 'zh':
+        case 'zh': {
             break;
-        case 'en':
+        }
+        case 'en': {
             break;
-        case 'ja':
+        }
+        case 'ja': {
             break;
-        case 'tw':
+        }
+        case 'tw': {
             break;
-        default:
+        }
+        default: {
             cc = 'en';
+        }
     }
-    $.cookie("langEH", cc, { expires: 180, path: '/' });
+    localStorage.setItem("lang", cc);
     $("html").trigger('languageMenu', cc);
     return cc;
 };
@@ -414,6 +417,16 @@ const getCurrentPlanUpgradelBalance = function (expiration, planName, isAnnual) 
     const usedMonth = 12 - getRemainingMonth(expiration) + 1;
     const passedCost = Math.round((price - price * usedMonth / 12) * 100) / 100;
     return passedCost;
+};
+const initPopupArea = function () {
+    const popItem = $('.activating.element').popup('hide');
+    const inline = popItem.hasClass('inline');
+    return popItem.popup({
+        on: 'focus',
+        movePopup: false,
+        position: 'top left',
+        inline: inline
+    });
 };
 const infoDefine = [
     {

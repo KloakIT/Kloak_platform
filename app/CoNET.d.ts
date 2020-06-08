@@ -179,6 +179,7 @@ interface regionV1 {
 }
 
 interface IinputData extends imapConnect {
+	publicKeyID: string
     account:string
     email: string
     smtpServer:string

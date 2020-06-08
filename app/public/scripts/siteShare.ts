@@ -229,31 +229,40 @@ const Menu = {
 
 enum lang { 'zh', 'ja', 'en', 'tw' }
 
-const initLanguageCookie = function () {
-    var cc: string = $.cookie( cookieName )
+const initLanguageCookie = () => {
+	var cc: string = localStorage.getItem ("lang")
     
     if ( !cc ) {
         cc = window.navigator.language
     }
 
-    if ( !cc )
-        cc = 'en'
-    cc = cc.substr (0, 2).toLocaleLowerCase()
+    cc = cc.substr ( 0, 2 ).toLocaleLowerCase()
     switch ( cc ) {
-        case 'zh':
-            break
-        case 'en':
-            break
-        case 'ja':
-            break
-        case 'tw':
-            break;
-        default:
-            cc = 'en'
+        case 'zh': {
+			break
+		}
+            
+        case 'en': {
+			break
+		}
+            
+        case 'ja': {
+			break
+		}
+            
+        case 'tw': {
+			break
+		}
+           
+        default: {
+			cc = 'en'
+		}
+            
     }
-    $.cookie ( "langEH", cc, { expires: 180, path: '/' })
+    localStorage.setItem ( "lang", cc )
     $ ( "html" ).trigger( 'languageMenu', cc )
-    return cc
+	return cc
+	
 }
 const DayTime = 1000 * 60 * 60 * 24
 const monthTime = 30 * DayTime
@@ -440,6 +449,17 @@ const getCurrentPlanUpgradelBalance = function ( expiration: string, planName: s
     const usedMonth = 12 - getRemainingMonth ( expiration ) + 1
 	const passedCost = Math.round (( price -  price * usedMonth / 12 ) * 100 ) / 100
 	return passedCost
+}
+
+const initPopupArea = function () {
+    const popItem = $( '.activating.element' ).popup('hide')
+    const inline = popItem.hasClass ('inline')
+    return popItem.popup({
+        on: 'focus',
+        movePopup: false,
+        position: 'top left',
+        inline: inline
+    })
 }
 
 const infoDefine = [

@@ -505,7 +505,7 @@ class imapForm {
 		
 	}
 
-	constructor ( private account: string, imapData: IinputData, private exit: ( IinputData: IinputData ) => void ) {
+	constructor ( private account: string, private imapData: IinputData, private exit: ( IinputData: IinputData ) => void ) {
 		const self = this
 		if ( imapData ) {
 			this.emailAddress ( imapData.imapUserName )
@@ -523,6 +523,9 @@ class imapForm {
 
 	public imapAccountGoCheckClick () {
 		const self = this
+		if ( this.emailAddress() === this.imapData.imapUserName && this.password () === this.imapData.imapUserPassword ) {
+			return self.exit ( this.imapData )
+		}
 		this.checkEmailAddress ( this.emailAddress() )
 		
 		if ( this.emailAddressShowError() || !this.password().length ) {

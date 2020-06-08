@@ -115,13 +115,14 @@ export default class localServer {
 	}
 	
 	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean ) {
-		console.log (`doing tryConnectCoNET`)
+		
 		//		have CoGate connect
-		let userConnet: CoNETConnectCalss = socket ["userConnet"] = socket ["userConnet"] || this.imapConnectPool.get ( imapData.account )
+		let userConnet: CoNETConnectCalss = socket [ "userConnet" ] = socket [ "userConnet" ] || this.imapConnectPool.get ( imapData.publicKeyID )
 
 		if ( userConnet ) {
-			console.log (`tryConnectCoNET already have room;[${ userConnet.socket.id }]`)
+			console.log ( `tryConnectCoNET already have room; [${ userConnet.socket.id }]` )
 			socket.join ( userConnet.socket.id )
+
 			return userConnet.Ping( sendMail )
 		}
 
@@ -138,7 +139,7 @@ export default class localServer {
 						userConnet.destroy ()
 					}
 					
-					this.imapConnectPool.set ( imapData.account, userConnet = socket [ "userConnet" ] = makeConnect ())
+					this.imapConnectPool.set ( imapData.publicKeyID, userConnet = socket [ "userConnet" ] = makeConnect ())
 					
 					
 				}
@@ -153,7 +154,7 @@ export default class localServer {
 			}, _exitFunction )
 		}
 		
-		return this.imapConnectPool.set ( imapData.account, userConnet = socket ["userConnet"] = makeConnect ())
+		return this.imapConnectPool.set ( imapData.publicKeyID, userConnet = socket ["userConnet"] = makeConnect ())
 		
 	}
 
@@ -216,7 +217,7 @@ export default class localServer {
 			
 			console.log ( `on doingRequest uuid = [${ uuid }]\n${ request }\n`)
 
-			const userConnect = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.email )
+			const userConnect: CoNETConnectCalss = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.email )
 			if ( userConnect ) {
 				saveLog (`doingRequest on ${ uuid }`)
 				return userConnect.requestCoNET_v1 ( uuid, request, _callBack )

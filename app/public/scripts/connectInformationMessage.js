@@ -150,7 +150,12 @@ class connectInformationMessage {
         this.socketIo.emit(eventName, ...args, uuid => {
             clearTimeout(_timeout);
             if (_CallBack) {
+                const reconnect = () => {
+                    return _CallBack(new Error('socket.io reconnected '));
+                };
+                this.socketIo.once('reconnect', reconnect);
                 return this.socketIo.once(uuid, (err, ...data) => {
+                    this.socketIo.removeListener('reconnect', reconnect);
                     if (err) {
                         self.showErrorMessage(err);
                     }

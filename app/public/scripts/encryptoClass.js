@@ -482,3 +482,27 @@ class encryptoClass {
         });
     }
 }
+const fetchFiles = (files, CallBack) => {
+    const filesArray = files.split(',');
+    let data = '';
+    let currentFIle = filesArray.shift();
+    let repertTime = 0;
+    const fetchFIle = (_CallBack) => {
+        return _view.connectInformationMessage.sockEmit('getFilesFromImap', currentFIle, _CallBack);
+    };
+    const _callBack = (_err, _data) => {
+        if (_err) {
+            if (++repertTime > 4) {
+                return CallBack(_err);
+            }
+            return fetchFIle(_callBack);
+        }
+        data += _data;
+        if (filesArray.length) {
+            currentFIle = filesArray.shift();
+            return fetchFIle(_callBack);
+        }
+        return CallBack(null, data);
+    };
+    return fetchFIle(_callBack);
+};

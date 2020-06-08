@@ -45,21 +45,20 @@ class keyPairPassword {
 		}
 		this.passwordChecking ( true )
 		const passwd = this.systemSetup_systemPassword()
+
+		const errProcess = err => {
+			self.passwordChecking ( false )
+			return self.showPasswordError()
+		}
 		
 		return openpgp.key.readArmored ( this.privateKey ).then ( data => {
 			const keys = data.keys[0]
 			return keys.decrypt ( passwd ).then ( data => {
 				self.passwordChecking ( false )
 				return self.exit ( passwd )
-			}).catch ( ex => {
-				self.passwordChecking ( false )
-				return self.showPasswordError()
-			})
+			}).catch ( errProcess )
 
-		}).catch ( ex => {
-			self.passwordChecking ( false )
-			return self.showPasswordError()
-		})
+		}).catch ( errProcess )
 		
 	}
 }

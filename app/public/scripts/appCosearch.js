@@ -219,7 +219,7 @@ const appScript = {
                 self.showMain(false);
                 const args = com.Args[0];
                 self.showDownloadProcess(true);
-                return;
+                return console.dir(args);
             }
             if (com.subCom === 'webSearch') {
                 const args = com.Args;
@@ -559,7 +559,7 @@ const appScript = {
             currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
             currentItem.showDownload(true);
             currentItem.showLoading(false);
-            return _view.connectInformationMessage.sockEmit('getFilesFromImap', arg, (err, buffer) => {
+            return fetchFiles(arg, (err, buffer) => {
                 currentItem.showDownload(false);
                 if (err) {
                     return showError(err);
@@ -579,6 +579,29 @@ const appScript = {
                     return (currentItem.snapshotData = data);
                 });
             });
+            /*
+            return _view.connectInformationMessage.sockEmit( 'getFilesFromImap', arg, ( err, buffer: string ) => {
+                currentItem.showDownload ( false )
+                if ( err ) {
+                    return showError(err);
+                }
+                return _view.keyPairCalss.decryptMessageToZipStream( buffer, ( err, data ) => {
+                    if ( err ) {
+                        return showError( err )
+                    }
+                    isImage
+                        ? currentItem.snapshotImageReady ( true )
+                        : currentItem.snapshotReady (true )
+                    isImage
+                        ? currentItem.showImageLoading ( false )
+                        : currentItem.showLoading ( false )
+                    currentItem.loadingGetResponse ( false )
+                    currentItem.conetResponse ( false )
+                    return ( currentItem.snapshotData = data )
+                    }
+                )}
+            )
+            */
         };
         const url = isImage ? currentItem.clickUrl : currentItem.url;
         const width = $(window).width();
