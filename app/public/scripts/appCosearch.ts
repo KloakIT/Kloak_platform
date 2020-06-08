@@ -263,7 +263,7 @@ const appScript = {
 			if ( com.subCom === "downloadFile") {
 				
 				self.showMain ( false )
-				const args = com.Args[0]
+				const args: kloak_downloadObj = com.Args[0]
 				self.showDownloadProcess ( true )
 				return console.dir ( args )
 			}

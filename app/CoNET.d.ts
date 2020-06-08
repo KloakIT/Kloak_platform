@@ -246,6 +246,19 @@ interface QTGate_DnsAddress {
 	ipv4: string,
 	url: string
 }
+interface kloak_downloadObj {
+	url: string
+	downloadFilename: string
+	AcceptRanges: string
+	fileExpansion: string
+	totalLength: number
+	ContentType:  string
+	Last_Modified: Date
+	downloading: string
+	offset: number
+	currentlength: number
+	eof: boolean
+}
 
 interface IConnectCommand {
     region: string
