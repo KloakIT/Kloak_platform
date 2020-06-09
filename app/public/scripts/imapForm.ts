@@ -523,7 +523,7 @@ class imapForm {
 
 	public imapAccountGoCheckClick () {
 		const self = this
-		if ( this.emailAddress() === this.imapData.imapUserName && this.password () === this.imapData.imapUserPassword ) {
+		if ( this.imapData && this.emailAddress() === this.imapData.imapUserName && this.password () === this.imapData.imapUserPassword ) {
 			return self.exit ( this.imapData )
 		}
 		this.checkEmailAddress ( this.emailAddress() )
