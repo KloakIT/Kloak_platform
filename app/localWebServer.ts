@@ -88,6 +88,7 @@ const imapErrorCallBack = ( message: string ) => {
 
 }
 
+const resetConnectTimeLength = 1000 * 60 * 30
 
 export default class localServer {
 	private expressServer = Express()
@@ -120,11 +121,20 @@ export default class localServer {
 		let userConnet: CoNETConnectCalss = socket [ "userConnet" ] = socket [ "userConnet" ] || this.imapConnectPool.get ( imapData.publicKeyID )
 
 		if ( userConnet ) {
-			console.log ( `tryConnectCoNET already have room; [${ userConnet.socket.id }]` )
-			socket.join ( userConnet.socket.id )
+			const margin = new Date ().getTime () - userConnet.lastAccessTime.getTime ()
 
-			return userConnet.Ping( sendMail )
+			if ( margin < resetConnectTimeLength || !userConnet.pingUuid ) {
+				
+				console.log ( `tryConnectCoNET already have room; [${ userConnet.socket.id }]` )
+				
+				socket.join ( userConnet.socket.id )
+				
+				return userConnet.Ping( sendMail )
+			}
+			userConnet.destroy ()
+			
 		}
+
 
 		
 		const _exitFunction = err => {
@@ -209,15 +219,16 @@ export default class localServer {
 		socket.on ( 'doingRequest', ( uuid, request, CallBack1 ) => {
 			const _uuid = Uuid.v4()
 			CallBack1 ( _uuid )
-
+			console.dir ( request )
 			const _callBack = ( ...data ) => {
 				socket.emit ( _uuid, ...data )
 			}
+
 			this.requestPool.set ( uuid, socket )
 			
 			console.log ( `on doingRequest uuid = [${ uuid }]\n${ request }\n`)
 
-			const userConnect: CoNETConnectCalss = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.email )
+			const userConnect: CoNETConnectCalss = socket ["userConnet"] || this.imapConnectPool.get ( keyPair.keyID )
 			if ( userConnect ) {
 				saveLog (`doingRequest on ${ uuid }`)
 				return userConnect.requestCoNET_v1 ( uuid, request, _callBack )
@@ -242,7 +253,7 @@ export default class localServer {
 			console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
 			
 			
-			const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.email )
+			const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.keyID )
 
 			if ( !userConnect ) {
 				console.log ( `getFilesFromImap error:![ Have no userConnect ]` )
@@ -272,7 +283,7 @@ export default class localServer {
 				socket.emit ( _uuid, ...data )
 			}
 			sendMail = true
-			const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.email )
+			const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.keyID )
 			if ( userConnect ) {
 				userConnect.Ping ( true )
 			}
@@ -287,7 +298,7 @@ export default class localServer {
 			const _callBack = ( ...data ) => {
 				socket.emit ( _uuid, ...data )
 			}
-			const userConnect = this.imapConnectPool.get ( keyPair.email )
+			const userConnect = this.imapConnectPool.get ( keyPair.keyID )
 			if ( !userConnect ) {
 				return socket.emit ( 'systemErr' )
 			}

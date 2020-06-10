@@ -346,7 +346,6 @@ class ImapServerSwitchStream extends Stream.Transform {
                 console.log(`IDLE doCommandCallback! error`, err);
                 return this.imapServer.destroyAll(err);
             }
-            console.log(`IDLE doCommandCallback!`);
             this.waitingDoingIdleStop = false;
             this.runningCommand = null;
             if (this.idleCallBack) {
@@ -910,7 +909,7 @@ class qtGateImap extends Event.EventEmitter {
                 return this.destroyAll(null);
             });
         };
-        console.log(`qtGateImap connect mail server [${this.IMapConnect.imapServer}: ${this.port}] setTimeout [${connectTimeOut / 1000}] !`);
+        //console.log ( `qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }] setTimeout [${ connectTimeOut /1000 }] !`)
         const timeout = timers_1.setTimeout(() => {
             return this.socket.destroy(new Error('connect time out!'));
         }, connectTimeOut);
@@ -1079,6 +1078,7 @@ class imapPeer extends Event.EventEmitter {
         this.peerReady = false;
         this.makeRImap = false;
         this.needPingTimeOut = null;
+        this.lastAccessTime = null;
         this.rImap = null;
         debug ? exports.saveLog(`doing peer account [${imapData.imapUserName}] listen with[${listenBox}], write with [${writeBox}] `) : null;
         this.newReadImap();
@@ -1087,6 +1087,7 @@ class imapPeer extends Event.EventEmitter {
         console.log(`imapPeer new mail:\n\n${email.toString()} this.pingUuid = [${this.pingUuid}]`);
         const subject = exports.getMailSubject(email);
         const attr = exports.getMailAttached(email);
+        this.lastAccessTime = new Date();
         if (subject) {
             /**
              *
@@ -1121,6 +1122,7 @@ class imapPeer extends Event.EventEmitter {
         debug ? exports.saveLog(`Make Time Out for a Ping, ping ID = [${this.pingUuid}]`, true) : null;
         return this.waitingReplyTimeOut = timers_1.setTimeout(() => {
             debug ? exports.saveLog(`ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true) : null;
+            this.pingUuid = null;
             return this.emit('pingTimeOut');
         }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut);
     }

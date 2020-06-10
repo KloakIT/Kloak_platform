@@ -101,7 +101,7 @@ export default class extends Imap.imapPeer {
 	}
 
 	public requestCoNET_v1 ( uuid: string, text: string, CallBack ) {
-		return this.sendDataToANewUuidFolder ( Buffer.from ( text).toString ( 'base64' ), this.imapData.serverFolder, uuid, CallBack )
+		return this.sendDataToANewUuidFolder ( Buffer.from ( text ).toString ( 'base64' ), this.imapData.serverFolder, uuid, CallBack )
 	}
 
 	/**

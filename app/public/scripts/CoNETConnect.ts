@@ -112,7 +112,7 @@ class CoNETConnect {
 					if ( err ) {
 						return self.infoTextArray.push ({ text: ko.observable ( 'unKnowError' ), err: ko.observable ( true )})
 					}
-					
+					/*
 					if ( ! this.isKeypairBeSign ) {
 						if ( ! this.keyPairSign ()) {
 							let u = null
@@ -125,6 +125,7 @@ class CoNETConnect {
 						}
 						return
 					}
+					*/
 					_view.showIconBar ( true )
 					return this.ready ( null )
 				})

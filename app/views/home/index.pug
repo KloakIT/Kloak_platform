@@ -114,7 +114,7 @@ block jumbotron1
 						.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeyPairNext ")
 				<!-- ko with: keyPairPassword -->
 				.extra.content( data-bind = "visible: !$parents[0].showConform()" )
-					form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick")
+					form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
 						.field.required( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
 							p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
 							.ui.input.huge( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking(), 'left loading': passwordChecking()}" )
@@ -135,7 +135,7 @@ block jumbotron1
 			<!-- ko with: keyPairGenerateForm -->
 			.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
 				.keyPairGenerateForm
-					.ui.segment.teal( data-bind = "html: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(200,150,30,0.9)")
+					.ui.segment.teal( data-bind = "html: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
 					form.ui.form( data-bind="submit: form_AdministratorEmail_submit")
 						.field.required( data-bind = "css: { error: EmailAddressError() }" )
 							.ui.input.focus.left.icon.huge
@@ -180,17 +180,17 @@ block jumbotron1
 					.ui.segment.teal
 						p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
 						p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
-					form.ui.form.fluid
+					form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
 						.two.fields
 							.field.required( data-bind = " css: { error: emailAddressShowError ()}")
 								.ui.left.icon.input.huge
 									i.icon.outline.mail
-									input( data-bind = " value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text")
+									input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
 							.field.required
 								.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
 									i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-									input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password" )
-									button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" )
+									input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
+									button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
 										i.icon.angle.right
 			<!-- /ko -->
 			//-	if: showForm

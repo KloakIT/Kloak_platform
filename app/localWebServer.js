@@ -70,6 +70,7 @@ const imapErrorCallBack = (message) => {
     }
     return -1;
 };
+const resetConnectTimeLength = 1000 * 60 * 30;
 class localServer {
     constructor(postNumber = 3000, folderName = '') {
         this.expressServer = Express();
@@ -133,9 +134,13 @@ class localServer {
         //		have CoGate connect
         let userConnet = socket["userConnet"] = socket["userConnet"] || this.imapConnectPool.get(imapData.publicKeyID);
         if (userConnet) {
-            console.log(`tryConnectCoNET already have room; [${userConnet.socket.id}]`);
-            socket.join(userConnet.socket.id);
-            return userConnet.Ping(sendMail);
+            const margin = new Date().getTime() - userConnet.lastAccessTime.getTime();
+            if (margin < resetConnectTimeLength || !userConnet.pingUuid) {
+                console.log(`tryConnectCoNET already have room; [${userConnet.socket.id}]`);
+                socket.join(userConnet.socket.id);
+                return userConnet.Ping(sendMail);
+            }
+            userConnet.destroy();
         }
         const _exitFunction = err => {
             console.trace(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
@@ -192,12 +197,13 @@ class localServer {
         socket.on('doingRequest', (uuid, request, CallBack1) => {
             const _uuid = Uuid.v4();
             CallBack1(_uuid);
+            console.dir(request);
             const _callBack = (...data) => {
                 socket.emit(_uuid, ...data);
             };
             this.requestPool.set(uuid, socket);
             console.log(`on doingRequest uuid = [${uuid}]\n${request}\n`);
-            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.email);
+            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.keyID);
             if (userConnect) {
                 saveLog(`doingRequest on ${uuid}`);
                 return userConnect.requestCoNET_v1(uuid, request, _callBack);
@@ -218,7 +224,7 @@ class localServer {
             }
             const _files = files.split(',');
             console.log(`socket.on ('getFilesFromImap') _files = [${_files}] _files.length = [${_files.length}]`);
-            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.email);
+            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.keyID);
             if (!userConnect) {
                 console.log(`getFilesFromImap error:![ Have no userConnect ]`);
                 return socket.emit('systemErr');
@@ -242,7 +248,7 @@ class localServer {
                 socket.emit(_uuid, ...data);
             };
             sendMail = true;
-            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.email);
+            const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.keyID);
             if (userConnect) {
                 userConnect.Ping(true);
             }
@@ -254,7 +260,7 @@ class localServer {
             const _callBack = (...data) => {
                 socket.emit(_uuid, ...data);
             };
-            const userConnect = this.imapConnectPool.get(keyPair.email);
+            const userConnect = this.imapConnectPool.get(keyPair.keyID);
             if (!userConnect) {
                 return socket.emit('systemErr');
             }

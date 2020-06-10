@@ -292,7 +292,7 @@ class encryptoClass {
 	}
 
 	public decryptMessage =  ( encryptoText: string, CallBack ) => {
-		return this.decryptMessageToZipStream ( encryptoText, async ( err, _data ) => {
+		return this.decryptMessageToZipStream ( encryptoText, false, async ( err, _data ) => {
 			if ( err ) {
 				return CallBack ( err )
 			}
@@ -312,14 +312,24 @@ class encryptoClass {
 		})
 		
 	}
+	/**
+	 * 
+	 * @param encryptoText 
+	 * @param binary decrypt with binary or not
+	 * @param CallBack 
+	 */
 
-	public decryptMessageToZipStream ( encryptoText: string, CallBack ) {
+	public decryptMessageToZipStream ( encryptoText: string, binary: boolean, CallBack ) {
 		const option = {
 			privateKeys: this._privateKey,
 			publicKeys: this.Kloak_API_PublicKey,
 			message: null
+
 		}
 		let ret = false
+		if ( binary ) {
+			option ["format"] = 'binary'
+		}
 		return openpgp.message.readArmored ( encryptoText ).then ( data => {
 			option.message = data
 			return openpgp.decrypt( option )

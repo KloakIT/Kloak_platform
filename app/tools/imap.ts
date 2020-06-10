@@ -420,7 +420,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 				console.log (`IDLE doCommandCallback! error`, err )
                 return this.imapServer.destroyAll ( err )
 			}
-			console.log (`IDLE doCommandCallback!` )
+
             this.waitingDoingIdleStop = false
             this.runningCommand = null
             if ( this.idleCallBack ) {
@@ -1110,7 +1110,7 @@ export class qtGateImap extends Event.EventEmitter {
 			})
         }
 
-        console.log ( `qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }] setTimeout [${ connectTimeOut /1000 }] !`)
+        //console.log ( `qtGateImap connect mail server [${ this.IMapConnect.imapServer }: ${ this.port }] setTimeout [${ connectTimeOut /1000 }] !`)
 
         const timeout = setTimeout (() => {
             return this.socket.destroy ( new Error ('connect time out!'))
@@ -1343,16 +1343,15 @@ export class imapPeer extends Event.EventEmitter {
     public peerReady = false
     public newMail: ( data: any, subject ) => void
     private makeRImap = false
-    public needPingTimeOut = null
+	public needPingTimeOut = null
+	public lastAccessTime: Date = null
 
     private mail ( email: Buffer ) {
         
 		console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = getMailSubject ( email )
-        
-
 		const attr = getMailAttached (  email )
-		
+		this.lastAccessTime = new Date ()
 		if ( subject ) {
 
             /**
@@ -1370,7 +1369,8 @@ export class imapPeer extends Event.EventEmitter {
             console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail ( attr, subject )
 
-        }
+		}
+		
         console.log (`get mail have not subject\n\n`, email.toString() )
 
     }
@@ -1396,10 +1396,11 @@ export class imapPeer extends Event.EventEmitter {
 
         clearTimeout ( this.waitingReplyTimeOut )
         clearTimeout ( this.needPingTimeOut )
-        debug ? saveLog ( `Make Time Out for a Ping, ping ID = [${ this.pingUuid }]`, true ): null
+		debug ? saveLog ( `Make Time Out for a Ping, ping ID = [${ this.pingUuid }]`, true ): null
+		
         return this.waitingReplyTimeOut = setTimeout (() => {
             debug ? saveLog ( `ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true ): null
-            
+            this.pingUuid = null
             return this.emit ( 'pingTimeOut' )
         }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut )
     }
@@ -1407,14 +1408,15 @@ export class imapPeer extends Event.EventEmitter {
     public Ping ( sendMail: boolean ) {
         
         if ( this.pingUuid && !sendMail ) {
+
             return debug ? saveLog ( `Ping already waiting other ping, STOP!\nthis.pingUuid = [${ this.pingUuid }], sendMail = [${ sendMail }]`, ): null
 		}
 		
-		this.emit ('ping')
+		this.emit ( 'ping' )
 
         this.pingUuid = Uuid.v4 ()
         
-        return  this.AppendWImap1 ( null, this.pingUuid, err => {
+        return this.AppendWImap1 ( null, this.pingUuid, err => {
             if ( err ) {
 				this.pingUuid = null
                 return this.destroy ( err )

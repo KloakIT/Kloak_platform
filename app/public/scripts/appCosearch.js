@@ -218,6 +218,7 @@ const appScript = {
             if (com.subCom === "downloadFile") {
                 self.showMain(false);
                 const args = com.Args[0];
+                args.downloading;
                 self.showDownloadProcess(true);
                 return console.dir(args);
             }
@@ -239,7 +240,7 @@ const appScript = {
                 if (err) {
                     return errorProcess(err);
                 }
-                return _view.keyPairCalss.decryptMessageToZipStream(buffer, (err, data) => {
+                return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
                     if (err) {
                         return errorProcess(err);
                     }
@@ -564,7 +565,7 @@ const appScript = {
                 if (err) {
                     return showError(err);
                 }
-                return _view.keyPairCalss.decryptMessageToZipStream(buffer, (err, data) => {
+                return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
                     if (err) {
                         return showError(err);
                     }
@@ -888,7 +889,7 @@ const appScript = {
                     if (err) {
                         return errorProcess(err);
                     }
-                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, (err, data) => {
+                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
                         if (err) {
                             return errorProcess(err);
                         }
@@ -962,7 +963,7 @@ const appScript = {
                     if (err) {
                         return errorProcess(err);
                     }
-                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, (err, data) => {
+                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
                         if (err) {
                             return errorProcess(err);
                         }

@@ -21,7 +21,7 @@ const showHTMLComplete = (uuid, zipStream, CallBack) => {
     const errCallBack = err => {
         CallBack(err);
     };
-    return JSZip.loadAsync(zipStream, { base64: true }).then(zip => {
+    return JSZip.loadAsync(zipStream /*, { base64: true }*/).then(zip => {
         const ret = {
             img: null,
             html: null,
