@@ -248,6 +248,14 @@ const doingCommand = ( message: string, ports ) => {
 			return encryptoClassObj.decryptStreamWithAPKeyAndUnZIP ( cmd.args[0], cmd.args[1], encryptoClassObjCallBack )
 		}
 
+		case 'getHistoryTable': {
+			return encryptoClassObj.getHistoryTable ( encryptoClassObjCallBack )
+		}
+
+		case 'saveHistoryTable': {
+			return encryptoClassObj.getHistoryTable ( encryptoClassObjCallBack )
+		}
+
 		default: {
 			cmd [ "error" ] = 'unknow command!'
 			return returnCommand ( ports, cmd )

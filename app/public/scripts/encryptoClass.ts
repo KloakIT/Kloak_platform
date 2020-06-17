@@ -700,7 +700,7 @@ class encryptoClass {
 
 			request.onerror = evevnt => {
 				console.dir (`imapStore.get('0') error`)
-				return CallBack ( `imapStore.get('0') error` )
+				return CallBack ( `imapStore.get data error!` )
 			}
 
 			request.onsuccess = event => {
@@ -718,6 +718,155 @@ class encryptoClass {
         }
 		
 		
+	}
+
+	public saveHistoryTable ( data, CallBack ) {
+		return this.encrypt_withMyPublicKey ( JSON.stringify ( data ), ( err, encryptedHistory ) => {
+			if ( err ) {
+				return CallBack ( err )
+			}
+			
+
+			const request = window.indexedDB.open ( "kloak", 1 )
+			let DB = null
+			let historyStore = null
+			let saved = false
+
+			request.onerror = event => {
+				console.dir ( event)
+				return this.ready ( `unsupport!` )
+			}
+
+			request.onsuccess = event => {
+				
+				if ( saved ) {
+					console.dir (`historyStore success!`)
+					return CallBack ()
+				}
+
+				DB = event.target [ "result" ]
+				
+				const objectStore = DB.transaction ( 'history', 'readwrite' ).objectStore ( 'history' )
+
+				const request = objectStore.get(0)
+
+				let cursor = null
+
+				const writeData = () => {
+					let request1 = null
+					if ( !cursor ) {
+						request1 = objectStore.add ({ id: 0, data: encryptedHistory })
+					} else {
+						request1 = objectStore.put ({ id: 0, data: encryptedHistory })
+					}
+					request1.onerror = event => {
+						console.dir (`writeData on error`)
+					}
+					return request1.onsuccess = event => {
+						console.dir ( `objectStore.add success!`)
+						CallBack ()
+					}
+					
+				}
+
+				request.onerror = evevnt => {
+					console.dir (`imapStore.get('0') error`)
+					return CallBack ( `imapStore.get('0') error` )
+				}
+
+				request.onsuccess = event => {
+					cursor = request.result
+					return writeData ()
+				}
+
+				
+				
+			}
+
+			request.onupgradeneeded = event => {
+				console.dir (`request.onupgradeneeded`)
+				DB = event.target ["result"]
+				return DB.createObjectStore ( 'history', { keyPath: 'id' }).transaction.oncomplete = event => {
+					historyStore = DB.transaction ( 'history', 'readwrite' ).objectStore ( 'history' )
+					historyStore.add ({ id: 0, data: encryptedHistory }).onsuccess = event => {
+						return saved = true
+					}
+					
+				}
+			}
+		})
+	}
+
+	public getHistoryTable ( CallBack ) {
+		const request = window.indexedDB.open ( "kloak", 1 )
+		let DB = null
+		let historyStore = null
+		let onupgradeneeded = false
+
+		request.onerror = event => {
+			console.dir ( event )
+			return CallBack ( `unsupport` )
+			
+		}
+
+		request.onsuccess = event => {
+			if ( onupgradeneeded ) {
+				return CallBack ()
+			}
+
+			DB = event.target ["result"]
+			historyStore = DB.transaction ( 'history', 'readwrite' ).objectStore ( 'history' )
+
+
+			let cursor = null
+			let ret = null
+			const deleteData = () => {
+				historyStore.delete ( 0 ).onsuccess = event => {
+					return CallBack ()
+				}
+			}
+
+			const finish = () => {
+				if ( !cursor ) {
+					return CallBack ()
+				}
+				this.decrypt_withMyPublicKey ( cursor.data, ( err, data ) => {
+					if ( err ) {
+						console.dir ( `history table data [${ cursor }] can't be decrypt, delete data!`)
+						return deleteData ()
+					}
+
+					try {
+						ret = JSON.parse ( data )
+					} catch ( ex ) {
+						console.dir ( `history table data [${ data }] can't be JSON.parse, delete data!`)
+						return deleteData ()
+					}
+					return CallBack ( null, ret )
+				})
+			}
+
+			const request = historyStore.get( 0 )
+
+			request.onerror = evevnt => {
+				console.dir (`historyStore.get('0') error`)
+				return CallBack ( `historyStore.get data error!` )
+			}
+
+			request.onsuccess = event => {
+				cursor = request.result
+				return finish ()
+			}
+
+			
+		}
+
+		request.onupgradeneeded = event => {
+			console.dir (`request.onupgradeneeded, have no Imap data!`)
+			DB = event.target ["result"]
+			historyStore = DB.createObjectStore ( 'history', { keyPath: 'id' })
+			return onupgradeneeded = true
+        }
 	}
 
 	public decryptStreamWithAPKeyAndUnZIP ( uuid, message: string, CallBack ) {

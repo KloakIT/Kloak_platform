@@ -248,11 +248,11 @@ interface QTGate_DnsAddress {
 interface kloak_downloadObj {
 	url: string
 	downloadFilename: string
-	AcceptRanges: boolean
+	acceptRanges: string
 	fileExpansion: string
 	totalLength: number
-	ContentType:  string
-	Last_Modified: Date
+	contentType:  string
+	lastModified: Date
 	downloading: string
 	offset: number
 	currentlength: number
@@ -740,7 +740,7 @@ interface localServerKeyPair {
 
 interface sharedWorkerCommand {
 	command: string
-	args: any
+	args?: any
 	uuid?: string
 	error?: string
 }

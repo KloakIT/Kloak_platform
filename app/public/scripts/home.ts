@@ -308,7 +308,8 @@ module view_layout {
         public showKeyPair = ko.observable ( false )
         public CoNETConnectClass: CoNETConnect = null
         public imapFormClass: imapForm = null
-        public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
+		public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
+		public historyData = ko.observableArray
 		public bodyBlue = ko.observable ( true )
         public CanadaBackground = ko.observable ( false )
 		public password = null

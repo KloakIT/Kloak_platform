@@ -134,6 +134,21 @@ class sharedWorkerManager {
 		return this.emitCommand ( cmd, CallBack )
 	}
 
+	public getHistoryTable ( CallBack ) {
+		const cmd: sharedWorkerCommand = {
+			command: 'getHistoryTable'
+		}
+		return this.emitCommand ( cmd, CallBack )
+	}
+
+	public saveHistoryTable ( data, CallBack ) {
+		const cmd: sharedWorkerCommand = {
+			command: 'saveHistoryTable',
+			args: data
+		}
+		return this.emitCommand ( cmd, CallBack )
+	}
+
 	public decryptStreamWithAPKeyAndUnZIP ( uuid: string, message: string, CallBack ) {
 		const cmd: sharedWorkerCommand = {
 			command: 'decryptStreamWithAPKeyAndUnZIP',
