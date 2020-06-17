@@ -22,12 +22,17 @@ const messageBoxDefine = {
 	reConnectCoNET:
 		['CoNET链接已中断','CoNETとの接続が中断され','CoNET connection lost.','CoNET的鏈接已中斷'
 	],
+	localWebsiteError: [
+		'CoNet网络通讯模块无应答！','CoNetネットワーク通信モジュールの応答なし',`No response from CoNet's network module`,'CoNet網絡通訊模塊无應答！',
+	],
+	localWebsiteDecryptError: [
+		'CoNet网络通讯模块应答通讯解密错误','CoNetネットワーク通信モジュールは暗号化した通信が復号化できません','CoNet network module responds a decryption error.','CoNet網絡通訊模塊應答通訊解密錯誤'
+	],
 	connectingToCoNET:
 		['正在连接CoNET...','CoNETへ接続中...','Connecting to CoNET...','正在連結CoNET...'
 	],
 	connectedToCoNET:
-		['无IP地址成功连接CoNET','IPなしでCoNETに接続しました','Success to connect CoNET without IP address.','無IP地址成功連結CoNET'
-	],
+		['无IP地址成功连接CoNET','IPなしでCoNETに接続しました','Success to connect CoNET without IP address.','無IP地址成功連結CoNET'],
 	
 	maximumRequest: [
 		'您的请求已达最大值，请稍后再试',
@@ -106,17 +111,18 @@ const messageBoxDefine = {
 
 
 }
-
+const requestTimeOut = 1000 * 180
 
 class connectInformationMessage {
 	public offlineInfo = ko.observable ( false )
 	public showNegative = ko.observable ( false )
 	public showGreen = ko.observable ( false )
 	public messageArray = ko.observable ( null )
-	public socketIoOnline = true
-	
-	public socketIo =  io ( `${ this.url }`, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
+	public socketIoOnline = false
+	public socketIo =  io ( this.url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
+	public localServerPublicKey = ""
 
+	private requestPool = new Map ()
 	private first = true
 	constructor ( private url: string = "/") {
 
@@ -134,15 +140,27 @@ class connectInformationMessage {
 		})
 
 		this.first = false
+		this.socketListening ()
+		
+	}
 
+
+	private socketListening () {
 		this.socketIo.on ( 'reconnect_failed', () => {
-			this.socketIoOnline = false
-			self.showErrorMessage ( 'systemError' )
+			console.dir ( `reconnect_failed`)
+			//self.showErrorMessage ( 'systemError' )
 		})
-
+		
+		this.socketIo.on ( 'connect', () => {
+			console.dir (`on connect`)
+			return this.getServerPublicKey ( err => {
+				
+			})
+		})
+		
 		this.socketIo.on ( 'reconnect', attempt => {
-			this.socketIoOnline = true
-			this.hideMessage ()
+			console.dir (`on reconnect`)
+			/*
 			if ( _view && _view.keyPairCalss && typeof _view.keyPairCalss.getServerPublicKey === "function" ) {
 				return _view.keyPairCalss.getServerPublicKey ( err => {
 					if ( err ) {
@@ -150,58 +168,96 @@ class connectInformationMessage {
 					}
 				})
 			}
+			*/
+			console.dir (`Error: have not _view.keyPairCalss`)
 			
 		})
+		
+		this.socketIo.on ( 'doingRequest', ( mess, uuid ) => {
+			this.onDoingRequest ( mess, uuid )
+		})
+
 
 		this.socketIo.on ( 'systemErr', err => {
-			return self.showErrorMessage ( err )
+			console.dir ( err )
+			//return self.showErrorMessage ( err )
+		})
+	}
+
+	public emitRequest ( cmd: QTGateAPIRequestCommand, CallBack ) {
+		const self = this
+		const uuid = cmd.requestSerial
+		this.requestPool.set ( uuid, 
+			{
+				CallBack: CallBack,
+				cmd: cmd,
+				timeOut: setTimeout(() => {
+					self.requestPool.delete ( uuid )
+					return CallBack ( new Error ( 'timeOut' ))
+				}, requestTimeOut )
+			})
+		return _view.sharedMainWorker.encryptedWithAccessPointKey ( cmd, ( err, ciphertext ) => {
+			if ( err ) {
+				return self.showErrorMessage ( err )
+			}
+			return self.sockEmit ( 'doingRequest' , uuid, ciphertext, err => {
+				return CallBack ( err )
+			})
 		})
 
 	}
 
-
-
-	public sockEmit ( eventName: string, ...args ) {
+	private onDoingRequest = async ( encryptoText: string, uuid: string ) => {
 		const self = this
-		if ( ! this.socketIoOnline ) {
-			return this.showErrorMessage ( 'systemError' )
+		const request = this.requestPool.get ( uuid )
+		if ( !request ) {
+			return console.dir ( `onDoingRequest have no uuid ${ uuid }`)
 		}
+		
+		
+		return _view.sharedMainWorker.decryptJsonWithAPKey ( encryptoText, ( err, obj: QTGateAPIRequestCommand ) => {
 
-		const argLength = args.length - 1
-		let _CallBack = null
-	
-		if ( argLength > -1 && typeof ( args[ argLength ]) === 'function' ) {
-			_CallBack = args.pop ()
-		}
-		
-		this.socketIo.emit ( eventName, ...args, uuid => {
-			clearTimeout ( _timeout )
-			if ( _CallBack ) {
-				const reconnect = () => {
-					return _CallBack ( new Error ( 'socket.io reconnected ' ))
-				}
-				this.socketIo.once ( 'reconnect', reconnect )
-				return this.socketIo.once ( uuid, ( err, ...data ) => {
-					this.socketIo.removeListener ( 'reconnect', reconnect )
-					if ( err ) {
-						self.showErrorMessage ( err )
-					}
-		
-					if ( _CallBack ) {
-						return _CallBack ( err, ...data )
-					}
-				})
+			if ( err ) {
+				return self.showErrorMessage ( err )
+			}
+			if ( obj.error !== -1 ) {
+				clearTimeout ( request.timeOut )
 			}
 			
+			return request.CallBack ( null, obj )
+		})
+		
+		
+
+	}
+
+	public getServerPublicKey ( CallBack ) {
+		if ( !_view.keyPair ()) {
+			return CallBack ()
+		}
+		const publicKey = _view.keyPair().publicKey
+		const self = this
+		return this.sockEmit ( 'keypair', publicKey, async ( err, data ) => {
+			if ( err ) {
+				self.showErrorMessage ( err )
+				return CallBack ( err )
+			}
+			this.localServerPublicKey = data
+			
+			_view.keyPair()["localserverPublicKey"] = data
+			return _view.sharedMainWorker.localSeverPublicKey ( data, CallBack )
+			
+		})
+	}
+
+	public emitLocalCommand ( emitName: string, command: any, CallBack? ) {
+		return _view.sharedMainWorker.encrypto_withLocalServerKey ( command, ( err, data ) => {
+			if ( err ) {
+				return CallBack ( err )
+			}
+			return this.sockEmit ( emitName, data, CallBack )
 		})
 
-		const _timeout = setTimeout(() => {
-			if ( _CallBack ) {
-				_CallBack( new Error ( 'systemError' ))
-				return _CallBack = null
-			}
-			return this.showSystemError()
-		}, 10000 )
 	}
 
 	public showErrorMessage ( err ) {
@@ -213,9 +269,7 @@ class connectInformationMessage {
 		if ( !errMes ) {
 			return
 		}
-		if ( !messageBoxDefine[ errMes ] ) {
-			errMes = 'unKnowError'
-		}
+
 		this.hideMessage()
 		this.messageArray ( errMes )
 		this.showNegative ( true )
@@ -248,6 +302,74 @@ class connectInformationMessage {
 		}
 		
 		return messageBoxDefine [ err['message']] ? err['message'] : 'unKnowError'
+	}
+
+	public sockEmit ( eventName: string, ...args ) {
+
+		const argLength = args.length - 1
+		let _CallBack = null
+	
+		if ( argLength > -1 && typeof ( args[ argLength ]) === 'function' ) {
+			_CallBack = args.pop ()
+		}
+		
+		this.socketIo.emit ( eventName, ...args, uuid => {
+			clearTimeout ( _timeout )
+			if ( _CallBack ) {
+				const reconnect = () => {
+					return _CallBack ( new Error ( 'socket.io reconnected ' ))
+				}
+				this.socketIo.once ( 'reconnect', reconnect )
+				return this.socketIo.once ( uuid, ( err, ...data ) => {
+					this.socketIo.removeListener ( 'reconnect', reconnect )
+					if ( err ) {
+						//self.showErrorMessage ( err )
+					}
+		
+					if ( _CallBack ) {
+						return _CallBack ( err, ...data )
+					}
+				})
+			}
+			
+		})
+	
+		const _timeout = setTimeout(() => {
+			if ( _CallBack ) {
+				_CallBack( "localWebsiteError" )
+				return _CallBack = null
+			}
+			return this.showSystemError()
+		}, 5000 )
+	}
+
+	public fetchFiles ( files: string, CallBack ) {
+		const filesArray = files.split (',')
+		let data = ''
+		let currentFIle = filesArray.shift ()
+		let repertTime = 0
+		const _callBack = ( _err, _data ) => {
+			if ( _err ) {
+				if ( ++ repertTime > 4 ) {
+					return CallBack ( _err )
+				}
+				return fetchFIle ( _callBack )
+			}
+			data += _data
+			if ( filesArray.length ) {
+				currentFIle = filesArray.shift ()
+				return fetchFIle ( _callBack )
+			}
+			return CallBack ( null , data )
+		}
+
+
+		const fetchFIle = ( _CallBack ) => {
+			
+			return this.emitLocalCommand ( 'getFilesFromImap', currentFIle, _CallBack )
+		}
+	
+		return fetchFIle ( _callBack )
 	}
 }
 

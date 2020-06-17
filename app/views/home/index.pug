@@ -2,23 +2,25 @@ extends ../shared/coreLayout.pug
 block jumbotron
 	include ../shared/CoNETConnectInfo
 block jumbotron1
+
 	<!-- ko if: showLanguageSelect -->
-		.language( style="z-index: 999;top: 1.3em;right: 1em;position: fixed;width: 2em;")
+		.language( style="z-index: 999;top: 1.3em;right: 2em;position: fixed;width: 2em;")
 			.ui.text.shape.languageText( data-bind = " click: selectItem " )
 				.sides
 					span.ui.header.side.en.languageItem.languageTextCoverColor
-						i.flag.united.kingdom.large
+						img( src="/images/uk.svg")
 						//-span.languageItemSpan( data-bind = " text: menu[ 'en' ][0].showName " )
 					span.ui.header.side.tw.languageItem.languageTextCoverColor
-						i.flag.taiwan.large
+						img( src="/images/taiwan.svg")
 						//-span.languageItemSpan( data-bind = " text: menu[ 'tw' ][0].showName " )
 					span.ui.header.side.zh.languageItem.languageTextCoverColor
-						i.flag.china.large
+						img( src="/images/china.svg")
 						//-span.languageItemSpan( data-bind = " text: menu[ 'zh' ][0].showName " )
 					span.ui.header.side.ja.languageItem.languageTextCoverColor
-						i.flag.japan.large
+						img( src="/images/japan.svg")
 						//-span.languageItemSpan( data-bind = " text: menu[ 'ja' ][0].showName " )
 	<!-- /ko -->
+
 	<!-- ko if: sectionWelcome -->
 	section#welcome.content
 		.welcome-bg
@@ -81,28 +83,37 @@ block jumbotron1
 			.card.centered.raised( style = " width: 100%;" )
 				.content
 					.header
+						
+						<!-- ko if: email -->
 						i.icon.privacy.teal
 						span( data-bind = "text: email " style=" color:#00b5ad!important;")
-						a.activating.element.inline( href="#" data-bind = " attr: { 'data-content': verified ? infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailVerified : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailNotVerifi }")
-							i.huge.icons( style = " margin-left: 10px; font-size: 2em; margin-top: 5px;" )
-								i.icon.small.certificate( data-bind = " css: { grey: ! verified, orange: verified }")
-								i.icon.tiny.warning( data-bind = " visible: ! verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
-								i.icon.tiny.checkmark( data-bind = " visible: verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
+						<!-- /ko -->
+
+						<!-- ko if: !email -->
+						i.icon.spy.red
+						<!-- /ko -->
 						.ui.top.right.attached.label.background-clolr-white
 							a( data-bind = "if: delete_btn_view() && !showConform (), click: function () { showConform ( true )}")
 								i.trash.alternate.outline.icon.large.red
+					<!-- ko if: nikeName -->
 					.meta
 						i.icon.user
 						span( data-bind = " text: nikeName " )
+					<!-- /ko -->
+					
 					.description
 						p( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.creatDate + createDate" )
 						p
 							span( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.keyID" )
 							span( data-bind="text: publicKeyID.substr ( 0, 4 )")
-							span( data-bind="text: publicKeyID.substr ( 4, 4 )" style = "padding-left: 0.5em;" )
-							span( data-bind="text: publicKeyID.substr ( 8, 4 )" style = "padding-left: 0.5em;" )
-							span( data-bind="text: publicKeyID.substr ( 12, 4 )" style = "padding-left: 0.5em;" )
-					
+							span( data-bind="text: publicKeyID.substr ( 4, 4 )" style = "padding-left: 0.2rem;" )
+							span( data-bind="text: publicKeyID.substr ( 8, 4 )" style = "padding-left: 0.2rem;" )
+							span( data-bind="text: publicKeyID.substr ( 12, 4 )" style = "padding-left: 0.2rem;" )
+							a.activating.element.inline( href="#" data-bind = " attr: { 'data-content': verified ? infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailVerified : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailNotVerifi }")
+								i.huge.icons( style = " margin-left: 10px; font-size: 2em; margin-top: 5px;" )
+									i.icon.small.certificate( data-bind = " css: { grey: ! verified, orange: verified }")
+									i.icon.tiny.warning( data-bind = " visible: ! verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
+									i.icon.tiny.checkmark( data-bind = " visible: verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
 						
 				.extra.content( data-bind = "if: showDeleteKeyPairNoite(), visible: showDeleteKeyPairNoite()")
 					p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairHaveLogin " style="color: brown;")
@@ -135,24 +146,28 @@ block jumbotron1
 			<!-- ko with: keyPairGenerateForm -->
 			.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
 				.keyPairGenerateForm
-					.ui.segment.teal( data-bind = "html: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
-					form.ui.form( data-bind="submit: form_AdministratorEmail_submit")
-						.field.required( data-bind = "css: { error: EmailAddressError() }" )
-							.ui.input.focus.left.icon.huge
+					
+					form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
+						.field
+							H3.ui.header.title.blue( data-bind = "html: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
+						.field.required( data-bind = " css: { error: passwordError ()}")
+							.ui.input.focus.left.icon.big
+								i.icon.privacy
+								input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
+						.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
+						.field( data-bind = "css: { error: EmailAddressError() }" )
+							.ui.input.focus.left.icon.big
 								i.icon.spy
-								input( type = "email", z-index = "1", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
+								input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
 							.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
 								i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
 								span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
-							
-						.field.required( data-bind = " css: { error: NickNameError ()}")
-							.ui.input.focus.left.icon.huge
+						
+						.field( data-bind = " css: { error: NickNameError ()}")
+							.ui.input.focus.left.icon.big
 								i.icon.student
-								input( type = "text", z-index = "2", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
-						.field.required( data-bind = " css: { error: passwordError ()}")
-							.ui.input.focus.left.icon.huge
-								i.icon.privacy
-								input( type = "password" z-index = "3" data-bind = " value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
+								input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
+						
 						
 						button.ui.green.basic.large.button( type = "submit" data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
 			.card.centered.raised( data-bind = "if: showKeyPairPorcess, visible: showKeyPairPorcess" style = "width: 100%;padding: 2em;")

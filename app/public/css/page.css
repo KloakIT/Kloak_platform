@@ -47,7 +47,7 @@
 	-ms-transition: opacity 0.4s ease-in-out;
 	-o-transition: opacity 0.4s ease-in-out;
 	transition: opacity 0.4s ease-in-out;
-	opacity: 0.6;
+	opacity: 0.2;
 }
 
 .languageItem {
@@ -109,8 +109,8 @@
 .CoContent {
     width: 95%;
     position: relative;
-		transition: opacity 0.4s ease-in;
-		margin: auto;
+	transition: opacity 0.4s ease-in;
+	margin: auto;
 }
 .loginCards {
 	margin: 0px auto!important;

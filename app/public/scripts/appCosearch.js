@@ -165,7 +165,8 @@ const appScript = {
             command: 'CoSearch',
             Args: null,
             error: null,
-            subCom: null
+            subCom: null,
+            requestSerial: uuid_generate()
         };
         /**
          * 			web page address
@@ -188,7 +189,7 @@ const appScript = {
          *
          * 		test Unit
          */
-        return _view.keyPairCalss.emitRequest(com, (err, com) => {
+        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
                 return errorProcess(err);
             }
@@ -218,7 +219,6 @@ const appScript = {
             if (com.subCom === "downloadFile") {
                 self.showMain(false);
                 const args = com.Args[0];
-                args.downloading;
                 self.showDownloadProcess(true);
                 return console.dir(args);
             }
@@ -235,12 +235,12 @@ const appScript = {
             const arg = com.Args[0];
             const uuid = arg.split(',')[0].split('.')[0];
             self.showDownload(true);
-            return _view.connectInformationMessage.sockEmit('getFilesFromImap', arg, (err, buffer) => {
+            return _view.connectInformationMessage.emitLocalCommand('getFilesFromImap', arg, (err, buffer) => {
                 self.showDownload(false);
                 if (err) {
                     return errorProcess(err);
                 }
-                return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
+                return _view.sharedMainWorker.decryptStreamWithAPKey(buffer, (err, data) => {
                     if (err) {
                         return errorProcess(err);
                     }
@@ -344,7 +344,8 @@ const appScript = {
             command: 'CoSearch',
             Args: ['google', nextLink],
             error: null,
-            subCom: null
+            subCom: null,
+            requestSerial: uuid_generate()
         };
         switch (self.currentlyShowItems()) {
             //      google search
@@ -371,7 +372,7 @@ const appScript = {
             }
         }
         /** */
-        return _view.keyPairCalss.emitRequest(com, (err, com) => {
+        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
                 return showError(err);
             }
@@ -428,7 +429,7 @@ const appScript = {
                 error: null,
                 subCom: 'newsNext'
             };
-            return _view.keyPairCalss.emitRequest(com, (err, com) => {
+            return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
                     return errorProcess(err);
                 }
@@ -479,7 +480,7 @@ const appScript = {
                 subCom: 'imageNext'
             };
             self.imageButtonShowLoading(true);
-            return _view.keyPairCalss.emitRequest(com, (err, com) => {
+            return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
                     return errorProcess(err);
                 }
@@ -560,49 +561,21 @@ const appScript = {
             currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
             currentItem.showDownload(true);
             currentItem.showLoading(false);
-            return fetchFiles(arg, (err, buffer) => {
+            return _view.connectInformationMessage.fetchFiles(arg, (err, buffer) => {
                 currentItem.showDownload(false);
                 if (err) {
                     return showError(err);
                 }
-                return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
-                    if (err) {
-                        return showError(err);
-                    }
-                    isImage
-                        ? currentItem.snapshotImageReady(true)
-                        : currentItem.snapshotReady(true);
-                    isImage
-                        ? currentItem.showImageLoading(false)
-                        : currentItem.showLoading(false);
-                    currentItem.loadingGetResponse(false);
-                    currentItem.conetResponse(false);
-                    return (currentItem.snapshotData = data);
-                });
+                isImage
+                    ? currentItem.snapshotImageReady(true)
+                    : currentItem.snapshotReady(true);
+                isImage
+                    ? currentItem.showImageLoading(false)
+                    : currentItem.showLoading(false);
+                currentItem.loadingGetResponse(false);
+                currentItem["snapshotData"] = buffer;
+                return currentItem.conetResponse(false);
             });
-            /*
-            return _view.connectInformationMessage.sockEmit( 'getFilesFromImap', arg, ( err, buffer: string ) => {
-                currentItem.showDownload ( false )
-                if ( err ) {
-                    return showError(err);
-                }
-                return _view.keyPairCalss.decryptMessageToZipStream( buffer, ( err, data ) => {
-                    if ( err ) {
-                        return showError( err )
-                    }
-                    isImage
-                        ? currentItem.snapshotImageReady ( true )
-                        : currentItem.snapshotReady (true )
-                    isImage
-                        ? currentItem.showImageLoading ( false )
-                        : currentItem.showLoading ( false )
-                    currentItem.loadingGetResponse ( false )
-                    currentItem.conetResponse ( false )
-                    return ( currentItem.snapshotData = data )
-                    }
-                )}
-            )
-            */
         };
         const url = isImage ? currentItem.clickUrl : currentItem.url;
         const width = $(window).width();
@@ -611,9 +584,10 @@ const appScript = {
             command: 'CoSearch',
             Args: [url, width, height],
             error: null,
-            subCom: 'getSnapshop'
+            subCom: 'getSnapshop',
+            requestSerial: uuid_generate()
         };
-        return _view.keyPairCalss.emitRequest(com, callBack);
+        return _view.connectInformationMessage.emitRequest(com, callBack);
     },
     showSnapshotClick: (self, index, isImage) => {
         self.showMain(false);
@@ -670,7 +644,7 @@ const appScript = {
                 subCom: 'videoNext'
             };
             self.videoButtonShowLoading(true);
-            return _view.keyPairCalss.emitRequest(com, (err, com) => {
+            return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
                     return errorProcess(err);
                 }
@@ -789,7 +763,7 @@ const appScript = {
                             error: null,
                             subCom: 'imageSearch'
                         };
-                        return _view.keyPairCalss.emitRequest(com, (err, com) => {
+                        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                             if (err) {
                                 return errorProcess(err);
                             }
@@ -889,16 +863,14 @@ const appScript = {
                     if (err) {
                         return errorProcess(err);
                     }
-                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
-                        if (err) {
-                            return errorProcess(err);
-                        }
-                        _img.snapshotReady(true);
-                        _img.showLoading(false);
-                        _img.loadingGetResponse(false);
-                        _img.conetResponse(false);
-                        return _img['snapshotData'] = data;
-                    });
+                    if (err) {
+                        return errorProcess(err);
+                    }
+                    _img.snapshotReady(true);
+                    _img.showLoading(false);
+                    _img.loadingGetResponse(false);
+                    _img.conetResponse(false);
+                    return _img['snapshotData'] = buffer;
                 });
             };
             const width = $(window).width();
@@ -909,7 +881,7 @@ const appScript = {
                 error: null,
                 subCom: 'getSnapshop'
             };
-            return _view.keyPairCalss.emitRequest(com, callBack);
+            return _view.connectInformationMessage.emitRequest(com, callBack);
         }
         /**
          * n['showImageLoading'] = ko.observable ( false )
@@ -963,7 +935,7 @@ const appScript = {
                     if (err) {
                         return errorProcess(err);
                     }
-                    return _view.keyPairCalss.decryptMessageToZipStream(buffer, true, (err, data) => {
+                    return _view.sharedMainWorker.decryptStreamWithAPKey(buffer, (err, data) => {
                         if (err) {
                             return errorProcess(err);
                         }
@@ -981,7 +953,7 @@ const appScript = {
                 error: null,
                 subCom: 'getFile'
             };
-            return _view.keyPairCalss.emitRequest(com, callBack);
+            return _view.connectInformationMessage.emitRequest(com, callBack);
             setTimeout(() => {
                 _img.loadingImageGetResponse(true);
                 setTimeout(() => {

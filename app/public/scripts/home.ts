@@ -13,61 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 declare const mhtml2html
-const InitKeyPair = function () {
-	const keyPair: keypair = {
-		publicKey: null,
-		privateKey: null,
-		keyLength: null,
-		nikeName: null,
-		createDate: null,
-		email: null,
-		passwordOK: false,
-		verified: false,
-		publicKeyID: null,
-		_password: null
-	}
-	return keyPair
-}
-
-
-
-const makeKeyPairData = function ( view: view_layout.view, keypair: keypair ) {
+const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
     
     const length = keypair.publicKeyID.length
     keypair.publicKeyID = keypair.publicKeyID.substr ( length - 16 )
     
-    let keyPairPasswordClass = new keyPairPassword ( keypair.privateKey, function ( passwd: string ) {
+    let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string ) => {
         //      password OK
 
         keypair.keyPairPassword ( keyPairPasswordClass = null )
 		keypair.passwordOK = true
 		view.password = passwd
-        keypair.showLoginPasswordField ( false )
-		return view.keyPairCalss = new encryptoClass ( keypair, view.password, view.connectInformationMessage,
-			/**
-			 * 
-			 * 		encryptoClass ready
-			 * 
-			 */
-			err => {
+		keypair.showLoginPasswordField ( false )
 
-				view.showKeyPair ( false )
-				/*
-				if ( view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult ) {
-					return view.imapSetupClassExit ( view.keyPairCalss.imapData )
-				}
-				*/
-				let uu = null
-				return view.imapSetup ( uu = new imapForm ( keypair.email, view.keyPairCalss.imapData, function ( imapData: IinputData ) {
-					view.imapSetup ( uu = null )
-					view.keyPairCalss.imapData = imapData
-					return view.keyPairCalss.saveImapIInputData ( err => {
-						return view.imapSetupClassExit ( imapData )
-					})
-				}))
+		
+		
+		
+		/**
+		 * 
+		 * 		encryptoClass ready
+		 * 
+		 *
+		**/
+		keypair ["localserverPublicKey"] = _view.connectInformationMessage.localServerPublicKey
+		return view.sharedMainWorker.getKeyPairInfo ( keypair, ( err, data: keypair ) => {
+			if ( err ) {
+				return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
 			}
-		)
+			console.dir ( data )
+			view.showKeyPair ( false )
+			
+			if ( data["imapData"] ) {
+				view.imapData = data["imapData"]
+				return view.imapSetupClassExit ( view.imapData )
+			}
+			
+			let uu = null
+			return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
+				view.imapSetup ( uu = null )
+				view.imapData = imapData
+				return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
+					return view.imapSetupClassExit ( imapData )
+				})
+			}))
+		})
+			
+				
+			
+			
+		
     })
     
     keypair.keyPairPassword = ko.observable( keyPairPasswordClass )
@@ -142,8 +138,10 @@ class showWebPageClass {
 	constructor ( public showUrl: string, private zipBase64Stream: string, private zipBase64StreamUuid: string, private exit: ()=> void ) {
 		const self = this
 		_view.showIconBar ( false )
+		_view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+
 		
-		showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+		//showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
             if ( err ) {
                 return self.showErrorMessageProcess ()
             }
@@ -226,8 +224,7 @@ class showWebPageClass {
             self.showLoading ( false )
             self.mHtml ( html )
         })
-		
-		
+
 	}
 }
 
@@ -286,6 +283,7 @@ class workerManager {
     }
 }
 
+
 module view_layout {
     export class view {
         public connectInformationMessage = new connectInformationMessage( '/' )
@@ -313,13 +311,15 @@ module view_layout {
         public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
 		public bodyBlue = ko.observable ( true )
         public CanadaBackground = ko.observable ( false )
-        public password = null
+		public password = null
+
+		public sharedMainWorker = new sharedWorkerManager ('/scripts/netSocket.js')
+		
         /*
         public worker = new workerManager ([
             'mHtml2Html'
         ])
 		*/
-		public keyPairCalss: encryptoClass = null
 
         public appsManager: KnockoutObservable< appsManager > = ko.observable ( null )
         public AppList = ko.observable ( false )
@@ -379,9 +379,10 @@ module view_layout {
              * 
              */
             this.svgDemo_showLanguage ()
-            config["account"] = config["keypair"] = null
+            config [ "account" ] = config ["keypair"] = null
             
             let _keyPairGenerateForm =  new keyPairGenerateForm (( _keyPair: keypair ) => {
+
                 self.keyPairGenerateForm ( _keyPairGenerateForm = null )
                 /**
                  *      key pair ready
@@ -396,19 +397,21 @@ module view_layout {
                 
                 //self.localServerConfig ( config )
                 self.keyPair ( _keyPair )
-                return self.keyPairCalss = new encryptoClass ( _keyPair, self.password, self.connectInformationMessage, err => {
-                    self.showKeyPair ( false )
-        
-                    
-                    let uu = null
-                    return self.imapSetup ( uu = new imapForm ( _keyPair.email, self.keyPairCalss.imapData, function ( imapData: IinputData ) {
-                        self.imapSetup ( uu = null )
-                        self.keyPairCalss.imapData = imapData
-                        return self.keyPairCalss.saveImapIInputData ( err => {
-                            return self.imapSetupClassExit ( imapData )
-                        })
-                    }))
-                })
+				self.showKeyPair ( false )
+				self.connectInformationMessage.getServerPublicKey ( err => {
+					return console.dir (`local server public key ready!`)
+				})
+				
+
+				let uu: imapForm = null
+				return self.imapSetup ( uu = new imapForm ( _keyPair.email, null, function ( imapData: IinputData ) {
+					self.imapSetup ( uu = null )
+					self.imapData = imapData
+					return self.sharedMainWorker.saveImapIInputData ( imapData, err => {
+						return self.imapSetupClassExit ( imapData )
+					})
+				}))
+            
                 //initPopupArea ()
                 
 
@@ -492,11 +495,11 @@ module view_layout {
 				this.demoMainElm.remove()
 				this.demoMainElm = null
             }
-            
+            /*
             if ( !this.connectInformationMessage.socketIoOnline ) {
                 return this.connectInformationMessage.showSystemError ()
             }
-            
+            */
 			this.sectionWelcome ( false )
 			/*
             if ( this.localServerConfig().firstRun ) {
@@ -504,7 +507,8 @@ module view_layout {
 			}
             */
             
-            this.sectionLogin ( true )
+			this.sectionLogin ( true )
+
             return initPopupArea ()
             /*
             setTimeout (() => {
@@ -517,7 +521,7 @@ module view_layout {
             return this.nytSection ( true )
             */
             
-        }
+		}
 
         public deletedKeypairResetView () {
             this.imapSetup ( null )
@@ -562,7 +566,8 @@ module view_layout {
 
         public imapSetupClassExit ( _imapData: IinputData ) {
             const self = this
-            this.imapData = _imapData
+			this.imapData = _imapData
+			
             return this.CoNETConnect ( this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified, ( err ) => {
                 if ( typeof err ==='number' && err > -1 ) {
                     self.CoNETConnect ( this.CoNETConnectClass = null )
@@ -571,7 +576,8 @@ module view_layout {
                 self.connectedCoNET ( true )
 				self.homeClick ()
 				
-            }))
+			}))
+			
 
         }
 
@@ -643,7 +649,7 @@ module view_layout {
 			})
 
 			const wT = width/2 - 35
-			const wY = 30 - height / 2
+			const wY = 40 - height / 2
 			backGround_mask_circle.animate ({
 				transform: `t${ wT } ${ wY }`,
 				r: 60
@@ -657,6 +663,7 @@ const _view = new view_layout.view ()
 
 ko.applyBindings ( _view , document.getElementById ( 'body' ))
 $(`.${ _view.tLang()}`).addClass ('active')
-openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js'
+//openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js'
 window[`${ "indexedDB" }`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"]
+
 const CoNET_version = "0.1.10"

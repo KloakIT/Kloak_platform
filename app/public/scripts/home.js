@@ -1,45 +1,49 @@
-const InitKeyPair = function () {
-    const keyPair = {
-        publicKey: null,
-        privateKey: null,
-        keyLength: null,
-        nikeName: null,
-        createDate: null,
-        email: null,
-        passwordOK: false,
-        verified: false,
-        publicKeyID: null,
-        _password: null
-    };
-    return keyPair;
-};
-const makeKeyPairData = function (view, keypair) {
+/*!
+ * Copyright 2018 CoNET Technology Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
-    let keyPairPasswordClass = new keyPairPassword(keypair.privateKey, function (passwd) {
+    let keyPairPasswordClass = new keyPairPassword(keypair, (passwd) => {
         //      password OK
         keypair.keyPairPassword(keyPairPasswordClass = null);
         keypair.passwordOK = true;
         view.password = passwd;
         keypair.showLoginPasswordField(false);
-        return view.keyPairCalss = new encryptoClass(keypair, view.password, view.connectInformationMessage, 
         /**
          *
          * 		encryptoClass ready
          *
-         */
-        err => {
-            view.showKeyPair(false);
-            /*
-            if ( view.keyPairCalss.imapData && view.keyPairCalss.imapData.imapTestResult ) {
-                return view.imapSetupClassExit ( view.keyPairCalss.imapData )
+         *
+        **/
+        keypair["localserverPublicKey"] = _view.connectInformationMessage.localServerPublicKey;
+        return view.sharedMainWorker.getKeyPairInfo(keypair, (err, data) => {
+            if (err) {
+                return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
             }
-            */
+            console.dir(data);
+            view.showKeyPair(false);
+            if (data["imapData"]) {
+                view.imapData = data["imapData"];
+                return view.imapSetupClassExit(view.imapData);
+            }
             let uu = null;
-            return view.imapSetup(uu = new imapForm(keypair.email, view.keyPairCalss.imapData, function (imapData) {
+            return view.imapSetup(uu = new imapForm(keypair.email, view.imapData, function (imapData) {
                 view.imapSetup(uu = null);
-                view.keyPairCalss.imapData = imapData;
-                return view.keyPairCalss.saveImapIInputData(err => {
+                view.imapData = imapData;
+                return view.sharedMainWorker.saveImapIInputData(imapData, err => {
                     return view.imapSetupClassExit(imapData);
                 });
             }));
@@ -84,7 +88,8 @@ class showWebPageClass {
         this.urlBlobList = [];
         const self = this;
         _view.showIconBar(false);
-        showHTMLComplete(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
+        _view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
+            //showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
             if (err) {
                 return self.showErrorMessageProcess();
             }
@@ -252,12 +257,12 @@ var view_layout;
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
             this.password = null;
+            this.sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js');
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
             ])
             */
-            this.keyPairCalss = null;
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);
             this.imapData = null;
@@ -330,17 +335,18 @@ var view_layout;
                 _keyPair.passwordOK = true;
                 //self.localServerConfig ( config )
                 self.keyPair(_keyPair);
-                return self.keyPairCalss = new encryptoClass(_keyPair, self.password, self.connectInformationMessage, err => {
-                    self.showKeyPair(false);
-                    let uu = null;
-                    return self.imapSetup(uu = new imapForm(_keyPair.email, self.keyPairCalss.imapData, function (imapData) {
-                        self.imapSetup(uu = null);
-                        self.keyPairCalss.imapData = imapData;
-                        return self.keyPairCalss.saveImapIInputData(err => {
-                            return self.imapSetupClassExit(imapData);
-                        });
-                    }));
+                self.showKeyPair(false);
+                self.connectInformationMessage.getServerPublicKey(err => {
+                    return console.dir(`local server public key ready!`);
                 });
+                let uu = null;
+                return self.imapSetup(uu = new imapForm(_keyPair.email, null, function (imapData) {
+                    self.imapSetup(uu = null);
+                    self.imapData = imapData;
+                    return self.sharedMainWorker.saveImapIInputData(imapData, err => {
+                        return self.imapSetupClassExit(imapData);
+                    });
+                }));
                 //initPopupArea ()
             });
             this.localServerConfig(config);
@@ -394,9 +400,11 @@ var view_layout;
                 this.demoMainElm.remove();
                 this.demoMainElm = null;
             }
-            if (!this.connectInformationMessage.socketIoOnline) {
-                return this.connectInformationMessage.showSystemError();
+            /*
+            if ( !this.connectInformationMessage.socketIoOnline ) {
+                return this.connectInformationMessage.showSystemError ()
             }
+            */
             this.sectionWelcome(false);
             /*
             if ( this.localServerConfig().firstRun ) {
@@ -520,7 +528,7 @@ var view_layout;
                 strokeWidth: 5,
             });
             const wT = width / 2 - 35;
-            const wY = 30 - height / 2;
+            const wY = 40 - height / 2;
             backGround_mask_circle.animate({
                 transform: `t${wT} ${wY}`,
                 r: 60
@@ -532,6 +540,6 @@ var view_layout;
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');
-openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js';
+//openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js'
 window[`${"indexedDB"}`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
 const CoNET_version = "0.1.10";

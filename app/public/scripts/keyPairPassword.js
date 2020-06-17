@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 class keyPairPassword {
-    constructor(privateKey, exit) {
-        this.privateKey = privateKey;
+    constructor(keypair, exit) {
+        this.keypair = keypair;
         this.exit = exit;
         this.showPasswordErrorMessage = ko.observable(false);
         this.systemSetup_systemPassword = ko.observable('');
@@ -41,17 +41,17 @@ class keyPairPassword {
             return this.showPasswordError();
         }
         this.passwordChecking(true);
-        const passwd = this.systemSetup_systemPassword();
+        this.keypair._password = this.systemSetup_systemPassword();
         const errProcess = err => {
             self.passwordChecking(false);
             return self.showPasswordError();
         };
-        return openpgp.key.readArmored(this.privateKey).then(data => {
-            const keys = data.keys[0];
-            return keys.decrypt(passwd).then(data => {
-                self.passwordChecking(false);
-                return self.exit(passwd);
-            }).catch(errProcess);
-        }).catch(errProcess);
+        return _view.sharedMainWorker.checkKeypairPassword(this.keypair, err => {
+            if (err) {
+                return errProcess(err);
+            }
+            self.passwordChecking(false);
+            return self.exit(this.keypair._password);
+        });
     }
 }

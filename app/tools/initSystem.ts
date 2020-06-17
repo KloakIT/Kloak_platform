@@ -134,23 +134,11 @@ export const getNickName = ( str: string ) => {
 }
 
 export const getEmailAddress = ( str: string ) => {
+	console.dir ( str )
 	const uu = str.split ('<')
 	return uu[1].substr( 0, uu[1].length -1 )
 }
 
-export const getQTGateSign = ( user: OpenPgp.key.users ) => {
-    if ( !user.otherCertifications || !user.otherCertifications.length ) {
-		return null
-	}
-	let Certification = false
-	user.otherCertifications.forEach ( n => {
-		//console.log (`user.otherCertifications\n${ n.issuerKeyId.toHex ().toLowerCase() }`)
-		if ( QTGateSignKeyID.test ( n.issuerKeyId.toHex ().toLowerCase())) {
-			return Certification = true
-		}
-	})
-	return Certification
-}
 
 export const getKeyPairInfo = async ( publicKey: string, privateKey: string, password: string, CallBack: ( err?: Error, keyPair?: keypair ) => void ) => {
 
@@ -174,7 +162,7 @@ export const getKeyPairInfo = async ( publicKey: string, privateKey: string, pas
 	ret.publicKey = publicKey
 	ret.privateKey = privateKey
 	ret.nikeName = getNickName ( user.userId.userid )
-	ret.createDate = privateKey1.primaryKey.created.toDateString ()
+	ret.createDate = privateKey1.primaryKey.created
 	ret.email = getEmailAddress ( user.userId.userid )
 	ret.verified = getQTGateSign ( user )
 	ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase()
@@ -200,24 +188,32 @@ export const getKeyPairInfo = async ( publicKey: string, privateKey: string, pas
 	
 }
 
-export const getPublicKeyInfo = ( publicKey: string, CallBack ) => {
+export const getPublicKeyInfo = ( publicKey: string, CallBack: ( err?: Error, data?: localServerKeyPair) => void ) => {
+
 	return OpenPgp.key.readArmored ( publicKey ).then ( _key => {
-		const key = _key.keys[0]
-		const user = key.users[0]
-		const ret: Kloak_LocalServer_keyInfo = {
-			nikeName: getNickName ( user.userId.userid ),
-			email: getEmailAddress ( user.userId.userid ),
-			keyID: key.primaryKey.getFingerprint().toUpperCase(),
-			otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
-			KloakValid: getQTGateSign ( user ),
-			publicKeys: _key.keys
+
+		const ret: localServerKeyPair = {
+			publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
+			publicKeys: _key.keys,
+			privateKey: null
+
+			//nikeName: getNickName ( user.userId.userid ),
+			//email: getEmailAddress ( user.userId.userid ),
+			//keyID: key.primaryKey.getFingerprint().toUpperCase(),
+			//otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
+			//KloakValid: getQTGateSign ( user ),
+			//publicKeys: _key.keys
 		}
 		return CallBack ( null, ret )
 	}).catch ( ex => {
+		console.trace ( ex.message )
 		return CallBack ( ex )
 	})
 }
 
+export const createKeyPairObj = ( ) => {
+	
+}
 
 export const emitConfig = ( config: install_config, passwordOK: boolean ) => {
 	if ( !config ) {
@@ -263,16 +259,14 @@ export const newKeyPair = ( emailAddress: string, nickname: string, password: st
 	}
 
 	return OpenPgp.generateKey ( option ).then ( async ( keypair: { publicKeyArmored, privateKeyArmored }) => {
-		
-		const ret = {
-			publicKey: await ( OpenPgp.key.readArmored ( keypair.publicKeyArmored )),
-			privateKey: await ( OpenPgp.key.readArmored ( keypair.privateKeyArmored)),
-			public: keypair.publicKeyArmored
+		const _key = await ( OpenPgp.key.readArmored ( keypair.publicKeyArmored ))
+		const ret: localServerKeyPair = {
+			publicKeys: _key.keys,
+			privateKey: ( await ( OpenPgp.key.readArmored ( keypair.privateKeyArmored))).keys,
+			publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
+			publicKey: keypair.publicKeyArmored
 		}
-		
-		await ret.privateKey.keys[0].decrypt( password )
-		ret.publicKey = ret.publicKey.keys
-		ret.privateKey = ret.privateKey.keys
+		await ret.privateKey[0].decrypt( password )
 		return CallBack ( null, ret )
 	}).catch ( err => {
 		// ERROR
@@ -555,26 +549,22 @@ export const encryptMessage = ( publickeys, privatekeys, message: string, CallBa
 	}).catch ( CallBack )
 }
 
-export async function decryptoMessage ( publickeys, privatekeys, message: string, CallBack ) {
+export async function decryptoMessage ( keyObject: localServerKeyPair, publickey: any, message: string, CallBack ) {
 	const option = {
-		privateKeys: privatekeys,
-		publicKeys: publickeys,
+		privateKeys: keyObject.privateKey,
+		publicKeys: publickey,
 		message: await OpenPgp.message.readArmored ( message )
 	}
 
 	return OpenPgp.decrypt ( option ).then ( async data => {
-		
-		/**
-		 * 		verify signatures
-		 */
-		
-		
-		if ( data.signatures[0].valid ) {
-			
-			return CallBack ( null, data.data )
+		let ret = data.data
+		try {
+			ret = JSON.parse ( ret )
+		} catch ( ex ) {
+			return CallBack ( ex )
 		}
-
-		return CallBack ( new Error ( 'signatures error!' ))
+		return CallBack ( null, ret )
+		
 	}).catch ( err => {
 		
 		return CallBack ( err )

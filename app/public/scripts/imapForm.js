@@ -160,132 +160,9 @@ class keyPairSign {
             }
         });
     }
-    checkActiveEmailSubmit() {
-        const self = this;
-        this.conformTextError(false);
-        this.activeing(true);
-        let text = this.conformText();
-        const showFromatError = (err) => {
-            self.activeing(false);
-            self.conformTextErrorNumber(_view.connectInformationMessage.getErrorIndex(err));
-            self.conformTextError(true);
-            return $('.activating.element1').popup({
-                on: 'click',
-                onHidden: function () {
-                    self.conformTextError(false);
-                }
-            });
-        };
-        if (!text || !text.length || !/^-+BEGIN PGP MESSAGE-+\n/.test(text)) {
-            return showFromatError('PgpMessageFormatError');
-        }
-        //		support Outlook mail
-        /*
-        if ( / /.test ( text )) {
-            text = text.replace ( / PGP MESSAGE/g, '__PGP__MESSAGE').replace (/ /g, '\r\n').replace (/__/g, ' ' )
-            text = text.replace ( / MESSAGE-----/,' MESSAGE-----\r\n' )
-        }
-        /** */
-        return _view.keyPairCalss.decryptMessage(text, (err, obj) => {
-            if (err) {
-                return showFromatError('PgpDecryptError');
-            }
-            const com = {
-                command: 'activePassword',
-                Args: [obj],
-                error: null,
-                subCom: null
-            };
-            return _view.keyPairCalss.emitRequest(com, (err, com) => {
-                if (err) {
-                    return showFromatError(err);
-                }
-                if (com) {
-                    if (com.error) {
-                        return showFromatError(com.error);
-                    }
-                    const keyPair = _view.localServerConfig().keypair;
-                    keyPair.verified = true;
-                    keyPair.publicKey = Buffer.from(com.Args[0], 'base64').toString();
-                    _view.keyPair(keyPair);
-                    _view.sectionLogin(false);
-                    self.exit();
-                }
-            });
-        });
-        /*
-        return _view.connectInformationMessage.sockEmit ( 'checkActiveEmailSubmit', text, function ( err, req: QTGateAPIRequestCommand ) {
-            self.activeing ( false )
-            if ( err !== null && err > -1 || req && req.error != null && req.error > -1 ) {
-                self.conformTextErrorNumber ( err !== null && err > -1 ? err : req.error )
-                self.conformTextError ( true )
-                
-            }
-            if (!req ) {
-                const config =  _view.localServerConfig()
-                config.keypair.verified = true
-                _view.localServerConfig ( config )
-                _view.keyPair ( config.keypair )
-                _view.sectionLogin ( false )
-                self.exit ()
-            }
-            
-        })
-        */
-    }
     clearError() {
         _view.connectInformationMessage.hideMessage();
         this.showRequestActivEmailButtonError(false);
-    }
-    requestActivEmail() {
-        const self = this;
-        this.requestActivEmailrunning(true);
-        const com = {
-            command: 'requestActivEmail',
-            Args: [],
-            error: null,
-            subCom: null
-        };
-        const errorProcess = (err) => {
-            this.requestActivEmailrunning(false);
-            this.showRequestActivEmailButtonError(true);
-            _view.connectInformationMessage.showErrorMessage(err);
-        };
-        _view.keyPairCalss.emitRequest(com, (err, com) => {
-            if (err) {
-                return errorProcess(err);
-            }
-            if (!com) {
-                return;
-            }
-            if (com.error) {
-                return errorProcess(err);
-            }
-            if (com.Args[0] && com.Args[0].length) {
-                return _view.connectInformationMessage.sockEmit('checkActiveEmailSubmit', com.Args[0], () => {
-                    const config = _view.localServerConfig();
-                    config.keypair.verified = true;
-                    _view.keyPair(config.keypair);
-                    _view.sectionLogin(false);
-                    localStorage.setItem("config", JSON.stringify(config));
-                    self.exit();
-                });
-            }
-            self.conformButtom(false);
-            self.showSentActivEmail(1);
-            const u = self.showSentActivEmail();
-        });
-        /*
-        return _view.connectInformationMessage.sockEmit ( 'requestActivEmail', function ( err ) {
-            self.requestActivEmailrunning ( false )
-            if ( err !== null && err > -1 ) {
-                return self.requestError ( err )
-            }
-            self.conformButtom ( false ),[h]
-            self.showSentActivEmail (1)
-            const u = self.showSentActivEmail()
-        })
-        */
     }
 }
 class imapForm {
@@ -303,6 +180,7 @@ class imapForm {
         this.checkImapError = ko.observable(-1);
         this.showCheckProcess = ko.observable(false);
         this.checkImapStep = ko.observable(0);
+        this.imapConnectData = null;
         const self = this;
         if (imapData) {
             this.emailAddress(imapData.imapUserName);
@@ -351,17 +229,12 @@ class imapForm {
             }
             self.checkImapStep(2);
         };
-        const imapTestFinish = function (err, IinputData) {
+        const imapTestFinish = function (err) {
             removeAllListen();
             if (err) {
                 return errorProcess(err);
             }
-            _view.keyPairCalss.decrypt_withLocalServerKey(IinputData, (err, data) => {
-                if (err) {
-                    return errorProcess(err);
-                }
-                return self.exit(data);
-            });
+            self.exit(self.imapConnectData);
         };
         const removeAllListen = function () {
             _view.connectInformationMessage.socketIo.removeEventListener('smtpTest', smtpTest);
@@ -377,7 +250,7 @@ class imapForm {
         };
         _view.connectInformationMessage.socketIo.on('smtpTest', smtpTest);
         _view.connectInformationMessage.socketIo.on('imapTest', imapTest);
-        _view.connectInformationMessage.socketIo.on('imapTestFinish', imapTestFinish);
+        _view.connectInformationMessage.socketIo.once('imapTestFinish', imapTestFinish);
         const imapServer = getImapSmtpHost(self.emailAddress());
         const imapConnectData = {
             email: self.account,
@@ -406,7 +279,8 @@ class imapForm {
             ciphers: null,
             sendToQTGate: false
         };
-        _view.keyPairCalss.emitLocalCommand('checkImap', imapConnectData, err => {
+        this.imapConnectData = imapConnectData;
+        return _view.connectInformationMessage.emitLocalCommand('checkImap', imapConnectData, err => {
         });
     }
     checkEmailAddress(email) {

@@ -92,27 +92,24 @@ class CoNETConnect {
                 this.showConnectCoNETProcess(false);
                 this.connectedCoNET(true);
                 _view.connectInformationMessage.socketIo.removeListener('tryConnectCoNETStage', this.listenFun);
-                return _view.keyPairCalss.decryptMessage(publicKeyMessage, (err, data) => {
-                    if (err) {
-                        return self.infoTextArray.push({ text: ko.observable('unKnowError'), err: ko.observable(true) });
+                /*
+                if ( ! this.isKeypairBeSign ) {
+                    if ( ! this.keyPairSign ()) {
+                        let u = null
+                        return this.keyPairSign ( u = new keyPairSign (( function () {
+                            
+                            self.keyPairSign ( u = null )
+                            self.ready ( null )
+                            return localStorage.setItem ( "config", JSON.stringify ( self.view.localServerConfig() ))
+                        })))
                     }
-                    /*
-                    if ( ! this.isKeypairBeSign ) {
-                        if ( ! this.keyPairSign ()) {
-                            let u = null
-                            return this.keyPairSign ( u = new keyPairSign (( function () {
-                                
-                                self.keyPairSign ( u = null )
-                                self.ready ( null )
-                                return localStorage.setItem ( "config", JSON.stringify ( self.view.localServerConfig() ))
-                            })))
-                        }
-                        return
-                    }
-                    */
-                    _view.showIconBar(true);
-                    return this.ready(null);
+                    return
+                }
+                */
+                _view.sharedMainWorker.decryptJsonWithAPKey(publicKeyMessage, err => {
                 });
+                _view.showIconBar(true);
+                return this.ready(null);
             }
             /**
              * 	connectToMailServer
@@ -142,7 +139,6 @@ class CoNETConnect {
         return this.ready(0);
     }
     sendConnectMail() {
-        const self = this;
         this.Loading(true);
         this.showTryAgain(false);
         this.showSendConnectMail(false);
@@ -156,11 +152,17 @@ class CoNETConnect {
             language: this.imapData.language,
             publicKey: this.view.keyPair().publicKey
         };
-        return this.view.keyPairCalss.encrypt(JSON.stringify(qtgateCommand), (err, data) => {
+        return this.view.sharedMainWorker.encrypto_withNodeKey(JSON.stringify(qtgateCommand), (err, data) => {
             if (err) {
-                return self.listingConnectStage(null, -1, "");
+                return this.listingConnectStage(null, -1, "");
             }
-            return _view.connectInformationMessage.sockEmit('sendRequestMail', data, self.imapData, this.nodeEmail);
+            const localCommand = {
+                message: data,
+                imapData: this.imapData,
+                toMail: this.nodeEmail
+            };
+            return _view.connectInformationMessage.emitLocalCommand('sendRequestMail', localCommand, err => {
+            });
         });
     }
     tryAgain() {
@@ -175,21 +177,27 @@ class CoNETConnect {
         this.showTryAgain(false);
     }
     imapConform() {
+        const self = this;
+        const connect = () => {
+            this.showSendImapDataWarning(false);
+            this.connetcError(-1);
+            this.Loading(true);
+            //return this.test ()
+            this.listenFun = (err, stage, message) => {
+                return self.listingConnectStage(err, stage, message);
+            };
+            _view.connectInformationMessage.socketIo.on('tryConnectCoNETStage', this.listenFun);
+            _view.connectInformationMessage.emitLocalCommand('tryConnectCoNET', this.imapData, err => {
+            });
+        };
         if (!this.view.imapData.confirmRisk) {
             this.view.imapData.confirmRisk = true;
-            this.view.keyPairCalss.saveImapIInputData(err => { });
-            return this.sendConnectMail();
+            return _view.sharedMainWorker.saveImapIInputData(this.view.imapData, err => {
+                connect();
+                return this.sendConnectMail();
+            });
         }
-        const self = this;
-        this.showSendImapDataWarning(false);
-        this.connetcError(-1);
-        this.Loading(true);
-        //return this.test ()
-        this.listenFun = (err, stage, message) => {
-            return self.listingConnectStage(err, stage, message);
-        };
-        _view.connectInformationMessage.socketIo.on('tryConnectCoNETStage', this.listenFun);
-        _view.connectInformationMessage.sockEmit('tryConnectCoNET', this.imapData);
+        connect();
     }
     /**
      * 			test unit

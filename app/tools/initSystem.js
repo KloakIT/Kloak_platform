@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendCoNETConnectRequestEmail = exports.decryptoMessage = exports.encryptMessage = exports.smtpVerify = exports.availableImapServer = exports.getImapSmtpHost = exports.newKeyPair = exports.saveConfig = exports.emitConfig = exports.getPublicKeyInfo = exports.getKeyPairInfo = exports.getQTGateSign = exports.getEmailAddress = exports.getNickName = exports.getLocalInterface = exports.convertByte = exports.checkFolder = exports.twitterDataFileName = exports.QTGateSignKeyID = exports.configPath = exports.LocalServerPortNumber = exports.CoNET_Home = exports.imapDataFileName1 = exports.CoNETConnectLog = exports.ErrorLogFile = exports.QTGateVideo = exports.QTGateTemp = exports.QTGateLatest = exports.QTGateFolder = exports.checkUrl = void 0;
+exports.sendCoNETConnectRequestEmail = exports.decryptoMessage = exports.encryptMessage = exports.smtpVerify = exports.availableImapServer = exports.getImapSmtpHost = exports.newKeyPair = exports.saveConfig = exports.emitConfig = exports.createKeyPairObj = exports.getPublicKeyInfo = exports.getKeyPairInfo = exports.getEmailAddress = exports.getNickName = exports.getLocalInterface = exports.convertByte = exports.checkFolder = exports.twitterDataFileName = exports.QTGateSignKeyID = exports.configPath = exports.LocalServerPortNumber = exports.CoNET_Home = exports.imapDataFileName1 = exports.CoNETConnectLog = exports.ErrorLogFile = exports.QTGateVideo = exports.QTGateTemp = exports.QTGateLatest = exports.QTGateFolder = exports.checkUrl = void 0;
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -118,21 +118,9 @@ exports.getNickName = (str) => {
     return uu[0];
 };
 exports.getEmailAddress = (str) => {
+    console.dir(str);
     const uu = str.split('<');
     return uu[1].substr(0, uu[1].length - 1);
-};
-exports.getQTGateSign = (user) => {
-    if (!user.otherCertifications || !user.otherCertifications.length) {
-        return null;
-    }
-    let Certification = false;
-    user.otherCertifications.forEach(n => {
-        //console.log (`user.otherCertifications\n${ n.issuerKeyId.toHex ().toLowerCase() }`)
-        if (exports.QTGateSignKeyID.test(n.issuerKeyId.toHex().toLowerCase())) {
-            return Certification = true;
-        }
-    });
-    return Certification;
 };
 exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     if (!publicKey || !privateKey) {
@@ -154,9 +142,9 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     ret.publicKey = publicKey;
     ret.privateKey = privateKey;
     ret.nikeName = exports.getNickName(user.userId.userid);
-    ret.createDate = privateKey1.primaryKey.created.toDateString();
+    ret.createDate = privateKey1.primaryKey.created;
     ret.email = exports.getEmailAddress(user.userId.userid);
-    ret.verified = exports.getQTGateSign(user);
+    ret.verified = getQTGateSign(user);
     ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase();
     ret.passwordOK = false;
     if (!password) {
@@ -178,20 +166,24 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
 };
 exports.getPublicKeyInfo = (publicKey, CallBack) => {
     return OpenPgp.key.readArmored(publicKey).then(_key => {
-        const key = _key.keys[0];
-        const user = key.users[0];
         const ret = {
-            nikeName: exports.getNickName(user.userId.userid),
-            email: exports.getEmailAddress(user.userId.userid),
-            keyID: key.primaryKey.getFingerprint().toUpperCase(),
-            otherValid: user.otherCertifications.map(n => { return n.issuerKeyId.toHex().toUpperCase(); }),
-            KloakValid: exports.getQTGateSign(user),
-            publicKeys: _key.keys
+            publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
+            publicKeys: _key.keys,
+            privateKey: null
+            //nikeName: getNickName ( user.userId.userid ),
+            //email: getEmailAddress ( user.userId.userid ),
+            //keyID: key.primaryKey.getFingerprint().toUpperCase(),
+            //otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
+            //KloakValid: getQTGateSign ( user ),
+            //publicKeys: _key.keys
         };
         return CallBack(null, ret);
     }).catch(ex => {
+        console.trace(ex.message);
         return CallBack(ex);
     });
+};
+exports.createKeyPairObj = () => {
 };
 exports.emitConfig = (config, passwordOK) => {
     if (!config) {
@@ -233,14 +225,14 @@ exports.newKeyPair = (emailAddress, nickname, password, CallBack) => {
         aead_protect_version: 4
     };
     return OpenPgp.generateKey(option).then(async (keypair) => {
+        const _key = await (OpenPgp.key.readArmored(keypair.publicKeyArmored));
         const ret = {
-            publicKey: await (OpenPgp.key.readArmored(keypair.publicKeyArmored)),
-            privateKey: await (OpenPgp.key.readArmored(keypair.privateKeyArmored)),
-            public: keypair.publicKeyArmored
+            publicKeys: _key.keys,
+            privateKey: (await (OpenPgp.key.readArmored(keypair.privateKeyArmored))).keys,
+            publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
+            publicKey: keypair.publicKeyArmored
         };
-        await ret.privateKey.keys[0].decrypt(password);
-        ret.publicKey = ret.publicKey.keys;
-        ret.privateKey = ret.privateKey.keys;
+        await ret.privateKey[0].decrypt(password);
         return CallBack(null, ret);
     }).catch(err => {
         // ERROR
@@ -491,20 +483,21 @@ exports.encryptMessage = (publickeys, privatekeys, message, CallBack) => {
         return CallBack(null, ciphertext.data);
     }).catch(CallBack);
 };
-async function decryptoMessage(publickeys, privatekeys, message, CallBack) {
+async function decryptoMessage(keyObject, publickey, message, CallBack) {
     const option = {
-        privateKeys: privatekeys,
-        publicKeys: publickeys,
+        privateKeys: keyObject.privateKey,
+        publicKeys: publickey,
         message: await OpenPgp.message.readArmored(message)
     };
     return OpenPgp.decrypt(option).then(async (data) => {
-        /**
-         * 		verify signatures
-         */
-        if (data.signatures[0].valid) {
-            return CallBack(null, data.data);
+        let ret = data.data;
+        try {
+            ret = JSON.parse(ret);
         }
-        return CallBack(new Error('signatures error!'));
+        catch (ex) {
+            return CallBack(ex);
+        }
+        return CallBack(null, ret);
     }).catch(err => {
         return CallBack(err);
     });

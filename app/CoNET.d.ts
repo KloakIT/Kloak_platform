@@ -141,6 +141,7 @@ interface keypair {
     deleteKeyPairNext?: () => void
 	_password: string
 	CoNET_publicKey?: string 
+	localserverPublicKey?: string
     keyPairPassword?: KnockoutObservable < keyPairPassword >
     showDeleteKeyPairNoite?: KnockoutObservable < boolean >
 }
@@ -155,10 +156,7 @@ interface INewKeyPair {
     password: string
 }
 
-interface keyPair {
-    publicKey: string;
-    privateKey: string;
-}
+
 
 interface imapData {
     email: string
@@ -246,10 +244,11 @@ interface QTGate_DnsAddress {
 	ipv4: string,
 	url: string
 }
+
 interface kloak_downloadObj {
 	url: string
 	downloadFilename: string
-	AcceptRanges: string
+	AcceptRanges: boolean
 	fileExpansion: string
 	totalLength: number
 	ContentType:  string
@@ -258,6 +257,7 @@ interface kloak_downloadObj {
 	offset: number
 	currentlength: number
 	eof: boolean
+	stopDownload: boolean
 }
 
 interface IConnectCommand {
@@ -302,6 +302,7 @@ interface QTGateAPIRequestCommand {
     requestTimes?: number
 	region?: string
 	CallBack?: any
+	serial?: string
     
 }
 
@@ -730,12 +731,16 @@ interface workerDataEvent {
     workerName: string
 
 }
+interface localServerKeyPair {
+    publicKeys: any
+	privateKey: any
+	publicID: string
+	publicKey?: string
+}
 
-interface Kloak_LocalServer_keyInfo {
-	nikeName: string
-	email: string
-	keyID: string
-    KloakValid: boolean
-    otherValid: string[]
-	publicKeys: object
+interface sharedWorkerCommand {
+	command: string
+	args: any
+	uuid?: string
+	error?: string
 }

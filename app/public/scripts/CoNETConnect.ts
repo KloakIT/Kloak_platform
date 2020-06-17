@@ -63,6 +63,7 @@ class CoNETConnect {
 		
 
 		switch ( stage ) {
+
 			case 1: {
 				const index = this.infoTextArray ()[ this.infoTextArray ().length -1 ]
 				if ( !index ) {
@@ -108,10 +109,7 @@ class CoNETConnect {
 				this.connectedCoNET ( true )
 				_view.connectInformationMessage.socketIo.removeListener ( 'tryConnectCoNETStage', this.listenFun )
 
-				return _view.keyPairCalss.decryptMessage ( publicKeyMessage, ( err, data ) => {
-					if ( err ) {
-						return self.infoTextArray.push ({ text: ko.observable ( 'unKnowError' ), err: ko.observable ( true )})
-					}
+				
 					/*
 					if ( ! this.isKeypairBeSign ) {
 						if ( ! this.keyPairSign ()) {
@@ -126,10 +124,14 @@ class CoNETConnect {
 						return
 					}
 					*/
-					_view.showIconBar ( true )
-					return this.ready ( null )
+				_view.sharedMainWorker.decryptJsonWithAPKey ( publicKeyMessage, err => {
+
 				})
 
+					_view.showIconBar ( true )
+					return this.ready ( null )
+				
+				
 				
 			}
 
@@ -169,10 +171,11 @@ class CoNETConnect {
 
 
 	public sendConnectMail () {
-		const self = this
+		
 		this.Loading ( true )
 		this.showTryAgain ( false )
 		this.showSendConnectMail ( false )
+
 		const qtgateCommand: QTGateCommand = {
 			account: this.imapData.account,
 			QTGateVersion: CoNET_version,
@@ -184,11 +187,19 @@ class CoNETConnect {
 			publicKey: this.view.keyPair().publicKey
 		}
 
-		return this.view.keyPairCalss.encrypt ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
+		return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
 			if ( err ) {
-				return self.listingConnectStage ( null, -1, "" )
+				return this.listingConnectStage ( null, -1, "" )
 			}
-			return _view.connectInformationMessage.sockEmit ( 'sendRequestMail', data, self.imapData, this.nodeEmail )
+			const localCommand = {
+				message: data, 
+				imapData: this.imapData,
+				toMail: this.nodeEmail
+			}
+			
+			return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
+
+			})
 		})
 
 		
@@ -209,28 +220,38 @@ class CoNETConnect {
 
 
 	public imapConform () {
+		const self = this
+		const connect = () => {
+			
+			this.showSendImapDataWarning ( false )
+			this.connetcError ( -1 )
+			this.Loading ( true )
+
+			//return this.test ()
+
+
+			this.listenFun = (  err, stage, message  ) => {
+				return self.listingConnectStage ( err, stage, message )
+			}
+
+			_view.connectInformationMessage.socketIo.on ( 'tryConnectCoNETStage', this.listenFun )
+			
+			_view.connectInformationMessage.emitLocalCommand ( 'tryConnectCoNET', this.imapData, err => {
+
+			})
+		}
+
 		if ( !this.view.imapData.confirmRisk ) {
 			this.view.imapData.confirmRisk = true
 			
-			this.view.keyPairCalss.saveImapIInputData ( err => {})
+			return _view.sharedMainWorker.saveImapIInputData ( this.view.imapData, err => {
+				connect ()
+				return this.sendConnectMail ()
+			})
 			
-			return this.sendConnectMail ()
+			
 		}
-		const self = this
-		this.showSendImapDataWarning ( false )
-		this.connetcError ( -1 )
-		this.Loading ( true )
-
-		//return this.test ()
-
-
-		this.listenFun = (  err, stage, message  ) => {
-			return self.listingConnectStage ( err, stage, message )
-		}
-
-		_view.connectInformationMessage.socketIo.on ( 'tryConnectCoNETStage', this.listenFun )
-		
-		_view.connectInformationMessage.sockEmit ( 'tryConnectCoNET', this.imapData )
+		connect ()
 		
 	}
 

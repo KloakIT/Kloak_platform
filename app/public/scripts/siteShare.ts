@@ -116,20 +116,20 @@ const uuID = function () {
 
 Date.isLeapYear = function (year) { 
     return (((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0)); 
-};
+}
 
 Date.getDaysInMonth = function (year, month) {
     return [31, (Date.isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
-};
+}
 
 Date.prototype.isLeapYear = function () { 
     return Date.isLeapYear(this.getFullYear()); 
-};
+}
 
 
 Date.prototype.getDaysInMonth = function () { 
     return Date.getDaysInMonth(this.getFullYear(), this.getMonth());
-};
+}
 
 Date.prototype.addMonths = function (value) {
     var n = this.getDate();
@@ -137,8 +137,23 @@ Date.prototype.addMonths = function (value) {
     this.setMonth(this.getMonth() + value);
     this.setDate(Math.min(n, this.getDaysInMonth()));
     return this;
-};
+}
 
+const InitKeyPair = function () {
+	const keyPair: keypair = {
+		publicKey: null,
+		privateKey: null,
+		keyLength: null,
+		nikeName: null,
+		createDate: null,
+		email: null,
+		passwordOK: false,
+		verified: false,
+		publicKeyID: null,
+		_password: null
+	}
+	return keyPair
+}
 const conetImapAccount = /^qtgate_test\d\d?@icloud.com$/i
 
 const isElectronRender = typeof process === 'object'
@@ -813,9 +828,9 @@ const infoDefine = [
             localIpAddress: '本机',
             nextPage:'下一页',
             agree: '同意协议并继续',
-            emailAddress: '作为CoNET账号的Email地址',
+            emailAddress: 'Email地址',
             systemAdministratorEmail:'RSA密钥生成',
-            SystemAdministratorNickName: '昵称或组织名',
+            SystemAdministratorNickName: '昵称',
             systemPassword: 'CoNET客户端密码设定',
             creatKeyPair: '创建密钥对...',
             imapEmailAddress: '邮箱账户名',
@@ -829,8 +844,9 @@ const infoDefine = [
             KeypairLength: '请选择加密通讯用密钥对长度：这个数字越大，通讯越难被破解，但会增加通讯量和运算时间。',
             GenerateKeypair: '<em>系统正在生成用于通讯和签名的RSA加密密钥对，计算机需要运行产生大量的随机数字有，可能需要几分钟时间，尤其是长度为4096的密钥对，需要特别长的时间，请耐心等待。关于RSA加密算法的机制和原理，您可以访问维基百科：' +
                 `<a href='https://zh.wikipedia.org/wiki/RSA加密演算法' target="_blank" onclick="return linkClick ('https://zh.wikipedia.org/wiki/RSA加密演算法')" >https://zh.wikipedia.org/wiki/RSA加密演算法</a></em>`,
-            inputEmail: '让我们来完成设定的最后几个步骤，首先生成RSA密钥对, 它是您的系统信息加密，身份认证及和CoNET网络通讯使用的重要工具。 RSA密钥对的密码请妥善保存，Email地址栏应填入您的常用邮箱地址, 它将被用作您的CoNET网络账号。 <em style="color:brown;">需注意的是CoNET域名在某些网络限制地区可能被列入黑名单，请使用网络自由地区邮箱。</em>',
-            accountEmailInfo: '由于CoNET域名在某些国家和地区被防火墙屏蔽，而不能正常收发Email，如果您是处于防火墙内的用户，建议使用防火墙外部的邮件服务商。'
+            inputEmail: '加密通讯用钥匙(curve25519)生成',
+			accountEmailInfo: '由于CoNET域名在某些国家和地区被防火墙屏蔽，而不能正常收发Email，如果您是处于防火墙内的用户，建议使用防火墙外部的邮件服务商。',
+			dividertext: '选项（可不填）'
         },
 
         Home_keyPairInfo_view: {  
@@ -840,14 +856,14 @@ const infoDefine = [
             NickName: '昵称：',
             creatDate: '密钥创建日期：',
             keyLength: '密钥位强度：',
-            password: '请输入长度大于五位的密码',
-            password1: '请输入平台密码',
+            password: '请设定密钥保护密码',
+            password1: '请输入密码',
             keyID: '密钥对ID：',
             logout: '退出登录',
             deleteKeyPairHaveLogin: '请使用登陆后的客户端来删除您的密钥',
             deleteKeyPairInfo: '请注意：如果您没有备份您的CoNET系统的话，删除现有的密钥将使您的CoNET设定全部丢失，您有可能需要重新设置您的CoNET系统。如果您的注册Email没有变化，您的CoNET账户支付信息不会丢失！',
             delete: '削除',
-            locked: '请提供您的RSA密钥以解开密钥后才能继续操作，如果您遗忘了密码，请删除此RSA密钥。',
+            locked: '请提供您的RSA密钥密码，如果您遗忘了密码，请删除此RSA密钥。',
             systemError:'发生系统错误。如果重复发生，请删除您的密钥，再次设定您的系统！'
         },
 
@@ -1670,14 +1686,14 @@ const infoDefine = [
             NickName: 'ニックネーム：',
             creatDate:'暗号鍵ペア作成日：',
             keyLength: '暗号鍵ペアビット長さ：',
-            password: '長さ5位以上のパスワードを入力してください',
-            password1: '端末パスワード',
+            password: '秘密キー保護パスワードを設定してください',
+            password1: 'パスワード',
             logout: 'ログアウト',
             deleteKeyPairHaveLogin:'ログインした端末で暗号鍵ペアを削除して下さい。',
             keyID: '暗号鍵ID：',
             deleteKeyPairInfo: '鍵ペアを削除することで、現在のCoNET設定は全部なくなって、一からCoNETの設定をやり直しが必要です。但しあなたのCoNETアカウトEmailアドレスは前回と同じであれば、CoNETアカウトを戻れます。',
             delete: '削除',
-            locked: 'まず鍵ペアのパスワードを入力して、鍵ペアのロックを解除してください。',
+            locked: 'まず秘密鍵のパスワードを入力して、鍵のロックを解除してください。',
             systemError: 'システムエラーが発生しました。鍵ペアを削除して一からシステムを再設定をしてください。'
         },
 
@@ -1692,8 +1708,8 @@ const infoDefine = [
             nextPage: '次へ',
             agree: '協議を合意し、次へ',
             imapEmailAddress:'Emailアカウト名',
-            emailAddress: 'CoNETアカウトのEmailアドレス(必須), ',
-            SystemAdministratorNickName: 'ニックネーム(必須)',
+            emailAddress: 'Email',
+            SystemAdministratorNickName: 'ニックネーム',
             creatKeyPair: '暗号鍵ペアを生成...',
             keyPairCancel: '暗号鍵ペアの生成をキャンセルしました',
             keyPairGenerateError: '暗号鍵ペアの生成にエラーが発生しました、後ほどもう一回してみて下さい',
@@ -1706,8 +1722,9 @@ const infoDefine = [
             systemAdministratorEmail: 'RSA暗号鍵ペア生成',
             GenerateKeypair: '<em>強秘匿性通信するのために、RSA暗号鍵ペアを生成中、大量なランダム数字が発生し、数分かかる場合もあります、4096ビットの場合、特に時間がかかります、しばらくお待ち下さい。RSA暗号技術について、ウィキペディア百科辞典を参考してください：' +
                 `<a href='https://ja.wikipedia.org/wiki/RSA暗号' target="_blank" onclick="return linkClick ('https://ja.wikipedia.org/wiki/RSA暗号')">https://ja.wikipedia.org/wiki/RSA暗号</a></em>`,
-            inputEmail: 'お疲れ様です、最後の設定をしましょう。このRSA暗号鍵ペアは本システムに重要な存在です、ユーザーのCoNETへ身元証明、本システムデータを秘密化、CoNETシステムとデータ通信時この暗号鍵ペアを使います。パースワードはCoNETへ保存しませんですから、大事にメモしてください。<em style="color:brown;">CoNETはネットワークの制限があるエリアにブラックリスト入って恐れがあります、ここに制限があるエリアのメールサービスを入れるとCoNETからのメールが受信不能になる可能性もあります、CoNETへ登録完了することができない場合もあります。</em>',
-            accountEmailInfo:'CoNETドメイン名は、ファイヤウォールがある場合はブラックリストに入っている可能性がありますから、CoNETシステムへ登録完了することができません。その場合はファイヤウォール外側のEmailシステムを利用してください。'
+            inputEmail: '暗号化通信の鍵(curve25519)を生成',
+			accountEmailInfo:'CoNETドメイン名は、ファイヤウォールがある場合はブラックリストに入っている可能性がありますから、CoNETシステムへ登録完了することができません。その場合はファイヤウォール外側のEmailシステムを利用してください。',
+			dividertext: 'オプション'
         },
 
         error_message: {
@@ -2416,8 +2433,8 @@ const infoDefine = [
             NickName: 'Nick name：',
             creatDate:'Creation date：',
             keyLength: 'Bit Length：',
-            password: '5-character minimum password.',
-            password1: 'Platform Password',
+            password: 'Setup Private Key protected password.',
+            password1: 'Password',
             logout: 'Logout',
             keyID: 'ID：',
             deleteKeyPairInfo: 'Note: By deleting your key pair, you will lose your current account settings. You will need to set up CoNET account settings again. If your email address is the same as the one used previously, you may restore your CoNET account balance.',
@@ -2435,7 +2452,7 @@ const infoDefine = [
             showing:'Status',
             nextPage:'next',
             agree: 'I AGREE & CONTINUE',
-            emailAddress: 'CoNET Account Name ( Email Address Required )',
+            emailAddress: 'Email Address',
             imapEmailAddress: 'Email Account Name',
             creatKeyPair: 'Generate key pair...',
             cancel: 'Cancel',
@@ -2446,13 +2463,14 @@ const infoDefine = [
             continueCreateKeyPair: 'Keep generate.',
             stopCreateKeyPair: 'Cancel generate key pair',
             KeypairLength: 'Select the bit length of your key pair. Larger bit lengths are stronger and harder for a hacker to crack but may result in slower network transfer speeds.',
-            SystemAdministratorNickName: 'Nick name ( Required )',
+            SystemAdministratorNickName: 'Nick name',
             systemAdministratorEmail:'Generate RSA Key pair',
             GenerateKeypair: '<em>Generating RSA Key pair. Please wait, as it may take a few minutes. More time will be needed if you selected 4096 bit key length. Information about RSA keypair system can be found here:' +
                 `<a href='hhttp://en.wikipedia.org/wiki/RSA_(cryptosystem)' target="_blank" onclick="return linkClick ('https://en.wikipedia.org/wiki/RSA_(cryptosystem)')">https://en.wikipedia.org/wiki/RSA_(cryptosystem)</a></em>`,
             systemPassword: 'CoNET Client System Password',
-            inputEmail: `This RSA key is a private key used for authentication, identification and secure encryption/decryption of data transmission within CoNET’s system. The password and key are not stored by CoNET. You cannot reset your password if lost and you cannot access CoNET services without your password. Please store your password in a safe place. <em style="color: brown;">CoNET’s domain may be blocked in some regions. Please use an email account with servers outside these regions,</em>`,
-            accountEmailInfo: `Because CoNET may be on a firewall's black list in some regions. It is best to choose an email account with servers outside your region’s firewall.`
+            inputEmail: `Generation key pair (curve25519) for secure communications`,
+			accountEmailInfo: `Because CoNET may be on a firewall's black list in some regions. It is best to choose an email account with servers outside your region’s firewall.`,
+			dividertext: 'Option'
         },
         
         error_message: {
@@ -3120,13 +3138,13 @@ const infoDefine = [
             NickName: '暱稱：',
             creatDate:'密鑰創建日期：',
             keyLength: '密鑰位強度：',
-            password: '請輸入長度大於五位的密碼',
-            password1: '請輸入平台密碼',
+            password: '請設定密鑰保護密碼',
+            password1: '請輸入密碼',
             logout:'退出登錄',
             deleteKeyPairInfo: '請注意：如果您沒有備份您的CoNET系統的話，刪除現有的密鑰將使您的CoNET網絡設定全部丟失，您有可能需要重新設置您的CoNET系統。如果您的註冊Email沒有變化，您的CoNET賬戶支付信息不會丟失！',
             delete: '刪除',
             keyID: '密鑰對ID：',
-            locked: '請提供您的RSA密鑰以解開密鑰後才能繼續操作，如果您遺忘了密碼，請刪除此RSA密鑰。',
+            locked: '請提供您的RSA密鑰密碼，如果您遺忘了密碼，請刪除此RSA密鑰。',
             systemError:'發生系統錯誤。如果重複發生，請刪除您的密鑰，再次設定您的系統！'
         },
 
@@ -3141,7 +3159,7 @@ const infoDefine = [
             nextPage:'下一頁',
             agree: '同意協議並繼續',
             imapEmailAddress:'郵箱帳戶名',
-            emailAddress: 'CoNET帳戶名稱(Email地址,必填)',
+            emailAddress: 'Email地址',
             stopCreateKeyPair: '停止生成密鑰對',
             creatKeyPair: '創建密鑰對..',
             keyPairCancel: '生成密鑰對被中止',
@@ -3150,13 +3168,15 @@ const infoDefine = [
             cancel: '放棄操作',
             systemPassword: 'CoNET客戶端密碼設置',
             continueCreateKeyPair: '繼續生成',
-            SystemAdministratorNickName: '帳戶暱稱(必填)',
+            SystemAdministratorNickName: '暱稱',
             KeypairLength: '請選擇加密通訊用密鑰對長度：這個數字越大，通訊越難被破解，但會增加通訊量和運算時間。',
             systemAdministratorEmail:'RSA密鑰生成',
             GenerateKeypair: '<em>系統正在生成用於通訊和簽名的RSA加密密鑰對，計算機需要運行產生大量的隨機數字，可能需要幾分鐘時間，尤其是長度為4096的密鑰對，需要特別長的時間，請耐心等待。關於RSA加密算法的機制和原理，您可以訪問維基百科：' +
                 `<a href='#' target="_blank" onclick="return linkClick ('https://zh.wikipedia.org/wiki/RSA加密演算法')">https://zh.wikipedia.org/wiki/RSA加密演算法</a></em>`,
-            inputEmail: '让我们来完成设定的最后几个步骤，首先生成RSA密鑰對, 它是您的系統信息加密，身份認證及和CoNET網絡通訊使用的重要組成部分。 RSA密鑰對的密碼請妥善保存，Email地址欄請填入您的常用邮箱地址, 它將被用作您的CoNET網絡賬號。<em style="color:brown;">需注意的是CoNET域名在某些网络限制地区可能被列入黑名单，推薦使用網絡自由地區郵箱。</em>',
-            accountEmailInfo: `由於CoNET域名在某些國家和地區被防火牆屏蔽，而不能正常收發CoNET的Email，如果您是處於防火牆內的用戶，建議使用防火牆外部的郵件服務商。`
+            inputEmail: '加密通訊用(curve25519)鑰匙生成',
+			accountEmailInfo: `由於CoNET域名在某些國家和地區被防火牆屏蔽，而不能正常收發CoNET的Email，如果您是處於防火牆內的用戶，建議使用防火牆外部的郵件服務商。`,
+			dividertext: '選項（可不填）'
+			
         },
         error_message: {
             title: '錯誤',

@@ -51,46 +51,6 @@ const getQTGateSign = ( user ) => {
 	return Certification
 }
 
-const getKeyInfo = async ( keyPair: keypair, CallBack: ( err?: Error, ret?: keypair ) => void ) => {
-	if ( ! keyPair.publicKey || ! keyPair.privateKey ) {
-		return CallBack ( new Error ('publicKey or privateKey empty!'))
-	}
-	const _privateKey = await openpgp.key.readArmored ( keyPair.privateKey )
-	const _publicKey = await openpgp.key.readArmored ( keyPair.publicKey )
-	if ( _privateKey.err || _publicKey.err ) {
-		console.log (`_privateKey.err = [${ _privateKey.err }], _publicKey.err [${ _publicKey.err }]`)
-	
-		return CallBack ( new Error ('no key'))
-	}
-	//console.log (`getKeyPairInfo success!\nprivateKey\npublicKey`)
-	const privateKey1 = _privateKey.keys[0]
-	const publicKey1 = _publicKey.keys
-	const user = publicKey1[0].users[0]
-	const ret = InitKeyPair()
-	let didCallback = false
-	
-	ret.publicKey = keyPair.publicKey
-	ret.privateKey = keyPair.privateKey
-	ret.nikeName = keyPair.nikeName
-	ret.createDate = privateKey1.primaryKey.created.toDateString ()
-	ret.email = keyPair.email
-	ret.verified = false
-	ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase()
-	
-	ret.passwordOK = false
-	if ( !keyPair._password ) {
-		return CallBack ( null, ret )
-	}
-	//console.log (`getKeyPairInfo test password!`)
-	return privateKey1.decrypt ( keyPair._password ).then ( keyOK => {
-		//console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
-		ret.passwordOK = keyOK
-		ret._password = keyPair._password
-		didCallback = true
-		return CallBack ( null, ret )
-	})
-}
-
 class IsNullValidator implements StringValidator {
     isAcceptable ( s: string ) {
         if ( s === undefined ) {
@@ -150,11 +110,13 @@ class keyPairGenerateForm {
 		
 		this.EmailAddressError ( false )
 		this.NickNameError ( false )
-
+		
 		if ( ! email || ! email.length ) {
-			this.EmailAddressError ( true )
-			return initPopupArea ()
+			//this.EmailAddressError ( true )
+			//return initPopupArea ()
+			return true
 		}
+		
 		if ( conetImapAccount.test ( email )) {
 			this.EmailAddressError ( true )
 			return initPopupArea ()
@@ -174,15 +136,6 @@ class keyPairGenerateForm {
 			this.showInsideFireWallEmail ( true )
 		}
 		
-		return true
-	}
-
-	private checkNickname ( nickname: string ) {
-		this.NickNameError ( false )
-		if ( !nickname || !nickname.length ) {
-			initPopupArea ()
-			this.NickNameError ( true )
-		}
 		return true
 	}
 
@@ -208,9 +161,6 @@ class keyPairGenerateForm {
 		this.SystemAdministratorEmailAddress.subscribe ( function ( newValue ) {
 			return self.checkEmailAddress ( newValue )
 		})
-		this.SystemAdministratorNickName.subscribe ( function ( newValue ) {
-			return self.checkNickname ( newValue )
-		})
 		/*
 		this.systemSetup_systemPassword.subscribe ( function ( newValue ) {
 			return self.checkPassword ( newValue )
@@ -222,7 +172,7 @@ class keyPairGenerateForm {
 	public form_AdministratorEmail_submit () {
 		const self = this
 		this.checkEmailAddress ( this.SystemAdministratorEmailAddress ())
-		this.checkNickname ( this.SystemAdministratorNickName ())
+		
 		this.checkPassword ( this.systemSetup_systemPassword ())
 		if ( this.passwordError() || this.EmailAddressError() || this.NickNameError()) {
 			return false
@@ -249,67 +199,30 @@ class keyPairGenerateForm {
 					return doingProcessBar ()
 			}, timeSet )
 		}
+
+
 		
-		/*
-		_view.connectInformationMessage.sockEmit ( 'NewKeyPair', sendData, function ( err, keyPair, newKeyPairCallBack ) {
-			self.stopDoingProcessBar ()
-			self.keyPairGenerateFormMessage ( true )
-			if ( !keyPair ) {
-				return self.message_keyPairGenerateError ( true )
-			}
-			self.exit ( keyPair, newKeyPairCallBack )
-			return self.message_keyPairGenerateSuccess ( true )
-		}) 
-		*/
-		this.NewKeyPair ( sendData, ( err, data ) => {
+		 _view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
 			self.stopDoingProcessBar ()
 			self.keyPairGenerateFormMessage ( true )
 			if ( err ) {
 				return self.message_keyPairGenerateError ( true )
 			}
-			getKeyInfo ( data, ( err, _data ) => {
+			self.message_keyPairGenerateSuccess ( true )
+			
+			
+			console.dir ( data )
+			return _view.sharedMainWorker.getKeyPairInfo ( data, ( err, _data ) => {
+				
 				return self.exit ( _data )
 			})
 			
-			self.message_keyPairGenerateSuccess ( true )
+			
 		})
 		return doingProcessBar ()
 	}
 
-	public NewKeyPair ( sendData: INewKeyPair, CallBack ) {
-		const userId = {
-			name: sendData.nikeName,
-			email: sendData.email
-		}
-		const option = {
-			passphrase: sendData.password,
-			userIds: [ userId ],
-			curve: "ed25519",
-			aead_protect: true,
-			aead_protect_version: 4
-		}
 
-		
-		return openpgp.generateKey ( option ).then (( out: { publicKeyArmored: string, privateKeyArmored: string, revocationCertificate: string }) => {
-			const keypair: keypair = {
-				keyLength: null,
-				nikeName: sendData.nikeName,
-				createDate: null,
-				email: sendData.email,
-				publicKeyID: null,
-				publicKey: out.publicKeyArmored,
-				privateKey: out.privateKeyArmored,
-				passwordOK: true,
-				_password: sendData.password,
-				verified: false
-			}
-			
-			return CallBack ( null, keypair )
-		}).catch ( err => {
-			// ERROR
-			return CallBack ( err )
-		})
-	}
 
 	public CloseKeyPairGenerateFormMessage () {
 		this.message_cancel ( false )

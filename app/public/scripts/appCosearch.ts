@@ -1,6 +1,3 @@
-
-
-
 const appScript = {
 	info: {
 		totalResults: ['大约有','約','About','大約有'],
@@ -197,7 +194,8 @@ const appScript = {
 			command: 'CoSearch',
 			Args: null,
 			error: null,
-			subCom: null
+			subCom: null,
+			requestSerial: uuid_generate ()
 		}
 		/**
 		 * 			web page address
@@ -226,7 +224,7 @@ const appScript = {
 
 		
 
-		return _view.keyPairCalss.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			
 			if ( err ) {
 				return errorProcess ( err )
@@ -259,12 +257,13 @@ const appScript = {
 			 * 
 			 * 		}
 			 */
-
+			
 			if ( com.subCom === "downloadFile") {
 				
 				self.showMain ( false )
 				const args: kloak_downloadObj = com.Args[0]
-				args.downloading
+				
+				
 				self.showDownloadProcess ( true )
 				return console.dir ( args )
 			}
@@ -287,12 +286,13 @@ const appScript = {
 			const uuid = arg.split(',')[0].split ('.')[0]
 
 			self.showDownload ( true )
-			return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
+			return _view.connectInformationMessage.emitLocalCommand ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
 				self.showDownload ( false )
 				if ( err ) {
 					return errorProcess ( err )
 				}
-				return _view.keyPairCalss.decryptMessageToZipStream ( buffer, true, ( err, data ) => {
+				
+				return _view.sharedMainWorker.decryptStreamWithAPKey ( buffer, ( err, data ) => {
 					if ( err ) {
 						return errorProcess ( err )
 					}
@@ -424,7 +424,8 @@ const appScript = {
 			command: 'CoSearch',
 			Args: [ 'google', nextLink ],
 			error: null,
-			subCom: null
+			subCom: null,
+			requestSerial: uuid_generate ()
 		}
 
 		switch ( self.currentlyShowItems ()) {
@@ -457,7 +458,7 @@ const appScript = {
 		/** */
 		
 		
-		return _view.keyPairCalss.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			
 			if ( err ) {
 				return showError ( err )
@@ -531,7 +532,7 @@ const appScript = {
 				subCom: 'newsNext'
 			}
 
-			return _view.keyPairCalss.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
+			return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			
 				if ( err ) {
 
@@ -601,7 +602,7 @@ const appScript = {
 			self.imageButtonShowLoading ( true )
 			
 			
-			return _view.keyPairCalss.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
+			return _view.connectInformationMessage.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
 				
 				if ( err ) {
 					return errorProcess ( err )
@@ -650,7 +651,7 @@ const appScript = {
 	// CHANGED ============================================
   // CHANGED ============================================
   // CHANGED ============================================
-  getSnapshotClick: (self, index, isImage?: boolean) => {
+  getSnapshotClick: ( self, index, isImage?: boolean) => {
     let currentItem = null
     if ( isImage ) {
 		currentItem = self.searchSimilarImagesList()[index]
@@ -681,8 +682,8 @@ const appScript = {
 		})
     }
 
-    const callBack = (err?, com?: QTGateAPIRequestCommand) => {
-		if (err) {
+    const callBack = ( err?, com?: QTGateAPIRequestCommand) => {
+		if ( err ) {
 			return showError(err)
 		}
 		if ( !com ) {
@@ -702,87 +703,62 @@ const appScript = {
 		currentItem.showDownload ( true )
 		currentItem.showLoading ( false )
 
-		return fetchFiles ( arg, ( err, buffer: string ) => {
+		return _view.connectInformationMessage.fetchFiles ( arg, ( err, buffer: string ) => {
 			currentItem.showDownload ( false )
 			if ( err ) {
 				return showError ( err )
 			}
-			return _view.keyPairCalss.decryptMessageToZipStream( buffer, true, ( err, data ) => {
-				if ( err ) {
-					return showError( err )
-				}
-				isImage
-					? currentItem.snapshotImageReady ( true )
-					: currentItem.snapshotReady (true )
-				isImage
-					? currentItem.showImageLoading ( false )
-					: currentItem.showLoading ( false ) 
-				currentItem.loadingGetResponse ( false ) 
-				currentItem.conetResponse ( false )
-				return ( currentItem.snapshotData = data )
-				
-			})
+
+			isImage
+				? currentItem.snapshotImageReady ( true )
+				: currentItem.snapshotReady (true )
+			isImage
+				? currentItem.showImageLoading ( false )
+				: currentItem.showLoading ( false ) 
+			currentItem.loadingGetResponse ( false ) 
+			
+			currentItem ["snapshotData"] = buffer
+			return currentItem.conetResponse ( false )
+
 		})
-  	
-		/*
-		return _view.connectInformationMessage.sockEmit( 'getFilesFromImap', arg, ( err, buffer: string ) => {
-			currentItem.showDownload ( false )
-			if ( err ) {
-				return showError(err);
-			}
-			return _view.keyPairCalss.decryptMessageToZipStream( buffer, ( err, data ) => {
-				if ( err ) {
-					return showError( err )
-				}
-				isImage
-					? currentItem.snapshotImageReady ( true )
-					: currentItem.snapshotReady (true )
-				isImage
-					? currentItem.showImageLoading ( false )
-					: currentItem.showLoading ( false ) 
-				currentItem.loadingGetResponse ( false ) 
-				currentItem.conetResponse ( false )
-				return ( currentItem.snapshotData = data )
-				}
-			)}
-		)
-		*/
+	
     }
 
-    const url = isImage ? currentItem.clickUrl : currentItem.url;
-    const width = $(window).width();
-    const height = $(window).height();
+    const url = isImage ? currentItem.clickUrl : currentItem.url 
+    const width = $(window).width()
+    const height = $(window).height()
 
     const com: QTGateAPIRequestCommand = {
 		command: 'CoSearch',
 		Args: [url, width, height],
 		error: null,
-		subCom: 'getSnapshop'
+		subCom: 'getSnapshop',
+		requestSerial: uuid_generate ()
     }
 
-    return _view.keyPairCalss.emitRequest ( com, callBack )
+    return _view.connectInformationMessage.emitRequest ( com, callBack )
   },
 
   	showSnapshotClick: (self, index, isImage?: boolean) => {
-		self.showMain(false);
-		self.showSnapshop(true);
-		let currentItem = null;
+		self.showMain ( false )
+		self.showSnapshop ( true )
+		let currentItem = null
 		if ( isImage ) {
-			currentItem = self.searchSimilarImagesList()[index];
+			currentItem = self.searchSimilarImagesList()[index]
 		} else {
-			currentItem = self.searchItemList()[index];
+			currentItem = self.searchItemList()[index]
 		}
-		let y = null;
+		let y = null
 
 		self.showWebPage(
-		(y = new showWebPageClass(
+		( y = new showWebPageClass (
 			isImage ? currentItem.clickUrl : currentItem.url,
 			currentItem.snapshotData,
 			currentItem.snapshotUuid,
 			() => {
-			self.showWebPage((y = null));
-			self.showMain(true);
-			self.showSnapshop(false);
+			self.showWebPage (( y = null ))
+			self.showMain ( true )
+			self.showSnapshop ( false )
 			}
 		))
 		)
@@ -839,7 +815,7 @@ const appScript = {
 			self.videoButtonShowLoading ( true )
 			
 			
-			return _view.keyPairCalss.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
+			return _view.connectInformationMessage.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
 				
 				if ( err ) {
 					return errorProcess ( err )
@@ -1002,7 +978,7 @@ const appScript = {
 								subCom: 'imageSearch'
 							}
 							
-							return _view.keyPairCalss.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+							return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 
 								if ( err ) {
 									return errorProcess ( err )
@@ -1127,24 +1103,22 @@ const appScript = {
 				
 				const arg: string = com.Args[0]
 				_img['snapshotUuid'] = arg.split(',')[0].split ('.')[0]
+
 				return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
 					if ( err ) {
 						return errorProcess ( err )
 					}
 
-					return _view.keyPairCalss.decryptMessageToZipStream ( buffer, true,  ( err, data ) => {
-						if ( err ) {
-							return errorProcess ( err )
-						}
+				
+					if ( err ) {
+						return errorProcess ( err )
+					}
 
-						_img.snapshotReady ( true )
-						_img.showLoading ( false )
-						_img.loadingGetResponse ( false )
-						_img.conetResponse ( false )
-						return _img['snapshotData'] = data
-						
-					})
-	
+					_img.snapshotReady ( true )
+					_img.showLoading ( false )
+					_img.loadingGetResponse ( false )
+					_img.conetResponse ( false )
+					return _img['snapshotData'] = buffer
 					
 				})
 				
@@ -1162,7 +1136,7 @@ const appScript = {
 				subCom: 'getSnapshop'
 			}
 	
-			return _view.keyPairCalss.emitRequest ( com, callBack )
+			return _view.connectInformationMessage.emitRequest ( com, callBack )
 		}
 
 
@@ -1226,7 +1200,7 @@ const appScript = {
 						return errorProcess ( err )
 					}
 
-					return _view.keyPairCalss.decryptMessageToZipStream ( buffer, true, ( err, data ) => {
+					return _view.sharedMainWorker.decryptStreamWithAPKey ( buffer, ( err, data ) => {
 						if ( err ) {
 							return errorProcess ( err )
 						}
@@ -1252,7 +1226,7 @@ const appScript = {
 				subCom: 'getFile'
 			}
 	
-			return _view.keyPairCalss.emitRequest ( com, callBack )
+			return _view.connectInformationMessage.emitRequest ( com, callBack )
 
 
 			setTimeout (() => {

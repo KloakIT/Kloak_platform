@@ -1,4 +1,3 @@
-const requestTimeOut = 1000 * 180;
 const KloakNode_publicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mDMEXjMkUBYJKwYBBAHaRw8BAQdAFD5n6LecvYdEOn65nCjOvn/C2bco7JPkGg2a
@@ -189,20 +188,6 @@ PT17OWXpUfDuuSaA+2Px8WMtc9trMDIiGCEM
 =mdDQ
 -----END PGP PUBLIC KEY BLOCK-----
 `;
-const Kloak_API_PublicKey = `
------BEGIN PGP PUBLIC KEY BLOCK-----
-
-mDMEXqT4zhYJKwYBBAHaRw8BAQdA7/0QRxAraH+3wvR4nWaAW9cFl32CS5J9JC+B
-vUspCDm0E0FQSSA8QVBJQEtsb2FrLmFwcD6IeAQQFgoAIAUCXqT4zgYLCQcIAwIE
-FQgKAgQWAgEAAhkBAhsDAh4BAAoJEF9YG3WhPvBOzkcA/3f9B3e8PE78qFJHPy37
-Cd6BIESJmXEGqheucTRczOOLAQCCChwHN8zArHRKdE+4bZ42iqKCW84fM8sXazbe
-XPFQDbg4BF6k+M4SCisGAQQBl1UBBQEBB0B7NFm+kreqw0D9mUp9qPDK54xeKmor
-/hnICKjiRxtpVAMBCAeIYQQYFggACQUCXqT4zgIbDAAKCRBfWBt1oT7wTkycAQC7
-LLsNzS2Zra2hm9kvKafeTYpTmiEUQbxIuyPEySP9xQEAkB70RnDuoJQzKuEeeAEd
-ToNMnoWOMu0xq5gTORcSDgI=
-=jcgy
------END PGP PUBLIC KEY BLOCK-----
-`;
 /**
  *
  * @param public_key
@@ -245,38 +230,75 @@ const signPublicKey = (public_key, private_key) => {
     packetlist.push(signaturePacket);
     return new openpgp.key.Key(packetlist);
 };
+const showHTMLComplete = (uuid, zipStream, CallBack) => {
+    const errCallBack = err => {
+        CallBack(err);
+    };
+    return JSZip.loadAsync(zipStream /*, { base64: true }*/).then(zip => {
+        const ret = {
+            img: null,
+            html: null,
+            folder: [],
+            mhtml: null
+        };
+        const allFiles = Object.keys(zip.files);
+        let currentFileName = allFiles.shift();
+        const _CallBack = (content) => {
+            if (content && content.length > 20) {
+                const processFile = () => {
+                    switch (currentFileName) {
+                        case `${uuid}.html`: {
+                            return ret.html = Buffer.from(content, 'base64').toString();
+                        }
+                        case `${uuid}.png`: {
+                            return ret.img = Buffer.from(content, 'base64').toString();
+                        }
+                        case `${uuid}.mhtml`: {
+                            return ret.mhtml = Buffer.from(content, 'base64').toString();
+                        }
+                        default: {
+                            return ret.folder.push({ filename: currentFileName, data: content });
+                        }
+                    }
+                };
+                processFile();
+            }
+            if (currentFileName = allFiles.shift()) {
+                return zip.files[currentFileName].async('base64').then(_CallBack, errCallBack);
+            }
+            return CallBack(null, ret);
+        };
+        if (currentFileName) {
+            return zip.files[currentFileName].async('base64').then(_CallBack, errCallBack);
+        }
+        return CallBack(null, ret);
+    }, errCallBack);
+};
 class encryptoClass {
-    constructor(_keypair, password, connectInformationMessage, ready) {
+    constructor(_keypair, password, ready) {
         this._keypair = _keypair;
         this.password = password;
-        this.connectInformationMessage = connectInformationMessage;
+        this.ready = ready;
         this._privateKey = null;
         this.KloakNode_publicKey = null;
-        this.Kloak_API_PublicKey = null;
         this.Kloak_AP_publicKey = null;
         this.myPublicKey = null;
         this.imapData = null;
-        this.localServerPublicKey = "";
+        this.localServerPublicKey = null;
         this.requestPool = new Map();
-        this.makeKeyReady = (CallBack) => {
-            openpgp.key.readArmored(this._keypair.privateKey).then(data => {
-                this._privateKey = data.keys;
-                return this._privateKey[0].decrypt(this.password).then(data => {
-                    return openpgp.key.readArmored(this._keypair.publicKey).then(data => {
-                        this.myPublicKey = data.keys;
-                        return openpgp.key.readArmored(KloakNode_publicKey).then(data => {
-                            this.KloakNode_publicKey = data.keys;
-                            return openpgp.key.readArmored(Kloak_API_PublicKey).then(data => {
-                                this.Kloak_API_PublicKey = data;
-                                return this.readImapIInputData(CallBack);
-                            });
-                        });
-                    });
-                });
-            });
+        this.makeKeyReady = async (CallBack) => {
+            this._privateKey = (await openpgp.key.readArmored(this._keypair.privateKey)).keys;
+            this.myPublicKey = (await openpgp.key.readArmored(this._keypair.publicKey)).keys;
+            this.KloakNode_publicKey = (await openpgp.key.readArmored(KloakNode_publicKey)).keys;
+            await this._privateKey[0].decrypt(this.password);
+            if (this._keypair["localserverPublicKey"]) {
+                this.localServerPublicKey = (await openpgp.key.readArmored(this._keypair.localserverPublicKey)).keys;
+            }
+            return this.readImapIInputData(CallBack);
         };
-        this.decryptMessage = (encryptoText, CallBack) => {
-            return this.decryptMessageToZipStream(encryptoText, false, async (err, _data) => {
+        this.decryptJsonWithAPKey = (encryptoText, CallBack) => {
+            const _self = this;
+            return this.decryptWithAPKey(encryptoText, false, async (err, _data) => {
                 if (err) {
                     return CallBack(err);
                 }
@@ -284,7 +306,12 @@ class encryptoClass {
                 const data = Buffer.from(_data, 'base64').toString();
                 if (/^-----BEGIN PGP/i.test(data)) {
                     CallBack();
-                    return this.Kloak_AP_publicKey = (await openpgp.key.readArmored(data)).keys;
+                    return openpgp.key.readArmored(data).then(data => {
+                        _self.Kloak_AP_publicKey = data.keys;
+                        console.dir(`AP publicKey ready!`);
+                    }).catch(ex => {
+                        console.dir(`openpgp.key.readArmored AP public key get error [${ex.message}]`);
+                    });
                 }
                 try {
                     ret = JSON.parse(data);
@@ -295,36 +322,63 @@ class encryptoClass {
                 return CallBack(null, ret);
             });
         };
-        this.onDoingRequest = async (encryptoText, uuid) => {
-            const self = this;
-            const request = this.requestPool.get(uuid);
-            if (!request) {
-                return;
-            }
-            return this.decryptMessage(encryptoText, (err, obj) => {
+        this.decryptStreamWithAPKey = (encryptoText, CallBack) => {
+            return this.decryptWithAPKey(encryptoText, true, async (err, _data) => {
                 if (err) {
-                    return self.connectInformationMessage.showErrorMessage(err);
+                    return CallBack(err);
                 }
-                if (obj.error !== -1) {
-                    clearTimeout(request.timeOut);
-                }
-                return request.CallBack(null, obj);
+                return CallBack(null, _data);
             });
         };
-        this.makeKeyReady(() => {
-            return this.getServerPublicKey(ready);
-        });
-        connectInformationMessage.socketIo.on('doingRequest', (encryptoText, uuid) => {
-            return this.onDoingRequest(encryptoText, uuid);
-        });
+        this.decryptTextWithNodeAPIKey = async (encryptoText, CallBack) => {
+            const _self = this;
+            const option = {
+                privateKeys: this._privateKey,
+                publicKeys: this.KloakNode_publicKey,
+                message: await openpgp.message.readArmored(encryptoText)
+            };
+            return openpgp.decrypt(option)
+                .then(_plaintext => {
+                const plainText = Buffer.from(_plaintext.data, 'base64').toString();
+                if (/^\-+BEGIN PGP PUBLIC KEY BLOCK\-+/i.test(plainText)) {
+                    return openpgp.key.readArmored(plainText);
+                }
+                return plainText;
+            }).then(data => {
+                if (typeof data === 'string') {
+                    try {
+                        const ret = JSON.parse(data);
+                        return CallBack(null, ret);
+                    }
+                    catch (ex) {
+                        return CallBack(ex);
+                    }
+                }
+                _self.Kloak_AP_publicKey = data.keys;
+                return CallBack();
+            })
+                .catch(ex => {
+                console.dir(`decryptTextWithNodeAPIKey error!`);
+                console.dir(ex);
+            });
+        };
+        this.makeKeyReady(ready);
     }
-    decryptMessageToZipStream(encryptoText, binary, CallBack) {
+    /**
+     *
+     * @param encryptoText
+     * @param binary decrypt with binary or not
+     * @param CallBack
+     */
+    decryptWithAPKey(encryptoText, binary, CallBack) {
+        if (!this.Kloak_AP_publicKey) {
+            return CallBack(new Error('have no access point key!'));
+        }
         const option = {
             privateKeys: this._privateKey,
-            publicKeys: this.Kloak_API_PublicKey,
+            publicKeys: this.Kloak_AP_publicKey,
             message: null
         };
-        let ret = false;
         if (binary) {
             option["format"] = 'binary';
         }
@@ -332,10 +386,11 @@ class encryptoClass {
             option.message = data;
             return openpgp.decrypt(option);
         }).then(_plaintext => {
-            if (!ret) {
-                ret = true;
+            if (!option["format"]) {
                 return CallBack(null, _plaintext.data);
             }
+            const ret = Buffer.from(_plaintext.data);
+            return CallBack(null, ret);
         });
         /*
         .catch ( ex => {
@@ -347,20 +402,7 @@ class encryptoClass {
         })
         */
     }
-    getServerPublicKey(CallBack) {
-        const publicKey = this._keypair.publicKey;
-        const self = this;
-        return this.connectInformationMessage.sockEmit('keypair', publicKey, async (err, data) => {
-            if (err) {
-                self.connectInformationMessage.showErrorMessage(err);
-                return CallBack(err);
-            }
-            const uu = await openpgp.key.readArmored(data);
-            self.localServerPublicKey = uu.keys;
-            return CallBack();
-        });
-    }
-    encrypt(message, CallBack) {
+    encryptWithNodeKey(message, CallBack) {
         const option = {
             privateKeys: this._privateKey,
             publicKeys: this.KloakNode_publicKey,
@@ -374,25 +416,17 @@ class encryptoClass {
             return CallBack('systemError');
         });
     }
-    emitRequest(cmd, CallBack) {
-        const uuid = cmd.requestSerial = uuid_generate();
-        const self = this;
+    encryptWithAPKey(message, CallBack) {
         const option = {
             privateKeys: this._privateKey,
             publicKeys: this.Kloak_AP_publicKey,
-            message: openpgp.message.fromText(JSON.stringify(cmd)),
+            message: openpgp.message.fromText(message),
             compression: openpgp.enums.compression.zip
         };
-        this.requestPool.set(uuid, { CallBack: CallBack, cmd: cmd, timeOut: setTimeout(() => {
-                self.requestPool.delete(uuid);
-                return CallBack(new Error('timeOut'));
-            }, requestTimeOut) });
         return openpgp.encrypt(option).then(ciphertext => {
-            return self.connectInformationMessage.sockEmit('doingRequest', uuid, ciphertext.data, err => {
-                return CallBack(err);
-            });
+            return CallBack(null, ciphertext.data);
         }).catch(err => {
-            return CallBack('systemError');
+            return CallBack(`encrypt error ${err.message}`);
         });
     }
     async decrypt_withMyPublicKey(message, CallBack) {
@@ -402,10 +436,7 @@ class encryptoClass {
             message: await openpgp.message.readArmored(message)
         };
         return openpgp.decrypt(option).then(data => {
-            if (data.signatures[0].valid) {
-                return CallBack(null, data.data);
-            }
-            return (new Error('signatures error!'));
+            return CallBack(null, data.data);
         }).catch(ex => {
             return CallBack(ex);
         });
@@ -423,25 +454,24 @@ class encryptoClass {
             return CallBack(err);
         });
     }
-    saveImapIInputData(CallBack) {
-        return this.encrypt_withMyPublicKey(JSON.stringify(this.imapData), (err, data) => {
+    saveImapIInputData(imapData, CallBack) {
+        return this.encrypt_withMyPublicKey(JSON.stringify(imapData), (err, data) => {
             if (err) {
                 return CallBack(err);
             }
-            localStorage.setItem("imapData", data);
-            return CallBack();
+            return this.DB_writeImap(data, CallBack);
         });
     }
-    emitLocalCommand(emitName, command, CallBack) {
+    encrypt_withLocalServerKey(message, CallBack) {
         const self = this;
         const option = {
             privateKeys: this._privateKey,
             publicKeys: this.localServerPublicKey,
-            message: openpgp.message.fromText(JSON.stringify(command)),
+            message: openpgp.message.fromText(message),
             compression: openpgp.enums.compression.zip
         };
         return openpgp.encrypt(option).then(ciphertext => {
-            return self.connectInformationMessage.sockEmit(emitName, ciphertext.data, CallBack);
+            return CallBack(null, ciphertext.data);
         }).catch(err => {
             return CallBack(err);
         });
@@ -466,46 +496,124 @@ class encryptoClass {
         }
         return CallBack(null, ret);
     }
+    DB_writeImap(encryptedImap, CallBack) {
+        let DB = null;
+        let saved = false;
+        const request = window.indexedDB.open("kloak", 1);
+        request.onerror = event => {
+            console.dir(event);
+            return this.ready(`unsupport!`);
+        };
+        request.onsuccess = event => {
+            if (saved) {
+                console.dir(`DB_writeImap success!`);
+                return CallBack();
+            }
+            DB = event.target["result"];
+            const objectStore = DB.transaction('IMAP', 'readwrite').objectStore('IMAP');
+            const request = objectStore.get(0);
+            let cursor = null;
+            const writeData = () => {
+                let request1 = null;
+                if (!cursor) {
+                    request1 = objectStore.add({ id: 0, data: encryptedImap });
+                }
+                else {
+                    request1 = objectStore.put({ id: 0, data: encryptedImap });
+                }
+                request1.onerror = event => {
+                    console.dir(`writeData on error`);
+                };
+                return request1.onsuccess = event => {
+                    console.dir(`objectStore.add success!`);
+                    CallBack();
+                };
+            };
+            request.onerror = evevnt => {
+                console.dir(`imapStore.get('0') error`);
+                return CallBack(`imapStore.get('0') error`);
+            };
+            request.onsuccess = event => {
+                cursor = request.result;
+                return writeData();
+            };
+        };
+        request.onupgradeneeded = event => {
+            console.dir(`request.onupgradeneeded`);
+            DB = event.target["result"];
+            return DB.createObjectStore('IMAP', { keyPath: 'id' }).transaction.oncomplete = event => {
+                const _imapStore = DB.transaction('IMAP', 'readwrite').objectStore('IMAP');
+                _imapStore.add({ id: 0, data: encryptedImap }).onsuccess = event => {
+                    return saved = true;
+                };
+            };
+        };
+    }
     readImapIInputData(CallBack) {
-        const data = localStorage.getItem("imapData");
-        if (!data || !data.length) {
-            return CallBack();
-        }
-        return this.decrypt_withMyPublicKey(data, (err, data) => {
+        const request = window.indexedDB.open("kloak", 1);
+        let DB = null;
+        let imapStore = null;
+        let onupgradeneeded = false;
+        request.onerror = event => {
+            console.dir(event);
+            CallBack(`unsupport`);
+            return this.ready(`unsupport!`);
+        };
+        request.onsuccess = event => {
+            if (onupgradeneeded) {
+                return CallBack();
+            }
+            DB = event.target["result"];
+            imapStore = DB.transaction('IMAP', 'readwrite').objectStore('IMAP');
+            let cursor = null;
+            let ret = null;
+            const deleteData = () => {
+                imapStore.delete(0).onsuccess = event => {
+                    return CallBack();
+                };
+            };
+            const finish = () => {
+                if (!cursor) {
+                    return CallBack();
+                }
+                this.decrypt_withMyPublicKey(cursor.data, (err, data) => {
+                    if (err) {
+                        console.dir(`imap table data [${cursor}] can't be decrypt, delete data!`);
+                        return deleteData();
+                    }
+                    try {
+                        ret = JSON.parse(data);
+                    }
+                    catch (ex) {
+                        console.dir(`imap table data [${data}] can't be JSON.parse, delete data!`);
+                        return deleteData();
+                    }
+                    return CallBack(null, ret);
+                });
+            };
+            const request = imapStore.get(0);
+            request.onerror = evevnt => {
+                console.dir(`imapStore.get('0') error`);
+                return CallBack(`imapStore.get('0') error`);
+            };
+            request.onsuccess = event => {
+                cursor = request.result;
+                return finish();
+            };
+        };
+        request.onupgradeneeded = event => {
+            console.dir(`request.onupgradeneeded, have no Imap data!`);
+            DB = event.target["result"];
+            imapStore = DB.createObjectStore('IMAP', { keyPath: 'id' });
+            return onupgradeneeded = true;
+        };
+    }
+    decryptStreamWithAPKeyAndUnZIP(uuid, message, CallBack) {
+        return this.decryptWithAPKey(message, true, (err, data) => {
             if (err) {
-                return CallBack();
+                return CallBack(err);
             }
-            try {
-                this.imapData = JSON.parse(data);
-            }
-            catch (ex) {
-                return CallBack();
-            }
-            return CallBack();
+            showHTMLComplete(uuid, data, CallBack);
         });
     }
 }
-const fetchFiles = (files, CallBack) => {
-    const filesArray = files.split(',');
-    let data = '';
-    let currentFIle = filesArray.shift();
-    let repertTime = 0;
-    const fetchFIle = (_CallBack) => {
-        return _view.connectInformationMessage.sockEmit('getFilesFromImap', currentFIle, _CallBack);
-    };
-    const _callBack = (_err, _data) => {
-        if (_err) {
-            if (++repertTime > 4) {
-                return CallBack(_err);
-            }
-            return fetchFIle(_callBack);
-        }
-        data += _data;
-        if (filesArray.length) {
-            currentFIle = filesArray.shift();
-            return fetchFIle(_callBack);
-        }
-        return CallBack(null, data);
-    };
-    return fetchFIle(_callBack);
-};

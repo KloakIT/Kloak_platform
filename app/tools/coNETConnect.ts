@@ -30,6 +30,7 @@ const saveLog = ( err: {} | string, _console = false ) => {
 		return logFileFlag = 'a'
 	})
 }
+
 const timeOutWhenSendConnectRequestMail = 1000 * 60
 const commandRequestTimeOutTime = 1000 * 10
 const requestTimeOut = 1000 * 60
