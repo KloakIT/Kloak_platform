@@ -541,6 +541,5 @@ var view_layout;
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');
-//openpgp.config.indutny_elliptic_path = 'lightweight/elliptic.min.js'
 window[`${"indexedDB"}`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
-const CoNET_version = "0.1.10";
+const CoNET_version = "0.1.43";

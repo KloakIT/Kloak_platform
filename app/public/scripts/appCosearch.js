@@ -235,29 +235,24 @@ const appScript = {
             const arg = com.Args[0];
             const uuid = arg.split(',')[0].split('.')[0];
             self.showDownload(true);
-            return _view.connectInformationMessage.emitLocalCommand('getFilesFromImap', arg, (err, buffer) => {
+            return _view.connectInformationMessage.fetchFiles(arg, (err, buffer) => {
                 self.showDownload(false);
                 if (err) {
                     return errorProcess(err);
                 }
-                return _view.sharedMainWorker.decryptStreamWithAPKey(buffer, (err, data) => {
-                    if (err) {
-                        return errorProcess(err);
-                    }
-                    self.showInputLoading(false);
-                    _view.CanadaBackground(false);
-                    self.showMainSearchForm(false);
-                    self.showMain(false);
-                    self.showSnapshop(true);
-                    let y = null;
-                    self.showWebPage(y = new showWebPageClass(search_text, data, uuid, () => {
-                        self.showWebPage(y = null);
-                        self.showMain(true);
-                        self.showSnapshop(false);
-                        _view.CanadaBackground(true);
-                        self.showMainSearchForm(true);
-                    }));
-                });
+                self.showInputLoading(false);
+                _view.CanadaBackground(false);
+                self.showMainSearchForm(false);
+                self.showMain(false);
+                self.showSnapshop(true);
+                let y = null;
+                self.showWebPage(y = new showWebPageClass(search_text, buffer, uuid, () => {
+                    self.showWebPage(y = null);
+                    self.showMain(true);
+                    self.showSnapshop(false);
+                    _view.CanadaBackground(true);
+                    self.showMainSearchForm(true);
+                }));
             });
         });
     },
