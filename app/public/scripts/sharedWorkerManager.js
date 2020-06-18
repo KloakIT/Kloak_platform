@@ -1,12 +1,20 @@
 class sharedWorkerManager {
     constructor(sharedPath) {
         this.sharedPath = sharedPath;
-        this.worker = new SharedWorker(this.sharedPath);
+        this.sharedWorker = typeof SharedWorker === 'function' ? true : false;
+        this.worker = this.makeWorker();
         this.sharedMainWorkerWaitingPool = new Map();
-        this.worker.port.addEventListener("message", e => {
-            return this.catchReturn(e.data);
-        }, false);
-        this.worker.port.start();
+        if (this.sharedWorker) {
+            this.worker["port"].addEventListener("message", e => {
+                return this.catchReturn(e.data);
+            }, false);
+            this.worker["port"].start();
+        }
+        else {
+            this.worker['onmessage'] = e => {
+                return this.catchReturn(e.data);
+            };
+        }
     }
     catchReturn(messageData) {
         const jsonData = Buffer.from(messageData).toString();
@@ -32,7 +40,12 @@ class sharedWorkerManager {
     emitCommand(cmd, CallBack) {
         this.sharedMainWorkerWaitingPool.set(cmd["uuid"] = uuid_generate(), CallBack);
         const cmdStream = Buffer.from(JSON.stringify(cmd));
-        this.worker.port.postMessage(cmdStream.buffer, [cmdStream.buffer]);
+        if (this.sharedWorker) {
+            this.worker["port"].postMessage(cmdStream.buffer, [cmdStream.buffer]);
+        }
+        else {
+            this.worker["postMessage"](cmdStream.buffer, [cmdStream.buffer]);
+        }
         if (cmd.command === "decrypt_withLocalServerKey") {
             console.dir(this.sharedMainWorkerWaitingPool);
         }
@@ -115,11 +128,30 @@ class sharedWorkerManager {
         };
         return this.emitCommand(cmd, CallBack);
     }
+    getHistoryTable(CallBack) {
+        const cmd = {
+            command: 'getHistoryTable'
+        };
+        return this.emitCommand(cmd, CallBack);
+    }
+    saveHistoryTable(data, CallBack) {
+        const cmd = {
+            command: 'saveHistoryTable',
+            args: data
+        };
+        return this.emitCommand(cmd, CallBack);
+    }
     decryptStreamWithAPKeyAndUnZIP(uuid, message, CallBack) {
         const cmd = {
             command: 'decryptStreamWithAPKeyAndUnZIP',
             args: [uuid, message]
         };
         return this.emitCommand(cmd, CallBack);
+    }
+    makeWorker() {
+        if (this.sharedWorker) {
+            return new SharedWorker(this.sharedPath);
+        }
+        return new Worker(this.sharedPath);
     }
 }

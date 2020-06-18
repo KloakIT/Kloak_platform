@@ -22,8 +22,11 @@ window.IDBTransaction = window.IDBTransaction || window["webkitIDBTransaction"] 
 window.IDBKeyRange = window.IDBKeyRange || window["webkitIDBKeyRange"] || window["msIDBKeyRange"];
 const returnCommand = (ports, cmd) => {
     const jsonData = Buffer.from(JSON.stringify(cmd));
+    if (sharedWorker) {
+    }
     return ports.postMessage(jsonData.buffer, [jsonData.buffer]);
 };
+const sharedWorker = typeof self.postMessage === 'function' ? false : true;
 const NewKeyPair = (ports, cmd) => {
     const uu = cmd.args;
     const userId = {
@@ -209,16 +212,32 @@ const doingCommand = (message, ports) => {
         case 'decryptStreamWithAPKeyAndUnZIP': {
             return encryptoClassObj.decryptStreamWithAPKeyAndUnZIP(cmd.args[0], cmd.args[1], encryptoClassObjCallBack);
         }
+        case 'getHistoryTable': {
+            return encryptoClassObj.getHistoryTable(encryptoClassObjCallBack);
+        }
+        case 'saveHistoryTable': {
+            return encryptoClassObj.getHistoryTable(encryptoClassObjCallBack);
+        }
         default: {
             cmd["error"] = 'unknow command!';
             return returnCommand(ports, cmd);
         }
     }
 };
-self.addEventListener('connect', (e) => {
-    const port = e["ports"][0];
-    port.addEventListener("message", e => {
-        return doingCommand(Buffer.from(e.data).toString(), port);
-    }, false);
-    return port.start();
-});
+if (sharedWorker) {
+    self.addEventListener('connect', e => {
+        const port = e["ports"][0];
+        port.addEventListener('message', e => {
+            doingCommand(Buffer.from(e.data).toString(), port);
+        }, false);
+        port.onmessageerror = e => {
+            console.dir(e);
+        };
+        return port.start();
+    });
+}
+else {
+    onmessage = e => {
+        doingCommand(Buffer.from(e.data).toString(), self);
+    };
+}

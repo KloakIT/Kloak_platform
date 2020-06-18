@@ -1,6 +1,8 @@
 
 class sharedWorkerManager {
-	private worker = new SharedWorker ( this.sharedPath )
+	
+	private sharedWorker = typeof SharedWorker === 'function' ? true: false 
+	private worker = this.makeWorker ()
 	public sharedMainWorkerWaitingPool: Map< string, ( err?: Error, cmd? ) => void > = new Map ()
 
 	private catchReturn ( messageData: string ) {
@@ -27,16 +29,28 @@ class sharedWorkerManager {
 	}
 
 	constructor ( private sharedPath: string ) {
-		this.worker.port.addEventListener ( "message", e => {
-			return this.catchReturn ( e.data )
-		}, false )
-		this.worker.port.start()
+		if ( this.sharedWorker ) {
+			this.worker["port"].addEventListener ( "message", e => {
+				return this.catchReturn ( e.data )
+			}, false )
+			
+			this.worker["port"].start()
+		} else {
+			this.worker['onmessage'] = e => {
+				return this.catchReturn ( e.data )
+			}
+		}
 	}
 
 	private emitCommand ( cmd: sharedWorkerCommand, CallBack ) {
 		this.sharedMainWorkerWaitingPool.set ( cmd[ "uuid" ] = uuid_generate (), CallBack )
 		const cmdStream = Buffer.from ( JSON.stringify ( cmd ))
-		this.worker.port.postMessage ( cmdStream.buffer, [ cmdStream.buffer ])
+		if ( this.sharedWorker ) {
+			this.worker["port"].postMessage ( cmdStream.buffer, [ cmdStream.buffer ])
+		} else {
+			this.worker["postMessage"] ( cmdStream.buffer, [ cmdStream.buffer ])
+		}
+		
 		if ( cmd.command === "decrypt_withLocalServerKey" ) {
 			console.dir ( this.sharedMainWorkerWaitingPool )
 		}
@@ -156,4 +170,11 @@ class sharedWorkerManager {
 		}
 		return this.emitCommand ( cmd, CallBack )
 	}
-}
+
+	private makeWorker () {
+		if ( this.sharedWorker ) {
+			return new SharedWorker ( this.sharedPath )
+		}
+		return new Worker ( this.sharedPath )
+	}
+ }

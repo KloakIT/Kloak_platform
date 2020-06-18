@@ -25,8 +25,13 @@ window.IDBKeyRange = window.IDBKeyRange || window ["webkitIDBKeyRange"] || windo
 
 const returnCommand = ( ports, cmd: sharedWorkerCommand ) => {
 	const jsonData = Buffer.from ( JSON.stringify( cmd ))
+	if ( sharedWorker ) {
+		
+	}
 	return ports.postMessage ( jsonData.buffer, [ jsonData.buffer ])
 }
+
+const sharedWorker = typeof self.postMessage === 'function' ? false : true
 
 const NewKeyPair = ( ports, cmd: sharedWorkerCommand ) => {
 	const uu: INewKeyPair = cmd.args
@@ -136,6 +141,7 @@ const checkPassword = async ( _keyPair: keypair, CallBack ) => {
 }
 
 let encryptoClassObj = null
+
 const doingCommand = ( message: string, ports ) => {
 
 	
@@ -264,14 +270,27 @@ const doingCommand = ( message: string, ports ) => {
 	
 }
 
-self.addEventListener ( 'connect', ( e ) => {
-	const port = e [ "ports" ][0]
+if ( sharedWorker ) {
+	self.addEventListener ( 'connect', e => {
 
-	port.addEventListener( "message", e => {
-		return doingCommand ( Buffer.from ( e.data ).toString(), port )
-	}, false )
+		const port = e [ "ports" ][0]
+		port.addEventListener( 'message', e => {
 
-	return port.start()
-})
+			doingCommand ( Buffer.from ( e.data ).toString(), port )
+
+		}, false )
+
+		port.onmessageerror = e => {
+			console.dir ( e )
+		}
+	
+		return port.start()
+	})
+} else {
+	onmessage =  e => {
+		doingCommand ( Buffer.from ( e.data ).toString(), self )
+	}
+}
+
 
 declare const openpgp

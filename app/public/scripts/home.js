@@ -254,6 +254,7 @@ var view_layout;
             this.CoNETConnectClass = null;
             this.imapFormClass = null;
             this.CoNETConnect = ko.observable(null);
+            this.historyData = ko.observableArray;
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
             this.password = null;

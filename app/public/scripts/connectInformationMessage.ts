@@ -169,7 +169,6 @@ class connectInformationMessage {
 				})
 			}
 			*/
-			console.dir (`Error: have not _view.keyPairCalss`)
 			
 		})
 		

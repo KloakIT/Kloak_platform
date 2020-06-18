@@ -935,6 +935,7 @@ const appScript = {
                     if (err) {
                         return errorProcess(err);
                     }
+                    _view.sharedMainWorker;
                     return _view.sharedMainWorker.decryptStreamWithAPKey(buffer, (err, data) => {
                         if (err) {
                             return errorProcess(err);

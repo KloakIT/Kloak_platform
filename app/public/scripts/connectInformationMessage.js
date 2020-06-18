@@ -165,7 +165,6 @@ class connectInformationMessage {
                 })
             }
             */
-            console.dir(`Error: have not _view.keyPairCalss`);
         });
         this.socketIo.on('doingRequest', (mess, uuid) => {
             this.onDoingRequest(mess, uuid);
