@@ -215,10 +215,14 @@
 }
 
 .shadowText2 {
+	font-size: x-large;
 	text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
 }
 .shadowText1 {
-	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+	margin-top: 0;
+	font-size: large;
+	color: rgba(255, 255, 255, 0.2);
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
   .plan:last-child {
@@ -1153,6 +1157,7 @@ ANDY - MASONARY IMAGES
 	object-position: center;
 	position: relative;
   }
+
   
   /* ====================================================================================================================
   ANDY - MASONARY IMAGES

@@ -13,6 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ko.bindingHandlers.animationTextIn = {
+    update: (element, valueAccessor, allBindings) => {
+        // First get the latest data that we're bound to
+        const value = valueAccessor();
+        // Next, whether or not the supplied model property is observable, get its current value
+        const valueUnwrapped = ko.unwrap(value);
+        // Grab some more data from another binding property
+        const onCompleteAll = allBindings.get('onCompleteAll');
+        let timeLine = allBindings.get('timeLine');
+        // Now manipulate the DOM element
+        if (valueUnwrapped) {
+            $(element).empty();
+            const t = document.createTextNode(valueUnwrapped);
+            element.appendChild(t);
+            timeLine = new TimelineLite();
+            const mySplitText = new SplitText(element, { type: "words, chars" });
+            const chars = mySplitText.chars;
+            timeLine.staggerFrom(mySplitText.chars, 0.6, { scale: 4, autoAlpha: 0, rotationX: -180, transformOrigin: "100% 50%", ease: Back.easeOut }, 0.02, null, onCompleteAll);
+        }
+        //$( element ).slideDown( duration ) // Make the element visible
+        else {
+            const dammy = true;
+        }
+        //$( element ).slideUp( duration )   // Make the element invisible
+    }
+};
 const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
@@ -33,7 +59,6 @@ const makeKeyPairData = (view, keypair) => {
             if (err) {
                 return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
             }
-            console.dir(data);
             view.showKeyPair(false);
             if (data["imapData"]) {
                 view.imapData = data["imapData"];
@@ -254,10 +279,13 @@ var view_layout;
             this.CoNETConnectClass = null;
             this.imapFormClass = null;
             this.CoNETConnect = ko.observable(null);
-            this.historyData = ko.observableArray;
+            this.historyData = ko.observableArray();
             this.bodyBlue = ko.observable(true);
             this.CanadaBackground = ko.observable(false);
             this.password = null;
+            this.KloakTL = gsap.timeline();
+            this.secondTitle = ko.observable(false);
+            this.titleAnimationStep = ko.observable(0);
             this.sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js');
             /*
             public worker = new workerManager ([
@@ -279,6 +307,8 @@ var view_layout;
             this.nyt_news = ko.observable(false);
             this.nyt_detail = ko.observable(false);
             this.nyt_menu = ko.observable(false);
+            this.TitleLine1 = null;
+            this.TitleLine2 = null;
             this.socketListen();
             this.CanadaBackground.subscribe(val => {
                 if (val) {
@@ -289,6 +319,15 @@ var view_layout;
                     });
                 }
             });
+            this.InitKloakLogoTimeLine();
+            const dom = document.getElementById("body");
+            const eve = () => {
+                dom.removeEventListener("click", eve);
+                this.KloakTL.clear();
+                this.KloakTL = null;
+                this.openClick();
+            };
+            dom.addEventListener("click", eve);
         }
         /*** */
         afterInitConfig() {
@@ -392,10 +431,15 @@ var view_layout;
             });
             $('.languageText').shape(`flip ${this.LocalLanguage}`);
             $('.KnockoutAnimation').transition('jiggle');
-            return initPopupArea();
+            this.animationTitle();
+            initPopupArea();
+            return false;
         }
         //          start click
         openClick() {
+            if (!this.sectionWelcome()) {
+                return;
+            }
             clearTimeout(this.demoTimeout);
             if (this.demoMainElm && typeof this.demoMainElm.remove === 'function') {
                 this.demoMainElm.remove();
@@ -535,6 +579,27 @@ var view_layout;
                 r: 60
             }, 3000, mina.easeout, changeLanguage);
         }
+        InitKloakLogoTimeLine() {
+            var colors = ["#E6E7E8", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52"];
+            for (let i = 0; i < 8; i++) {
+                this.KloakTL.to("#start" + i, 1, {
+                    morphSVG: "#end" + i,
+                    fill: colors[i],
+                    ease: Power2.easeInOut
+                }, i * 0.05);
+            }
+        }
+        animationTitle() {
+            // .add("end", 2)
+            // .to("#redBox", 3, {scale:2, opacity:0}, "end")
+            this.titleAnimationStep(0);
+            this.KloakTL.restart();
+            this.secondTitle(false);
+        }
+        animationTitleStep2(self) {
+            //_view.secondTitle ( true )
+            //_view.titleAnimationStep ( 1 )
+        }
     }
     view_layout.view = view;
 })(view_layout || (view_layout = {}));
@@ -542,4 +607,5 @@ const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');
 window[`${"indexedDB"}`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+gsap.registerPlugin(MorphSVGPlugin, SplitText);
 const CoNET_version = "0.1.43";

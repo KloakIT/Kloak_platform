@@ -680,7 +680,8 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '人类成就这互联网，互联网也属于人类',
+			firstTitle2: '基于信任隐私和安全的互联网',
+			firstTitle3: '革命性的无IP地址通讯网颠覆传统互联网',
             start: '开门',
             proxyStoped: 'CoGate定制代理服务器已经停止，如需使用请重新定制代理服务器。'
         },
@@ -1525,7 +1526,8 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '人がインターネットで集めた、人がインターネットを所有する',
+			firstTitle2: '信頼、プライバシーとセキュリティしているインターネット',
+			firstTitle3: '革命的なIPアドレスない通信網、伝統インターネットルールを挑む',
             start: 'オプンドア',
             proxyStoped: 'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。'
         },
@@ -2123,13 +2125,15 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: 'All for the Internet, the Internet for All',
+			firstTitle2: 'AN INTERNET BUILT ON TRUST, PRIVACY & SECURITY',
+			firstTitle3: 'A revolutionary technology that does not have an IP address',
+			
             start: 'ENTER NOW',
             proxyStoped: 'Gateway server shutdown. Please rebuild try again.'
         },
 
         useInfoiOS: {
-            title1:'iOS device local proxy setup.',
+            title1: 'iOS device local proxy setup.',
             info:[{
                 title:'Open the control panel and select the WiFi settings.',
                 titleImage:'/images/macOsControl.jpg',
@@ -2993,7 +2997,8 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '人類成就這互聯網，互聯網也屬於人類',
+			firstTitle2: '基於信任，隱私和安全的互聯網',
+			firstTitle3: '革命性的無IP地址通訊網顛覆傳統互聯網',
             start: '開門',
             proxyStoped: 'CoGate定制代理伺服器已經停止，如需使用請重新定制代理伺服器。'
         },

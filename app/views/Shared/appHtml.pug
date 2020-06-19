@@ -2,7 +2,7 @@
 
 #CoSearch
 	<!-- ko with: appScript -->
-	.backGroundSetup( data-bind = " style: { background: searchItem() ? 'white' : '#B4E4ED' }" style = "height: 100em; ")
+	.backGroundSetup( data-bind = " style: { background: searchItem() || showHistory() ? 'white' : '#B4E4ED' }" style = "height: 100em; ")
 		<!-- ko if: showMain() -->
 		.main
 
@@ -24,6 +24,7 @@
 								<!-- ko if : hasFocusShowTool -->
 
 									<!-- ko if: !searchInputText().length -->
+										i.icon.th.list.link.circular.olive( data-bind = " click: historyListClick " style = "box-shadow: 0 0 0 0.1em; right: 4.2rem; top: 0.7rem;")
 										i.icon.image.outline.link.circular( data-bind = " click: function (){ document.getElementById('imageInput1').click() }, style: { 'margin-top' : hasFocus ? '2px' : '0px' }" style = "box-shadow: 0 0 0 0.1em; color: #42c8f4!important;")
 										input( onchange = "_view.appsManager().appScript().imageSearch( this )" id = "imageInput1" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0" )
 									<!-- /ko -->
@@ -311,15 +312,17 @@
 							.field
 							
 								.ui.search
-									.ui.input.icon( data-bind = "css : { 'error': showSearchError(), 'loading disabled': showInputLoading }")
+									.ui.input.icon.big( data-bind = "css : { 'error': showSearchError(), 'loading disabled': showInputLoading }")
+
 										input( style="color:rgba(0,0,0,0.5);border-radius: 500rem!important;" type="text" 
 											data-bind = " textInput: searchInputText, hasFocus: SearchInputNextHasFocus, attr: { placeholder: showSearchError() ? ( messageBoxDefine [ errorMessageIndex() ][ $root.languageIndex() ]): infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" )
-										
+										i.icon.th.list.link.circular.olive( data-bind = " click: historyListClick " style = "box-shadow: 0 0 0 0.1em; right: 4.2rem; top: 0.7rem;")
 										<!-- ko if: searchInputText().length -->
-										i.icon.circular.search.link.icon( data-bind = "click: search_form" style="color: #4285f4!important;" )
+										i.icon.circular.search.link( data-bind = "click: search_form" style="color: #4285f4!important;" )
 										<!-- /ko -->
 
 										<!-- ko if: !searchInputText().length -->
+											
 											i.icon.image.outline.link.circular( data-bind = " click: function (){ document.getElementById('imageInput1').click() } " style = "color: #4285f4!important;")
 											.hideInput( style="position: absolute;")
 												input( onchange = "_view.appsManager().appScript().imageSearch( this )" id = "imageInput1" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0;width: 0px;height: 0px;" )
@@ -430,7 +433,7 @@
 									a.five.wide.column( href = "#" data-bind = "text: text, click: function () { $parents[0].searchesRelatedSelect ( $parents[0], $index())}" style="padding-top: 0.2rem;padding-bottom: 0.2rem;")
 									<!-- /ko -->
 							<!-- /ko -->
-				.items( data-bind=" style: { 'margin-top': showSearchesRelated() && !searchItem()['originImage'] ? '15.5em' : '7.5em', 'padding-top': showSearchesRelated() && !searchItem()['originImage'] ? '1em': '1em' }, click: function () { showSearchesRelated ( false ); return true;}" )
+				.items( data-bind=" style: { 'margin-top': showSearchesRelated() && !searchItem()['originImage'] ? '15rem' : '8rem', 'padding-top': showSearchesRelated() && !searchItem()['originImage'] ? '1em': '1em' }, click: function () { showSearchesRelated ( false ); return true;}" )
 					
 					.AppList.CoContent.content
 						
@@ -599,7 +602,20 @@
 							.space
 					
 			<!-- /ko -->
+			<!-- ko if: showHistory -->
+			.showHistory.listItems( style = "margin:1em;" )
+				.top.ui.fixed.menu.borderless
+					.item( style = "width: 90%;" )
+						form.ui.form( style = "width: 100%;")
+							.field
+								.ui.search
+									.ui.input.left.icon.big
+										i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
+										input( style = "color:rgba(0,0,0,0.5); border-radius: 500rem; width: 100%; padding-right: 5.3em!important;" type = "text" )
+										i.icon.circular.search.link( data-bind = "click: search_form" style="color: #4285f4!important;" )
 
+				.items
+			<!-- /ko -->
 
 		<!-- /ko -->
 
@@ -610,7 +626,7 @@
 				.item( style = "width: 90%; margin: 0 auto;" )
 					form.ui.form( style = "width: 100%;" data-bind = "css: { 'error': showErrorMessage }" )
 						.field( style = "width: 100%;" )
-							.ui.left.icon.input( data-bind = "css : { 'loading': showLoading }" style = "width: 100%;" )
+							.ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
 								i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
 								input( style = "color: rgba ( 0,0,0,0.5 );" readonly data-bind = "value: showUrl" )
 								<!-- ko if: showHtmlCodePage() && ! showLoading() -->
@@ -682,8 +698,6 @@
 		<!-- /ko -->
 		<!-- /ko -->
 
-		<!-- ko if: showDownloadProcess -->
 		
-		<!-- /ko -->
 	
 	<!-- /ko -->

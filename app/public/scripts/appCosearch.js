@@ -69,6 +69,7 @@ const appScript = {
     nextButtonLoadingGetResponse: ko.observable(false),
     showDownloadProcess: ko.observable(false),
     showDownload: ko.observable(false),
+    showHistory: ko.observable(false),
     //	['originImage']
     initSearchData: (self) => {
         self.searchItem(null);
@@ -255,6 +256,13 @@ const appScript = {
                 }));
             });
         });
+    },
+    historyListClick: (self, event) => {
+        _view.CanadaBackground(false);
+        self.showMainSearchForm(false);
+        self.showMain(true);
+        self.showHistory(true);
+        _view.bodyBlue(false);
     },
     searchSetup: (key, self, event) => {
         self.showSearchSetupForm(false);

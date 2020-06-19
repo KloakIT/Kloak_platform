@@ -15,6 +15,47 @@
  */
 
 declare const mhtml2html
+declare const Back
+declare const gsap
+declare const TweenMax
+declare const Power2
+declare const MorphSVGPlugin
+declare const SplitText
+declare const TimelineLite
+
+ko.bindingHandlers.animationTextIn = {
+    update: ( element, valueAccessor, allBindings ) => {
+        // First get the latest data that we're bound to
+        const value = valueAccessor ()
+ 
+        // Next, whether or not the supplied model property is observable, get its current value
+        const valueUnwrapped = ko.unwrap ( value )
+ 
+        // Grab some more data from another binding property
+        const onCompleteAll = allBindings.get ( 'onCompleteAll' )
+		let timeLine = allBindings.get ( 'timeLine' )
+        // Now manipulate the DOM element
+		if ( valueUnwrapped ) {
+			$( element ).empty()
+			const t = document.createTextNode ( valueUnwrapped )
+			element.appendChild ( t )
+			
+			timeLine = new TimelineLite()
+			const mySplitText = new SplitText ( element, { type: "words, chars" })
+			const chars = mySplitText.chars
+			timeLine.staggerFrom ( mySplitText.chars, 0.6, { scale: 4, autoAlpha: 0, rotationX: -180,  transformOrigin: "100% 50%", ease: Back.easeOut }, 0.02, null, onCompleteAll )
+			
+
+		}
+
+            //$( element ).slideDown( duration ) // Make the element visible
+        else {
+			const dammy = true
+		}
+            //$( element ).slideUp( duration )   // Make the element invisible
+    }
+}
+
 const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
     
     const length = keypair.publicKeyID.length
@@ -42,7 +83,7 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 			if ( err ) {
 				return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
 			}
-			console.dir ( data )
+			
 			view.showKeyPair ( false )
 			
 			if ( data["imapData"] ) {
@@ -309,11 +350,13 @@ module view_layout {
         public CoNETConnectClass: CoNETConnect = null
         public imapFormClass: imapForm = null
 		public CoNETConnect: KnockoutObservable < CoNETConnect > = ko.observable ( null )
-		public historyData = ko.observableArray
+		public historyData = ko.observableArray()
 		public bodyBlue = ko.observable ( true )
         public CanadaBackground = ko.observable ( false )
 		public password = null
-
+		public KloakTL = gsap.timeline()
+		public secondTitle = ko.observable ( false )
+		public titleAnimationStep = ko.observable (0)
 		public sharedMainWorker = new sharedWorkerManager ('/scripts/netSocket.js')
 		
         /*
@@ -339,7 +382,9 @@ module view_layout {
         public iframShow = ko.observable ( false )
         public nyt_news = ko.observable ( false )
         public nyt_detail = ko.observable ( false )
-        public nyt_menu = ko.observable ( false )
+		public nyt_menu = ko.observable ( false )
+		public TitleLine1 = null
+		public TitleLine2 = null
         /*** */
 		
         private afterInitConfig ( ) {
@@ -458,7 +503,15 @@ module view_layout {
 					})
 				}
 			})
-			
+			this.InitKloakLogoTimeLine()
+			const dom = document.getElementById( "body" )
+			const eve = () => {
+				dom.removeEventListener ( "click",  eve )
+				this.KloakTL.clear()
+				this.KloakTL = null
+				this.openClick ()
+			}
+			dom.addEventListener ( "click", eve )
         }
         
         //          change language
@@ -485,13 +538,19 @@ module view_layout {
             })
             
             $('.languageText').shape (`flip ${ this.LocalLanguage }`)
-            $('.KnockoutAnimation').transition('jiggle')
-            return initPopupArea()
+			$('.KnockoutAnimation').transition('jiggle')
+			this.animationTitle()
+			initPopupArea()
+			return false
         }
         //          start click
         public openClick () {
-
+			if (! this.sectionWelcome ()) {
+				return 
+			}
+			
 			clearTimeout ( this.demoTimeout )
+
 			if ( this.demoMainElm && typeof this.demoMainElm.remove === 'function' ) {
 				this.demoMainElm.remove()
 				this.demoMainElm = null
@@ -657,13 +716,38 @@ module view_layout {
 			}, 3000, mina.easeout, changeLanguage )
 
 		}
+
+		private InitKloakLogoTimeLine ( ) {
+			var colors = ["#E6E7E8", "#152B52", "#152B52", "#152B52", "#152B52","#152B52","#152B52","#152B52"]
+			for ( let i = 0; i < 8; i++ ) {
+				this.KloakTL.to ( "#start" + i, 1, {
+				  morphSVG: "#end" + i,
+				  fill: colors[i],
+				  ease: Power2.easeInOut
+				}, i * 0.05 )
+			}
+		}
+
+		public animationTitle () {
+			// .add("end", 2)
+			// .to("#redBox", 3, {scale:2, opacity:0}, "end")
+			this.titleAnimationStep (0)
+			this.KloakTL.restart()
+			this.secondTitle ( false )
+		}
+
+		public animationTitleStep2 ( self ) {
+			//_view.secondTitle ( true )
+			//_view.titleAnimationStep ( 1 )
+		}
     }
 }
 
 const _view = new view_layout.view ()
 
 ko.applyBindings ( _view , document.getElementById ( 'body' ))
+
 $(`.${ _view.tLang()}`).addClass ('active')
 window[`${ "indexedDB" }`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"]
-
+gsap.registerPlugin( MorphSVGPlugin, SplitText )
 const CoNET_version = "0.1.43"

@@ -370,5 +370,6 @@ class connectInformationMessage {
 	
 		return fetchFIle ( _callBack )
 	}
+	
 }
 

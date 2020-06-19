@@ -4,8 +4,8 @@ block jumbotron
 block jumbotron1
 
 	<!-- ko if: showLanguageSelect -->
-		.language( style="z-index: 999;top: 1.3em;right: 2em;position: fixed;width: 2em;")
-			.ui.text.shape.languageText( data-bind = " click: selectItem " )
+		.language( style="z-index: 999;top: 0.9rem;right: 2rem;position: fixed; width: 2rem;")
+			.ui.text.shape.languageText( data-bind = " click: selectItem, clickBubble: false " )
 				.sides
 					span.ui.header.side.en.languageItem.languageTextCoverColor
 						img( src="/images/uk.svg")
@@ -24,12 +24,19 @@ block jumbotron1
 	<!-- ko if: sectionWelcome -->
 	section#welcome.content
 		.welcome-bg
-			.welcome( style="color: white;")
-				h1.shadowText1( data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle1, animate:{ animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 0 }" )
-				h3.shadowText1( style="padding-right:1em;padding-left:1em;" data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle2, animate: { animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 70 }")
+			.welcome( style="color: white;" )
+				.kloaklogo( style ="width: 14rem;")
+					include ./kloakLogo.svg
+				
+				.textBox( style = "height: 3rem; margin-top: 1rem;")
+
+					
+					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, onCompleteAll: animationTitleStep2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
+				//-h1.shadowText1( data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle1, animate:{ animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 0 }" )
+				//-h3.shadowText1( style="padding-right:1em;padding-left:1em;" data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle2, animate: { animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 70 }")
 				//-.ui.primary.basic.big.button( data-bind="click: openClick, text: infoDefine [ languageIndex() ].cover.start" style="margin-top: 2em;" )
-				.button(style="position: relative;width: 4em;height: 4em;")
-					a.play-btn(data-bind="click: openClick" href="#")
+				//-.button( style="position: relative;width: 4em;height: 4em;" )
+					a.play-btn( data-bind="click: openClick" href="#" )
 		.startupView( style="width:100%; height:100%")
 			video.videoBackground( preload="yes" playsinline autoplay muted loop )
 				source( src="/images/startup_background.mp4" type="video/mp4")

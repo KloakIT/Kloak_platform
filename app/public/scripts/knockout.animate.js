@@ -6,7 +6,7 @@
     } else {
         factory(ko, ko.mapping = {});
     }
-}(function (ko, exports) {
+}( function ( ko, exports ) {
     var animations = [ "bounce", "flash", "pulse", "rubberBand", "shake", "swing", "tada", "wobble", "bounceIn", "bounceInDown", 
         "bounceInLeft", "bounceInRight", "bounceInUp", "bounceOut", "bounceOutDown", "bounceOutLeft", "bounceOutRight", 
         "bounceOutUp", "fadeIn", "fadeInDown", "fadeInDownBig", "fadeInLeft", "fadeInLeftBig", "fadeInRight", "fadeInRightBig", 
@@ -44,13 +44,13 @@
     }
 
     function removeClass(ele,cls) {
-        if (hasClass(ele,cls)) {
+        if ( hasClass( ele,cls )) {
             var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
             ele.className = ele.className.replace(reg,' ').trim();
         }
     }
 
-    function doAnimationWork(element, animation, callback, state, delay ){
+    function doAnimationWork( element, animation, callback, state, delay ){
         const _element = $(element);
         if ( _element.hasClass ( hideClass )) {
             if ( /out/i.test ( animation )) {
@@ -59,11 +59,11 @@
         }
 		setTimeout ( function() {
             
-			addClass(element, baseAnimateClass);
-            addClass(element, animation);
-            removeClass(element, 'displayNono');
+			addClass( element, baseAnimateClass );
+            addClass( element, animation );
+            removeClass ( element, 'displayNono' );
 			const EventFun = function ( event ) {
-				removePrefixedEvent(element, "AnimationEnd", EventFun );
+				removePrefixedEvent( element, "AnimationEnd", EventFun );
 	
 				removeClass(element, baseAnimateClass);
                 removeClass(element, animation);
@@ -83,11 +83,11 @@
     }
     
     ko.bindingHandlers.animate = {
-        init: function(element, valueAccessor){
+        init: function( element, valueAccessor){
             var data = ko.unwrap(valueAccessor()),
                 animation, state, toggle, animationOn, animationOff, handler;
 
-            if (!data.animation){
+            if (!data.animation ){
                 throw new Error('Animation property must be defined');
             }
 
@@ -108,7 +108,7 @@
                 throw new Error('Invalid second animation');
             }
         },
-        update: function(element, valueAccessor){
+        update: function( element, valueAccessor ){
             var data = ko.unwrap(valueAccessor()),
                 animation, state, toggle, animationOn, animationOff, handler, delay;
 
@@ -120,7 +120,7 @@
                 throw new Error('State property must be defined');
             }
             */
-            animation = ko.unwrap(data.animation);
+            animation = ko.unwrap( data.animation );
             state = ko.unwrap( data.state );
             const _element = $(element);
             animationOn = typeof animation === 'object' ? animation[0] : animation;
@@ -137,7 +137,7 @@
             handler = ko.unwrap(data.handler) || undefined;
 
             if ( state ){
-                return doAnimationWork(element, animationOn, handler, state, delay);
+                return doAnimationWork ( element, animationOn, handler, state, delay ) ;
             }
             doAnimationWork(element, animationOff, handler, state, delay);
             
