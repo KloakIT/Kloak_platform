@@ -1526,7 +1526,7 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-			firstTitle2: '信頼、プライバシーとセキュリティしているインターネット',
+			firstTitle2: '信頼とプライバシー及セキュリティなインターネット',
 			firstTitle3: '革命的なIPアドレスない通信網、伝統インターネットルールを挑む',
             start: 'オプンドア',
             proxyStoped: 'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。'
@@ -2474,7 +2474,7 @@ const infoDefine = [
             systemPassword: 'CoNET Client System Password',
             inputEmail: `Generation key pair (curve25519) for secure communications`,
 			accountEmailInfo: `Because CoNET may be on a firewall's black list in some regions. It is best to choose an email account with servers outside your region’s firewall.`,
-			dividertext: 'Option'
+			dividertext: 'Optional'
         },
         
         error_message: {
@@ -2997,7 +2997,7 @@ const infoDefine = [
 
         cover: {
             firstTitle1: 'Kloak OS',
-			firstTitle2: '基於信任，隱私和安全的互聯網',
+			firstTitle2: '基於信任隱私和安全的互聯網',
 			firstTitle3: '革命性的無IP地址通訊網顛覆傳統互聯網',
             start: '開門',
             proxyStoped: 'CoGate定制代理伺服器已經停止，如需使用請重新定制代理伺服器。'

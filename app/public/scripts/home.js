@@ -39,6 +39,31 @@ ko.bindingHandlers.animationTextIn = {
         //$( element ).slideUp( duration )   // Make the element invisible
     }
 };
+ko.bindingHandlers.animationTextLineIn = {
+    update: (element, valueAccessor, allBindings) => {
+        // First get the latest data that we're bound to
+        const value = valueAccessor();
+        // Next, whether or not the supplied model property is observable, get its current value
+        const valueUnwrapped = ko.unwrap(value);
+        // Grab some more data from another binding property
+        const onCompleteAll = allBindings.get('onCompleteAll');
+        let timeLine = allBindings.get('timeLine');
+        // Now manipulate the DOM element
+        if (valueUnwrapped) {
+            $(element).empty();
+            const t = document.createTextNode(valueUnwrapped);
+            element.appendChild(t);
+            timeLine = new TimelineLite();
+            const mySplitText = new SplitText(element, { type: "lines" });
+            timeLine.staggerFrom(mySplitText.lines, 0.5, { opacity: 0, rotationX: -120, force3D: true, transformOrigin: "top center -150" }, 0.1, null, onCompleteAll);
+        }
+        //$( element ).slideDown( duration ) // Make the element visible
+        else {
+            const dammy = true;
+        }
+        //$( element ).slideUp( duration )   // Make the element invisible
+    }
+};
 const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
@@ -323,6 +348,7 @@ var view_layout;
             this.nyt_menu = ko.observable(false);
             this.TitleLine1 = null;
             this.TitleLine2 = null;
+            this.mainManuItems = ko.observableArray(mainMenuArray);
             this.socketListen();
             this.CanadaBackground.subscribe(val => {
                 if (val) {
@@ -633,18 +659,24 @@ var view_layout;
         showMain() {
             this.showStartupVideo(false);
             this.showMainPage(true);
-            this.mainboardPlay();
         }
-        mainboardPlay() {
-            const timeLine = new TimelineLite();
-            const dcom = '#video01';
-            timeLine.set(dcom, { transformOrigin: "100% 100%" });
-            timeLine.to(dcom, { duration: 0.2, transformOrigin: "left", transformPerspective: 10000, rotateY: 0 });
-            timeLine.to(dcom, { duration: 6, transformOrigin: "left", transformPerspective: 1000, rotateY: 30 });
+        animaRemove(elem) {
+            gsap.to(elem, { rotation: 27, x: -100, duration: 1 });
+        }
+        animaCome(elem) {
+            gsap.froom(elem, { rotation: 27, x: 2000, duration: 1 });
         }
     }
     view_layout.view = view;
 })(view_layout || (view_layout = {}));
+const mainMenuArray = [
+    {
+        img: '/images/netConnect.svg',
+        header: ['网络通讯线路设定', 'ネットワーク通信設定', 'Network connection setup.', '網絡通訊線路設定'],
+        description: ['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码', '', 'Local network module and the mail informationthe for connect to CoNet network', '指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件服務器帳號密碼'],
+        extra: ['详细设定', '詳細設定', 'Setup', '詳細設定']
+    }, {}
+];
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');

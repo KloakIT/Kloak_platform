@@ -30,7 +30,6 @@ block jumbotron1
 					include ./kloakLogo.svg
 				
 				.textBox( style = "height: 3rem; margin-top: 1rem;")
-
 					
 					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
 		<!-- /ko -->
@@ -330,15 +329,31 @@ block jumbotron1
 
 	<!-- /ko -->
 	<!-- ko if: showMainPage -->
-		.ui.top.netboard.ad( style = " width: 100%; margin-top: -5rem;height:100%; background-color: #0009;"  )
-			.title( style = "position: relative; -ms-flex-align: center; align-items: center;  z-index: 999; ")
-				h2.ui.header( data-bind="animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "position: absolute; color: white; text-align: center;" )
-				h3.sub.header( data-bind="animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "position: absolute; color: white; text-align: center;" )
-			#video01
-				video( preload="yes" playsinline autoplay muted loop style="width: 100%;border-radius: 1rem;")
-					source( src="/images/GeneralSpaldingMovie1.mp4" type="video/mp4")
-			
+		.ui.top.top.banner.ad.mainAD
+			.title( style = "position: relative; -ms-flex-align: center; align-items: center;  z-index: 111; margin: 1rem;")
+				h2.ui.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "color: white; text-align: center;  margin-top: 2rem;" )
+				h3.sub.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "color: white; text-align: center;" )
+		.AppList.CoContent.content
+			.searchItems
+				.ui.items.divided( data-bind = "foreach: mainManuItems ")
+					.item
+						a.image( href = "#" )
+							img( data-bind=" attr: { src: img }")
+						.content( style = "padding: 1rem;")
+							a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ]" style = " color: white;")
+							.meta
+								span
+							.description( style = "color: white")
+								p( data-bind = "text: description [ $root.languageIndex() ]")
+							<!-- ko if: extra -->
+							.extra
+								.ui.blue.label( data-bind = "text: extra[ $root.languageIndex() ]")
+							<!-- /ko -->
+					
 
+	<!-- /ko -->
+
+	<!-- ko if: fileStorage -->
 
 	<!-- /ko -->
 

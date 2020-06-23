@@ -957,7 +957,14 @@ ul.plan-features {
     overflow: hidden;
 }
   
-
+.mainAD {
+	background-image: url("/images/mainAD-background.jpeg");
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	margin-top: -5rem!important;
+	width: 100%!important;
+}
   /* ====================================================================================================================
 ANDY - MASONARY IMAGES
 ======================================================================================================================= */
