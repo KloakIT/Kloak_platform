@@ -194,6 +194,9 @@ const doingCommand = (message, ports) => {
         case 'encryptedWithAccessPointPublicKey': {
             return encryptoClassObj.encryptWithAPKey(cmd.args, encryptoClassObjCallBack);
         }
+        case 'encryptStream_withMyPublicKey': {
+            return encryptoClassObj.encryptStream_withMyPublicKey(cmd.args, encryptoClassObjCallBack);
+        }
         /**
          * 		Decrypt function
          */
@@ -211,6 +214,9 @@ const doingCommand = (message, ports) => {
         }
         case 'decryptStreamWithAPKeyAndUnZIP': {
             return encryptoClassObj.decryptStreamWithAPKeyAndUnZIP(cmd.args[0], cmd.args[1], encryptoClassObjCallBack);
+        }
+        case 'decryptStreamWithoutPublicKey': {
+            return encryptoClassObj.decryptStreamWithoutPublicKey(cmd.args, encryptoClassObjCallBack);
         }
         case 'getHistoryTable': {
             return encryptoClassObj.getHistoryTable(encryptoClassObjCallBack);

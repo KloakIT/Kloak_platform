@@ -362,6 +362,21 @@ class encryptoClass {
                 console.dir(ex);
             });
         };
+        this.decryptStreamWithoutPublicKey = async (encryptoText, CallBack) => {
+            const _self = this;
+            const option = {
+                privateKeys: this._privateKey,
+                message: await openpgp.message.readArmored(encryptoText),
+                format: 'binary'
+            };
+            return openpgp.message.readArmored(encryptoText).then(data => {
+                option.message = data;
+                return openpgp.decrypt(option);
+            }).then(_plaintext => {
+                const ret = Buffer.from(_plaintext.data);
+                return CallBack(null, ret);
+            });
+        };
         this.makeKeyReady(ready);
     }
     /**
@@ -441,11 +456,11 @@ class encryptoClass {
             return CallBack(ex);
         });
     }
-    encrypt_withMyPublicKey(message, CallBack) {
+    encryptStream_withMyPublicKey(message, CallBack) {
         const option = {
             privateKeys: this._privateKey,
             publicKeys: this.myPublicKey,
-            message: openpgp.message.fromText(message),
+            message: openpgp.message.fromBinary(message),
             compression: openpgp.enums.compression.zip
         };
         return openpgp.encrypt(option).then(ciphertext => {

@@ -100,6 +100,13 @@ class sharedWorkerManager {
         };
         return this.emitCommand(cmd, CallBack);
     }
+    encryptStream_withMyPublicKey(message, CallBack) {
+        const cmd = {
+            command: 'encryptStream_withMyPublicKey',
+            args: message
+        };
+        return this.emitCommand(cmd, CallBack);
+    }
     decrypt_withLocalServerKey(message, CallBack) {
         const cmd = {
             command: 'decrypt_withLocalServerKey',
@@ -148,10 +155,24 @@ class sharedWorkerManager {
         };
         return this.emitCommand(cmd, CallBack);
     }
+    decryptStreamWithoutPublicKey(message, CallBack) {
+        const cmd = {
+            command: 'decryptStreamWithoutPublicKey',
+            args: message
+        };
+        return this.emitCommand(cmd, CallBack);
+    }
     makeWorker() {
         if (this.sharedWorker) {
             return new SharedWorker(this.sharedPath);
         }
         return new Worker(this.sharedPath);
+    }
+    saveFileBlock(uuid, buffer, CallBack) {
+        const cmd = {
+            command: 'decryptStreamWithAPKeyAndUnZIP',
+            args: [uuid, buffer]
+        };
+        return this.emitCommand(cmd, CallBack);
     }
 }

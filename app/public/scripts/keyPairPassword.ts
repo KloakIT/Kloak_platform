@@ -20,7 +20,9 @@ class keyPairPassword {
 	public systemSetup_systemPassword = ko.observable ('')
 	public passwordChecking = ko.observable ( false )
 	public inputFocus = ko.observable ( false )
-	constructor ( private keypair: keypair,  private exit: ( passwd: string ) => void ) {
+	public delete_btn_view = ko.observable ( false )
+	public showConform = ko.observable ( false )
+	constructor ( private keypair: keypair,  private exit: ( passwd: string, deleteKeypair: boolean ) => void ) {
 		const self = this
 		this.systemSetup_systemPassword.subscribe ( function ( newValue ) {
 			if ( !newValue || !newValue.length ) {
@@ -58,8 +60,16 @@ class keyPairPassword {
 			}
 			self.passwordChecking ( false )
 			
-			return self.exit ( this.keypair._password )
+			return self.exit ( this.keypair._password, false )
 		})
 		
+	}
+
+	public deleteKeypair () {
+		return this.exit ( null, true )
+	}
+
+	public reFresh () {
+		location.reload()
 	}
 }

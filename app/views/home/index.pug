@@ -23,6 +23,7 @@ block jumbotron1
 
 	<!-- ko if: sectionWelcome -->
 	section#welcome.content
+		<!-- ko if: welcomeTitle -->
 		.welcome-bg
 			.welcome( style="color: white;" )
 				.kloaklogo( style ="width: 14rem;")
@@ -31,17 +32,316 @@ block jumbotron1
 				.textBox( style = "height: 3rem; margin-top: 1rem;")
 
 					
-					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, onCompleteAll: animationTitleStep2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
-				//-h1.shadowText1( data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle1, animate:{ animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 0 }" )
-				//-h3.shadowText1( style="padding-right:1em;padding-left:1em;" data-bind = " text: infoDefine [ languageIndex() ].cover.firstTitle2, animate: { animation: ['slideInUp','slideOutUp'], state: languageIndex() + 1, delay: 70 }")
-				//-.ui.primary.basic.big.button( data-bind="click: openClick, text: infoDefine [ languageIndex() ].cover.start" style="margin-top: 2em;" )
-				//-.button( style="position: relative;width: 4em;height: 4em;" )
-					a.play-btn( data-bind="click: openClick" href="#" )
-		.startupView( style="width:100%; height:100%")
-			video.videoBackground( preload="yes" playsinline autoplay muted loop )
+					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
+		<!-- /ko -->
+
+
+
+		<!-- ko if: sectionLogin() -->
+		.CoContent.content
+			.ui.cards.loginCards
+				<!-- ko if: keyPair  -->
+				<!-- ko with: keyPair -->
+				<!-- ko if: $root.showKeyPair() -->
+				.card.centered.raised( style = " width: 100%;" )
+					//-.content
+						.header
+							
+							<!-- ko if: email -->
+							i.icon.privacy.teal
+							span( data-bind = "text: email " style=" color:#00b5ad!important;")
+							<!-- /ko -->
+
+							<!-- ko if: !email -->
+							i.icon.spy.red
+							<!-- /ko -->
+							.ui.top.right.attached.label.background-clolr-white
+								a( data-bind = "if: delete_btn_view() && !showConform (), click: function () { showConform ( true )}")
+									i.trash.alternate.outline.icon.large.red
+						<!-- ko if: nikeName -->
+						.meta
+							i.icon.user
+							span( data-bind = " text: nikeName " )
+						<!-- /ko -->
+						
+						.description
+							p( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.creatDate + createDate" )
+							p
+								span( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.keyID" )
+								span( data-bind="text: publicKeyID.substr ( 0, 4 )")
+								span( data-bind="text: publicKeyID.substr ( 4, 4 )" style = "padding-left: 0.2rem;" )
+								span( data-bind="text: publicKeyID.substr ( 8, 4 )" style = "padding-left: 0.2rem;" )
+								span( data-bind="text: publicKeyID.substr ( 12, 4 )" style = "padding-left: 0.2rem;" )
+								a.activating.element.inline( href="#" data-bind = " attr: { 'data-content': verified ? infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailVerified : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailNotVerifi }")
+									i.huge.icons( style = " margin-left: 10px; font-size: 2em; margin-top: 5px;" )
+										i.icon.small.certificate( data-bind = " css: { grey: ! verified, orange: verified }")
+										i.icon.tiny.warning( data-bind = " visible: ! verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
+										i.icon.tiny.checkmark( data-bind = " visible: verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
+							
+					//-.extra.content( data-bind = "if: showDeleteKeyPairNoite(), visible: showDeleteKeyPairNoite()")
+						p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairHaveLogin " style="color: brown;")
+					//-.extra.content( data-bind = "if: showConform() && delete_btn_view(), visible: showConform() && delete_btn_view()")
+						p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
+						.ui.buttons
+							.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
+							.or
+							.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeyPairNext ")
+					<!-- ko with: keyPairPassword -->
+					//-.extra.content( data-bind = "visible: !$parents[0].showConform()" )
+					form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
+						<!-- ko if: !showConform () -->
+						.field( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
+							//-p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
+							.ui.left.icon.input.big( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking()}" )
+								<!-- ko if: systemSetup_systemPassword().length < 5 -->
+								i.icon.close.link.circular( data-bind = "click: reFresh" style = " color: #4285f4!important; " )
+								<!-- /ko -->
+								input.backgroundTransparent( data-bind = "attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.locked, 'data-content': showPasswordErrorMessage () ? infoDefine[ $root.languageIndex() ].error_message.SystemPasswordError : null }, css: { 'activating element inline': showPasswordErrorMessage() }, textInput: systemSetup_systemPassword, hasFocus: inputFocus", type="password" value="" tabindex = "0" data-variation="very wide")
+								<!-- ko if: systemSetup_systemPassword().length < 5 -->
+								i.icon.trash.alternate.link.circular.red( data-bind = "click: function () { showConform ( true )}" style = "left: auto; right: 1rem;")
+								<!-- /ko -->
+								button.ui.icon.button.positive( data-bind = "visible: systemSetup_systemPassword().length > 4 && ! passwordChecking ()" type="submit" )
+									i.icon.angle.right
+						<!-- /ko -->
+						<!-- ko if: showConform -->
+						.field( style = "padding: 1rem;")
+							p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
+							.ui.buttons
+								.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
+								.or
+								.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeypair ")
+						<!-- /ko -->
+								
+					<!-- /ko -->
+				<!-- /ko -->
+				//-	if: $root.showKeyPair
+				<!-- /ko -->
+				//-	with: keyPair
+				<!-- /ko -->
+				//- if: keyPair
+				
+				<!-- ko if: keyPairGenerateForm -->
+				<!-- ko with: keyPairGenerateForm -->
+				.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
+					.keyPairGenerateForm
+						
+						form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
+							.field
+								H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
+							.field.required( data-bind = " css: { error: passwordError ()}")
+								.ui.input.focus.left.icon.big
+									i.icon.privacy
+									input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
+							.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
+							.field( data-bind = "css: { error: EmailAddressError() }" )
+								.ui.input.focus.left.icon.big
+									i.icon.spy
+									input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
+								.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
+									i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
+									span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
+							
+							.field( data-bind = " css: { error: NickNameError ()}")
+								.ui.input.focus.left.icon.big
+									i.icon.student
+									input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
+							
+							
+							button.ui.green.basic.large.button( type = "submit" data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
+				.card.centered.raised( data-bind = "if: showKeyPairPorcess, visible: showKeyPairPorcess" style = "width: 100%;padding: 2em;")
+					.detail
+						p( data-bind = " html: infoDefine [ $root.languageIndex() ].home_index_view.GenerateKeypair ")
+						.keyPairProcessBar.ui.bottom.teal.attached.progress( style="margin-bottom: 1em;" data-value="1" data-total="100")
+							.bar
+				.card.centered.raised( data-bind = "if: keyPairGenerateFormMessage, visible: keyPairGenerateFormMessage " style = "width: 100%;padding: 2em;")
+					.detail
+						p( data-bind="visible: message_cancel(), text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairCancel ")
+						p( data-bind="visible: message_keyPairGenerateError, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateError ")
+						p( data-bind = "visible: message_keyPairGenerateSuccess, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateSuccess ")
+						button.ui.negative.basic.button( data-bind= " click: CloseKeyPairGenerateFormMessage, text: infoDefine [ $root.languageIndex() ].error_message.Success")
+				<!-- /ko -->
+				//-	if: keyPairGenerateForm
+				<!-- /ko -->
+				//- with: keyPairGenerateForm
+
+				<!-- ko if: imapSetup -->
+				<!-- ko with: imapSetup -->
+
+				<!-- ko if: showForm -->
+				.card.centered.raised( style = " width: 100%;" )
+					.content.imapSetupForm( data-bind = "if: showForm ")
+						.ui.segment.teal
+							p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
+							p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
+						form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
+							.two.fields
+								.field.required( data-bind = " css: { error: emailAddressShowError ()}")
+									.ui.left.icon.input.huge
+										i.icon.outline.mail
+										input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
+								.field.required
+									.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
+										i.icon.privacy( data-bind = " visible: !password() || !password().length ")
+										input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
+										button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
+											i.icon.angle.right
+				<!-- /ko -->
+				//-	if: showForm
+
+				<!-- ko if: showCheckProcess -->
+				.card.centered.raised( style = " width: 100%;" )
+
+					.content.checkImapData
+						
+						.ui.segment( data-bind = "css: { yellow: checkProcessing() < -1, red: checkImapError() > -1 }")
+							
+							p( data-bind = " visible: checkImapError() > -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[checkImapError()]")
+							p( data-bind = "visible: checkImapStep() > -1 && checkImapError() === -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[checkImapStep()]")
+							Button.ui.icon.button.orange( data-bind = " visible: checkImapError() > -1, click: returnImapSetup, text: infoDefine [ $root.languageIndex() ].imapInformation.title " )
+							<!-- ko if: checkImapError() < 0 -->
+							.loaderCoNET( style = "position: relative;")
+								.loaderCoNET-div
+								.loaderCoNET-div
+								.loaderCoNET-div
+								.loaderCoNET-div
+							<!-- /ko -->
+				<!-- /ko -->
+				//-	if: showCheckProcess
+
+				<!-- /ko -->
+				//- if: imapSetup
+				<!-- /ko -->
+				//-	with: imapSetup
+				
+				<!-- ko if: CoNETConnect  -->
+				<!-- ko with: CoNETConnect -->
+				
+				<!-- ko if: showConnectCoNETProcess  -->
+				.card.centered.raised( style = " width: 100%;" )
+					.content
+						.header
+							i.icon.exchange.blue
+							span( data-bind = "text: email " style=" color:#2185d0!important;")
+						<!-- ko if: showSendImapDataWarning -->
+						.ui.segment
+							.woringText( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.imapAccountConform ( email, account ) " style="padding-bottom: 1em;")
+							.ui.buttons
+								a.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel" href="/")
+								.or
+								.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].imapInformation.agree, click: imapConform ")
+						<!-- /ko -->
+						<!-- ko if: Loading() && ! showSendImapDataWarning() -->
+						.loaderCoNET( style = "position: relative;")
+							.loaderCoNET-div
+							.loaderCoNET-div
+							.loaderCoNET-div
+							.loaderCoNET-div
+						
+						
+						<!-- /ko -->
+						<!-- ko if: infoTextArray() && infoTextArray().length -->
+						.ui.segment( style = "min-height: 10em;")
+							<!-- ko foreach: infoTextArray -->
+							.infoText( data-bind = "style: { 'color': err() === null ? 'grey' : ( !err() ? 'green' : 'red') }, css: { 'terminalText': ($index() === $parent.infoTextArray().length - 1) && !$parent.showTryAgain() }, text: messageBoxDefine[ text() ] [ $root.languageIndex() ] " style = "color: grey;")
+							<!-- /ko -->
+
+						<!-- ko if: showSendConnectMail -->
+						.ui.teal.center.aligned.segment( data-bind = " click: sendConnectMail " style = "cursor: pointer;")
+							.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
+						<!-- /ko -->
+
+						<!-- ko if: showNetworkError -->
+						.ui.red.center.aligned.segment( data-bind = " click: tryAgain" style = "cursor: pointer;")
+							.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
+						<!-- /ko -->
+
+						<!-- /ko -->
+						
+
+				<!-- /ko -->
+				//-	if: showConnectCoNETProcess
+
+				<!-- ko if: keyPairSign -->
+				<!-- ko with: keyPairSign -->
+				.card.centered.raised( style = " width: 100%;")
+					.content
+						.ui.segments
+							.ui.segment( data-bind = "css: { yellow: signError() === -1, red: signError() > -1 }" )
+								span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_1 " style="color:rgba(0,0,0,.5);")
+								b( data-bind = " text: $parents[0].account" style="color:rgba(0,80,80,.8);")
+								span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_2"  style="color:rgba(0,0,0,.5);")
+							<!-- ko if: requestError() > -1 -->
+							.ui.segment.errorInformation
+								p( data-bind = " text: infoDefine [ $root.languageIndex() ].error_message.CoNET_requestError[ requestError() ]" style = "color: brown;")
+							<!-- /ko -->
+							.ui.segment
+								.ui.grid.equal.width.right.aligned.container( style="margin-top: 0.1em; margin-bottom: 0.1em;")
+									.row( style = "background-color: #D94235; padding-bottom: 0px;")
+										.column.left.aligned
+											img( src = "/images/512.png" style = "margin-left: 1em; height: 50px;")
+										.column
+											<!-- ko ifnot: showRequestActivEmailButtonError -->
+												.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="css:{ loading: activeing }, text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
+												.ui.inverted.button( data-bind = "css: { 'loading disabled': requestActivEmailrunning()}, visible: showSentActivEmail() < 0 && ! conformButtom(), click: requestActivEmail, text: infoDefine [ $root.languageIndex() ].emailConform.reSendRequest")
+												
+												
+												span(data-bind="text: showSentActivEmail() > -1 ? infoDefine [ $root.languageIndex() ].emailConform.requestReturn[ showSentActivEmail() ]: '', visible: showSentActivEmail() > -1 && !conformButtom()" style="color: cornsilk;")
+											<!-- /ko -->
+											<!-- ko if: showRequestActivEmailButtonError -->
+											
+												i.icon.exclamation.triangle.circular.red.link(  data-bind = "click: clearError " style = "background-color: white!important;")
+											<!-- /ko -->
+									.row( style = "background-color: #D94235; padding-top: .5em;")
+										h2( style = "color: white; margin-left: 2em; padding-top: 0px;" data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailTitle " )
+									.row( style = "background-color: #FAFAFA; font-weight: bold; padding-bottom: 0px" data-bind="visible: !activeing()")
+										span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1" style="margin-left: 20px;color:rgba(0,0,0,.5);")
+										span( data-bind="text: $parents[0].account" style="color:rgba(0,0,0,.5); padding-left: 0.5em;")
+										span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1_1" style="color:rgba(0,0,0,.5);")
+										p( data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail2" style="text-align: left; margin-left: 20px; margin-right: 20px; color:rgba(0,0,0,.5);")
+									.row( style = "background-color: #FAFAFA; padding-top: .2em; padding-bottom: 0.2em" data-bind="visible: !activeing()")
+										.ui.form( style="margin: 20px;width: 100%;")
+											.field( data-bind = " css: { error: signError() || conformTextError() }")
+												textarea( data-position="right center" data-bind = " textInput: conformText, attr: { placeholder: infoDefine [ $root.languageIndex() ].emailConform.info2 }" )
+												a#SendToQTGateTextArea.floating.ui.red.circular.label( data-bind = " text: '!', visible: conformTextError(), attr: { 'data-content': conformTextError () ? messageBoxDefine [ conformTextErrorNumber() ][$root.languageIndex()] : null }, css: { 'activating element1': conformTextError() } ")
+									.row( style = "background-color: #FAFAFA;padding-top: 0px;" data-bind="visible: !activeing()" )
+										.ui.two.column.grid
+											.stretched.row( style ="padding-top: 0px;")
+												.column.left.aligned(style = "padding-top: 0px;padding-bottom: 0.2em")
+													span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_1" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
+													span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_2" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
+												.column.right.floated
+													.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
+									.row( style = "background-color: #FAFAFA;padding-top: 0px;")
+							
+				<!-- /ko -->
+				<!-- /ko -->
+
+				<!-- /ko -->
+				//-	with: CoNETConnect
+				<!-- /ko -->
+				//-	if: CoNETConnect
+		<!-- /ko -->
+
+		<!-- ko if: showStartupVideo -->
+		.startupView( style = " width:100%; height:100% ")
+			video.videoBackground( preload = "yes" playsinline autoplay muted loop )
 				source( src="/images/startup_background.mp4" type="video/mp4")
+		<!-- /ko -->
+
 	<!-- /ko -->
-	
+	<!-- ko if: showMainPage -->
+		.ui.top.netboard.ad( style = " width: 100%; margin-top: -5rem;height:100%; background-color: #0009;"  )
+			.title( style = "position: relative; -ms-flex-align: center; align-items: center;  z-index: 999; ")
+				h2.ui.header( data-bind="animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "position: absolute; color: white; text-align: center;" )
+				h3.sub.header( data-bind="animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "position: absolute; color: white; text-align: center;" )
+			#video01
+				video( preload="yes" playsinline autoplay muted loop style="width: 100%;border-radius: 1rem;")
+					source( src="/images/GeneralSpaldingMovie1.mp4" type="video/mp4")
+			
+
+
+	<!-- /ko -->
+
 	<!-- ko if: CanadaBackground -->
 	section#CanadaBackground( style = "position: absolute;width: 100%;top: 5em;")
 		include coSearchImage.html
@@ -81,275 +381,7 @@ block jumbotron1
 				<!-- /ko -->
 	<!-- /ko -->
 	
-	<!-- ko if: sectionLogin() -->
-	section.CoContent.content
-		.ui.cards.loginCards
-			<!-- ko if: keyPair  -->
-			<!-- ko with: keyPair -->
-			<!-- ko if: $root.showKeyPair() -->
-			.card.centered.raised( style = " width: 100%;" )
-				.content
-					.header
-						
-						<!-- ko if: email -->
-						i.icon.privacy.teal
-						span( data-bind = "text: email " style=" color:#00b5ad!important;")
-						<!-- /ko -->
-
-						<!-- ko if: !email -->
-						i.icon.spy.red
-						<!-- /ko -->
-						.ui.top.right.attached.label.background-clolr-white
-							a( data-bind = "if: delete_btn_view() && !showConform (), click: function () { showConform ( true )}")
-								i.trash.alternate.outline.icon.large.red
-					<!-- ko if: nikeName -->
-					.meta
-						i.icon.user
-						span( data-bind = " text: nikeName " )
-					<!-- /ko -->
-					
-					.description
-						p( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.creatDate + createDate" )
-						p
-							span( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.keyID" )
-							span( data-bind="text: publicKeyID.substr ( 0, 4 )")
-							span( data-bind="text: publicKeyID.substr ( 4, 4 )" style = "padding-left: 0.2rem;" )
-							span( data-bind="text: publicKeyID.substr ( 8, 4 )" style = "padding-left: 0.2rem;" )
-							span( data-bind="text: publicKeyID.substr ( 12, 4 )" style = "padding-left: 0.2rem;" )
-							a.activating.element.inline( href="#" data-bind = " attr: { 'data-content': verified ? infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailVerified : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailNotVerifi }")
-								i.huge.icons( style = " margin-left: 10px; font-size: 2em; margin-top: 5px;" )
-									i.icon.small.certificate( data-bind = " css: { grey: ! verified, orange: verified }")
-									i.icon.tiny.warning( data-bind = " visible: ! verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
-									i.icon.tiny.checkmark( data-bind = " visible: verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
-						
-				.extra.content( data-bind = "if: showDeleteKeyPairNoite(), visible: showDeleteKeyPairNoite()")
-					p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairHaveLogin " style="color: brown;")
-				.extra.content( data-bind = "if: showConform() && delete_btn_view(), visible: showConform() && delete_btn_view()")
-					p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
-					.ui.buttons
-						.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
-						.or
-						.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeyPairNext ")
-				<!-- ko with: keyPairPassword -->
-				.extra.content( data-bind = "visible: !$parents[0].showConform()" )
-					form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
-						.field.required( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
-							p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
-							.ui.input.huge( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking(), 'left loading': passwordChecking()}" )
-								i.search.icon.right( data-bind = " visible: passwordChecking()" style = " margin: 0 0 0 0!important; width: auto!important; height:auto!important;" )
-								input( data-bind = "attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password1, 'data-content': showPasswordErrorMessage () ? infoDefine[ $root.languageIndex() ].error_message.SystemPasswordError : null }, css: { 'activating element inline': showPasswordErrorMessage() }, textInput: systemSetup_systemPassword, hasFocus: inputFocus", type="password" value="" tabindex = "0" data-variation="very wide")
-								button.ui.icon.button.positive( data-bind = "visible: systemSetup_systemPassword().length > 4 && ! passwordChecking ()" type="submit" )
-									i.icon.angle.right
-							
-				<!-- /ko -->
-			<!-- /ko -->
-			//-	if: $root.showKeyPair
-			<!-- /ko -->
-			//-	with: keyPair
-			<!-- /ko -->
-			//- if: keyPair
-			
-			<!-- ko if: keyPairGenerateForm -->
-			<!-- ko with: keyPairGenerateForm -->
-			.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
-				.keyPairGenerateForm
-					
-					form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
-						.field
-							H3.ui.header.title.blue( data-bind = "html: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
-						.field.required( data-bind = " css: { error: passwordError ()}")
-							.ui.input.focus.left.icon.big
-								i.icon.privacy
-								input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
-						.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
-						.field( data-bind = "css: { error: EmailAddressError() }" )
-							.ui.input.focus.left.icon.big
-								i.icon.spy
-								input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
-							.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
-								i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
-								span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
-						
-						.field( data-bind = " css: { error: NickNameError ()}")
-							.ui.input.focus.left.icon.big
-								i.icon.student
-								input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
-						
-						
-						button.ui.green.basic.large.button( type = "submit" data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
-			.card.centered.raised( data-bind = "if: showKeyPairPorcess, visible: showKeyPairPorcess" style = "width: 100%;padding: 2em;")
-				.detail
-					p( data-bind = " html: infoDefine [ $root.languageIndex() ].home_index_view.GenerateKeypair ")
-					.keyPairProcessBar.ui.bottom.teal.attached.progress( style="margin-bottom: 1em;" data-value="1" data-total="100")
-						.bar
-			.card.centered.raised( data-bind = "if: keyPairGenerateFormMessage, visible: keyPairGenerateFormMessage " style = "width: 100%;padding: 2em;")
-				.detail
-					p( data-bind="visible: message_cancel(), text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairCancel ")
-					p( data-bind="visible: message_keyPairGenerateError, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateError ")
-					p( data-bind = "visible: message_keyPairGenerateSuccess, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateSuccess ")
-					button.ui.negative.basic.button( data-bind= " click: CloseKeyPairGenerateFormMessage, text: infoDefine [ $root.languageIndex() ].error_message.Success")
-			<!-- /ko -->
-			//-	if: keyPairGenerateForm
-			<!-- /ko -->
-			//- with: keyPairGenerateForm
-
-			<!-- ko if: imapSetup -->
-			<!-- ko with: imapSetup -->
-
-			<!-- ko if: showForm -->
-			.card.centered.raised( style = " width: 100%;" )
-				.content.imapSetupForm( data-bind = "if: showForm ")
-					.ui.segment.teal
-						p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
-						p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
-					form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
-						.two.fields
-							.field.required( data-bind = " css: { error: emailAddressShowError ()}")
-								.ui.left.icon.input.huge
-									i.icon.outline.mail
-									input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
-							.field.required
-								.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
-									i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-									input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
-									button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
-										i.icon.angle.right
-			<!-- /ko -->
-			//-	if: showForm
-
-			<!-- ko if: showCheckProcess -->
-			.card.centered.raised( style = " width: 100%;" )
-
-				.content.checkImapData
-					
-					.ui.segment( data-bind = "css: { yellow: checkProcessing() < -1, red: checkImapError() > -1 }")
-						
-						p( data-bind = " visible: checkImapError() > -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[checkImapError()]")
-						p( data-bind = "visible: checkImapStep() > -1 && checkImapError() === -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[checkImapStep()]")
-						Button.ui.icon.button.orange( data-bind = " visible: checkImapError() > -1, click: returnImapSetup, text: infoDefine [ $root.languageIndex() ].imapInformation.title " )
-						<!-- ko if: checkImapError() < 0 -->
-						.loaderCoNET( style = "position: relative;")
-							.loaderCoNET-div
-							.loaderCoNET-div
-							.loaderCoNET-div
-							.loaderCoNET-div
-						<!-- /ko -->
-			<!-- /ko -->
-			//-	if: showCheckProcess
-
-			<!-- /ko -->
-			//- if: imapSetup
-			<!-- /ko -->
-			//-	with: imapSetup
-			
-			<!-- ko if: CoNETConnect  -->
-			<!-- ko with: CoNETConnect -->
-			
-			<!-- ko if: showConnectCoNETProcess  -->
-			.card.centered.raised( style = " width: 100%;" )
-				.content
-					.header
-						i.icon.exchange.blue
-						span( data-bind = "text: email " style=" color:#2185d0!important;")
-					<!-- ko if: showSendImapDataWarning -->
-					.ui.segment
-						.woringText( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.imapAccountConform ( email, account ) " style="padding-bottom: 1em;")
-						.ui.buttons
-							a.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel" href="/")
-							.or
-							.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].imapInformation.agree, click: imapConform ")
-					<!-- /ko -->
-					<!-- ko if: Loading() && ! showSendImapDataWarning() -->
-					.loaderCoNET( style = "position: relative;")
-						.loaderCoNET-div
-						.loaderCoNET-div
-						.loaderCoNET-div
-						.loaderCoNET-div
-					
-					
-					<!-- /ko -->
-					<!-- ko if: infoTextArray() && infoTextArray().length -->
-					.ui.segment( style = "min-height: 10em;")
-						<!-- ko foreach: infoTextArray -->
-						.infoText( data-bind = "style: { 'color': err() === null ? 'grey' : ( !err() ? 'green' : 'red') }, css: { 'terminalText': ($index() === $parent.infoTextArray().length - 1) && !$parent.showTryAgain() }, text: messageBoxDefine[ text() ] [ $root.languageIndex() ] " style = "color: grey;")
-						<!-- /ko -->
-
-					<!-- ko if: showSendConnectMail -->
-					.ui.teal.center.aligned.segment( data-bind = " click: sendConnectMail " style = "cursor: pointer;")
-						.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
-					<!-- /ko -->
-
-					<!-- ko if: showNetworkError -->
-					.ui.red.center.aligned.segment( data-bind = " click: tryAgain" style = "cursor: pointer;")
-						.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
-					<!-- /ko -->
-
-					<!-- /ko -->
-					
-
-			<!-- /ko -->
-			//-	if: showConnectCoNETProcess
-
-			<!-- ko if: keyPairSign -->
-			<!-- ko with: keyPairSign -->
-			.card.centered.raised( style = " width: 100%;")
-				.content
-					.ui.segments
-						.ui.segment( data-bind = "css: { yellow: signError() === -1, red: signError() > -1 }" )
-							span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_1 " style="color:rgba(0,0,0,.5);")
-							b( data-bind = " text: $parents[0].account" style="color:rgba(0,80,80,.8);")
-							span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_2"  style="color:rgba(0,0,0,.5);")
-						<!-- ko if: requestError() > -1 -->
-						.ui.segment.errorInformation
-							p( data-bind = " text: infoDefine [ $root.languageIndex() ].error_message.CoNET_requestError[ requestError() ]" style = "color: brown;")
-						<!-- /ko -->
-						.ui.segment
-							.ui.grid.equal.width.right.aligned.container( style="margin-top: 0.1em; margin-bottom: 0.1em;")
-								.row( style = "background-color: #D94235; padding-bottom: 0px;")
-									.column.left.aligned
-										img( src = "/images/512.png" style = "margin-left: 1em; height: 50px;")
-									.column
-										<!-- ko ifnot: showRequestActivEmailButtonError -->
-											.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="css:{ loading: activeing }, text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
-											.ui.inverted.button( data-bind = "css: { 'loading disabled': requestActivEmailrunning()}, visible: showSentActivEmail() < 0 && ! conformButtom(), click: requestActivEmail, text: infoDefine [ $root.languageIndex() ].emailConform.reSendRequest")
-											
-											
-											span(data-bind="text: showSentActivEmail() > -1 ? infoDefine [ $root.languageIndex() ].emailConform.requestReturn[ showSentActivEmail() ]: '', visible: showSentActivEmail() > -1 && !conformButtom()" style="color: cornsilk;")
-										<!-- /ko -->
-										<!-- ko if: showRequestActivEmailButtonError -->
-										
-											i.icon.exclamation.triangle.circular.red.link(  data-bind = "click: clearError " style = "background-color: white!important;")
-										<!-- /ko -->
-								.row( style = "background-color: #D94235; padding-top: .5em;")
-									h2( style = "color: white; margin-left: 2em; padding-top: 0px;" data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailTitle " )
-								.row( style = "background-color: #FAFAFA; font-weight: bold; padding-bottom: 0px" data-bind="visible: !activeing()")
-									span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1" style="margin-left: 20px;color:rgba(0,0,0,.5);")
-									span( data-bind="text: $parents[0].account" style="color:rgba(0,0,0,.5); padding-left: 0.5em;")
-									span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1_1" style="color:rgba(0,0,0,.5);")
-									p( data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail2" style="text-align: left; margin-left: 20px; margin-right: 20px; color:rgba(0,0,0,.5);")
-								.row( style = "background-color: #FAFAFA; padding-top: .2em; padding-bottom: 0.2em" data-bind="visible: !activeing()")
-									.ui.form( style="margin: 20px;width: 100%;")
-										.field( data-bind = " css: { error: signError() || conformTextError() }")
-											textarea( data-position="right center" data-bind = " textInput: conformText, attr: { placeholder: infoDefine [ $root.languageIndex() ].emailConform.info2 }" )
-											a#SendToQTGateTextArea.floating.ui.red.circular.label( data-bind = " text: '!', visible: conformTextError(), attr: { 'data-content': conformTextError () ? messageBoxDefine [ conformTextErrorNumber() ][$root.languageIndex()] : null }, css: { 'activating element1': conformTextError() } ")
-								.row( style = "background-color: #FAFAFA;padding-top: 0px;" data-bind="visible: !activeing()" )
-									.ui.two.column.grid
-										.stretched.row( style ="padding-top: 0px;")
-											.column.left.aligned(style = "padding-top: 0px;padding-bottom: 0.2em")
-												span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_1" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
-												span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_2" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
-											.column.right.floated
-												.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
-								.row( style = "background-color: #FAFAFA;padding-top: 0px;")
-						
-			<!-- /ko -->
-			<!-- /ko -->
-
-			<!-- /ko -->
-			//-	with: CoNETConnect
-			<!-- /ko -->
-			//-	if: CoNETConnect
-	<!-- /ko -->
+	
 	//-		AppList 
 	<!-- ko if:  AppList() && keyPair() && keyPair().verified -->
 	//-section.AppList.CoContent.content

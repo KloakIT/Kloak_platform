@@ -42,9 +42,15 @@ ko.bindingHandlers.animationTextIn = {
 const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
-    let keyPairPasswordClass = new keyPairPassword(keypair, (passwd) => {
-        //      password OK
+    let keyPairPasswordClass = new keyPairPassword(keypair, (passwd, deleteKey) => {
         keypair.keyPairPassword(keyPairPasswordClass = null);
+        if (!passwd) {
+            if (deleteKey) {
+                _view.deleteKey();
+            }
+            return _view.initWelcomeView();
+        }
+        //      password OK
         keypair.passwordOK = true;
         view.password = passwd;
         keypair.showLoginPasswordField(false);
@@ -60,18 +66,22 @@ const makeKeyPairData = (view, keypair) => {
                 return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
             }
             view.showKeyPair(false);
-            if (data["imapData"]) {
-                view.imapData = data["imapData"];
-                return view.imapSetupClassExit(view.imapData);
+            view.showMain();
+            /*
+            if ( data["imapData"] ) {
+                view.imapData = data[ "imapData" ]
+                return view.imapSetupClassExit ( view.imapData )
             }
-            let uu = null;
-            return view.imapSetup(uu = new imapForm(keypair.email, view.imapData, function (imapData) {
-                view.imapSetup(uu = null);
-                view.imapData = imapData;
-                return view.sharedMainWorker.saveImapIInputData(imapData, err => {
-                    return view.imapSetupClassExit(imapData);
-                });
-            }));
+            
+            let uu = null
+            return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
+                view.imapSetup ( uu = null )
+                view.imapData = imapData
+                return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
+                    return view.imapSetupClassExit ( imapData )
+                })
+            }))
+            */
         });
     });
     keypair.keyPairPassword = ko.observable(keyPairPasswordClass);
@@ -287,6 +297,9 @@ var view_layout;
             this.secondTitle = ko.observable(false);
             this.titleAnimationStep = ko.observable(0);
             this.sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js');
+            this.welcomeTitle = ko.observable(true);
+            this.showMainPage = ko.observable(false);
+            this.showStartupVideo = ko.observable(true);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -297,6 +310,7 @@ var view_layout;
             this.imapData = null;
             this.newVersion = ko.observable(null);
             this.showLanguageSelect = ko.observable(true);
+            this.demoTimeout = null;
             /*************************************
              *
              *          for New York Times
@@ -320,14 +334,7 @@ var view_layout;
                 }
             });
             this.InitKloakLogoTimeLine();
-            const dom = document.getElementById("body");
-            const eve = () => {
-                dom.removeEventListener("click", eve);
-                this.KloakTL.clear();
-                this.KloakTL = null;
-                this.openClick();
-            };
-            dom.addEventListener("click", eve);
+            this.initWelcomeView();
         }
         /*** */
         afterInitConfig() {
@@ -411,6 +418,18 @@ var view_layout;
             let self = this;
             return this.getConfigFromLocalStorage();
         }
+        initWelcomeView() {
+            this.welcomeTitle(true);
+            this.sectionLogin(false);
+            const dom = document.getElementById("body");
+            const eve = () => {
+                clearTimeout(this.demoTimeout);
+                dom.removeEventListener("click", eve);
+                this.KloakTL.clear();
+                this.openClick();
+            };
+            dom.addEventListener("click", eve);
+        }
         //          change language
         selectItem(that, site) {
             const tindex = lang[this.tLang()];
@@ -450,7 +469,7 @@ var view_layout;
                 return this.connectInformationMessage.showSystemError ()
             }
             */
-            this.sectionWelcome(false);
+            this.welcomeTitle(false);
             /*
             if ( this.localServerConfig().firstRun ) {
                 return this.sectionAgreement ( true )
@@ -547,6 +566,9 @@ var view_layout;
             }
             let i = 0;
             const changeLanguage = () => {
+                if (!_view.welcomeTitle()) {
+                    return;
+                }
                 if (++i === 1) {
                     backGround_mask_circle.attr({
                         stroke: "#FF000090",
@@ -555,12 +577,12 @@ var view_layout;
                         changeLanguage();
                     }, 1000);
                 }
-                if (i > 5 || !this.sectionWelcome()) {
+                if (i > 5 || !_view.sectionWelcome()) {
                     main.remove();
-                    return this.demoMainElm = main = null;
+                    return _view.demoMainElm = main = null;
                 }
-                this.selectItem();
-                this.demoTimeout = setTimeout(() => {
+                _view.selectItem();
+                _view.demoTimeout = setTimeout(() => {
                     changeLanguage();
                 }, 2000);
             };
@@ -592,13 +614,33 @@ var view_layout;
         animationTitle() {
             // .add("end", 2)
             // .to("#redBox", 3, {scale:2, opacity:0}, "end")
-            this.titleAnimationStep(0);
-            this.KloakTL.restart();
-            this.secondTitle(false);
+            if (!_view.welcomeTitle()) {
+                return;
+            }
+            _view.KloakTL.restart();
         }
-        animationTitleStep2(self) {
-            //_view.secondTitle ( true )
-            //_view.titleAnimationStep ( 1 )
+        deleteKey() {
+            localStorage.setItem("config", JSON.stringify({}));
+            _view.localServerConfig(null);
+            _view.showIconBar(false);
+            _view.connectedCoNET(false);
+            _view.connectToCoNET(false);
+            _view.CoNETConnect(_view.CoNETConnectClass = null);
+            _view.imapSetup(_view.imapFormClass = null);
+            localStorage.clear();
+            return _view.reFreshLocalServer();
+        }
+        showMain() {
+            this.showStartupVideo(false);
+            this.showMainPage(true);
+            this.mainboardPlay();
+        }
+        mainboardPlay() {
+            const timeLine = new TimelineLite();
+            const dcom = '#video01';
+            timeLine.set(dcom, { transformOrigin: "100% 100%" });
+            timeLine.to(dcom, { duration: 0.2, transformOrigin: "left", transformPerspective: 10000, rotateY: 0 });
+            timeLine.to(dcom, { duration: 6, transformOrigin: "left", transformPerspective: 1000, rotateY: 30 });
         }
     }
     view_layout.view = view;

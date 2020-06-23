@@ -57,14 +57,22 @@ ko.bindingHandlers.animationTextIn = {
 }
 
 const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
-    
+
     const length = keypair.publicKeyID.length
     keypair.publicKeyID = keypair.publicKeyID.substr ( length - 16 )
     
-    let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string ) => {
+    let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string, deleteKey: boolean ) => {
+		keypair.keyPairPassword ( keyPairPasswordClass = null )
+
+		if ( !passwd ) {
+			if ( deleteKey ) {
+				_view.deleteKey ()
+			}
+			return _view.initWelcomeView ()
+		}
         //      password OK
 
-        keypair.keyPairPassword ( keyPairPasswordClass = null )
+        
 		keypair.passwordOK = true
 		view.password = passwd
 		keypair.showLoginPasswordField ( false )
@@ -85,9 +93,10 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 			}
 			
 			view.showKeyPair ( false )
-			
+			view.showMain ()
+			/*
 			if ( data["imapData"] ) {
-				view.imapData = data["imapData"]
+				view.imapData = data[ "imapData" ]
 				return view.imapSetupClassExit ( view.imapData )
 			}
 			
@@ -99,11 +108,8 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 					return view.imapSetupClassExit ( imapData )
 				})
 			}))
+			*/
 		})
-			
-				
-			
-			
 		
     })
     
@@ -358,7 +364,9 @@ module view_layout {
 		public secondTitle = ko.observable ( false )
 		public titleAnimationStep = ko.observable (0)
 		public sharedMainWorker = new sharedWorkerManager ('/scripts/netSocket.js')
-		
+		public welcomeTitle = ko.observable ( true )
+		public showMainPage = ko.observable ( false )
+		public showStartupVideo = ko.observable ( true )
         /*
         public worker = new workerManager ([
             'mHtml2Html'
@@ -371,7 +379,7 @@ module view_layout {
         public imapData: IinputData = null
         public newVersion = ko.observable ( null )
 		public showLanguageSelect = ko.observable ( true )
-		private demoTimeout
+		private demoTimeout = null
 		private demoMainElm
         /*************************************
          * 
@@ -471,7 +479,7 @@ module view_layout {
 
         private getConfigFromLocalStorage () {
             const configStr = localStorage.getItem ( "config" )
-            if (!configStr ) {
+            if ( !configStr ) {
                 return this.initConfig ( {} )
             }
             let config = null
@@ -489,7 +497,22 @@ module view_layout {
             let self = this
             return this.getConfigFromLocalStorage ()
             
-        }
+		}
+		
+		public initWelcomeView () {
+			this.welcomeTitle ( true )
+			this.sectionLogin ( false )
+			
+			const dom = document.getElementById( "body" )
+			const eve = () => {
+				clearTimeout ( this.demoTimeout )
+				dom.removeEventListener ( "click",  eve )
+				this.KloakTL.clear()
+				this.openClick ()
+				
+			}
+			dom.addEventListener ( "click", eve )
+		}
     
         constructor () {
             this.socketListen ()
@@ -503,15 +526,8 @@ module view_layout {
 					})
 				}
 			})
-			this.InitKloakLogoTimeLine()
-			const dom = document.getElementById( "body" )
-			const eve = () => {
-				dom.removeEventListener ( "click",  eve )
-				this.KloakTL.clear()
-				this.KloakTL = null
-				this.openClick ()
-			}
-			dom.addEventListener ( "click", eve )
+			this.InitKloakLogoTimeLine ()
+			this.initWelcomeView ()
         }
         
         //          change language
@@ -545,7 +561,7 @@ module view_layout {
         }
         //          start click
         public openClick () {
-			if (! this.sectionWelcome ()) {
+			if ( !this.sectionWelcome ()) {
 				return 
 			}
 			
@@ -554,13 +570,14 @@ module view_layout {
 			if ( this.demoMainElm && typeof this.demoMainElm.remove === 'function' ) {
 				this.demoMainElm.remove()
 				this.demoMainElm = null
-            }
+			}
+			
             /*
             if ( !this.connectInformationMessage.socketIoOnline ) {
                 return this.connectInformationMessage.showSystemError ()
             }
             */
-			this.sectionWelcome ( false )
+			this.welcomeTitle ( false )
 			/*
             if ( this.localServerConfig().firstRun ) {
                 return this.sectionAgreement ( true )
@@ -643,7 +660,6 @@ module view_layout {
 
         public reFreshLocalServer () {
             location.reload()
-
         }
 
         public homeClick () {
@@ -680,6 +696,9 @@ module view_layout {
 			}
 			let i = 0
 			const changeLanguage = () => {
+				if ( !_view.welcomeTitle ()) {
+					return 
+				}
 				if ( ++i === 1 ) {
 					backGround_mask_circle.attr ({
 						stroke: "#FF000090",
@@ -688,12 +707,12 @@ module view_layout {
 						changeLanguage()
 					}, 1000 )
 				}
-				if ( i > 5 || !this.sectionWelcome() ) {
+				if ( i > 5 || !_view.sectionWelcome() ) {
 					main.remove()
-					return this.demoMainElm = main = null
+					return _view.demoMainElm = main = null
 				}
-				this.selectItem ()
-				this.demoTimeout = setTimeout (() => {
+				_view.selectItem ()
+				_view.demoTimeout = setTimeout (() => {
 					changeLanguage ()
 				}, 2000 )
 			}
@@ -731,15 +750,42 @@ module view_layout {
 		public animationTitle () {
 			// .add("end", 2)
 			// .to("#redBox", 3, {scale:2, opacity:0}, "end")
-			this.titleAnimationStep (0)
-			this.KloakTL.restart()
-			this.secondTitle ( false )
+
+			if ( !_view.welcomeTitle ()) {
+				return
+			}
+
+			_view.KloakTL.restart()
 		}
 
-		public animationTitleStep2 ( self ) {
-			//_view.secondTitle ( true )
-			//_view.titleAnimationStep ( 1 )
+		public deleteKey () {
+			localStorage.setItem ( "config", JSON.stringify ({}))
+			_view.localServerConfig ( null )
+			_view.showIconBar ( false )
+			_view.connectedCoNET ( false )
+			_view.connectToCoNET ( false )
+			_view.CoNETConnect ( _view.CoNETConnectClass = null )
+			_view.imapSetup ( _view.imapFormClass = null )
+			localStorage.clear()
+			return _view.reFreshLocalServer()
 		}
+
+		public showMain () {
+			this.showStartupVideo ( false )
+			this.showMainPage ( true )
+			this.mainboardPlay ()
+		}
+
+		public mainboardPlay () {
+			const timeLine = new TimelineLite()
+			const dcom = '#video01'
+			
+			timeLine.set ( dcom, { transformOrigin: "100% 100%"})
+			timeLine.to ( dcom, { duration: 0.2, transformOrigin: "left", transformPerspective: 10000,  rotateY: 0 } )
+			timeLine.to ( dcom, { duration: 6, transformOrigin: "left", transformPerspective: 1000,  rotateY: 30 } )
+
+		}
+
     }
 }
 

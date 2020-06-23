@@ -154,7 +154,7 @@ const appScript = {
 			/* ====================================================================================================================
 			ANDY - MASONARY IMAGES
 			======================================================================================================================= */
-			n['showOptions'] = ko.observable(false);
+			n['showOptions'] = ko.observable ( false )
 		
 
 			/* ====================================================================================================================
@@ -659,14 +659,17 @@ const appScript = {
   // CHANGED ============================================
   // CHANGED ============================================
 	getSnapshotClick: ( self, index, isImage?: boolean) => {
-		let currentItem = null
+		let currentItem: googleSearchResultItemlocal  = null
 		if ( isImage ) {
-			currentItem = self.searchSimilarImagesList()[index]
-			currentItem.showImageLoading(true)
+			currentItem = self.searchSimilarImagesList ()[index]
+			currentItem.showImageLoading ( true )
 		} else {
-			currentItem = self.searchItemList()[index]
-			currentItem.showLoading(true)
+			currentItem = self.searchItemList()[ index ]
+			currentItem.showLoading ( true )
 		}
+		const url = isImage ? currentItem.clickUrl : currentItem.url 
+		const width = $( window ).width ()
+		const height = $( window ).height ()
 
 		const showError = err => {
 			isImage
@@ -689,20 +692,20 @@ const appScript = {
 			})
 		}
 
-		const callBack = ( err?, com?: QTGateAPIRequestCommand) => {
+		const callBack = ( err?, com?: QTGateAPIRequestCommand ) => {
 			if ( err ) {
 				return showError(err)
 			}
 			if ( !com ) {
-				currentItem.loadingGetResponse(true)
-				return currentItem.conetResponse(false)
+				currentItem.loadingGetResponse ( true )
+				return currentItem.conetResponse ( false )
 			}
 			if ( com.error === -1 ) {
-				currentItem.loadingGetResponse(false)
-				return currentItem.conetResponse(true)
+				currentItem.loadingGetResponse ( false )
+				return currentItem.conetResponse ( true )
 			}
 			if ( com.error ) {
-				return showError(com.error)
+				return showError ( com.error )
 			}
 
 			const arg: string = com.Args[0]
@@ -710,7 +713,7 @@ const appScript = {
 			currentItem.showDownload ( true )
 			currentItem.showLoading ( false )
 
-			return _view.connectInformationMessage.fetchFiles ( arg, ( err, buffer: string ) => {
+			return _view.connectInformationMessage.fetchFiles ( arg, ( err, buffer: { uuid: string, data: string }[] ) => {
 				currentItem.showDownload ( false )
 				if ( err ) {
 					return showError ( err )
@@ -718,22 +721,34 @@ const appScript = {
 
 				isImage
 					? currentItem.snapshotImageReady ( true )
-					: currentItem.snapshotReady (true )
+					: currentItem.snapshotReady ( true )
 				isImage
 					? currentItem.showImageLoading ( false )
 					: currentItem.showLoading ( false ) 
 				currentItem.loadingGetResponse ( false ) 
 				
 				currentItem [ "snapshotData" ] = buffer
+				const item: histeoryItem = {
+					uuid: com.requestSerial,
+					url: url,
+					detail: currentItem.description,
+					urlShow: currentItem.urlShow,
+					fileIndex: buffer,
+					icon: '.file.image.outline',
+					tag: ['search','html'],
+					times_tamp: new Date(),
+					domain: getUrlDomain ( url ),
+					color: 0
+				}
+				
+				_view.historyData.unshift ( item )
 				return currentItem.conetResponse ( false )
 
 			})
 		
 		}
 
-		const url = isImage ? currentItem.clickUrl : currentItem.url 
-		const width = $(window).width()
-		const height = $(window).height()
+
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'CoSearch',

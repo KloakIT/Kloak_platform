@@ -21,6 +21,8 @@ class keyPairPassword {
         this.systemSetup_systemPassword = ko.observable('');
         this.passwordChecking = ko.observable(false);
         this.inputFocus = ko.observable(false);
+        this.delete_btn_view = ko.observable(false);
+        this.showConform = ko.observable(false);
         const self = this;
         this.systemSetup_systemPassword.subscribe(function (newValue) {
             if (!newValue || !newValue.length) {
@@ -51,7 +53,13 @@ class keyPairPassword {
                 return errProcess(err);
             }
             self.passwordChecking(false);
-            return self.exit(this.keypair._password);
+            return self.exit(this.keypair._password, false);
         });
+    }
+    deleteKeypair() {
+        return this.exit(null, true);
+    }
+    reFresh() {
+        location.reload();
     }
 }

@@ -744,3 +744,54 @@ interface sharedWorkerCommand {
 	uuid?: string
 	error?: string
 }
+
+interface histeoryItem {
+	uuid: string
+	times_tamp: Date
+	icon: string
+	url: string
+	urlShow: string
+	domain: string
+	detail: string
+	tag: string[]
+	color: number
+	fileIndex: {}
+}
+
+interface googleSearchResultTimeUnit {
+    time?: string
+    timeUnit: string
+    timeNumber: number
+}
+
+interface googleSearchResultItemImageInfo {
+    size: string
+    url: string
+    img: string
+    videoTime: string
+}
+interface googleSearchResultItem {
+    title: string
+    url: string
+    description: string
+    urlShow: string
+    beforeTime: googleSearchResultTimeUnit
+    imageInfo?: googleSearchResultItemImageInfo
+    newsBrand: string
+	videoUpload?: string
+	newsBrandImg?: string
+}
+
+interface googleSearchResultItemlocal extends googleSearchResultItem {
+	showImageLoading: KnockoutObservable < boolean >
+	showLoading: KnockoutObservable < boolean >
+	clickUrl: string
+	loadingGetResponse: KnockoutObservable < boolean >
+	conetResponse: KnockoutObservable < boolean >
+	snapshotUuid: string
+	showDownload: KnockoutObservable < boolean >
+	snapshotImageReady: KnockoutObservable < boolean >
+	snapshotReady: KnockoutObservable < boolean >
+
+
+}

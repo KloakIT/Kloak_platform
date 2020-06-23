@@ -285,7 +285,7 @@ class connectInformationMessage {
     }
     fetchFiles(files, CallBack) {
         const filesArray = files.split(',');
-        let data = '';
+        let data = [];
         let currentFIle = filesArray.shift();
         let repertTime = 0;
         const _callBack = (_err, _data) => {
@@ -295,7 +295,10 @@ class connectInformationMessage {
                 }
                 return fetchFIle(_callBack);
             }
-            data += _data;
+            data.push({
+                uuid: currentFIle,
+                data: _data
+            });
             if (filesArray.length) {
                 currentFIle = filesArray.shift();
                 return fetchFIle(_callBack);

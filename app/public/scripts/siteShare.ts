@@ -862,9 +862,9 @@ const infoDefine = [
             keyID: '密钥对ID：',
             logout: '退出登录',
             deleteKeyPairHaveLogin: '请使用登陆后的客户端来删除您的密钥',
-            deleteKeyPairInfo: '请注意：如果您没有备份您的CoNET系统的话，删除现有的密钥将使您的CoNET设定全部丢失，您有可能需要重新设置您的CoNET系统。如果您的注册Email没有变化，您的CoNET账户支付信息不会丢失！',
+            deleteKeyPairInfo: '删除密钥将使您的CoNet网络信息包括私密文件将全部丢失。',
             delete: '削除',
-            locked: '请提供您的RSA密钥密码，如果您遗忘了密码，请删除此RSA密钥。',
+            locked: '请输入密码。忘了密码请删除此密钥',
             systemError:'发生系统错误。如果重复发生，请删除您的密钥，再次设定您的系统！'
         },
 
@@ -1693,9 +1693,9 @@ const infoDefine = [
             logout: 'ログアウト',
             deleteKeyPairHaveLogin:'ログインした端末で暗号鍵ペアを削除して下さい。',
             keyID: '暗号鍵ID：',
-            deleteKeyPairInfo: '鍵ペアを削除することで、現在のCoNET設定は全部なくなって、一からCoNETの設定をやり直しが必要です。但しあなたのCoNETアカウトEmailアドレスは前回と同じであれば、CoNETアカウトを戻れます。',
+            deleteKeyPairInfo: '鍵ペアを削除することで、CoNet設定及保存している秘密ファイルは回復できません',
             delete: '削除',
-            locked: 'まず秘密鍵のパスワードを入力して、鍵のロックを解除してください。',
+            locked: '鍵ペアパスワード、忘れた場合この鍵を削除してください',
             systemError: 'システムエラーが発生しました。鍵ペアを削除して一からシステムを再設定をしてください。'
         },
 
@@ -2441,9 +2441,9 @@ const infoDefine = [
             password1: 'Password',
             logout: 'Logout',
             keyID: 'ID：',
-            deleteKeyPairInfo: 'Note: By deleting your key pair, you will lose your current account settings. You will need to set up CoNET account settings again. If your email address is the same as the one used previously, you may restore your CoNET account balance.',
+            deleteKeyPairInfo: 'Note: By deleting your key pair, you will lose your current account settings include privacy files in CoNet.',
             delete: 'Delete',
-            locked: 'Please enter your key pair password to continue.',
+            locked: 'Enter your key pair password to continue.',
             systemError: 'System error! Please delete this key pair and set up CoNET again.'
         },
 
@@ -3146,10 +3146,10 @@ const infoDefine = [
             password: '請設定密鑰保護密碼',
             password1: '請輸入密碼',
             logout:'退出登錄',
-            deleteKeyPairInfo: '請注意：如果您沒有備份您的CoNET系統的話，刪除現有的密鑰將使您的CoNET網絡設定全部丟失，您有可能需要重新設置您的CoNET系統。如果您的註冊Email沒有變化，您的CoNET賬戶支付信息不會丟失！',
+            deleteKeyPairInfo: '刪除密鑰將使您的CoNet網絡信息包括私密文件將全部丟失。',
             delete: '刪除',
             keyID: '密鑰對ID：',
-            locked: '請提供您的RSA密鑰密碼，如果您遺忘了密碼，請刪除此RSA密鑰。',
+            locked: '請輸入密碼。忘了密碼請刪除此密鑰',
             systemError:'發生系統錯誤。如果重複發生，請刪除您的密鑰，再次設定您的系統！'
         },
 
@@ -3698,3 +3698,12 @@ const _QTGateRegions: QTGateRegions[] = [
         freeUser: ko.observable(false)
     }
 ]
+
+const getUrlDomain = ( url: string ) => {
+	const start =  url.replace (/(https?:\/\/)?(www.)?/i, '')
+	if ( ! start ) {
+		return null
+	}
+	return start.split ('\/')[0]
+	
+}

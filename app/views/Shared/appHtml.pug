@@ -612,9 +612,13 @@
 									.ui.input.left.icon.big
 										i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
 										input( style = "color:rgba(0,0,0,0.5); border-radius: 500rem; width: 100%; padding-right: 5.3em!important;" type = "text" )
-										i.icon.circular.search.link( data-bind = "click: search_form" style="color: #4285f4!important;" )
+										i.icon.circular.search.link( data-bind = "click: search_form" style="color: #4285f4!important; left: auto; right: .5em; " )
 
-				.items
+					.ui.items.searchItems
+					<!-- ko foreach: $root.historyData -->
+						.item
+					<!-- /ko -->
+
 			<!-- /ko -->
 
 		<!-- /ko -->

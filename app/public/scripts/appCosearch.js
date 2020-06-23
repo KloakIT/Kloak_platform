@@ -527,6 +527,9 @@ const appScript = {
             currentItem = self.searchItemList()[index];
             currentItem.showLoading(true);
         }
+        const url = isImage ? currentItem.clickUrl : currentItem.url;
+        const width = $(window).width();
+        const height = $(window).height();
         const showError = err => {
             isImage
                 ? currentItem.showImageLoading(false)
@@ -577,12 +580,22 @@ const appScript = {
                     : currentItem.showLoading(false);
                 currentItem.loadingGetResponse(false);
                 currentItem["snapshotData"] = buffer;
+                const item = {
+                    uuid: com.requestSerial,
+                    url: url,
+                    detail: currentItem.description,
+                    urlShow: currentItem.urlShow,
+                    fileIndex: buffer,
+                    icon: '.file.image.outline',
+                    tag: ['search', 'html'],
+                    times_tamp: new Date(),
+                    domain: getUrlDomain(url),
+                    color: 0
+                };
+                _view.historyData.unshift(item);
                 return currentItem.conetResponse(false);
             });
         };
-        const url = isImage ? currentItem.clickUrl : currentItem.url;
-        const width = $(window).width();
-        const height = $(window).height();
         const com = {
             command: 'CoSearch',
             Args: [url, width, height],
