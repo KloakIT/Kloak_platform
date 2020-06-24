@@ -1,13 +1,13 @@
 
 
 .bodyCoNETBlue {
-	background: rgba(101,226,245,1);
-	background: -moz-linear-gradient(left, rgba(101,226,245,1) 0%, rgba(125,175,250,1) 100%);
-	background: -webkit-gradient(left top, right top, color-stop(0%, rgba(101,226,245,1)), color-stop(100%, rgba(125,175,250,1)));
-	background: -webkit-linear-gradient(left, rgba(101,226,245,1) 0%, rgba(125,175,250,1) 100%);
-	background: -o-linear-gradient(left, rgba(101,226,245,1) 0%, rgba(125,175,250,1) 100%);
-	background: -ms-linear-gradient(left, rgba(101,226,245,1) 0%, rgba(125,175,250,1) 100%);
-	background: linear-gradient(to right, rgba(101,226,245,1) 0%, rgba(125,175,250,1) 100%);
+	background: #89b1d8;
+	background: -moz-linear-gradient(left, #89b1d8 0%, #89b1d8 100%);
+	background: -webkit-gradient(left top, right top, color-stop(0%, #89b1d8), color-stop(100%, #89b1d8));
+	background: -webkit-linear-gradient(left, #89b1d8 0%, #89b1d8 100%);
+	background: -o-linear-gradient(left, #89b1d8 0%, #89b1d8 100%);
+	background: -ms-linear-gradient(left, #89b1d8 0%, #89b1d8 100%);
+	background: linear-gradient(to right, #89b1d8 0%, #89b1d8 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#65e2f5', endColorstr='#7daffa', GradientType=1 );
 	height: unset!important;
 }

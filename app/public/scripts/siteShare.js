@@ -2345,7 +2345,7 @@ const infoDefine = [
             systemPassword: 'CoNET Client System Password',
             inputEmail: `Generation key pair (curve25519) for secure communications`,
             accountEmailInfo: `Because CoNET may be on a firewall's black list in some regions. It is best to choose an email account with servers outside your region’s firewall.`,
-            dividertext: 'Option'
+            dividertext: 'Optional'
         },
         error_message: {
             title: 'Error',

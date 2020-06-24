@@ -425,7 +425,7 @@ module view_layout {
 		public nyt_menu = ko.observable ( false )
 		public TitleLine1 = null
 		public TitleLine2 = null
-		public mainManuItems = ko.observableArray (mainMenuArray)
+		public mainManuItems = ko.observableArray ( mainMenuArray )
         /*** */
 		
         private afterInitConfig ( ) {
@@ -808,10 +808,10 @@ module view_layout {
 			this.showMainPage ( true )
 		}
 
-		public animaRemove ( elem ) {
-			gsap.to( elem, { rotation: 27, x: -100, duration: 1})
+		public hidePlanetElement ( elem ) {
+			gsap.to( elem, { rotation: 27, x: -100, duration: 1 })
 		}
-		public animaCome ( elem ) {
+		public showPlanetElement ( elem ) {
 			gsap.froom ( elem, { rotation: 27, x: 2000, duration: 1})
 		}
 
@@ -821,14 +821,31 @@ module view_layout {
 const mainMenuArray = [
 	{
 		img: '/images/netConnect.svg',
-		header: ['网络通讯线路设定','ネットワーク通信設定','Network connection setup.','網絡通訊線路設定'],
-		description:['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件服務器帳號密碼'],
-		extra: ['详细设定','詳細設定','Setup','詳細設定']
+		header: ['网络通讯线路设定','ネットワーク通信設定','Network connection setup','網絡通訊線路設定'],
+		description:['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼'],
+		extra: ['详细设定','詳細設定','Setup','詳細設定'],
+		
 	}, {
-		img: '/images/netConnect.svg',
-		header: ['网络通讯线路设定','ネットワーク通信設定','Network connection setup.','網絡通訊線路設定'],
-		description:['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件服務器帳號密碼'],
-		extra: ['详细设定','詳細設定','Setup','詳細設定']
+		img: '/images/kloakSearchIcon.svg',
+		header: ['私密无痕网页检索及快照','サイド検索及のスナップショット','Webpage search and snapshot','私密無痕網頁檢索及快照'],
+		description:['流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载','サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード','Web and image search, screenshot and files download via gateway.','流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載'],
+		extra: null
+		
+	}, {
+		img: '/images/fileStorage.svg',
+		header: ['强安全私密无痕离线浏览器存储','プライバシーと安全な離線ブラウザストレージ','Privacy and secure offline browser storage','強安全私密無痕離線瀏覽器存储'],
+		description:['文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放','ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます','Crush Secure and privicy storage ','文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
+		extra: null
+	}, {
+		img: '/images/message.svg',
+		header: ['点对点加密群聊','エンドツーエンドメッセージ','End-to-End message','點對點加密群聊'],
+		description:['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+		extra: null
+	}, {
+		img: '/images/generalspalding.svg',
+		header: ['史帕丁将军','Robert Spalding将軍','General Robert Spalding','史帕丁將軍'],
+		description:['前美空军准将，哈德逊研究所高级研究员，美国的智囊团和前白宫国家安全委员会的高级战略规划师','ハドソン研究所の上級研究者であり、アメリカのシンクタンクであり、元ホワイトハウス国家安全保障理事会の上級戦略立案者です','Robert S. Spalding III is a retired United States Air Force brigadier general. He currently serves as a senior fellow at the Hudson Institute.','前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師'],
+		extra: null
 	}
 ]
 

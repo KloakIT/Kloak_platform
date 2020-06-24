@@ -334,26 +334,22 @@ block jumbotron1
 				h2.ui.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "color: white; text-align: center;  margin-top: 2rem;" )
 				h3.sub.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "color: white; text-align: center;" )
 		.AppList.CoContent.content
-			.searchItems
-				.ui.items.divided( data-bind = "foreach: mainManuItems ")
-					.item
+			.searchItems( style="padding-bottom: 10rem;" )
+				.ui.items.unstackable.divided( data-bind = "template: { foreach: mainManuItems, beforeRemove: hidePlanetElement, afterAdd: showPlanetElement }")
+					.ui.middle.aligned.item
 						a.image( href = "#" )
 							img( data-bind=" attr: { src: img }")
-						.content( style = "padding: 1rem;")
-							a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ]" style = " color: white;")
+						.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
+							a.header( href = "#" data-bind=" animationTextIn: header [ $root.languageIndex() ]" style = " color: white;")
 							.meta
 								span
 							.description( style = "color: white")
-								p( data-bind = "text: description [ $root.languageIndex() ]")
+								p( data-bind = "animationTextIn: description [ $root.languageIndex() ]")
 							<!-- ko if: extra -->
 							.extra
-								.ui.blue.label( data-bind = "text: extra[ $root.languageIndex() ]")
+								.ui.blue.label( data-bind = "animationTextIn: extra[ $root.languageIndex() ]")
 							<!-- /ko -->
 					
-
-	<!-- /ko -->
-
-	<!-- ko if: fileStorage -->
 
 	<!-- /ko -->
 
