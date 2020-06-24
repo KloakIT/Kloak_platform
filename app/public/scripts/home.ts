@@ -827,19 +827,24 @@ const mainMenuArray = [
 		
 	}, {
 		img: '/images/kloakSearchIcon.svg',
-		header: ['私密无痕网页检索及快照','サイド検索及のスナップショット','Webpage search and snapshot','私密無痕網頁檢索及快照'],
+		header: ['私密无痕网页检索及快照','サイド検索及のスナップショット','The Librarium','私密無痕網頁檢索及快照'],
 		description:['流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载','サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード','Web and image search, screenshot and files download via gateway.','流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載'],
 		extra: null
 		
 	}, {
 		img: '/images/fileStorage.svg',
-		header: ['强安全私密无痕离线浏览器存储','プライバシーと安全な離線ブラウザストレージ','Privacy and secure offline browser storage','強安全私密無痕離線瀏覽器存储'],
-		description:['文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放','ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます','Crush Secure and privicy storage ','文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
+		header: ['强安全私密无痕离线浏览器存储','プライバシーと安全な離線ブラウザストレージ','Fortress','強安全私密無痕離線瀏覽器存储'],
+		description:['文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放','ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます','Offline file storage which divides the file into multiple, encrypted, and ordered parts and stores it locally in the browser.  When the user wants to access the file, these parts will be reassembled together in the designated order.','文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
+		extra: null
+	}, {
+		img: '/images/Masquerade.svg',
+		header: ['点对点加密群聊','エンドツーエンドメッセージ','Masquerade','點對點加密群聊'],
+		description:['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Decentralized social media','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
 		extra: null
 	}, {
 		img: '/images/message.svg',
-		header: ['点对点加密群聊','エンドツーエンドメッセージ','End-to-End message','點對點加密群聊'],
-		description:['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+		header: ['点对点加密群聊','エンドツーエンドメッセージ','Daggr','點對點加密群聊'],
+		description:['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','EndtoEnd encrypted message system.','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
 		extra: null
 	}, {
 		img: '/images/generalspalding.svg',
