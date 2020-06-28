@@ -15,7 +15,7 @@
 	<stop  offset="0" style="stop-color:#FFFFFF"/>
 	<stop  offset="1" style="stop-color:#bcaba1"/>
 </linearGradient>
-<path class="st0" d="M68.4,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.4,73.5,73.3,77.5,68.4,77.5z" filter="url(#f3)"/>
+<path class="st0" d="M68.4,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.4,73.5,73.3,77.5,68.4,77.5z" filter = "url(#f3)" />
 <g>
 	<g>
 		<path class="st1" d="M53.4,12.5l-3.3-5.7L29.5,18.7c-1-1.1-2.7-1.4-4-0.7l-8,4.7c-1.4,0.8-1.9,2.4-1.4,3.8l-2.7,1.5l3.3,5.7

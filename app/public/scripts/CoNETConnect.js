@@ -38,16 +38,17 @@ class CoNETConnect {
         this.inSendMail = false;
         const self = this;
         this.imapData.publicKeyID = view.keyPair().publicKeyID;
-        if (!this.view.imapData.confirmRisk) {
-            this.showSendImapDataWarning(true);
-        }
-        else {
-            this.imapConform();
-            this.Loading(true);
-            _view.connectInformationMessage.socketIo.on('pingTimeOut', () => {
-                return self.pingTimeOut();
-            });
-        }
+        /*
+        if ( !this.view.imapData.confirmRisk ) {
+            this.showSendImapDataWarning ( true )
+        } else {
+        */
+        this.imapConform();
+        this.Loading(true);
+        _view.connectInformationMessage.socketIo.on('pingTimeOut', () => {
+            return self.pingTimeOut();
+        });
+        //}
     }
     pingTimeOut() {
         return this.listingConnectStage(null, 0, null);
@@ -108,7 +109,6 @@ class CoNETConnect {
                 */
                 _view.sharedMainWorker.decryptJsonWithAPKey(publicKeyMessage, err => {
                 });
-                _view.showIconBar(true);
                 return this.ready(null);
             }
             /**

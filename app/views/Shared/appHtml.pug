@@ -2,12 +2,12 @@
 
 #CoSearch
 	<!-- ko with: appScript -->
-	.backGroundSetup( data-bind = " style: { background: searchItem() || showHistory() ? 'white' : '#B4E4ED' }" style = "height: 100em; ")
+	.backGroundSetup( data-bind = " style: { background: searchItem() || showHistory() ? 'white' : '#B4E4ED', height: $root.middleY() * 2 }" )
 		<!-- ko if: showMain() -->
 		.main
 
 			<!-- ko if: showMainSearchForm() -->
-			form#coSearchForm.ui.form( data-bind = " style: { 'margin-top': showSearchSetupForm() ? '15em' : '35em' }, event: { 'submit': search_form }, submitBubble: false" style = "100%;" )
+			form#coSearchForm.ui.form( data-bind = " style: { 'margin-top': showSearchSetupForm() ? $root.middleY()/1.25 : $root.middleY()/1.25 }, event: { 'submit': search_form }, submitBubble: false" style = "100%;" )
 				<!-- ko if: !showSearchSetupForm() -->
 				.field
 					.ui.search
@@ -24,7 +24,7 @@
 								<!-- ko if : hasFocusShowTool -->
 
 									<!-- ko if: !searchInputText().length -->
-										i.icon.th.list.link.circular.olive( data-bind = " click: historyListClick " style = "box-shadow: 0 0 0 0.1em; right: 4.2rem; top: 0.7rem;")
+										
 										i.icon.image.outline.link.circular( data-bind = " click: function (){ document.getElementById('imageInput1').click() }, style: { 'margin-top' : hasFocus ? '2px' : '0px' }" style = "box-shadow: 0 0 0 0.1em; color: #42c8f4!important;")
 										input( onchange = "_view.appsManager().appScript().imageSearch( this )" id = "imageInput1" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0" )
 									<!-- /ko -->
@@ -316,7 +316,7 @@
 
 										input( style="color:rgba(0,0,0,0.5);border-radius: 500rem!important;" type="text" 
 											data-bind = " textInput: searchInputText, hasFocus: SearchInputNextHasFocus, attr: { placeholder: showSearchError() ? ( messageBoxDefine [ errorMessageIndex() ][ $root.languageIndex() ]): infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" )
-										i.icon.th.list.link.circular.olive( data-bind = " click: historyListClick " style = "box-shadow: 0 0 0 0.1em; right: 4.2rem; top: 0.7rem;")
+										
 										<!-- ko if: searchInputText().length -->
 										i.icon.circular.search.link( data-bind = "click: search_form" style="color: #4285f4!important;" )
 										<!-- /ko -->

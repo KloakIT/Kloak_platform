@@ -45,15 +45,17 @@ class CoNETConnect {
 	constructor ( private view: view_layout.view, private isKeypairBeSign: boolean, private ready: ( err ) => void ) {
 		const self = this
 		this.imapData.publicKeyID = view.keyPair().publicKeyID
+		/*
 		if ( !this.view.imapData.confirmRisk ) {
 			this.showSendImapDataWarning ( true )
 		} else {
+		*/
 			this.imapConform ()
 			this.Loading ( true )
 			_view.connectInformationMessage.socketIo.on ( 'pingTimeOut', () => {
 				return self.pingTimeOut ()
 			})
-		}
+		//}
 	}
 
 
@@ -128,7 +130,7 @@ class CoNETConnect {
 
 				})
 
-					_view.showIconBar ( true )
+					
 					return this.ready ( null )
 				
 				

@@ -74,7 +74,7 @@
 	<clipPath id="SVGID_2_">
 		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
 	</clipPath>
-	<path d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter="url(#f3)"/>
+	<path d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = 'url(#f3)' />
 	<g id="all" class="st3">
 		<g id="DayGroup">
 			<g>

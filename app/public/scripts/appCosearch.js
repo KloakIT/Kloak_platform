@@ -320,7 +320,6 @@ const appScript = {
                 self.showSearchesRelated(true);
             }
         });
-        _view.showIconBar(false);
         _view.CanadaBackground(true);
     },
     nextButtonErrorClick: (self) => {

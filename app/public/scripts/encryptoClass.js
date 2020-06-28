@@ -456,11 +456,25 @@ class encryptoClass {
             return CallBack(ex);
         });
     }
-    encryptStream_withMyPublicKey(message, CallBack) {
+    async encryptStream_withMyPublicKey(message, CallBack) {
+        const uint8 = new Uint8Array(message);
         const option = {
             privateKeys: this._privateKey,
             publicKeys: this.myPublicKey,
-            message: openpgp.message.fromBinary(message),
+            message: await openpgp.message.fromBinary(uint8),
+            compression: openpgp.enums.compression.zip
+        };
+        return openpgp.encrypt(option).then(ciphertext => {
+            return CallBack(null, ciphertext.data);
+        }).catch(err => {
+            return CallBack(err);
+        });
+    }
+    encryptString_withMyPublicKey(message, CallBack) {
+        const option = {
+            privateKeys: this._privateKey,
+            publicKeys: this.myPublicKey,
+            message: openpgp.message.fromText(message),
             compression: openpgp.enums.compression.zip
         };
         return openpgp.encrypt(option).then(ciphertext => {
@@ -470,7 +484,7 @@ class encryptoClass {
         });
     }
     saveImapIInputData(imapData, CallBack) {
-        return this.encrypt_withMyPublicKey(JSON.stringify(imapData), (err, data) => {
+        return this.encryptString_withMyPublicKey(JSON.stringify(imapData), (err, data) => {
             if (err) {
                 return CallBack(err);
             }

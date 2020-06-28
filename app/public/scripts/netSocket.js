@@ -195,7 +195,7 @@ const doingCommand = (message, ports) => {
             return encryptoClassObj.encryptWithAPKey(cmd.args, encryptoClassObjCallBack);
         }
         case 'encryptStream_withMyPublicKey': {
-            return encryptoClassObj.encryptStream_withMyPublicKey(cmd.args, encryptoClassObjCallBack);
+            return encryptoClassObj.encryptStream_withMyPublicKey(Buffer.from(cmd.args.data), encryptoClassObjCallBack);
         }
         /**
          * 		Decrypt function

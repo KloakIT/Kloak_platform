@@ -392,7 +392,6 @@ const appScript = {
 			}
 		})
 		
-		_view.showIconBar ( false )
 		_view.CanadaBackground ( true )
 	},
 

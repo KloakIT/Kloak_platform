@@ -21,16 +21,17 @@ ko.bindingHandlers.animationTextIn = {
         const valueUnwrapped = ko.unwrap(value);
         // Grab some more data from another binding property
         const onCompleteAll = allBindings.get('onCompleteAll');
-        let timeLine = allBindings.get('timeLine');
         // Now manipulate the DOM element
         if (valueUnwrapped) {
             $(element).empty();
             const t = document.createTextNode(valueUnwrapped);
             element.appendChild(t);
-            timeLine = new TimelineLite();
+            const timeLine = new TimelineLite({ onComplete: onCompleteAll });
             const mySplitText = new SplitText(element, { type: "words, chars" });
             const chars = mySplitText.chars;
-            timeLine.staggerFrom(mySplitText.chars, 0.6, { scale: 4, autoAlpha: 0, rotationX: -180, transformOrigin: "100% 50%", ease: Back.easeOut }, 0.02, null, onCompleteAll);
+            timeLine.staggerFrom(mySplitText.chars, 0.6, { scale: 4, autoAlpha: 0, rotationX: -180, transformOrigin: "100% 50%", ease: Back.easeOut }, 0.02, null, () => {
+                mySplitText.revert();
+            });
         }
         //$( element ).slideDown( duration ) // Make the element visible
         else {
@@ -47,15 +48,16 @@ ko.bindingHandlers.animationTextLineIn = {
         const valueUnwrapped = ko.unwrap(value);
         // Grab some more data from another binding property
         const onCompleteAll = allBindings.get('onCompleteAll');
-        let timeLine = allBindings.get('timeLine');
         // Now manipulate the DOM element
         if (valueUnwrapped) {
             $(element).empty();
             const t = document.createTextNode(valueUnwrapped);
             element.appendChild(t);
-            timeLine = new TimelineLite();
+            const timeLine = new TimelineLite({ onComplete: onCompleteAll });
             const mySplitText = new SplitText(element, { type: "lines" });
-            timeLine.staggerFrom(mySplitText.lines, 0.5, { opacity: 0, rotationX: -120, force3D: true, transformOrigin: "top center -150" }, 0.1, null, onCompleteAll);
+            timeLine.staggerFrom(mySplitText.lines, 0.5, { opacity: 0, rotationX: -120, force3D: true, transformOrigin: "top center -150" }, 0.1, null, () => {
+                mySplitText.revert();
+            });
         }
         //$( element ).slideDown( duration ) // Make the element visible
         else {
@@ -67,7 +69,9 @@ ko.bindingHandlers.animationTextLineIn = {
 const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
     keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
+    view.showKeyPair(true);
     let keyPairPasswordClass = new keyPairPassword(keypair, (passwd, deleteKey) => {
+        view.showKeyPair(false);
         keypair.keyPairPassword(keyPairPasswordClass = null);
         if (!passwd) {
             if (deleteKey) {
@@ -90,14 +94,12 @@ const makeKeyPairData = (view, keypair) => {
             if (err) {
                 return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
             }
-            view.showKeyPair(false);
+            if (data["imapData"]) {
+                view.imapData = data["imapData"];
+                //return view.imapSetupClassExit ( view.imapData )
+            }
             view.showMain();
             /*
-            if ( data["imapData"] ) {
-                view.imapData = data[ "imapData" ]
-                return view.imapSetupClassExit ( view.imapData )
-            }
-            
             let uu = null
             return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
                 view.imapSetup ( uu = null )
@@ -121,7 +123,6 @@ const makeKeyPairData = (view, keypair) => {
     keypair.deleteKeyPairNext = function () {
         localStorage.setItem("config", JSON.stringify({}));
         view.localServerConfig(null);
-        view.showIconBar(false);
         view.connectedCoNET(false);
         view.connectToCoNET(false);
         view.CoNETConnect(view.CoNETConnectClass = null);
@@ -147,7 +148,6 @@ class showWebPageClass {
         this.mHtml = ko.observable('');
         this.urlBlobList = [];
         const self = this;
-        _view.showIconBar(false);
         _view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
             //showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
             if (err) {
@@ -307,7 +307,6 @@ var view_layout;
             this.keyPair = ko.observable(InitKeyPair());
             this.hacked = ko.observable(false);
             this.imapSetup = ko.observable();
-            this.showIconBar = ko.observable(false);
             this.connectToCoNET = ko.observable(false);
             this.connectedCoNET = ko.observable(false);
             this.showKeyPair = ko.observable(false);
@@ -325,6 +324,7 @@ var view_layout;
             this.welcomeTitle = ko.observable(true);
             this.showMainPage = ko.observable(false);
             this.showStartupVideo = ko.observable(true);
+            this.daggrHtml = ko.observable(false);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -348,7 +348,16 @@ var view_layout;
             this.nyt_menu = ko.observable(false);
             this.TitleLine1 = null;
             this.TitleLine2 = null;
+            this.networkSetupHeader = ['网络通讯线路设定', 'ネットワーク通信設定', 'Network connection setup', '網絡通訊線路設定'];
+            this.networkSetupDescription = ['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码', 'ローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'Local network module and the mail informationthe for connect to CoNet network', '指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼'];
+            this.networkSetupConnectShow = ['连接节点', 'ノードへ接続', 'Connect to node', '連接結點'];
+            this.networkDisconnect = ['解除连接', '接続を解除', 'Disconnect', '解除連結'];
+            this.networkConnect = ko.observable(false);
             this.mainManuItems = ko.observableArray(mainMenuArray);
+            this.tempAppHtml = ko.observable(false);
+            this.appScript = ko.observable();
+            this.middleX = ko.observable(window.innerWidth / 2);
+            this.middleY = ko.observable(window.innerHeight / 2);
             this.socketListen();
             this.CanadaBackground.subscribe(val => {
                 if (val) {
@@ -372,7 +381,6 @@ var view_layout;
         }
         initConfig(config) {
             const self = this;
-            this.showKeyPair(true);
             if (config && config.keypair && config.keypair.publicKeyID) {
                 /**
                  *
@@ -399,7 +407,6 @@ var view_layout;
                 /**
                  *      key pair ready
                  */
-                self.showKeyPair(false);
                 self.password = _keyPair._password;
                 _keyPair._password = null;
                 config.account = _keyPair.email;
@@ -408,19 +415,22 @@ var view_layout;
                 _keyPair.passwordOK = true;
                 //self.localServerConfig ( config )
                 self.keyPair(_keyPair);
-                self.showKeyPair(false);
                 self.connectInformationMessage.getServerPublicKey(err => {
                     return console.dir(`local server public key ready!`);
                 });
-                let uu = null;
-                return self.imapSetup(uu = new imapForm(_keyPair.email, null, function (imapData) {
-                    self.imapSetup(uu = null);
-                    self.imapData = imapData;
-                    return self.sharedMainWorker.saveImapIInputData(imapData, err => {
-                        return self.imapSetupClassExit(imapData);
-                    });
-                }));
+                self.showMain();
+                /*
+                let uu: imapForm = null
+                return self.imapSetup ( uu = new imapForm ( _keyPair.email, null, function ( imapData: IinputData ) {
+                    self.imapSetup ( uu = null )
+                    self.imapData = imapData
+                    return self.sharedMainWorker.saveImapIInputData ( imapData, err => {
+                        return self.imapSetupClassExit ( imapData )
+                    })
+                }))
+                
                 //initPopupArea ()
+                */
             });
             this.localServerConfig(config);
             this.afterInitConfig();
@@ -535,27 +545,33 @@ var view_layout;
         }
         showKeyInfoClick() {
             this.sectionLogin(true);
-            this.showKeyPair(true);
             this.AppList(false);
             this.appsManager(null);
             //this.showImapSetup ()
         }
         showImapSetup() {
-            return this.imapSetup(this.imapFormClass = new imapForm(this.imapData.account, this.imapData, function (imapData) {
-                this.imapSetup(this.imapFormClass = null);
-                return this.imapSetupClassExit(imapData);
+            _view.hideMainPage();
+            return _view.imapSetup(_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData, (imapData) => {
+                _view.imapSetup(_view.imapFormClass = null);
+                return _view.imapSetupClassExit(imapData);
             }));
         }
         imapSetupClassExit(_imapData) {
             const self = this;
             this.imapData = _imapData;
+            this.sharedMainWorker.saveImapIInputData(_imapData, (err, data) => {
+                return this.showMain();
+            });
+        }
+        connectToNode() {
+            const self = this;
+            self.networkConnect(2);
             return this.CoNETConnect(this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
                     self.CoNETConnect(this.CoNETConnectClass = null);
                     return self.showImapSetup();
                 }
-                self.connectedCoNET(true);
-                self.homeClick();
+                self.networkConnect(true);
             }));
         }
         reFreshLocalServer() {
@@ -572,7 +588,6 @@ var view_layout;
                 }));
             };
             connectMainMenu();
-            this.showKeyPair(false);
             $('.dimmable').dimmer({ on: 'hover' });
             $('.comeSoon').popup({
                 on: 'focus',
@@ -648,7 +663,6 @@ var view_layout;
         deleteKey() {
             localStorage.setItem("config", JSON.stringify({}));
             _view.localServerConfig(null);
-            _view.showIconBar(false);
             _view.connectedCoNET(false);
             _view.connectToCoNET(false);
             _view.CoNETConnect(_view.CoNETConnectClass = null);
@@ -657,49 +671,89 @@ var view_layout;
             return _view.reFreshLocalServer();
         }
         showMain() {
+            this.sectionWelcome(false);
             this.showStartupVideo(false);
             this.showMainPage(true);
+            this.sectionLogin(false);
         }
-        hidePlanetElement(elem) {
-            gsap.to(elem, { rotation: 27, x: -100, duration: 1 });
+        hidePlanetElement(elem, onCompleteAll) {
+            if (elem.nodeType === 1) {
+                return $(elem).slideUp(() => {
+                    onCompleteAll();
+                });
+            }
         }
-        showPlanetElement(elem) {
-            gsap.froom(elem, { rotation: 27, x: 2000, duration: 1 });
+        showPlanetElement(elem, onCompleteAll) {
+            const timeLine = new TimelineLite({ onComplete: onCompleteAll });
+            timeLine.from(elem, { rotation: 27, x: 8000, duration: 1 });
+        }
+        hideMainPage() {
+            this.hidePlanetElement(document.getElementById("showMainPage"), () => {
+                _view.showMainPage(false);
+            });
+        }
+        appClick(index) {
+            const appScript1 = mainMenuArray[index].click;
+            const showSwitch = `_view.${mainMenuArray[index].htmlTemp}( true )`;
+            if (!appScript1 || !showSwitch) {
+                return;
+            }
+            _view.showMainPage(false);
+            _view.bodyBlue(false);
+            appScript1.startup(appScript1);
+            _view.appScript(appScript1);
+            eval(showSwitch);
+        }
+        resizeMiddleZise() {
+            this.middleX(window.innerWidth / 2);
+            this.middleY(window.innerHeight / 2);
         }
     }
     view_layout.view = view;
 })(view_layout || (view_layout = {}));
 const mainMenuArray = [
     {
-        img: '/images/netConnect.svg',
-        header: ['网络通讯线路设定', 'ネットワーク通信設定', 'Network connection setup', '網絡通訊線路設定'],
-        description: ['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码', 'ローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'Local network module and the mail informationthe for connect to CoNet network', '指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼'],
-        extra: ['详细设定', '詳細設定', 'Setup', '詳細設定'],
-    }, {
         img: '/images/kloakSearchIcon.svg',
         header: ['私密无痕网页检索及快照', 'サイド検索及のスナップショット', 'The Librarium', '私密無痕網頁檢索及快照'],
         description: ['流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载', 'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード', 'Web and image search, screenshot and files download via gateway.', '流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載'],
-        extra: null
+        extra: null,
+        click: appScript,
+        online: true,
+        htmlTemp: 'tempAppHtml'
     }, {
         img: '/images/fileStorage.svg',
         header: ['强安全私密无痕离线浏览器存储', 'プライバシーと安全な離線ブラウザストレージ', 'Fortress', '強安全私密無痕離線瀏覽器存储'],
-        description: ['文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放', 'ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます', 'Offline file storage which divides the file into multiple, encrypted, and ordered parts and stores it locally in the browser.  When the user wants to access the file, these parts will be reassembled together in the designated order.', '文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
-        extra: null
+        description: [
+            '文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
+            'ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
+            'Offline file and media storage which divides the file into multiple, encrypted, and ordered parts and stores them locally in the browser.  When the user wants to access the file for editing for example , these parts will be reassembled together in the designated order. However for media files, they can be played from the browser without needing reassembly of the media.',
+            '文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'
+        ],
+        extra: null,
+        click: null,
+        online: false
     }, {
         img: '/images/Masquerade.svg',
-        header: ['点对点加密群聊', 'エンドツーエンドメッセージ', 'Masquerade', '點對點加密群聊'],
-        description: ['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照', 'ローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'Decentralized social media', '強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
-        extra: null
+        header: ['假面舞会', 'マスカレード', 'Masquerade', '假面舞會'],
+        description: ['去中心化无审查社交媒体', '検閲なしのソーシャルメディア', 'Decentralized no censorship social media', '強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+        extra: null,
+        click: null,
+        online: true
     }, {
         img: '/images/message.svg',
         header: ['点对点加密群聊', 'エンドツーエンドメッセージ', 'Daggr', '點對點加密群聊'],
         description: ['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照', 'ローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'EndtoEnd encrypted message system.', '強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
-        extra: null
+        extra: null,
+        click: daggr,
+        htmlTemp: 'daggrHtml',
+        online: false
     }, {
         img: '/images/generalspalding.svg',
         header: ['史帕丁将军', 'Robert Spalding将軍', 'General Robert Spalding', '史帕丁將軍'],
         description: ['前美空军准将，哈德逊研究所高级研究员，美国的智囊团和前白宫国家安全委员会的高级战略规划师', 'ハドソン研究所の上級研究者であり、アメリカのシンクタンクであり、元ホワイトハウス国家安全保障理事会の上級戦略立案者です', 'Robert S. Spalding III is a retired United States Air Force brigadier general. He currently serves as a senior fellow at the Hudson Institute.', '前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師'],
-        extra: null
+        extra: null,
+        click: null,
+        online: false
     }
 ];
 const _view = new view_layout.view();

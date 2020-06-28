@@ -166,8 +166,8 @@ class keyPairSign {
     }
 }
 class imapForm {
-    constructor(account, imapData, exit) {
-        this.account = account;
+    constructor(keyID, imapData, exit) {
+        this.keyID = keyID;
         this.imapData = imapData;
         this.exit = exit;
         this.emailAddress = ko.observable('');

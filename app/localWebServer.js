@@ -201,6 +201,7 @@ class localServer {
                 return;
             }
             const keyPair = socket["keypair"];
+            console.dir(`on tryConnectCoNET`);
             return Tool.decryptoMessage(this.localKeyPair, keyPair.publicKey, imapData, (err, data) => {
                 if (err) {
                     console.log('checkImap Tool.decryptoMessage error\n', err);

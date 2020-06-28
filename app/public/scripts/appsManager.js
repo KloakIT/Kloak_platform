@@ -527,7 +527,6 @@ class appsManager {
         item.loading(true);
         const runningApp = (obj) => {
             _view.bodyBlue(false);
-            _view.showIconBar(false);
             this.showMainMenu(false);
             /**
              *

@@ -54,7 +54,6 @@ class sharedWorkerManager {
 		if ( cmd.command === "decrypt_withLocalServerKey" ) {
 			console.dir ( this.sharedMainWorkerWaitingPool )
 		}
-		return //console.dir ( cmd )
 
 	}
 

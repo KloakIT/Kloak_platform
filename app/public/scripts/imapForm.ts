@@ -356,7 +356,7 @@ class imapForm {
 		
 	}
 
-	constructor ( private account: string, private imapData: IinputData, private exit: ( IinputData: IinputData ) => void ) {
+	constructor ( private keyID: string, private imapData: IinputData, private exit: ( IinputData: IinputData ) => void ) {
 		const self = this
 		if ( imapData ) {
 			this.emailAddress ( imapData.imapUserName )

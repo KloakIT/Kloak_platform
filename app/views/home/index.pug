@@ -34,14 +34,89 @@ block jumbotron1
 					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
 		<!-- /ko -->
 
+		<!-- ko if: showStartupVideo -->
+		.startupView( style = " width:100%; height:100% ")
+			video.videoBackground( preload = "yes" playsinline autoplay muted loop )
+				source( src="/images/startup_background.mp4" type="video/mp4")
+		<!-- /ko -->
+	<!-- /ko -->
 
+	<!-- ko if: showMainPage -->
+		#showMainPage( style = "margin-top: 5rem;")
+			.ui.top.top.banner.ad.mainAD( style="height: auto!important;")
+				.title( style = "position: relative; -ms-flex-align: center; align-items: center;  z-index: 111; margin: 3rem;")
+					h2.ui.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "color: white; text-align: center;  margin-top: 2rem;" )
+					h3.sub.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "color: white; text-align: center;" )
+			.AppList.CoContent.content
+				.searchItems( style = "padding-bottom: 10rem;" )
+					.ui.items.unstackable.divided
+						
+						.ui.middle.aligned.item
+							a.image( href = "#" data-bind = " click: networkConnect() === false ? _view.showImapSetup : null " )
+								<!-- ko if: networkConnect() === true -->
+								img( src = "/images/Kloak_icon.svg")
+								<!-- /ko -->
 
-		<!-- ko if: sectionLogin() -->
-		.CoContent.content
+								<!-- ko if: networkConnect() !== true -->
+								.img( data-bind = "style: { opacity: networkConnect() ? 0.5 : 1 }")
+									include netConnect.svg
+
+								<!-- ko if: networkConnect() > 1 -->
+									.ui.active.centered.loader
+								<!-- /ko -->
+
+								<!-- /ko -->
+								
+							.content( style = "padding: 0.5rem; " )
+								a.header( href = "#" data-bind=" text: networkSetupHeader [ $root.languageIndex() ], click:  networkConnect()  === false ? _view.showImapSetup : null " style = " color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
+								.description( style = "color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);" )
+									p( data-bind = "text: networkSetupDescription [ $root.languageIndex() ]")
+								<!-- ko if: imapData -->
+								.meta
+									.ui.label( data-bind = " text: imapData.imapUserName " style="background-color: #ECEEF7;color: #93AFB4;")
+								<!-- ko if: !networkConnect() -->
+								.extra
+									a.ui.blue.label.large( data-bind = "text: networkSetupConnectShow[ $root.languageIndex() ], click: connectToNode " )
+								<!-- /ko -->
+
+								<!-- ko if: networkConnect() === true -->
+								.extra
+									.ui.red.label( data-bind = "text: networkDisconnect[ $root.languageIndex() ]" )
+								<!-- /ko -->
+
+								<!-- /ko -->
+								
+
+						<!-- ko foreach: mainManuItems -->
+						.ui.middle.aligned.item
+							a.image( href = "#" data-bind = " click: () => { $root.appClick ( $index()) }" )
+								img( data-bind = "attr: { src: img }, style: { opacity: ( online && $root.networkConnect() === true || !online ) ? 1 : 0.5 } ")
+								
+							.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
+								a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ], click: () => { $root.appClick ( $index()) }" style = " color: white;")
+								.meta
+									span
+								.description( style = "color: white")
+									p( data-bind = "text: description [ $root.languageIndex() ]")
+								<!-- ko if: extra -->
+								.extra
+									.ui.blue.label( data-bind = "text: extra.text[ $root.languageIndex() ], click: extra.action " )
+								<!-- /ko -->
+						<!-- /ko -->				
+	<!-- /ko -->
+
+	<!-- ko if: CanadaBackground -->
+	section#CanadaBackground( style = "top: 0rem; position: absolute;width: 100%;")
+		include coSearchImage.html
+	<!-- /ko -->
+
+	<!-- ko if: sectionLogin() -->
+		.CoContent.content( data-bind = "style: { 'margin-top': middleY() / 1.25 }")
 			.ui.cards.loginCards
 				<!-- ko if: keyPair  -->
 				<!-- ko with: keyPair -->
 				<!-- ko if: $root.showKeyPair() -->
+				
 				.card.centered.raised( style = " width: 100%;" )
 					//-.content
 						.header
@@ -211,153 +286,7 @@ block jumbotron1
 				//- if: imapSetup
 				<!-- /ko -->
 				//-	with: imapSetup
-				
-				<!-- ko if: CoNETConnect  -->
-				<!-- ko with: CoNETConnect -->
-				
-				<!-- ko if: showConnectCoNETProcess  -->
-				.card.centered.raised( style = " width: 100%;" )
-					.content
-						.header
-							i.icon.exchange.blue
-							span( data-bind = "text: email " style=" color:#2185d0!important;")
-						<!-- ko if: showSendImapDataWarning -->
-						.ui.segment
-							.woringText( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.imapAccountConform ( email, account ) " style="padding-bottom: 1em;")
-							.ui.buttons
-								a.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel" href="/")
-								.or
-								.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].imapInformation.agree, click: imapConform ")
-						<!-- /ko -->
-						<!-- ko if: Loading() && ! showSendImapDataWarning() -->
-						.loaderCoNET( style = "position: relative;")
-							.loaderCoNET-div
-							.loaderCoNET-div
-							.loaderCoNET-div
-							.loaderCoNET-div
-						
-						
-						<!-- /ko -->
-						<!-- ko if: infoTextArray() && infoTextArray().length -->
-						.ui.segment( style = "min-height: 10em;")
-							<!-- ko foreach: infoTextArray -->
-							.infoText( data-bind = "style: { 'color': err() === null ? 'grey' : ( !err() ? 'green' : 'red') }, css: { 'terminalText': ($index() === $parent.infoTextArray().length - 1) && !$parent.showTryAgain() }, text: messageBoxDefine[ text() ] [ $root.languageIndex() ] " style = "color: grey;")
-							<!-- /ko -->
-
-						<!-- ko if: showSendConnectMail -->
-						.ui.teal.center.aligned.segment( data-bind = " click: sendConnectMail " style = "cursor: pointer;")
-							.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
-						<!-- /ko -->
-
-						<!-- ko if: showNetworkError -->
-						.ui.red.center.aligned.segment( data-bind = " click: tryAgain" style = "cursor: pointer;")
-							.text( data-bind = " text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain ")
-						<!-- /ko -->
-
-						<!-- /ko -->
-						
-
-				<!-- /ko -->
-				//-	if: showConnectCoNETProcess
-
-				<!-- ko if: keyPairSign -->
-				<!-- ko with: keyPairSign -->
-				.card.centered.raised( style = " width: 100%;")
-					.content
-						.ui.segments
-							.ui.segment( data-bind = "css: { yellow: signError() === -1, red: signError() > -1 }" )
-								span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_1 " style="color:rgba(0,0,0,.5);")
-								b( data-bind = " text: $parents[0].account" style="color:rgba(0,80,80,.8);")
-								span( data-bind = " text: infoDefine [ $root.languageIndex() ].emailConform.info1_2"  style="color:rgba(0,0,0,.5);")
-							<!-- ko if: requestError() > -1 -->
-							.ui.segment.errorInformation
-								p( data-bind = " text: infoDefine [ $root.languageIndex() ].error_message.CoNET_requestError[ requestError() ]" style = "color: brown;")
-							<!-- /ko -->
-							.ui.segment
-								.ui.grid.equal.width.right.aligned.container( style="margin-top: 0.1em; margin-bottom: 0.1em;")
-									.row( style = "background-color: #D94235; padding-bottom: 0px;")
-										.column.left.aligned
-											img( src = "/images/512.png" style = "margin-left: 1em; height: 50px;")
-										.column
-											<!-- ko ifnot: showRequestActivEmailButtonError -->
-												.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="css:{ loading: activeing }, text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
-												.ui.inverted.button( data-bind = "css: { 'loading disabled': requestActivEmailrunning()}, visible: showSentActivEmail() < 0 && ! conformButtom(), click: requestActivEmail, text: infoDefine [ $root.languageIndex() ].emailConform.reSendRequest")
-												
-												
-												span(data-bind="text: showSentActivEmail() > -1 ? infoDefine [ $root.languageIndex() ].emailConform.requestReturn[ showSentActivEmail() ]: '', visible: showSentActivEmail() > -1 && !conformButtom()" style="color: cornsilk;")
-											<!-- /ko -->
-											<!-- ko if: showRequestActivEmailButtonError -->
-											
-												i.icon.exclamation.triangle.circular.red.link(  data-bind = "click: clearError " style = "background-color: white!important;")
-											<!-- /ko -->
-									.row( style = "background-color: #D94235; padding-top: .5em;")
-										h2( style = "color: white; margin-left: 2em; padding-top: 0px;" data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailTitle " )
-									.row( style = "background-color: #FAFAFA; font-weight: bold; padding-bottom: 0px" data-bind="visible: !activeing()")
-										span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1" style="margin-left: 20px;color:rgba(0,0,0,.5);")
-										span( data-bind="text: $parents[0].account" style="color:rgba(0,0,0,.5); padding-left: 0.5em;")
-										span( data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail1_1" style="color:rgba(0,0,0,.5);")
-										p( data-bind = "text: infoDefine [ $root.languageIndex() ].emailConform.emailDetail2" style="text-align: left; margin-left: 20px; margin-right: 20px; color:rgba(0,0,0,.5);")
-									.row( style = "background-color: #FAFAFA; padding-top: .2em; padding-bottom: 0.2em" data-bind="visible: !activeing()")
-										.ui.form( style="margin: 20px;width: 100%;")
-											.field( data-bind = " css: { error: signError() || conformTextError() }")
-												textarea( data-position="right center" data-bind = " textInput: conformText, attr: { placeholder: infoDefine [ $root.languageIndex() ].emailConform.info2 }" )
-												a#SendToQTGateTextArea.floating.ui.red.circular.label( data-bind = " text: '!', visible: conformTextError(), attr: { 'data-content': conformTextError () ? messageBoxDefine [ conformTextErrorNumber() ][$root.languageIndex()] : null }, css: { 'activating element1': conformTextError() } ")
-									.row( style = "background-color: #FAFAFA;padding-top: 0px;" data-bind="visible: !activeing()" )
-										.ui.two.column.grid
-											.stretched.row( style ="padding-top: 0px;")
-												.column.left.aligned(style = "padding-top: 0px;padding-bottom: 0.2em")
-													span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_1" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
-													span( data-bind=" text: infoDefine [ $root.languageIndex() ].emailConform.bottom1_2" style="margin-left: 20px;color:rgba(0,0,0,.5);" )
-												.column.right.floated
-													.ui.purple.button( style = "position: absolute; right: 2em; top: 0em;" data-bind="text: infoDefine [ $root.languageIndex() ].emailConform.conformButtom, click: checkActiveEmailSubmit, visible: conformButtom ()" )
-									.row( style = "background-color: #FAFAFA;padding-top: 0px;")
-							
-				<!-- /ko -->
-				<!-- /ko -->
-
-				<!-- /ko -->
-				//-	with: CoNETConnect
-				<!-- /ko -->
-				//-	if: CoNETConnect
-		<!-- /ko -->
-
-		<!-- ko if: showStartupVideo -->
-		.startupView( style = " width:100%; height:100% ")
-			video.videoBackground( preload = "yes" playsinline autoplay muted loop )
-				source( src="/images/startup_background.mp4" type="video/mp4")
-		<!-- /ko -->
-
 	<!-- /ko -->
-	<!-- ko if: showMainPage -->
-		.ui.top.top.banner.ad.mainAD
-			.title( style = "position: relative; -ms-flex-align: center; align-items: center;  z-index: 111; margin: 1rem;")
-				h2.ui.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "color: white; text-align: center;  margin-top: 2rem;" )
-				h3.sub.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "color: white; text-align: center;" )
-		.AppList.CoContent.content
-			.searchItems( style="padding-bottom: 10rem;" )
-				.ui.items.unstackable.divided( data-bind = "template: { foreach: mainManuItems, beforeRemove: hidePlanetElement, afterAdd: showPlanetElement }")
-					.ui.middle.aligned.item
-						a.image( href = "#" )
-							img( data-bind=" attr: { src: img }")
-						.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
-							a.header( href = "#" data-bind=" animationTextIn: header [ $root.languageIndex() ]" style = " color: white;")
-							.meta
-								span
-							.description( style = "color: white")
-								p( data-bind = "animationTextIn: description [ $root.languageIndex() ]")
-							<!-- ko if: extra -->
-							.extra
-								.ui.blue.label( data-bind = "animationTextIn: extra[ $root.languageIndex() ]")
-							<!-- /ko -->
-					
-
-	<!-- /ko -->
-
-	<!-- ko if: CanadaBackground -->
-	section#CanadaBackground( style = "position: absolute;width: 100%;top: 5em;")
-		include coSearchImage.html
-	<!-- /ko -->
-
 
 	<!-- ko if: sectionAgreement -->
 	section#agreement.content
@@ -378,21 +307,7 @@ block jumbotron1
 					.or
 					buttom.ui.positive.button( data-bind = " text: infoDefine[ languageIndex() ].home_index_view.agree, click: agreeClick ")
 	<!-- /ko -->
-	
-	<!-- ko if: showIconBar -->
-	section#iconBar( style = " position: absolute;top: 1.2em;z-index: 999;" )
-		.content( style="position: relative;")
-			span
-				i.icon.cogs.inverted.large.iconButton( style = "margin-left: 1em;" data-bind = "click: showKeyInfoClick ")
-				i.icon.home.inverted.large.iconButton( style = "margin-left: 1em;margin-right: 1em;" data-bind = "click: homeClick ")
-				<!-- ko if: newVersion  -->
-				a( href = "https://github.com/QTGate/QTGate-Desktop-Client" target="_blank")
-					i.icon.setting.big.loading.red
-					span( data-bind="text: infoDefine[ $root.languageIndex() ].linuxUpdate.step1 + newVersion ()"  style="color: white;")
-				<!-- /ko -->
-	<!-- /ko -->
-	
-	
+
 	//-		AppList 
 	<!-- ko if:  AppList() && keyPair() && keyPair().verified -->
 	//-section.AppList.CoContent.content
@@ -424,54 +339,14 @@ block jumbotron1
 				<!-- /ko -->
 	<!-- /ko -->
 
+	<!-- ko if: daggrHtml -->
+	section#daggrHtml( style = " height: 100em;" )
+		<!----------- start tempAppHtml DEBUG -------------->
+		
+		include ../shared/daggr
 
-	<!-- ko if: appsManager -->
-	<!-- ko with: appsManager -->
-
-	<!-- ko if: showMainMenu -->
-	section.mainMenu.content.CoContent( style = " margin-top: 5em;")
-		.CoGateCards( style="max-width: 60em;")
-			.welcomeText.ui.header
-				.content
-					h1.shadowText1( data-bind = " text: infoDefine[ $root.languageIndex() ].thirdParty.information" style="color:white;" )
-					.sub.header( data-bind = " text: infoDefine[ $root.languageIndex() ].appsManager.welcomeTextSub" )
-
-
-			<!-- ko if: mainLoading -->
-			h4.ui.header( data-bind = " text: infoDefine[ $root.languageIndex() ].appsManager.mainLoading" )
-			.ui.active.inline.loader( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }" )
-			<!-- /ko -->
-
-			<!-- ko if: loadingError -->
-			a.ui.red.header( data-bind = "click: mainNemuError, text: messageBoxDefine [ loadingError() ][ $root.languageIndex()]" href="#" )
-			<!-- /ko -->
-			script#mainMenu( data-bind = "html: mainHtml" type="text/html" )
-
-			<!-- ko if: showMain -->
-			#mainMenuHtml( data-bind = " template: { name: 'mainMenu' }")
-			<!-- /ko -->
-			
-
-			<!-- ko if: showTempMain  -->
-			<!-- mainMenu section -->
-			
-			include ../shared/mainMenu
-			
-			<!-- mainMenu section -->
-			<!-- /ko -->
-	
+		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->
-
-	<!-- ko if: appHtml -->
-	script#runningAppHtml( data-bind = "html: runningAppHtml" type="text/html" )
-
-	<!-- ko if: showAppMain -->
-	section#appHtml( data-bind = " template: { name: 'runningAppHtml' }")
-	<!-- /ko -->
-
-	<!-- /ko -->
-
-
 
 	<!-- ko if: tempAppHtml -->
 	section#tempAppHtml( style = " height: 100em;" )
@@ -482,6 +357,4 @@ block jumbotron1
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->
 
-	<!-- /ko -->
-	<!-- /ko -->
 
