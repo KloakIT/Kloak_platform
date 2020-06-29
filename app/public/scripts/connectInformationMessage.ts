@@ -111,6 +111,7 @@ const messageBoxDefine = {
 
 
 }
+
 const requestTimeOut = 1000 * 180
 
 class connectInformationMessage {
@@ -124,7 +125,7 @@ class connectInformationMessage {
 
 	private requestPool = new Map ()
 	private first = true
-	constructor ( private url: string = "/") {
+	constructor ( private url: string = "/", private keyID: string, private _view ) {
 
 		const self = this
 
@@ -145,6 +146,7 @@ class connectInformationMessage {
 	}
 
 	private socketListening () {
+		const self = this
 		this.socketIo.on ( 'reconnect_failed', () => {
 			console.dir ( `reconnect_failed`)
 			//self.showErrorMessage ( 'systemError' )
@@ -180,6 +182,32 @@ class connectInformationMessage {
 			console.dir ( err )
 			//return self.showErrorMessage ( err )
 		})
+
+		this.socketIo.on ( this.keyID, encryptoText => {
+			return this._view.sharedMainWorker.decryptJsonWithAPKey ( encryptoText, ( err, obj: QTGateAPIRequestCommand ) => {
+
+				if ( err ) {
+					return self.showErrorMessage ( err )
+				}
+				
+				switch ( obj.command ) {
+					case 'daggr': {
+						if ( this._view.appScript() && typeof this._view.appScript().getMessage === 'function' ) {
+							
+							return this._view.appScript().getMessage ( obj )
+						}
+
+					}
+
+					default: {
+						self.showErrorMessage ( 'unknow command from node!' )
+					}
+				}
+				
+			})
+		})
+
+
 	}
 
 	public emitRequest ( cmd: QTGateAPIRequestCommand, CallBack ) {
@@ -194,7 +222,7 @@ class connectInformationMessage {
 					return CallBack ( new Error ( 'timeOut' ))
 				}, requestTimeOut )
 			})
-		return _view.sharedMainWorker.encryptedWithAccessPointKey ( cmd, ( err, ciphertext ) => {
+		return this._view.sharedMainWorker.encryptedWithAccessPointKey ( cmd, ( err, ciphertext ) => {
 			if ( err ) {
 				return self.showErrorMessage ( err )
 			}
@@ -213,7 +241,7 @@ class connectInformationMessage {
 		}
 		
 		
-		return _view.sharedMainWorker.decryptJsonWithAPKey ( encryptoText, ( err, obj: QTGateAPIRequestCommand ) => {
+		return this._view.sharedMainWorker.decryptJsonWithAPKey ( encryptoText, ( err, obj: QTGateAPIRequestCommand ) => {
 
 			if ( err ) {
 				return self.showErrorMessage ( err )
@@ -230,26 +258,26 @@ class connectInformationMessage {
 	}
 
 	public getServerPublicKey ( CallBack ) {
-		if ( !_view.keyPair ()) {
+		if ( !this._view.keyPair ()) {
 			return CallBack ()
 		}
-		const publicKey = _view.keyPair().publicKey
+		const publicKey = this._view.keyPair().publicKey
 		const self = this
 		return this.sockEmit ( 'keypair', publicKey, async ( err, data ) => {
 			if ( err ) {
 				self.showErrorMessage ( err )
 				return CallBack ( err )
 			}
-			this.localServerPublicKey = data
+			self.localServerPublicKey = data
 			
-			_view.keyPair()["localserverPublicKey"] = data
-			return _view.sharedMainWorker.localSeverPublicKey ( data, CallBack )
+			self._view.keyPair()["localserverPublicKey"] = data
+			return self._view.sharedMainWorker.localSeverPublicKey ( data, CallBack )
 			
 		})
 	}
 
 	public emitLocalCommand ( emitName: string, command: any, CallBack? ) {
-		return _view.sharedMainWorker.encrypto_withLocalServerKey ( command, ( err, data ) => {
+		return this._view.sharedMainWorker.encrypto_withLocalServerKey ( command, ( err, data ) => {
 			if ( err ) {
 				return CallBack ( err )
 			}

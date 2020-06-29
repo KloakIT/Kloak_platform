@@ -103,14 +103,32 @@ export default class localServer {
 	private localKeyPair: localServerKeyPair = null
 	private serverKeyPassword = Uuid.v4()
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
+	private socketKetIDPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss> = new Map()
+
+	private getMatchKeySocket ( keyID: string ) {
+		const keys = this.socketKetIDPool.keys()
+		const reg = new RegExp ( keyID,'i')
+		let index = -1 
+		this.socketKetIDPool.forEach ( n => {
+			
+		})
+	}
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
 		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
 		const socket = this.requestPool.get ( uuid )
 		if ( !socket ) {
-			return console.log (`Get cmd that have no matched socket \n\n`, mail )
+			
+			const socket = this.socketKetIDPool.get ( uuid )
+
+			if ( !socket ) {
+				console.dir ( this.socketKetIDPool.keys() )
+				return console.log (`Get cmd that have no matched socket [${ uuid }]\n\n ` )
+			}
+
+			return socket.emit ( uuid, mail )
 		}
 
 		socket.emit ( 'doingRequest', mail, uuid )
@@ -365,7 +383,7 @@ export default class localServer {
 
 		socket.on ( 'keypair', async ( publicKey, CallBack )=> {
 			console.log ( `socket.on ( 'keypair') \n`)
-			const _uuid = Uuid.v4()
+			const _uuid = Uuid.v4 ()
 			CallBack( _uuid )
 			
 			return Tool.getPublicKeyInfo ( publicKey, ( err, data: localServerKeyPair ) => {
@@ -375,7 +393,9 @@ export default class localServer {
 				}
 				
 				console.dir ( data.publicID )
-				socket["keypair"] = data
+				socket[ "keypair" ] = data
+				this.socketKetIDPool.set ( data.publicID.slice(24), socket )
+				console.dir ( this.socketKetIDPool.keys() )
 				return socket.emit ( _uuid, null, this.localKeyPair.publicKey )
 			})
 			

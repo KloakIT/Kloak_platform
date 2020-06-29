@@ -103,8 +103,10 @@ const messageBoxDefine = {
 };
 const requestTimeOut = 1000 * 180;
 class connectInformationMessage {
-    constructor(url = "/") {
+    constructor(url = "/", keyID, _view) {
         this.url = url;
+        this.keyID = keyID;
+        this._view = _view;
         this.offlineInfo = ko.observable(false);
         this.showNegative = ko.observable(false);
         this.showGreen = ko.observable(false);
@@ -120,7 +122,7 @@ class connectInformationMessage {
             if (!request) {
                 return console.dir(`onDoingRequest have no uuid ${uuid}`);
             }
-            return _view.sharedMainWorker.decryptJsonWithAPKey(encryptoText, (err, obj) => {
+            return this._view.sharedMainWorker.decryptJsonWithAPKey(encryptoText, (err, obj) => {
                 if (err) {
                     return self.showErrorMessage(err);
                 }
@@ -145,6 +147,7 @@ class connectInformationMessage {
         this.socketListening();
     }
     socketListening() {
+        const self = this;
         this.socketIo.on('reconnect_failed', () => {
             console.dir(`reconnect_failed`);
             //self.showErrorMessage ( 'systemError' )
@@ -173,6 +176,23 @@ class connectInformationMessage {
             console.dir(err);
             //return self.showErrorMessage ( err )
         });
+        this.socketIo.on(this.keyID, encryptoText => {
+            return this._view.sharedMainWorker.decryptJsonWithAPKey(encryptoText, (err, obj) => {
+                if (err) {
+                    return self.showErrorMessage(err);
+                }
+                switch (obj.command) {
+                    case 'daggr': {
+                        if (this._view.appScript() && typeof this._view.appScript().getMessage === 'function') {
+                            return this._view.appScript().getMessage(obj);
+                        }
+                    }
+                    default: {
+                        self.showErrorMessage('unknow command from node!');
+                    }
+                }
+            });
+        });
     }
     emitRequest(cmd, CallBack) {
         const self = this;
@@ -185,7 +205,7 @@ class connectInformationMessage {
                 return CallBack(new Error('timeOut'));
             }, requestTimeOut)
         });
-        return _view.sharedMainWorker.encryptedWithAccessPointKey(cmd, (err, ciphertext) => {
+        return this._view.sharedMainWorker.encryptedWithAccessPointKey(cmd, (err, ciphertext) => {
             if (err) {
                 return self.showErrorMessage(err);
             }
@@ -195,23 +215,23 @@ class connectInformationMessage {
         });
     }
     getServerPublicKey(CallBack) {
-        if (!_view.keyPair()) {
+        if (!this._view.keyPair()) {
             return CallBack();
         }
-        const publicKey = _view.keyPair().publicKey;
+        const publicKey = this._view.keyPair().publicKey;
         const self = this;
         return this.sockEmit('keypair', publicKey, async (err, data) => {
             if (err) {
                 self.showErrorMessage(err);
                 return CallBack(err);
             }
-            this.localServerPublicKey = data;
-            _view.keyPair()["localserverPublicKey"] = data;
-            return _view.sharedMainWorker.localSeverPublicKey(data, CallBack);
+            self.localServerPublicKey = data;
+            self._view.keyPair()["localserverPublicKey"] = data;
+            return self._view.sharedMainWorker.localSeverPublicKey(data, CallBack);
         });
     }
     emitLocalCommand(emitName, command, CallBack) {
-        return _view.sharedMainWorker.encrypto_withLocalServerKey(command, (err, data) => {
+        return this._view.sharedMainWorker.encrypto_withLocalServerKey(command, (err, data) => {
             if (err) {
                 return CallBack(err);
             }

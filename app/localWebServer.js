@@ -82,6 +82,7 @@ class localServer {
         this.localKeyPair = null;
         this.serverKeyPassword = Uuid.v4();
         this.requestPool = new Map();
+        this.socketKetIDPool = new Map();
         this.imapConnectPool = new Map();
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
@@ -121,11 +122,23 @@ class localServer {
             });
         });
     }
+    getMatchKeySocket(keyID) {
+        const keys = this.socketKetIDPool.keys();
+        const reg = new RegExp(keyID, 'i');
+        let index = -1;
+        this.socketKetIDPool.forEach(n => {
+        });
+    }
     catchCmd(mail, uuid) {
         console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
         const socket = this.requestPool.get(uuid);
         if (!socket) {
-            return console.log(`Get cmd that have no matched socket \n\n`, mail);
+            const socket = this.socketKetIDPool.get(uuid);
+            if (!socket) {
+                console.dir(this.socketKetIDPool.keys());
+                return console.log(`Get cmd that have no matched socket [${uuid}]\n\n `);
+            }
+            return socket.emit(uuid, mail);
         }
         socket.emit('doingRequest', mail, uuid);
     }
@@ -317,6 +330,8 @@ class localServer {
                 }
                 console.dir(data.publicID);
                 socket["keypair"] = data;
+                this.socketKetIDPool.set(data.publicID.slice(24), socket);
+                console.dir(this.socketKetIDPool.keys());
                 return socket.emit(_uuid, null, this.localKeyPair.publicKey);
             });
         });

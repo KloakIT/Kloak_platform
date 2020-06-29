@@ -115,7 +115,7 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 		keypair.showLoginPasswordField ( false )
 
 		
-		
+		view.showMain ()
 		
 		/**
 		 * 
@@ -123,32 +123,8 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 		 * 
 		 *
 		**/
-		keypair ["localserverPublicKey"] = _view.connectInformationMessage.localServerPublicKey
 
-		return view.sharedMainWorker.getKeyPairInfo ( keypair, ( err, data: keypair ) => {
-			if ( err ) {
-				return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
-			}
-			
-			
-			
-			if ( data["imapData"] ) {
-				view.imapData = data[ "imapData" ]
-				//return view.imapSetupClassExit ( view.imapData )
-			}
-			
-			view.showMain ()
-			/*
-			let uu = null
-			return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
-				view.imapSetup ( uu = null )
-				view.imapData = imapData
-				return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
-					return view.imapSetupClassExit ( imapData )
-				})
-			}))
-			*/
-		})
+		
 		
     })
     
@@ -370,7 +346,7 @@ class workerManager {
 
 module view_layout {
     export class view {
-        public connectInformationMessage = new connectInformationMessage( '/' )
+        public connectInformationMessage = null
         public sectionLogin = ko.observable ( false )
         public sectionAgreement = ko.observable ( false )
         public sectionWelcome = ko.observable ( true )
@@ -444,8 +420,10 @@ module view_layout {
 		
         private afterInitConfig ( ) {
             
-            this.keyPair ( this.localServerConfig ().keypair )
+			this.keyPair ( this.localServerConfig ().keypair )
+			
             if ( this.keyPair() && this.keyPair().keyPairPassword() &&  typeof this.keyPair().keyPairPassword().inputFocus ==='function' ) {
+				
 				this.keyPair().keyPairPassword().inputFocus ( true )
 				this.sectionLogin ( false )
             }
@@ -497,12 +475,7 @@ module view_layout {
                 _keyPair.passwordOK = true
                 
                 //self.localServerConfig ( config )
-                self.keyPair ( _keyPair )
-				
-				self.connectInformationMessage.getServerPublicKey ( err => {
-					return console.dir (`local server public key ready!`)
-				})
-
+				self.keyPair ( _keyPair )
 				self.showMain ()
 				
 				/*
@@ -831,6 +804,38 @@ module view_layout {
 			this.showStartupVideo ( false )
 			this.showMainPage ( true )
 			this.sectionLogin ( false )
+			this.connectInformationMessage = new connectInformationMessage( '/', this.keyPair().publicKeyID, this )
+			this.connectInformationMessage.getServerPublicKey ( err => {
+
+				this.keyPair() ["localserverPublicKey"] = _view.connectInformationMessage.localServerPublicKey
+				const self = this
+				return this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), ( err, data: keypair ) => {
+					if ( err ) {
+						return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
+					}
+					
+					
+					
+					if ( data ["imapData"] ) {
+						self.imapData = data[ "imapData" ]
+						//return view.imapSetupClassExit ( view.imapData )
+					}
+					
+					
+					/*
+					let uu = null
+					return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
+						view.imapSetup ( uu = null )
+						view.imapData = imapData
+						return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
+							return view.imapSetupClassExit ( imapData )
+						})
+					}))
+					*/
+				})
+				return console.dir (`local server public key ready!`)
+			})
+
 		}
 
 		public hidePlanetElement ( elem, onCompleteAll: () => void ) {
@@ -881,6 +886,7 @@ module view_layout {
 
 const mainMenuArray = [
 	{
+		name: 'librarium',
 		img: '/images/kloakSearchIcon.svg',
 		header: ['私密无痕网页检索及快照','サイド検索及のスナップショット','The Librarium','私密無痕網頁檢索及快照'],
 		description:['流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载','サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード','Web and image search, screenshot and files download via gateway.','流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載'],
@@ -889,18 +895,20 @@ const mainMenuArray = [
 		online: true,
 		htmlTemp: 'tempAppHtml'
 	}, {
+		name: 'fortress',
 		img: '/images/fileStorage.svg',
-		header: ['强安全私密无痕离线浏览器存储','プライバシーと安全な離線ブラウザストレージ','Fortress','強安全私密無痕離線瀏覽器存储'],
+		header: ['堡垒','堡塁','Fortress','堡壘'],
 		description:[
-			'文件打碎并加密保存在浏览器内部，系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
-			'ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
+			'强安全私密无痕离线浏览器存储。文件打碎并加密保存在浏览器内部，整体系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
+			'プライバシーと安全な離線ブラウザストレージ。ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
 			'Offline file and media storage which divides the file into multiple, encrypted, and ordered parts and stores them locally in the browser.  When the user wants to access the file for editing for example , these parts will be reassembled together in the designated order. However for media files, they can be played from the browser without needing reassembly of the media.',
-			'文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
+			'強安全私密無痕離線瀏覽器存储。文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'],
 		extra: null,
 		click: null,
 
 		online: false
 	}, {
+		name: 'masquerade',
 		img: '/images/Masquerade.svg',
 		header: ['假面舞会','マスカレード','Masquerade','假面舞會'],
 		description:['去中心化无审查社交媒体','検閲なしのソーシャルメディア','Decentralized no censorship social media','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
@@ -909,8 +917,8 @@ const mainMenuArray = [
 		online: true
 	}, {
 		img: '/images/message.svg',
-		header: ['点对点加密群聊','エンドツーエンドメッセージ','Daggr','點對點加密群聊'],
-		description:['强加密点对点消息系统，支持群聊，文件多媒体传输和网页链接快照','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','EndtoEnd encrypted message system.','強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+		header: ['','','Daggr',''],
+		description:['强加密点对点加密群聊，支持文件多媒体传输和网页链接快照','エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定','EndtoEnd encrypted message system.','強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
 		extra: null,
 		click: daggr,
 		htmlTemp: 'daggrHtml',

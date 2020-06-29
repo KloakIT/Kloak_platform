@@ -36,17 +36,19 @@
 		.chatArea( data-bind = "foreach: chatData " style = "padding-top: 5rem; padding-bottom: 7rem; transform: scaleY(-1); padding-left: 2rem; padding-right: 2rem;")
 			.item( data-bind = "css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem;")
 				<!-- ko if: textContent -->
-				.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" )
-					p.AppListHeader( data-bind = "text: textContent " style = "padding-bottom: 1rem;")
-					.ui.bottom.right.attached.label( data-bind = "text: create.toLocaleTimeString() ")
+				.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" style = "border-radius: 1rem;")
+					p.AppListHeader( data-bind = "text: textContent " style = "padding-bottom: 1rem;" )
+				<!-- /ko -->
+				<!-- ko if: create() -->
+				.deliveredArea( style = "margin-top: -1rem; font-size: small;" )
+					p.kloak_color_lightGrey( data-bind = "style: { 'text-align': isSelf ? 'right': 'left' }, text: isSelf ? $parent.information.delivered[ $root.languageIndex()] + ' '+ create().toLocaleTimeString() : create().toLocaleTimeString() " )
 				<!-- /ko -->
 		.ui.bottom.fixed.menu.borderless
 			.item( style = "width: 100%;" )
 				.input
 					.ui.right.input.big.icon( style = "width: 100%;" )
-						input( type="text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "value: textInput" )
-						i.icon.red.play.link.circular( data-bind = "click: getMessage " style = "margin-right: 3rem;top: .21em;")
-						i.teal.right.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: .21em;")
+						input( type = "text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "value: textInput" )
+						i.teal.play.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: .21em;")
 
 	<!-- /ko -->
 
