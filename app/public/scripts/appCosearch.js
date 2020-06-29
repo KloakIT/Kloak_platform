@@ -4,16 +4,11 @@ const appScript = {
         totalResults1: ['条记录', '件', 'results', '條記錄'],
         moreResults: ['更多结果', '結果をさらに表示', 'More Results', '更多結果'],
         searchToolBarMenu: [
-            [
-                '网站', 'ウェイブ', 'Website', '網頁'
-            ], [
-                '新闻', 'ニュース', 'News', '新聞'
-            ], [
-                '图片', '画像', 'Picture', '圖片'
-            ], [
-                '视频', 'ビデオ', 'Video', '視頻'
-            ]
-        ]
+            ['网站', 'ウェイブ', 'Website', '網頁'],
+            ['新闻', 'ニュース', 'News', '新聞'],
+            ['图片', '画像', 'Picture', '圖片'],
+            ['视频', 'ビデオ', 'Video', '視頻'],
+        ],
     },
     showMain: ko.observable(true),
     showWebPage: ko.observable(null),
@@ -70,6 +65,9 @@ const appScript = {
     showDownloadProcess: ko.observable(false),
     showDownload: ko.observable(false),
     showHistory: ko.observable(false),
+    showDownloadProgress: ko.observable(false),
+    currentDownloads: ko.observable({}),
+    finishedDownloads: ko.observableArray([]),
     //	['originImage']
     initSearchData: (self) => {
         self.searchItem(null);
@@ -81,6 +79,72 @@ const appScript = {
         self.showSearchesRelated(null);
         self.videoItemsArray(null);
         self.imageSearchItemArray(null);
+    },
+    assembleAndDownload: (requestUuid) => {
+        const callback = (e) => {
+            const hiddenAnchor = document.getElementById('hiddenAnchor');
+            hiddenAnchor.download = `${e.filename}.${e.extension}`;
+            hiddenAnchor.href = e.url;
+            hiddenAnchor.click();
+            hiddenAnchor.download = '';
+            hiddenAnchor.href = '';
+            URL.revokeObjectURL(e.url);
+        };
+        new Assembler(requestUuid, callback);
+    },
+    downloaderCallback: async (e) => {
+        const command = e.cmd;
+        const payload = e.payload;
+        switch (command) {
+            case 'CREATE_FILE_HISTORY':
+                let req = window.indexedDB.open('kloak-history', 1);
+                req.onupgradeneeded = (e) => {
+                    this.db = e.target.result;
+                    this.db.createObjectStore('history');
+                };
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const fs = db
+                        .transaction('history', 'readonly')
+                        .objectStore('history');
+                    fs.get(0).onsuccess = (e) => {
+                        let fileHistory = [];
+                        if (e.target.result) {
+                            fileHistory = e.target.result;
+                        }
+                        fileHistory.push(payload);
+                        const fs = db
+                            .transaction('history', 'readwrite')
+                            .objectStore('history');
+                        console.log(fs);
+                        fs.put(fileHistory, 0).onsuccess = (e) => { };
+                    };
+                };
+                req.onerror = (e) => {
+                    console.log('Unable to open IndexedDB!');
+                };
+                break;
+            case 'FILE_DOWNLOAD_FINISHED':
+                const finishedItem = await appScript.currentDownloads()[payload.requestUuid];
+                await appScript.finishedDownloads().push(finishedItem);
+                const temp = appScript.currentDownloads();
+                if (delete temp[payload.requestUuid]) {
+                    appScript.currentDownloads(temp);
+                }
+                appScript.finishedDownloads.valueHasMutated();
+                break;
+            case 'UPDATE_PROGRESS':
+                console.log(appScript.currentDownloads());
+                console.log(payload);
+                appScript.currentDownloads()[payload.requestUuid].percent =
+                    payload.percent;
+                const completeBar = document.getElementById(payload.requestUuid);
+                appScript.currentDownloads.valueHasMutated();
+                if (completeBar) {
+                    completeBar.style.width = `${payload.percent}%`;
+                }
+                break;
+        }
     },
     showResultItems: (self, items) => {
         self.searchItem(items);
@@ -109,7 +173,7 @@ const appScript = {
     returnSearchResultItemsInit: (items) => {
         let i = 0;
         const y = [];
-        items.Result.forEach(n => {
+        items.Result.forEach((n) => {
             i++;
             n['showLoading'] = ko.observable(false);
             n['conetResponse'] = ko.observable(false);
@@ -167,7 +231,7 @@ const appScript = {
             Args: null,
             error: null,
             subCom: null,
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
         };
         /**
          * 			web page address
@@ -217,11 +281,33 @@ const appScript = {
              *
              * 		}
              */
-            if (com.subCom === "downloadFile") {
-                self.showMain(false);
+            if (com.subCom === 'downloadFile') {
                 const args = com.Args[0];
                 self.showDownloadProcess(true);
-                return console.dir(args);
+                if (self.currentDownloads()[com.requestSerial]) {
+                    const download = self.currentDownloads()[com.requestSerial];
+                    download.downloader.addToQueue({
+                        ...args,
+                        requestUuid: com.requestSerial,
+                    });
+                    return;
+                }
+                const newDownload = {
+                    requestSerial: com.requestSerial,
+                    filename: args.downloadFilename,
+                    percent: 0,
+                    downloader: new Downloader(appScript.downloaderCallback, com.requestSerial),
+                };
+                newDownload.downloader.addToQueue({
+                    ...args,
+                    requestUuid: com.requestSerial,
+                });
+                self.currentDownloads({
+                    ...self.currentDownloads(),
+                    [com.requestSerial]: newDownload,
+                });
+                newDownload.downloader.start();
+                return;
             }
             if (com.subCom === 'webSearch') {
                 const args = com.Args;
@@ -247,13 +333,13 @@ const appScript = {
                 self.showMain(false);
                 self.showSnapshop(true);
                 let y = null;
-                self.showWebPage(y = new showWebPageClass(search_text, buffer, uuid, () => {
-                    self.showWebPage(y = null);
+                self.showWebPage((y = new showWebPageClass(search_text, buffer, uuid, () => {
+                    self.showWebPage((y = null));
                     self.showMain(true);
                     self.showSnapshop(false);
                     _view.CanadaBackground(true);
                     self.showMainSearchForm(true);
-                }));
+                })));
             });
         });
     },
@@ -347,7 +433,7 @@ const appScript = {
             Args: ['google', nextLink],
             error: null,
             subCom: null,
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
         };
         switch (self.currentlyShowItems()) {
             //      google search
@@ -422,14 +508,15 @@ const appScript = {
             return self.newsButtonShowError(true);
         };
         if (!self.newsItemsArray()) {
-            if (!self.searchItemsArray().action || !self.searchItemsArray().action.news) {
+            if (!self.searchItemsArray().action ||
+                !self.searchItemsArray().action.news) {
                 return errorProcess('invalidRequest');
             }
             const com = {
                 command: 'CoSearch',
                 Args: ['google', self.searchItemsArray().action.news],
                 error: null,
-                subCom: 'newsNext'
+                subCom: 'newsNext',
             };
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
@@ -474,12 +561,16 @@ const appScript = {
             return self.imageButtonShowError(true);
         };
         if (!self.imageItemsArray()) {
-            const imageLink = self.searchItemsArray() && self.searchItemsArray().action && self.searchItemsArray().action.image ? self.searchItemsArray().action.image : self.imageSearchItemArray().searchesRelated[1];
+            const imageLink = self.searchItemsArray() &&
+                self.searchItemsArray().action &&
+                self.searchItemsArray().action.image
+                ? self.searchItemsArray().action.image
+                : self.imageSearchItemArray().searchesRelated[1];
             const com = {
                 command: 'CoSearch',
                 Args: ['google', imageLink],
                 error: null,
-                subCom: 'imageNext'
+                subCom: 'imageNext',
             };
             self.imageButtonShowLoading(true);
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
@@ -529,7 +620,7 @@ const appScript = {
         const url = isImage ? currentItem.clickUrl : currentItem.url;
         const width = $(window).width();
         const height = $(window).height();
-        const showError = err => {
+        const showError = (err) => {
             isImage
                 ? currentItem.showImageLoading(false)
                 : currentItem.showLoading(false);
@@ -544,7 +635,7 @@ const appScript = {
                 onHidden: function () {
                     currentItem.showError(false);
                     currentItem.errorIndex(null);
-                }
+                },
             });
         };
         const callBack = (err, com) => {
@@ -578,7 +669,7 @@ const appScript = {
                     ? currentItem.showImageLoading(false)
                     : currentItem.showLoading(false);
                 currentItem.loadingGetResponse(false);
-                currentItem["snapshotData"] = buffer;
+                currentItem['snapshotData'] = buffer;
                 const item = {
                     uuid: com.requestSerial,
                     url: url,
@@ -589,7 +680,7 @@ const appScript = {
                     tag: ['search', 'html'],
                     times_tamp: new Date(),
                     domain: getUrlDomain(url),
-                    color: 0
+                    color: 0,
                 };
                 _view.historyData.unshift(item);
                 return currentItem.conetResponse(false);
@@ -600,7 +691,7 @@ const appScript = {
             Args: [url, width, height],
             error: null,
             subCom: 'getSnapshop',
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
         };
         return _view.connectInformationMessage.emitRequest(com, callBack);
     },
@@ -649,14 +740,15 @@ const appScript = {
             return self.videoButtonShowError(true);
         };
         if (!self.videoItemsArray()) {
-            if (!self.searchItemsArray().action || !self.searchItemsArray().action.video) {
+            if (!self.searchItemsArray().action ||
+                !self.searchItemsArray().action.video) {
                 return errorProcess('invalidRequest');
             }
             const com = {
                 command: 'CoSearch',
                 Args: ['google', self.searchItemsArray().action.video],
                 error: null,
-                subCom: 'videoNext'
+                subCom: 'videoNext',
             };
             self.videoButtonShowLoading(true);
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
@@ -694,7 +786,7 @@ const appScript = {
             total_bytes: media[1].length,
             media_type: 'image/png',
             rawData: media[1],
-            media_id_string: null
+            media_id_string: null,
         };
         //if ( mediaData.length > maxImageLength) {
         const exportImage = (_type, img) => {
@@ -752,7 +844,7 @@ const appScript = {
             return;
         }
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = (e) => {
             const rawData = reader.result.toString();
             self.showInputLoading(true);
             self.searchInputText(' ');
@@ -768,7 +860,7 @@ const appScript = {
                         return errorProcess(err);
                     }
                     self.initSearchData(self);
-                    return _view.connectInformationMessage.sockEmit('sendMedia', uuid, textData, err => {
+                    return _view.connectInformationMessage.sockEmit('sendMedia', uuid, textData, (err) => {
                         if (err) {
                             return errorProcess(err);
                         }
@@ -776,7 +868,7 @@ const appScript = {
                             command: 'CoSearch',
                             Args: ['google', uuid],
                             error: null,
-                            subCom: 'imageSearch'
+                            subCom: 'imageSearch',
                         };
                         return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                             if (err) {
@@ -832,12 +924,12 @@ const appScript = {
                 self.showSnapshop(true);
                 self.showSearchSimilarImagesResult(false);
                 let y = null;
-                return self.showWebPage(y = new showWebPageClass(url, _img['snapshotData'], _img['snapshotUuid'], () => {
-                    self.showWebPage(y = null);
+                return self.showWebPage((y = new showWebPageClass(url, _img['snapshotData'], _img['snapshotUuid'], () => {
+                    self.showWebPage((y = null));
                     self.showMain(true);
                     self.showSnapshop(false);
                     self.showSearchSimilarImagesResult(true);
-                }));
+                })));
             }
             const errorProcess = (err) => {
                 _img.errorIndex(_view.connectInformationMessage.getErrorIndex(err));
@@ -852,7 +944,7 @@ const appScript = {
                     onHidden: function () {
                         _img.showError(false);
                         _img.errorIndex(null);
-                    }
+                    },
                 });
                 return _img.showError(true);
             };
@@ -885,7 +977,7 @@ const appScript = {
                     _img.showLoading(false);
                     _img.loadingGetResponse(false);
                     _img.conetResponse(false);
-                    return _img['snapshotData'] = buffer;
+                    return (_img['snapshotData'] = buffer);
                 });
             };
             const width = $(window).width();
@@ -894,7 +986,7 @@ const appScript = {
                 command: 'CoSearch',
                 Args: [url, width, height],
                 error: null,
-                subCom: 'getSnapshop'
+                subCom: 'getSnapshop',
             };
             return _view.connectInformationMessage.emitRequest(com, callBack);
         }
@@ -925,7 +1017,7 @@ const appScript = {
                     inline: true,
                     onHidden: function () {
                         _img.showImageError(false);
-                    }
+                    },
                 });
                 return;
             };
@@ -959,7 +1051,7 @@ const appScript = {
                         _img.showLoading(false);
                         _img.loadingGetResponse(false);
                         _img.conetResponse(false);
-                        return _img['snapshotData'] = data;
+                        return (_img['snapshotData'] = data);
                     });
                 });
             };
@@ -967,7 +1059,7 @@ const appScript = {
                 command: 'CoSearch',
                 Args: [_img.imgUrlHref],
                 error: null,
-                subCom: 'getFile'
+                subCom: 'getFile',
             };
             return _view.connectInformationMessage.emitRequest(com, callBack);
             setTimeout(() => {
@@ -985,7 +1077,5 @@ const appScript = {
             }, 1000);
             _img.showImageLoading(true);
         }
-    }
-    //*** */
-    /** */
+    },
 };

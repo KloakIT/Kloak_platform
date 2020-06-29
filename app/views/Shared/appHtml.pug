@@ -702,6 +702,41 @@
 		<!-- /ko -->
 		<!-- /ko -->
 
+		<!-- ko if: Object.keys(currentDownloads()).length > 0 || Object.keys(finishedDownloads()).length > 0 -->
+		.downloadIndicator(data-bind="style: {'height': showDownloadProgress() ? 'auto' : '3rem'}")
+			a#hiddenAnchor(style="position: absolute; visibility: none")
+			.downloadHeader(data-bind="click: () => {showDownloadProgress(!showDownloadProgress())}, style: {'opacity' : showDownloadProgress() ? '1' : '0.75'}")
+				p(data-bind="text: Object.keys(currentDownloads()).length > 0 ? 'Downloading ' + Object.keys(currentDownloads()).length + ' file(s)' : 'No active downloads'")
+				<!-- ko if: showDownloadProgress() -->
+				i.chevron.down.icon(style="margin-bottom: 5px")
+				<!-- /ko -->
+				<!-- ko if: !showDownloadProgress() -->
+				i.chevron.up.icon(style="margin-bottom: 5px")
+				<!-- /ko -->
+			.downloadList(data-bind="style: {'transform': showDownloadProgress() ? 'scaleY(1)' : 'scaleY(0)'}")
+				<!-- ko foreach: Object.keys(currentDownloads()) -->
+				.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
+					p(data-bind="text: $parent.currentDownloads()[$data].filename" )
+						.downloadProgress
+							.progressBar
+								.uncomplete
+								.complete(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}")
+							.ui.active.inline.loader.tiny(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial + 'loader'}")
+							//- a.downloadAnchor(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}" style="display: none")
+							//- 	i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $parent.currentDownloads()[$data].requestSerial}")
+				<!-- /ko -->
+				
+				<!-- ko foreach: finishedDownloads() -->
+				.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
+					p(data-bind="text: $data.filename" )
+						.downloadProgress
+							.progressBar
+								.uncomplete
+								.complete(style="width: 100%")
+							a.downloadAnchor(data-bind="attr: {'id': $data.requestSerial}")
+								i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $data.requestSerial}, click: () => {$parent.assembleAndDownload($data.requestSerial)}")
+				<!-- /ko -->
+		<!-- /ko -->
 		
 	
 	<!-- /ko -->

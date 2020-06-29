@@ -1,107 +1,178 @@
 const appScript = {
 	info: {
-		totalResults: ['大约有','約','About','大約有'],
-		totalResults1: ['条记录','件','results','條記錄'],
-		moreResults: ['更多结果','結果をさらに表示','More Results','更多結果'],
+		totalResults: ['大约有', '約', 'About', '大約有'],
+		totalResults1: ['条记录', '件', 'results', '條記錄'],
+		moreResults: ['更多结果', '結果をさらに表示', 'More Results', '更多結果'],
 		searchToolBarMenu: [
-			[
-				'网站','ウェイブ','Website','網頁'
-			],[
-				'新闻','ニュース','News','新聞'
-			],[
-				'图片','画像','Picture','圖片'
-			],[
-				'视频','ビデオ','Video','視頻'
-			]
-		]
+			['网站', 'ウェイブ', 'Website', '網頁'],
+			['新闻', 'ニュース', 'News', '新聞'],
+			['图片', '画像', 'Picture', '圖片'],
+			['视频', 'ビデオ', 'Video', '視頻'],
+		],
 	},
 
-	showMain: ko.observable ( true ),
-	showWebPage: ko.observable ( null ), 
-	htmlIframe: ko.observable ( false ),
-	showSnapshop: ko.observable ( false ),
-	searchItemsArray: ko.observable (),
-	hasFocusShowTool: ko.observable ( false ),
-	backGroundBlue: ko.observable ( false ),
-	searchItem: ko.observable ( null ),
-	showMainSearchForm: ko.observable ( true ),
-	showSearchSetupForm: ko.observable ( false ),
-	showSearchError: ko.observable ( false ),
-	showInputLoading: ko.observable ( false ),
-	errorMessageIndex: ko.observable ( -1 ),
-	searchInputText: ko.observable (''),
-	hasFocus: ko.observable ( false ),
-	passwordError: ko.observable ( false ),
-	searchSetupIcon: ko.observable ( bingIcon ),
-	password: ko.observable (''),
-	searchInputTextActionShow: ko.observable ( false ),
-	SearchInputNextHasFocus: ko.observable ( false ),
-	showSearchesRelated: ko.observable ( false ),
-	searchItemList: ko.observableArray ([]),
-	loadingGetResponse: ko.observable ( false ),
-	conetResponse: ko.observable ( false ),
-	searchInputTextShow: ko.observable (''),
-	currentlyShowItems: ko.observable ( 0 ),
-	newsButtonShowLoading: ko.observable ( false ),
+	showMain: ko.observable(true),
+	showWebPage: ko.observable(null),
+	htmlIframe: ko.observable(false),
+	showSnapshop: ko.observable(false),
+	searchItemsArray: ko.observable(),
+	hasFocusShowTool: ko.observable(false),
+	backGroundBlue: ko.observable(false),
+	searchItem: ko.observable(null),
+	showMainSearchForm: ko.observable(true),
+	showSearchSetupForm: ko.observable(false),
+	showSearchError: ko.observable(false),
+	showInputLoading: ko.observable(false),
+	errorMessageIndex: ko.observable(-1),
+	searchInputText: ko.observable(''),
+	hasFocus: ko.observable(false),
+	passwordError: ko.observable(false),
+	searchSetupIcon: ko.observable(bingIcon),
+	password: ko.observable(''),
+	searchInputTextActionShow: ko.observable(false),
+	SearchInputNextHasFocus: ko.observable(false),
+	showSearchesRelated: ko.observable(false),
+	searchItemList: ko.observableArray([]),
+	loadingGetResponse: ko.observable(false),
+	conetResponse: ko.observable(false),
+	searchInputTextShow: ko.observable(''),
+	currentlyShowItems: ko.observable(0),
+	newsButtonShowLoading: ko.observable(false),
 
-	newsItemsArray: ko.observable (),
-	newsButtonShowError: ko.observable ( false ),
-	newsButtonErrorIndex: ko.observable ( null ),
-	newsLoadingGetResponse: ko.observable ( false ),
-	newsConetResponse: ko.observable ( false ), 
+	newsItemsArray: ko.observable(),
+	newsButtonShowError: ko.observable(false),
+	newsButtonErrorIndex: ko.observable(null),
+	newsLoadingGetResponse: ko.observable(false),
+	newsConetResponse: ko.observable(false),
 
-	nextButtonShowError: ko.observable ( false ),
-	moreResultsButtomLoading: ko.observable ( false ),
+	nextButtonShowError: ko.observable(false),
+	moreResultsButtomLoading: ko.observable(false),
 
-	imageButtonShowLoading: ko.observable ( false ),
-	imageButtonShowError: ko.observable ( false ),
-	imageButtonErrorIndex: ko.observable ( -1 ),
-	imageLoadingGetResponse: ko.observable ( false ),
-	imageConetResponse: ko.observable ( false ),
-	imageItemsArray: ko.observable (),
-	searchSimilarImagesList: ko.observableArray ([]),
-	showSearchSimilarImagesResult: ko.observable ( false ),
-	imageSearchItemArray: ko.observable (),
+	imageButtonShowLoading: ko.observable(false),
+	imageButtonShowError: ko.observable(false),
+	imageButtonErrorIndex: ko.observable(-1),
+	imageLoadingGetResponse: ko.observable(false),
+	imageConetResponse: ko.observable(false),
+	imageItemsArray: ko.observable(),
+	searchSimilarImagesList: ko.observableArray([]),
+	showSearchSimilarImagesResult: ko.observable(false),
+	imageSearchItemArray: ko.observable(),
 
-	videoButtonShowLoading: ko.observable ( false ),
-	videoItemsArray: ko.observable (),
-	videoButtonShowError: ko.observable ( false ),
-	videoButtonErrorIndex: ko.observable ( -1 ),
-	videoLoadingGetResponse: ko.observable ( false ),
-	videoConetResponse: ko.observable ( false ),
+	videoButtonShowLoading: ko.observable(false),
+	videoItemsArray: ko.observable(),
+	videoButtonShowError: ko.observable(false),
+	videoButtonErrorIndex: ko.observable(-1),
+	videoLoadingGetResponse: ko.observable(false),
+	videoConetResponse: ko.observable(false),
 
-	nextButtonErrorIndex: ko.observable ( false ),
-	nextButtonConetResponse: ko.observable ( false ),
-	nextButtonLoadingGetResponse: ko.observable ( false ),
-	showDownloadProcess: ko.observable ( false ),
-	showDownload: ko.observable ( false ),
-	showHistory: ko.observable ( false ),
+	nextButtonErrorIndex: ko.observable(false),
+	nextButtonConetResponse: ko.observable(false),
+	nextButtonLoadingGetResponse: ko.observable(false),
+	showDownloadProcess: ko.observable(false),
+	showDownload: ko.observable(false),
+	showHistory: ko.observable(false),
+
+	showDownloadProgress: ko.observable(false),
+	currentDownloads: ko.observable(<currentDownloads>{}),
+	finishedDownloads: ko.observableArray([]),
 
 	//	['originImage']
 
-	initSearchData: ( self ) => {
-		self.searchItem ( null )
-		self.searchItemList ([])
-		self.showInputLoading ( true )
-		self.showSearchesRelated ( false )
-		self.newsItemsArray ( null )
-		self.imageItemsArray ( null )
-		self.showSearchesRelated ( null )
-		self.videoItemsArray ( null )
-		self.imageSearchItemArray ( null )
-		
+	initSearchData: (self) => {
+		self.searchItem(null)
+		self.searchItemList([])
+		self.showInputLoading(true)
+		self.showSearchesRelated(false)
+		self.newsItemsArray(null)
+		self.imageItemsArray(null)
+		self.showSearchesRelated(null)
+		self.videoItemsArray(null)
+		self.imageSearchItemArray(null)
 	},
 
-	showResultItems: ( self, items ) => {
-		self.searchItem ( items )
-		self.searchItemList ( items.Result )
+	assembleAndDownload: (requestUuid: string) => {
+		const callback = (e) => {
+			const hiddenAnchor = document.getElementById('hiddenAnchor')
+			hiddenAnchor.download = `${e.filename}.${e.extension}`
+			hiddenAnchor.href = e.url
+			hiddenAnchor.click()
+			hiddenAnchor.download = ''
+			hiddenAnchor.href = ''
+			URL.revokeObjectURL(e.url)
+		}
+		new Assembler(requestUuid, callback)
+	},
+
+	downloaderCallback: async (e) => {
+		const command = e.cmd
+		const payload = e.payload
+		switch (command) {
+			case 'CREATE_FILE_HISTORY':
+				let req = window.indexedDB.open('kloak-history', 1)
+
+				req.onupgradeneeded = (e) => {
+					this.db = e.target.result
+					this.db.createObjectStore('history')
+				}
+
+				req.onsuccess = (e) => {
+					const db = e.target.result
+					const fs = db
+						.transaction('history', 'readonly')
+						.objectStore('history')
+					fs.get(0).onsuccess = (e) => {
+						let fileHistory = []
+						if (e.target.result) {
+							fileHistory = e.target.result
+						}
+						fileHistory.push(payload)
+						const fs = db
+							.transaction('history', 'readwrite')
+							.objectStore('history')
+						console.log(fs)
+						fs.put(fileHistory, 0).onsuccess = (e) => {}
+					}
+				}
+
+				req.onerror = (e) => {
+					console.log('Unable to open IndexedDB!')
+				}
+				break
+			case 'FILE_DOWNLOAD_FINISHED':
+				const finishedItem = await appScript.currentDownloads()[
+					payload.requestUuid
+				]
+				await appScript.finishedDownloads().push(finishedItem)
+				const temp = appScript.currentDownloads()
+				if (delete temp[payload.requestUuid]) {
+					appScript.currentDownloads(temp)
+				}
+				appScript.finishedDownloads.valueHasMutated()
+				break
+			case 'UPDATE_PROGRESS':
+				console.log(appScript.currentDownloads())
+				console.log(payload)
+				appScript.currentDownloads()[payload.requestUuid].percent =
+					payload.percent
+				const completeBar = document.getElementById(payload.requestUuid)
+				appScript.currentDownloads.valueHasMutated()
+				if (completeBar) {
+					completeBar.style.width = `${payload.percent}%`
+				}
+				break
+		}
+	},
+
+	showResultItems: (self, items) => {
+		self.searchItem(items)
+		self.searchItemList(items.Result)
 		$('.selection.dropdown').dropdown()
 	},
 
-	searchSetupClick: ( self, event ) => {
-		self.showSearchSetupForm ( true )
-		self.backGroundBlue ( true )
-		
+	searchSetupClick: (self, event) => {
+		self.showSearchSetupForm(true)
+		self.backGroundBlue(true)
+
 		/*
 		$('#coSearchBackGround').one ( 'click', function() {
 			self.backGroundClick ()
@@ -115,248 +186,265 @@ const appScript = {
 		return false
 	},
 
-	searchInputCloseError: ( self, event ) => {
-		self.showSearchError ( false )
-		self.errorMessageIndex (null)
-		
+	searchInputCloseError: (self, event) => {
+		self.showSearchError(false)
+		self.errorMessageIndex(null)
 	},
 
-	returnSearchResultItemsInit: ( items ) => {
+	returnSearchResultItemsInit: (items) => {
 		let i = 0
 		const y = []
-		items.Result.forEach ( n => {
+		items.Result.forEach((n) => {
 			i++
-			
-			n['showLoading'] = ko.observable ( false )
-			n['conetResponse'] = ko.observable ( false )
-			n['loadingGetResponse'] = ko.observable ( false )
-			n['snapshotReady'] = ko.observable ( false )
+
+			n['showLoading'] = ko.observable(false)
+			n['conetResponse'] = ko.observable(false)
+			n['loadingGetResponse'] = ko.observable(false)
+			n['snapshotReady'] = ko.observable(false)
 			n['snapshotClass'] = null
 			n['snapshotData'] = null
 			n['snapshotUuid'] = null
-			n['id'] = uuid_generate ()
-			n['showError'] = ko.observable ( false )
-			n['errorIndex'] = ko.observable ( -1 )
-			if ( !n['newsBrand'] ) {
+			n['id'] = uuid_generate()
+			n['showError'] = ko.observable(false)
+			n['errorIndex'] = ko.observable(-1)
+			if (!n['newsBrand']) {
 				n['newsBrand'] = null
 			}
-			if ( n.imageInfo ) {
-				if ( !n.imageInfo['videoTime'] ) {
+			if (n.imageInfo) {
+				if (!n.imageInfo['videoTime']) {
 					n.imageInfo['videoTime'] = null
 				}
 			}
-			
+
 			n['webUrlHref'] = n.clickUrl
-			
+
 			n['imgUrlHref'] = n.imgSrc
-			n['showDownload'] = ko.observable ( false )
-			
+			n['showDownload'] = ko.observable(false)
+
 			/* ====================================================================================================================
 			ANDY - MASONARY IMAGES
 			======================================================================================================================= */
-			n['showOptions'] = ko.observable ( false )
-		
+			n['showOptions'] = ko.observable(false)
 
 			/* ====================================================================================================================
 			
 			======================================================================================================================= */
 
-			n['showImageLoading'] = ko.observable ( false )
-			n['showImageError'] = ko.observable ( false )
-			n['snapshotImageReady'] = ko.observable ( false )
-			n['loadingImageGetResponse'] = ko.observable ( false )
-			n['conetImageResponse'] = ko.observable ( false )
-			n['imageErrorIndex'] = ko.observable (-1)
+			n['showImageLoading'] = ko.observable(false)
+			n['showImageError'] = ko.observable(false)
+			n['snapshotImageReady'] = ko.observable(false)
+			n['loadingImageGetResponse'] = ko.observable(false)
+			n['conetImageResponse'] = ko.observable(false)
+			n['imageErrorIndex'] = ko.observable(-1)
 			n['imgSrc'] = n['imgSrc'] || ''
 		})
-		
 	},
 
-	search_form: ( self, event ) => {
+	search_form: (self, event) => {
+		if (self.showInputLoading()) {
+			return
+		}
 
-		if ( self.showInputLoading()) {
-			return 
+		if (!_view.CanadaBackground()) {
+			_view.CanadaBackground(true)
 		}
-		
-		if ( !_view.CanadaBackground ()) {
-			_view.CanadaBackground ( true )
+		if (!self.showMainSearchForm()) {
+			self.showMainSearchForm(true)
 		}
-		if ( !self.showMainSearchForm()) {
-			self.showMainSearchForm( true )
-		}
-		const search_text = self.searchInputText ()
-		
+		const search_text = self.searchInputText()
+
 		const width = window.innerWidth
 		const height = window.outerHeight
-		
-		self.initSearchData ( self )
+
+		self.initSearchData(self)
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'CoSearch',
 			Args: null,
 			error: null,
 			subCom: null,
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate(),
 		}
 		/**
 		 * 			web page address
 		 */
 
-		if ( /^http[s]?:\/\//.test( search_text )) {
-			com.Args = [ search_text, width, height ]
+		if (/^http[s]?:\/\//.test(search_text)) {
+			com.Args = [search_text, width, height]
 			com.subCom = 'getSnapshop'
-			
 		} else {
-			com.Args = [ 'google', search_text ]
+			com.Args = ['google', search_text]
 			com.subCom = 'webSearch'
 		}
 
-		const errorProcess = ( err ) => {
-			self.showInputLoading ( false )
-			self.searchInputText ( '' )
-			self.errorMessageIndex ( _view.connectInformationMessage.getErrorIndex( err ))
-			return self.showSearchError ( true )
+		const errorProcess = (err) => {
+			self.showInputLoading(false)
+			self.searchInputText('')
+			self.errorMessageIndex(_view.connectInformationMessage.getErrorIndex(err))
+			return self.showSearchError(true)
 		}
 
 		/**
-		 * 
+		 *
 		 * 		test Unit
 		 */
 
-		
-
-		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-			
-			if ( err ) {
-				return errorProcess ( err )
-			}
-
-			if ( !com ) {
-				return self.loadingGetResponse ( true )
-			}
-
-			if ( com.error === -1 ) {
-				self.loadingGetResponse ( false )
-				return self.conetResponse ( true )
-			}
-
-			
-
-			if ( com.error ) {
-				return errorProcess ( com.error )
-			}
-
-			self.showInputLoading ( false )
-			/**
-			 * 		
-			 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
-			 * 		{
-			 * 		 	Content-Type: string
-			 * 			fileExpansion: string
-			 * 			fileName: string
-			 * 			length: string ( If null server have not support breakpoint resume )
-			 * 			url: string
-			 * 
-			 * 		}
-			 */
-			
-			if ( com.subCom === "downloadFile") {
-				
-				self.showMain ( false )
-				const args: kloak_downloadObj = com.Args[0]
-				
-				
-				self.showDownloadProcess ( true )
-				return console.dir ( args )
-			}
-
-			if ( com.subCom === 'webSearch' ) {
-				
-				
-				const args = com.Args
-				self.searchInputTextShow ( search_text )
-				
-				self.returnSearchResultItemsInit ( args )
-				args.totalResults = args.totalResults.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-				self.searchItemsArray ( args )
-				self.showResultItems ( self, args )
-				_view.CanadaBackground ( false )
-				return self.showMainSearchForm ( false )
-			}
-			
-			const arg: string = com.Args[0]
-			const uuid = arg.split(',')[0].split ('.')[0]
-
-			self.showDownload ( true )
-			return _view.connectInformationMessage.fetchFiles ( arg, ( err, buffer: string ) => {
-				self.showDownload ( false )
-				if ( err ) {
-					return errorProcess ( err )
+		return _view.connectInformationMessage.emitRequest(
+			com,
+			(err, com: QTGateAPIRequestCommand) => {
+				if (err) {
+					return errorProcess(err)
 				}
-				
-				self.showInputLoading ( false )
-				_view.CanadaBackground ( false )
-				self.showMainSearchForm ( false )
-				self.showMain ( false )
-				self.showSnapshop ( true )
-				let y = null
 
-				self.showWebPage ( y = new showWebPageClass ( search_text, buffer, uuid , () => {
-					self.showWebPage ( y = null )
-					self.showMain ( true )
-					self.showSnapshop ( false )
-					_view.CanadaBackground ( true )
-					self.showMainSearchForm ( true )
-				}))
-				
-				
-			})
-			
-		})
-		
+				if (!com) {
+					return self.loadingGetResponse(true)
+				}
 
+				if (com.error === -1) {
+					self.loadingGetResponse(false)
+					return self.conetResponse(true)
+				}
+
+				if (com.error) {
+					return errorProcess(com.error)
+				}
+
+				self.showInputLoading(false)
+				/**
+				 *
+				 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
+				 * 		{
+				 * 		 	Content-Type: string
+				 * 			fileExpansion: string
+				 * 			fileName: string
+				 * 			length: string ( If null server have not support breakpoint resume )
+				 * 			url: string
+				 *
+				 * 		}
+				 */
+
+				if (com.subCom === 'downloadFile') {
+					const args: kloak_downloadObj = com.Args[0]
+
+					self.showDownloadProcess(true)
+					if (self.currentDownloads()[com.requestSerial]) {
+						const download: kloakDownloads = self.currentDownloads()[
+							com.requestSerial
+						]
+						download.downloader.addToQueue({
+							...args,
+							requestUuid: com.requestSerial,
+						})
+						return
+					}
+					const newDownload: kloakDownloads = {
+						requestSerial: com.requestSerial,
+						filename: args.downloadFilename,
+						percent: 0,
+						downloader: new Downloader(
+							appScript.downloaderCallback,
+							com.requestSerial
+						),
+					}
+					newDownload.downloader.addToQueue({
+						...args,
+						requestUuid: com.requestSerial,
+					})
+					self.currentDownloads({
+						...self.currentDownloads(),
+						[com.requestSerial]: newDownload,
+					})
+					newDownload.downloader.start()
+					return
+				}
+
+				if (com.subCom === 'webSearch') {
+					const args = com.Args
+					self.searchInputTextShow(search_text)
+
+					self.returnSearchResultItemsInit(args)
+					args.totalResults = args.totalResults.replace(
+						/\B(?=(\d{3})+(?!\d))/g,
+						','
+					)
+					self.searchItemsArray(args)
+					self.showResultItems(self, args)
+					_view.CanadaBackground(false)
+					return self.showMainSearchForm(false)
+				}
+
+				const arg: string = com.Args[0]
+				const uuid = arg.split(',')[0].split('.')[0]
+
+				self.showDownload(true)
+				return _view.connectInformationMessage.fetchFiles(
+					arg,
+					(err, buffer: string) => {
+						self.showDownload(false)
+						if (err) {
+							return errorProcess(err)
+						}
+
+						self.showInputLoading(false)
+						_view.CanadaBackground(false)
+						self.showMainSearchForm(false)
+						self.showMain(false)
+						self.showSnapshop(true)
+						let y = null
+
+						self.showWebPage(
+							(y = new showWebPageClass(search_text, buffer, uuid, () => {
+								self.showWebPage((y = null))
+								self.showMain(true)
+								self.showSnapshop(false)
+								_view.CanadaBackground(true)
+								self.showMainSearchForm(true)
+							}))
+						)
+					}
+				)
+			}
+		)
 	},
 
-	historyListClick: ( self, event ) => {
-		_view.CanadaBackground ( false )
-		self.showMainSearchForm ( false )
-		self.showMain ( true )
-		self.showHistory ( true )
-		_view.bodyBlue ( false )
+	historyListClick: (self, event) => {
+		_view.CanadaBackground(false)
+		self.showMainSearchForm(false)
+		self.showMain(true)
+		self.showHistory(true)
+		_view.bodyBlue(false)
 	},
 
-	searchSetup: ( key: string, self, event ) => {
-		self.showSearchSetupForm ( false )
-		self.backGroundBlue ( false )
-		switch ( key ) {
+	searchSetup: (key: string, self, event) => {
+		self.showSearchSetupForm(false)
+		self.backGroundBlue(false)
+		switch (key) {
 			case 'b': {
-				return self.searchSetupIcon ( bingIcon )
+				return self.searchSetupIcon(bingIcon)
 			}
 			case 'd': {
-				return self.searchSetupIcon ( duckduckgoIcon )
+				return self.searchSetupIcon(duckduckgoIcon)
 			}
 			case 'y': {
-				return self.searchSetupIcon ( YahooIcon )
+				return self.searchSetupIcon(YahooIcon)
 			}
 			default: {
-				self.searchSetupIcon ( googleIcon )
+				self.searchSetupIcon(googleIcon)
 			}
 		}
 	},
 
-	startup: ( self ) => {
-		self.password.subscribe (( _text: string ) => {
-			self.passwordError ( false )
+	startup: (self) => {
+		self.password.subscribe((_text: string) => {
+			self.passwordError(false)
 		})
 
-		self.hasFocus.subscribe (( _result: boolean ) => {
-			
-			
-			if ( _result ) {
-				self.hasFocusShowTool ( true )
-				return self.backGroundBlue ( true )
-			} 
-			
+		self.hasFocus.subscribe((_result: boolean) => {
+			if (_result) {
+				self.hasFocusShowTool(true)
+				return self.backGroundBlue(true)
+			}
+
 			/*
 			if ( self.showMain () ) {
 				if ( !self.searchInputText().length ) {
@@ -377,65 +465,58 @@ const appScript = {
 			}
 			return true
 			*/
-			
-		})
-		
-		self.searchInputText.subscribe (( _text: string ) => {
-			
-			self.searchInputTextActionShow ( _text.length > 0 )
-			
 		})
 
-		self.SearchInputNextHasFocus.subscribe (( hasFocus: boolean ) => {
-			if ( hasFocus ) {
-				self.showSearchesRelated ( true )
+		self.searchInputText.subscribe((_text: string) => {
+			self.searchInputTextActionShow(_text.length > 0)
+		})
+
+		self.SearchInputNextHasFocus.subscribe((hasFocus: boolean) => {
+			if (hasFocus) {
+				self.showSearchesRelated(true)
 			}
 		})
-		
-		_view.CanadaBackground ( true )
+
+		_view.CanadaBackground(true)
 	},
 
-	nextButtonErrorClick: ( self ) => {
-		
-		self.nextButtonShowError ( false )
-		self.nextButtonErrorIndex ( null )
+	nextButtonErrorClick: (self) => {
+		self.nextButtonShowError(false)
+		self.nextButtonErrorIndex(null)
 	},
 
-	webItemsClick: ( self, event ) => {
-		self.currentlyShowItems ( 0 )
-		self.showResultItems ( self, self.searchItemsArray ())
+	webItemsClick: (self, event) => {
+		self.currentlyShowItems(0)
+		self.showResultItems(self, self.searchItemsArray())
 	},
 
-	searchNext: ( self, event ) => {
+	searchNext: (self, event) => {
 		const nextLink = self.searchItem().nextPage
-		if ( self.moreResultsButtomLoading () || !nextLink ) {
+		if (self.moreResultsButtomLoading() || !nextLink) {
 			return
 		}
 
-		
-		self.moreResultsButtomLoading ( true )
-		
+		self.moreResultsButtomLoading(true)
 
-		function showError ( err ) {
-			self.moreResultsButtomLoading ( false )
-			self.nextButtonErrorIndex (  _view.connectInformationMessage.getErrorIndex ( err ))
-			self.nextButtonShowError ( true )
-			
+		function showError(err) {
+			self.moreResultsButtomLoading(false)
+			self.nextButtonErrorIndex(
+				_view.connectInformationMessage.getErrorIndex(err)
+			)
+			self.nextButtonShowError(true)
 		}
-
-		
 
 		let currentArray = null
 		const com: QTGateAPIRequestCommand = {
 			command: 'CoSearch',
-			Args: [ 'google', nextLink ],
+			Args: ['google', nextLink],
 			error: null,
 			subCom: null,
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate(),
 		}
 
-		switch ( self.currentlyShowItems ()) {
-			  //      google search
+		switch (self.currentlyShowItems()) {
+			//      google search
 			case 0: {
 				com.subCom = 'searchNext'
 				currentArray = self.searchItemsArray()
@@ -462,309 +543,307 @@ const appScript = {
 		}
 
 		/** */
-		
-		
-		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-			
-			if ( err ) {
-				return showError ( err )
-			}
 
-			if ( !com ) {
-				return self.nextButtonLoadingGetResponse ( true )
-			}
+		return _view.connectInformationMessage.emitRequest(
+			com,
+			(err, com: QTGateAPIRequestCommand) => {
+				if (err) {
+					return showError(err)
+				}
 
-			if ( com.error === -1 ) {
-				self.nextButtonLoadingGetResponse ( false )
-				return self.nextButtonConetResponse ( true )
-			}
+				if (!com) {
+					return self.nextButtonLoadingGetResponse(true)
+				}
 
-			if ( com.error ) {
-				return showError ( com.error  )
-			}
-			self.moreResultsButtomLoading ( false )
-			self.nextButtonLoadingGetResponse ( false )
-			self.nextButtonConetResponse ( false )
-			const args = com.Args
-			self.returnSearchResultItemsInit ( args )
-			currentArray.Result.push ( ...args.Result )
-			currentArray.nextPage = args.nextPage
-			return self.showResultItems ( self, currentArray )
+				if (com.error === -1) {
+					self.nextButtonLoadingGetResponse(false)
+					return self.nextButtonConetResponse(true)
+				}
 
-		})
-		
+				if (com.error) {
+					return showError(com.error)
+				}
+				self.moreResultsButtomLoading(false)
+				self.nextButtonLoadingGetResponse(false)
+				self.nextButtonConetResponse(false)
+				const args = com.Args
+				self.returnSearchResultItemsInit(args)
+				currentArray.Result.push(...args.Result)
+				currentArray.nextPage = args.nextPage
+				return self.showResultItems(self, currentArray)
+			}
+		)
 	},
 
-	createNewsResult: ( self, newsResult ) => {
-		const newsItems = JSON.parse ( JSON.stringify ( self.searchItemsArray ()))
+	createNewsResult: (self, newsResult) => {
+		const newsItems = JSON.parse(JSON.stringify(self.searchItemsArray()))
 		newsItems.Result = newsResult.Result
 		newsItems.nextPage = newsResult.nextPage
 		newsItems.totalResults = newsResult.totalResults
 		return newsItems
 	},
 
-	newsButtonClick: ( self, event ) => {
-
-		if ( self.newsButtonShowLoading ()) {
-			return 
-		}
-		
-		if ( self.newsButtonShowError ()) {
-			self.newsButtonShowError( false )
-			return self.newsButtonErrorIndex ( null )
+	newsButtonClick: (self, event) => {
+		if (self.newsButtonShowLoading()) {
+			return
 		}
 
-		self.newsButtonShowLoading ( true )
-
-		const errorProcess = ( err ) => {
-			self.newsButtonShowLoading ( false )
-			self.newsLoadingGetResponse ( false )
-			self.newsConetResponse ( false )
-			self.newsButtonErrorIndex ( _view.connectInformationMessage.getErrorIndex( err ))
-			return self.newsButtonShowError ( true )
+		if (self.newsButtonShowError()) {
+			self.newsButtonShowError(false)
+			return self.newsButtonErrorIndex(null)
 		}
-		if ( ! self.newsItemsArray() ) {
 
-			if ( !self.searchItemsArray().action || !self.searchItemsArray().action.news ) {
-				return errorProcess ('invalidRequest')
+		self.newsButtonShowLoading(true)
+
+		const errorProcess = (err) => {
+			self.newsButtonShowLoading(false)
+			self.newsLoadingGetResponse(false)
+			self.newsConetResponse(false)
+			self.newsButtonErrorIndex(
+				_view.connectInformationMessage.getErrorIndex(err)
+			)
+			return self.newsButtonShowError(true)
+		}
+		if (!self.newsItemsArray()) {
+			if (
+				!self.searchItemsArray().action ||
+				!self.searchItemsArray().action.news
+			) {
+				return errorProcess('invalidRequest')
 			}
-			
-
 
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ 'google', self.searchItemsArray().action.news ],
+				Args: ['google', self.searchItemsArray().action.news],
 				error: null,
-				subCom: 'newsNext'
+				subCom: 'newsNext',
 			}
 
-			return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-			
-				if ( err ) {
+			return _view.connectInformationMessage.emitRequest(
+				com,
+				(err, com: QTGateAPIRequestCommand) => {
+					if (err) {
+						return errorProcess(err)
+					}
 
-					return errorProcess ( err )
+					if (!com) {
+						return self.newsLoadingGetResponse(true)
+					}
+
+					if (com.error === -1) {
+						self.newsLoadingGetResponse(false)
+						return self.newsConetResponse(true)
+					}
+
+					if (com.error) {
+						return errorProcess(com.error)
+					}
+
+					self.newsButtonShowLoading(false)
+					self.newsConetResponse(false)
+					self.newsLoadingGetResponse(false)
+
+					const args = com.Args
+					args.totalResults = args.totalResults.replace(
+						/\B(?=(\d{3})+(?!\d))/g,
+						','
+					)
+					self.newsItemsArray(self.createNewsResult(self, args))
+					self.returnSearchResultItemsInit(self.newsItemsArray())
 				}
-	
-				if ( !com ) {
-					return self.newsLoadingGetResponse ( true )
-				}
-	
-				if ( com.error === -1 ) {
-					self.newsLoadingGetResponse ( false )
-					return self.newsConetResponse ( true )
-				}
-	
-				if ( com.error ) {
-					return errorProcess ( com.error  )
-				}
-
-
-				self.newsButtonShowLoading ( false )
-				self.newsConetResponse ( false )
-				self.newsLoadingGetResponse ( false )
-
-				const args = com.Args
-				args.totalResults = args.totalResults.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-				self.newsItemsArray ( self.createNewsResult( self, args ))
-				self.returnSearchResultItemsInit ( self.newsItemsArray () )
-	
-			})
-
+			)
 		}
 
 		self.currentlyShowItems(1)
-		self.newsButtonShowLoading ( false )
-		return self.showResultItems ( self, self.newsItemsArray() )
-
+		self.newsButtonShowLoading(false)
+		return self.showResultItems(self, self.newsItemsArray())
 	},
 
-	imageButtonClick: ( self, event ) => {
-
-		if ( self.imageButtonShowLoading ()) {
-			return 
-		}
-		
-		if ( self.imageButtonShowError ()) {
-			self.imageButtonShowError ( false )
-			return self.imageButtonErrorIndex ( null )
+	imageButtonClick: (self, event) => {
+		if (self.imageButtonShowLoading()) {
+			return
 		}
 
-		const errorProcess = ( err ) => {
-			self.imageButtonShowLoading ( false )
-			self.imageLoadingGetResponse ( false )
-			self.imageConetResponse ( false )
-			self.imageButtonErrorIndex ( _view.connectInformationMessage.getErrorIndex( err ))
-			return self.imageButtonShowError ( true )
+		if (self.imageButtonShowError()) {
+			self.imageButtonShowError(false)
+			return self.imageButtonErrorIndex(null)
 		}
 
-		if ( ! self.imageItemsArray() ) {
-			const imageLink =  self.searchItemsArray() && self.searchItemsArray().action && self.searchItemsArray().action.image ? self.searchItemsArray().action.image : self.imageSearchItemArray().searchesRelated[1]
+		const errorProcess = (err) => {
+			self.imageButtonShowLoading(false)
+			self.imageLoadingGetResponse(false)
+			self.imageConetResponse(false)
+			self.imageButtonErrorIndex(
+				_view.connectInformationMessage.getErrorIndex(err)
+			)
+			return self.imageButtonShowError(true)
+		}
+
+		if (!self.imageItemsArray()) {
+			const imageLink =
+				self.searchItemsArray() &&
+				self.searchItemsArray().action &&
+				self.searchItemsArray().action.image
+					? self.searchItemsArray().action.image
+					: self.imageSearchItemArray().searchesRelated[1]
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ 'google', imageLink ],
+				Args: ['google', imageLink],
 				error: null,
-				subCom: 'imageNext'
+				subCom: 'imageNext',
 			}
-			self.imageButtonShowLoading ( true )
-			
-			
-			return _view.connectInformationMessage.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
-				
-				if ( err ) {
-					return errorProcess ( err )
+			self.imageButtonShowLoading(true)
+
+			return _view.connectInformationMessage.emitRequest(
+				com,
+				(err, com: QTGateAPIRequestCommand) => {
+					if (err) {
+						return errorProcess(err)
+					}
+
+					if (!com) {
+						self.imageConetResponse(false)
+						return self.imageLoadingGetResponse(true)
+					}
+
+					if (com.error === -1) {
+						self.imageLoadingGetResponse(false)
+						return self.imageConetResponse(true)
+					}
+					const args = com.Args
+
+					if (com.error) {
+						return errorProcess(com.error)
+					}
+
+					if (!args.param || !args.param.Result || !args.param.Result.length) {
+						return errorProcess('timeOut')
+					}
+
+					self.imageButtonShowLoading(false)
+					self.imageConetResponse(false)
+					self.imageLoadingGetResponse(false)
+
+					self.imageItemsArray(args.param)
+					self.returnSearchResultItemsInit(self.imageItemsArray())
 				}
-
-				if ( !com ) {
-					self.imageConetResponse ( false )
-					return self.imageLoadingGetResponse ( true )
-				}
-
-				if ( com.error === -1 ) {
-					self.imageLoadingGetResponse ( false )
-					return self.imageConetResponse ( true )
-				}
-				const args = com.Args
-
-				if ( com.error ) {
-					return errorProcess ( com.error )
-				}
-
-				if ( !args.param || !args.param.Result || !args.param.Result.length ) {
-					return errorProcess ( 'timeOut' )
-				}
-
-				self.imageButtonShowLoading ( false )
-				self.imageConetResponse ( false )
-				self.imageLoadingGetResponse ( false )
-
-				
-				self.imageItemsArray ( args.param )
-				self.returnSearchResultItemsInit ( self.imageItemsArray () )
-
-			})
+			)
 			/** */
-
 		}
 
-
-		
-		self.searchSimilarImagesList( self.imageItemsArray().Result  )
-		self.showMain ( false )
-		self.showSearchSimilarImagesResult ( true )
-		
+		self.searchSimilarImagesList(self.imageItemsArray().Result)
+		self.showMain(false)
+		self.showSearchSimilarImagesResult(true)
 	},
 
 	// CHANGED ============================================
-  // CHANGED ============================================
-  // CHANGED ============================================
-	getSnapshotClick: ( self, index, isImage?: boolean) => {
-		let currentItem: googleSearchResultItemlocal  = null
-		if ( isImage ) {
-			currentItem = self.searchSimilarImagesList ()[index]
-			currentItem.showImageLoading ( true )
+	// CHANGED ============================================
+	// CHANGED ============================================
+	getSnapshotClick: (self, index, isImage?: boolean) => {
+		let currentItem: googleSearchResultItemlocal = null
+		if (isImage) {
+			currentItem = self.searchSimilarImagesList()[index]
+			currentItem.showImageLoading(true)
 		} else {
-			currentItem = self.searchItemList()[ index ]
-			currentItem.showLoading ( true )
+			currentItem = self.searchItemList()[index]
+			currentItem.showLoading(true)
 		}
-		const url = isImage ? currentItem.clickUrl : currentItem.url 
-		const width = $( window ).width ()
-		const height = $( window ).height ()
+		const url = isImage ? currentItem.clickUrl : currentItem.url
+		const width = $(window).width()
+		const height = $(window).height()
 
-		const showError = err => {
+		const showError = (err) => {
 			isImage
 				? currentItem.showImageLoading(false)
 				: currentItem.showLoading(false)
 			currentItem.loadingGetResponse(false)
 			currentItem.conetResponse(false)
-			currentItem.errorIndex(
-				_view.connectInformationMessage.getErrorIndex(err)
-			)
+			currentItem.errorIndex(_view.connectInformationMessage.getErrorIndex(err))
 			currentItem.showError(true)
 			const currentElm = $(`#${currentItem.id}`)
 			return currentElm.popup({
 				on: 'click',
 				inline: true,
-				onHidden: function() {
-				currentItem.showError(false)
-				currentItem.errorIndex(null)
-				}
+				onHidden: function () {
+					currentItem.showError(false)
+					currentItem.errorIndex(null)
+				},
 			})
 		}
 
-		const callBack = ( err?, com?: QTGateAPIRequestCommand ) => {
-			if ( err ) {
+		const callBack = (err?, com?: QTGateAPIRequestCommand) => {
+			if (err) {
 				return showError(err)
 			}
-			if ( !com ) {
-				currentItem.loadingGetResponse ( true )
-				return currentItem.conetResponse ( false )
+			if (!com) {
+				currentItem.loadingGetResponse(true)
+				return currentItem.conetResponse(false)
 			}
-			if ( com.error === -1 ) {
-				currentItem.loadingGetResponse ( false )
-				return currentItem.conetResponse ( true )
+			if (com.error === -1) {
+				currentItem.loadingGetResponse(false)
+				return currentItem.conetResponse(true)
 			}
-			if ( com.error ) {
-				return showError ( com.error )
+			if (com.error) {
+				return showError(com.error)
 			}
 
 			const arg: string = com.Args[0]
-			currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
-			currentItem.showDownload ( true )
-			currentItem.showLoading ( false )
+			currentItem.snapshotUuid = arg.split(',')[0].split('.')[0]
+			currentItem.showDownload(true)
+			currentItem.showLoading(false)
 
-			return _view.connectInformationMessage.fetchFiles ( arg, ( err, buffer: { uuid: string, data: string }[] ) => {
-				currentItem.showDownload ( false )
-				if ( err ) {
-					return showError ( err )
+			return _view.connectInformationMessage.fetchFiles(
+				arg,
+				(err, buffer: { uuid: string; data: string }[]) => {
+					currentItem.showDownload(false)
+					if (err) {
+						return showError(err)
+					}
+
+					isImage
+						? currentItem.snapshotImageReady(true)
+						: currentItem.snapshotReady(true)
+					isImage
+						? currentItem.showImageLoading(false)
+						: currentItem.showLoading(false)
+					currentItem.loadingGetResponse(false)
+
+					currentItem['snapshotData'] = buffer
+					const item: histeoryItem = {
+						uuid: com.requestSerial,
+						url: url,
+						detail: currentItem.description,
+						urlShow: currentItem.urlShow,
+						fileIndex: buffer,
+						icon: '.file.image.outline',
+						tag: ['search', 'html'],
+						times_tamp: new Date(),
+						domain: getUrlDomain(url),
+						color: 0,
+					}
+
+					_view.historyData.unshift(item)
+					return currentItem.conetResponse(false)
 				}
-
-				isImage
-					? currentItem.snapshotImageReady ( true )
-					: currentItem.snapshotReady ( true )
-				isImage
-					? currentItem.showImageLoading ( false )
-					: currentItem.showLoading ( false ) 
-				currentItem.loadingGetResponse ( false ) 
-				
-				currentItem [ "snapshotData" ] = buffer
-				const item: histeoryItem = {
-					uuid: com.requestSerial,
-					url: url,
-					detail: currentItem.description,
-					urlShow: currentItem.urlShow,
-					fileIndex: buffer,
-					icon: '.file.image.outline',
-					tag: ['search','html'],
-					times_tamp: new Date(),
-					domain: getUrlDomain ( url ),
-					color: 0
-				}
-				
-				_view.historyData.unshift ( item )
-				return currentItem.conetResponse ( false )
-
-			})
-		
+			)
 		}
-
-
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'CoSearch',
 			Args: [url, width, height],
 			error: null,
 			subCom: 'getSnapshop',
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate(),
 		}
 
-		return _view.connectInformationMessage.emitRequest ( com, callBack )
+		return _view.connectInformationMessage.emitRequest(com, callBack)
 	},
 
-  	showSnapshotClick: (self, index, isImage?: boolean) => {
-		self.showMain ( false )
-		self.showSnapshop ( true )
+	showSnapshotClick: (self, index, isImage?: boolean) => {
+		self.showMain(false)
+		self.showSnapshop(true)
 		let currentItem = null
-		if ( isImage ) {
+		if (isImage) {
 			currentItem = self.searchSimilarImagesList()[index]
 		} else {
 			currentItem = self.searchItemList()[index]
@@ -772,395 +851,392 @@ const appScript = {
 		let y = null
 
 		self.showWebPage(
-		( y = new showWebPageClass (
-			isImage ? currentItem.clickUrl : currentItem.url,
-			currentItem.snapshotData,
-			currentItem.snapshotUuid,
-			() => {
-			self.showWebPage (( y = null ))
-			self.showMain ( true )
-			self.showSnapshop ( false )
-			}
-		))
+			(y = new showWebPageClass(
+				isImage ? currentItem.clickUrl : currentItem.url,
+				currentItem.snapshotData,
+				currentItem.snapshotUuid,
+				() => {
+					self.showWebPage((y = null))
+					self.showMain(true)
+					self.showSnapshop(false)
+				}
+			))
 		)
-  },
-
-  // CHANGED ============================================
-  // CHANGED ============================================
-  // CHANGED ============================================
-
-	searchesRelatedSelect: ( self, index ) => {
-
-		self.searchInputText ( self.searchItem().searchesRelated[index].text )
-		self.showSearchesRelated ( false )
 	},
 
-	closeSimilarImagesResult: ( self ) => {
-		self.searchSimilarImagesList ([])
-		self.showMain ( true )
-		self.showSearchSimilarImagesResult ( false )
+	// CHANGED ============================================
+	// CHANGED ============================================
+	// CHANGED ============================================
+
+	searchesRelatedSelect: (self, index) => {
+		self.searchInputText(self.searchItem().searchesRelated[index].text)
+		self.showSearchesRelated(false)
 	},
 
-	videoButtonClick: ( self ) => {
+	closeSimilarImagesResult: (self) => {
+		self.searchSimilarImagesList([])
+		self.showMain(true)
+		self.showSearchSimilarImagesResult(false)
+	},
 
-		if ( self.videoButtonShowLoading ()) {
-			return 
-		}
-		
-		if ( self.videoButtonShowError ()) {
-			self.videoButtonShowError ( false )
-			return self.imageButtonErrorIndex ( null )
-		}
-
-		const errorProcess = ( err ) => {
-			self.videoButtonShowLoading ( false )
-			self.videoLoadingGetResponse ( false )
-			self.videoConetResponse ( false )
-			self.videoButtonErrorIndex ( _view.connectInformationMessage.getErrorIndex ( err ))
-			return self.videoButtonShowError ( true )
+	videoButtonClick: (self) => {
+		if (self.videoButtonShowLoading()) {
+			return
 		}
 
-		if ( ! self.videoItemsArray() ) {
+		if (self.videoButtonShowError()) {
+			self.videoButtonShowError(false)
+			return self.imageButtonErrorIndex(null)
+		}
 
-			if ( !self.searchItemsArray().action || !self.searchItemsArray().action.video ) {
-				return errorProcess ('invalidRequest')
+		const errorProcess = (err) => {
+			self.videoButtonShowLoading(false)
+			self.videoLoadingGetResponse(false)
+			self.videoConetResponse(false)
+			self.videoButtonErrorIndex(
+				_view.connectInformationMessage.getErrorIndex(err)
+			)
+			return self.videoButtonShowError(true)
+		}
+
+		if (!self.videoItemsArray()) {
+			if (
+				!self.searchItemsArray().action ||
+				!self.searchItemsArray().action.video
+			) {
+				return errorProcess('invalidRequest')
 			}
 
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ 'google', self.searchItemsArray().action.video ],
+				Args: ['google', self.searchItemsArray().action.video],
 				error: null,
-				subCom: 'videoNext'
+				subCom: 'videoNext',
 			}
 
-			self.videoButtonShowLoading ( true )
-			
-			
-			return _view.connectInformationMessage.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
-				
-				if ( err ) {
-					return errorProcess ( err )
+			self.videoButtonShowLoading(true)
+
+			return _view.connectInformationMessage.emitRequest(
+				com,
+				(err, com: QTGateAPIRequestCommand) => {
+					if (err) {
+						return errorProcess(err)
+					}
+
+					if (!com) {
+						self.videoConetResponse(false)
+						return self.videoLoadingGetResponse(true)
+					}
+
+					if (com.error === -1) {
+						self.videoLoadingGetResponse(false)
+						return self.videoConetResponse(true)
+					}
+
+					if (com.error) {
+						return errorProcess(com.error)
+					}
+
+					self.videoButtonShowLoading(false)
+					self.videoLoadingGetResponse(false)
+					self.videoConetResponse(false)
+
+					const args = com.Args
+					self.videoItemsArray(self.createNewsResult(self, args.param))
+					self.returnSearchResultItemsInit(self.videoItemsArray())
 				}
-
-				if ( !com ) {
-					self.videoConetResponse ( false )
-					return self.videoLoadingGetResponse ( true )
-				}
-
-				if ( com.error === -1 ) {
-					self.videoLoadingGetResponse ( false )
-					return self.videoConetResponse ( true )
-				}
-
-				if ( com.error ) {
-					return errorProcess ( com.error  )
-				}
-
-
-				self.videoButtonShowLoading ( false )
-				self.videoLoadingGetResponse ( false )
-				self.videoConetResponse ( false )
-
-				const args = com.Args
-				self.videoItemsArray ( self.createNewsResult( self, args.param ))
-				self.returnSearchResultItemsInit ( self.videoItemsArray () )
-
-			})
+			)
 			/** */
-
-		
 		}
 		self.currentlyShowItems(3)
-		
-		return self.showResultItems ( self, self.videoItemsArray() )
 
+		return self.showResultItems(self, self.videoItemsArray())
 	},
 
-	getPictureBase64MaxSize_mediaData: ( mediaData: string, imageMaxWidth: number, imageMaxHeight: number, CallBack ) => {
-		
+	getPictureBase64MaxSize_mediaData: (
+		mediaData: string,
+		imageMaxWidth: number,
+		imageMaxHeight: number,
+		CallBack
+	) => {
 		const media = mediaData.split(',')
-		const type = media[0].split(';')[0].split (':')[1]
-		const _media = Buffer.from ( media[1], 'base64')
-		
+		const type = media[0].split(';')[0].split(':')[1]
+		const _media = Buffer.from(media[1], 'base64')
+
 		const ret: twitter_mediaData = {
 			total_bytes: media[1].length,
 			media_type: 'image/png',
 			rawData: media[1],
-			media_id_string: null
+			media_id_string: null,
 		}
-		
-		
+
 		//if ( mediaData.length > maxImageLength) {
-		const exportImage = ( _type, img ) => {
-			return img.getBuffer ( _type, ( err, _buf: Buffer ) => {
-				if ( err ) {
-					return CallBack ( err )
+		const exportImage = (_type, img) => {
+			return img.getBuffer(_type, (err, _buf: Buffer) => {
+				if (err) {
+					return CallBack(err)
 				}
-				ret.rawData = _buf.toString( 'base64' )
+				ret.rawData = _buf.toString('base64')
 				ret.total_bytes = _buf.length
 
-				return CallBack ( null, ret )
+				return CallBack(null, ret)
 			})
 		}
 
-		return Jimp.read ( _media, ( err, image ) => {
-			if ( err ) {
-				return CallBack ( err )
+		return Jimp.read(_media, (err, image) => {
+			if (err) {
+				return CallBack(err)
 			}
 			const uu = image.bitmap
 
-			if ( uu.height +  uu.width > imageMaxHeight + imageMaxWidth ) {
-				if ( uu.height > uu.widt ) {
-					image.resize ( Jimp.AUTO, imageMaxHeight )
+			if (uu.height + uu.width > imageMaxHeight + imageMaxWidth) {
+				if (uu.height > uu.widt) {
+					image.resize(Jimp.AUTO, imageMaxHeight)
 				} else {
-					image.resize ( imageMaxWidth, Jimp.AUTO )
+					image.resize(imageMaxWidth, Jimp.AUTO)
 				}
-			
 			}
 			//		to PNG
 
-			return image.deflateStrategy ( 2, () => {
-				return exportImage ( ret.media_type, image )
+			return image.deflateStrategy(2, () => {
+				return exportImage(ret.media_type, image)
 			})
-			
-
 		})
 		//}
-		
+
 		//return CallBack ( null, ret )
-		
 	},
 
-	imageSearch: ( ee ) => {
-		
-			
-			const self = _view.appsManager().appScript()
+	imageSearch: (ee) => {
+		const self = _view.appsManager().appScript()
 
-			const errorProcess = ( err ) => {
-				self.showInputLoading ( false )
-				self.searchInputText ( '' )
-				self.errorMessageIndex ( _view.connectInformationMessage.getErrorIndex( err ))
-				return self.showSearchError ( true )
-			}
+		const errorProcess = (err) => {
+			self.showInputLoading(false)
+			self.searchInputText('')
+			self.errorMessageIndex(_view.connectInformationMessage.getErrorIndex(err))
+			return self.showSearchError(true)
+		}
 
-			const showItems = ( iResult ) => {
-				self.showInputLoading ( false )
-				self.currentlyShowItems ( 2 )
-				self.returnSearchResultItemsInit ( iResult )
-				self.imageSearchItemArray ( iResult )
-				self.searchInputText ( iResult.searchesRelated[0])
-				self.showResultItems ( self, self.imageSearchItemArray ())
-			}
+		const showItems = (iResult) => {
+			self.showInputLoading(false)
+			self.currentlyShowItems(2)
+			self.returnSearchResultItemsInit(iResult)
+			self.imageSearchItemArray(iResult)
+			self.searchInputText(iResult.searchesRelated[0])
+			self.showResultItems(self, self.imageSearchItemArray())
+		}
 
-			if ( !ee || !ee.files || !ee.files.length ) {
-				return
-			}
+		if (!ee || !ee.files || !ee.files.length) {
+			return
+		}
 
-			const file = ee.files[0]
+		const file = ee.files[0]
 
-			if ( !file || !file.type.match ( /^image.(png$|jpg$|jpeg$|gif$)/ )) {
-				return
-			}
-			const reader = new FileReader()
+		if (!file || !file.type.match(/^image.(png$|jpg$|jpeg$|gif$)/)) {
+			return
+		}
+		const reader = new FileReader()
 
-			reader.onload = e => {
-				
-				const rawData = reader.result.toString()
-				self.showInputLoading ( true )
-				self.searchInputText (' ')
-				self.searchItem ( null )
-				
-				self.searchItemList ([])
+		reader.onload = (e) => {
+			const rawData = reader.result.toString()
+			self.showInputLoading(true)
+			self.searchInputText(' ')
+			self.searchItem(null)
 
-				return self.getPictureBase64MaxSize_mediaData ( rawData, 1024, 1024, ( err, data ) => {
-					if ( err ) {
-						return errorProcess ( err )
+			self.searchItemList([])
+
+			return self.getPictureBase64MaxSize_mediaData(
+				rawData,
+				1024,
+				1024,
+				(err, data) => {
+					if (err) {
+						return errorProcess(err)
 					}
 
 					const uuid = uuid_generate() + '.png'
 
-					return _view.keyPairCalss.encrypt ( data.rawData, ( err, textData ) => {
-
-						if ( err ) {
-							return errorProcess ( err )
+					return _view.keyPairCalss.encrypt(data.rawData, (err, textData) => {
+						if (err) {
+							return errorProcess(err)
 						}
-						self.initSearchData ( self )
+						self.initSearchData(self)
 
-						return _view.connectInformationMessage.sockEmit ( 'sendMedia', uuid, textData, err => {
+						return _view.connectInformationMessage.sockEmit(
+							'sendMedia',
+							uuid,
+							textData,
+							(err) => {
+								if (err) {
+									return errorProcess(err)
+								}
 
-							if ( err ) {
-								return errorProcess ( err )
+								const com: QTGateAPIRequestCommand = {
+									command: 'CoSearch',
+									Args: ['google', uuid],
+									error: null,
+									subCom: 'imageSearch',
+								}
+
+								return _view.connectInformationMessage.emitRequest(
+									com,
+									(err, com: QTGateAPIRequestCommand) => {
+										if (err) {
+											return errorProcess(err)
+										}
+
+										if (!com) {
+											return self.loadingGetResponse(true)
+										}
+
+										if (com.error === -1) {
+											self.loadingGetResponse(false)
+											return self.conetResponse(true)
+										}
+
+										if (com.error) {
+											return errorProcess(com.error)
+										}
+
+										_view.CanadaBackground(false)
+										self.showMainSearchForm(false)
+										return showItems(com.Args.param)
+									}
+								)
 							}
-	
-							const com: QTGateAPIRequestCommand = {
-								command: 'CoSearch',
-								Args: [ 'google', uuid ],
-								error: null,
-								subCom: 'imageSearch'
-							}
-							
-							return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-
-								if ( err ) {
-									return errorProcess ( err )
-								}
-
-								if ( !com ) {
-									return self.loadingGetResponse ( true )
-								}
-
-								if ( com.error === -1 ) {
-									self.loadingGetResponse ( false )
-									return self.conetResponse ( true )
-								}
-				
-				
-								if ( com.error ) {
-									return errorProcess ( com.error  )
-								}
-
-								_view.CanadaBackground ( false )
-								self.showMainSearchForm( false )
-								return showItems ( com.Args.param )
-				
-							})
-						})
-						
+						)
 					})
-					
-				})
-				
-			}
+				}
+			)
+		}
 
-			if ( !_view.CanadaBackground ()) {
-				_view.CanadaBackground ( true )
-			}
-			if ( !self.showMainSearchForm()) {
-				self.showMainSearchForm( true )
-			}
-			return reader.readAsDataURL ( file )
-		
+		if (!_view.CanadaBackground()) {
+			_view.CanadaBackground(true)
+		}
+		if (!self.showMainSearchForm()) {
+			self.showMainSearchForm(true)
+		}
+		return reader.readAsDataURL(file)
 	},
 
-	imagesResultClick: ( self, index: number, image: string ) => {
-		const _img = self.searchSimilarImagesList ()[ index ]
-		const currentElm = $(`#${ _img.id }-1`)
+	imagesResultClick: (self, index: number, image: string) => {
+		const _img = self.searchSimilarImagesList()[index]
+		const currentElm = $(`#${_img.id}-1`)
 		/**
-		 * 
+		 *
 		 * 			get web side
-		 * 
+		 *
 		 */
-		
-		if ( _img.showError()) {
-			return _img.showError ( false )
+
+		if (_img.showError()) {
+			return _img.showError(false)
 		}
 
-		if ( _img.showImageError ()) {
-			return _img.showImageError ( false )
+		if (_img.showImageError()) {
+			return _img.showImageError(false)
 		}
 
-		if ( image === 'link' ) {
-			if ( _img.showLoading() ) {
+		if (image === 'link') {
+			if (_img.showLoading()) {
 				return
 			}
 			const url = _img.webUrlHref
 
-			if ( _img['snapshotData'] ) {
-				self.showMain ( false )
-				self.showSnapshop ( true )
-				self.showSearchSimilarImagesResult  ( false )
+			if (_img['snapshotData']) {
+				self.showMain(false)
+				self.showSnapshop(true)
+				self.showSearchSimilarImagesResult(false)
 
 				let y = null
-				
 
-				return self.showWebPage ( y = new showWebPageClass ( url, _img ['snapshotData'], _img['snapshotUuid'] , () => {
-					self.showWebPage ( y = null )
-					self.showMain ( true )
-					self.showSnapshop ( false )
-					self.showSearchSimilarImagesResult  ( true )
-				}))
+				return self.showWebPage(
+					(y = new showWebPageClass(
+						url,
+						_img['snapshotData'],
+						_img['snapshotUuid'],
+						() => {
+							self.showWebPage((y = null))
+							self.showMain(true)
+							self.showSnapshop(false)
+							self.showSearchSimilarImagesResult(true)
+						}
+					))
+				)
 			}
 
-			const errorProcess = ( err ) => {
-				_img.errorIndex ( _view.connectInformationMessage.getErrorIndex( err ))
-				_img.showLoading ( false )
-				_img.snapshotReady ( false )
-				_img.loadingGetResponse ( false )
-				_img.conetResponse ( false )
-				
-				const currentElm = $(`#${ _img.id }`)
-				currentElm.popup ({
+			const errorProcess = (err) => {
+				_img.errorIndex(_view.connectInformationMessage.getErrorIndex(err))
+				_img.showLoading(false)
+				_img.snapshotReady(false)
+				_img.loadingGetResponse(false)
+				_img.conetResponse(false)
+
+				const currentElm = $(`#${_img.id}`)
+				currentElm.popup({
 					on: 'click',
 					inline: true,
 					onHidden: function () {
-						_img.showError ( false )
-						_img.errorIndex ( null )
-						
-					}
+						_img.showError(false)
+						_img.errorIndex(null)
+					},
 				})
-				return _img.showError ( true )
+				return _img.showError(true)
 			}
 
-			
-			
-			
-			_img.showLoading ( true )
+			_img.showLoading(true)
 
-			const callBack = ( err?, com?: QTGateAPIRequestCommand ) => {
-				if ( err ) {
-					return errorProcess ( err )
+			const callBack = (err?, com?: QTGateAPIRequestCommand) => {
+				if (err) {
+					return errorProcess(err)
 				}
-				if ( !com ) {
-					_img.loadingGetResponse ( true )
-					return _img.conetResponse ( false )
+				if (!com) {
+					_img.loadingGetResponse(true)
+					return _img.conetResponse(false)
 				}
-				if ( com.error === -1 ) {
-					_img.loadingGetResponse ( false )
-					return _img.conetResponse ( true )
+				if (com.error === -1) {
+					_img.loadingGetResponse(false)
+					return _img.conetResponse(true)
 				}
-				if ( com.error ) {
-					return errorProcess ( com.error )
+				if (com.error) {
+					return errorProcess(com.error)
 				}
-				
+
 				const arg: string = com.Args[0]
-				_img['snapshotUuid'] = arg.split(',')[0].split ('.')[0]
+				_img['snapshotUuid'] = arg.split(',')[0].split('.')[0]
 
-				return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
-					if ( err ) {
-						return errorProcess ( err )
+				return _view.connectInformationMessage.sockEmit(
+					'getFilesFromImap',
+					arg,
+					(err, buffer: string) => {
+						if (err) {
+							return errorProcess(err)
+						}
+
+						if (err) {
+							return errorProcess(err)
+						}
+
+						_img.snapshotReady(true)
+						_img.showLoading(false)
+						_img.loadingGetResponse(false)
+						_img.conetResponse(false)
+						return (_img['snapshotData'] = buffer)
 					}
-
-				
-					if ( err ) {
-						return errorProcess ( err )
-					}
-
-					_img.snapshotReady ( true )
-					_img.showLoading ( false )
-					_img.loadingGetResponse ( false )
-					_img.conetResponse ( false )
-					return _img['snapshotData'] = buffer
-					
-				})
-				
-				
+				)
 			}
-	
-			
+
 			const width = $(window).width()
 			const height = $(window).height()
-			
+
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ url, width, height ],
+				Args: [url, width, height],
 				error: null,
-				subCom: 'getSnapshop'
+				subCom: 'getSnapshop',
 			}
-	
-			return _view.connectInformationMessage.emitRequest ( com, callBack )
+
+			return _view.connectInformationMessage.emitRequest(com, callBack)
 		}
-
-
 
 		/**
 		 * n['showImageLoading'] = ko.observable ( false )
@@ -1170,107 +1246,103 @@ const appScript = {
 			n['showImageError'] = ko.observable ( false )
 			n['imageErrorIndex'] = ko.observable (-1)
 		 */
-		if ( image === 'img') {
-			if ( _img.showImageLoading() ) {
-				return 
+		if (image === 'img') {
+			if (_img.showImageLoading()) {
+				return
 			}
-			if ( _img['imgOriginalData'] ) {
+			if (_img['imgOriginalData']) {
 				const uu = 1
 				return
 			}
 
-			const errorProcess = ( err ) => {
-				_img.imageErrorIndex (_view.connectInformationMessage.getErrorIndex( err ))
-				
-				_img.showImageLoading ( false )
-				_img.snapshotImageReady ( false )
-				_img.loadingImageGetResponse ( false )
-				_img.conetImageResponse ( false )
-				_img.showImageError ( true )
-				
-				currentElm.popup ({	
+			const errorProcess = (err) => {
+				_img.imageErrorIndex(_view.connectInformationMessage.getErrorIndex(err))
+
+				_img.showImageLoading(false)
+				_img.snapshotImageReady(false)
+				_img.loadingImageGetResponse(false)
+				_img.conetImageResponse(false)
+				_img.showImageError(true)
+
+				currentElm.popup({
 					inline: true,
 					onHidden: function () {
-						_img.showImageError ( false )
-						
-					}
+						_img.showImageError(false)
+					},
 				})
 				return
 			}
 
-			const callBack = ( err?, com?: QTGateAPIRequestCommand ) => {
-				if ( err ) {
-					return errorProcess ( err )
+			const callBack = (err?, com?: QTGateAPIRequestCommand) => {
+				if (err) {
+					return errorProcess(err)
 				}
-				if ( !com ) {
-					_img.loadingGetResponse ( true )
-					return _img.conetResponse ( false )
+				if (!com) {
+					_img.loadingGetResponse(true)
+					return _img.conetResponse(false)
 				}
-				if ( com.error === -1 ) {
-					_img.loadingGetResponse ( false )
-					return _img.conetResponse ( true )
+				if (com.error === -1) {
+					_img.loadingGetResponse(false)
+					return _img.conetResponse(true)
 				}
-				if ( com.error ) {
-					return errorProcess ( com.error )
+				if (com.error) {
+					return errorProcess(com.error)
 				}
-				
-				const arg: string = com.Args[0]
-				_img['snapshotUuid'] = arg.split(',')[0].split ('.')[0]
-				return _view.connectInformationMessage.sockEmit ( 'getFilesFromImap', arg, ( err, buffer: string ) => {
-					if ( err ) {
-						return errorProcess ( err )
-					}
-					_view.sharedMainWorker
-					return _view.sharedMainWorker.decryptStreamWithAPKey ( buffer, ( err, data ) => {
-						if ( err ) {
-							return errorProcess ( err )
-						}
 
-						_img.snapshotReady ( true )
-						_img.showLoading ( false )
-						_img.loadingGetResponse ( false )
-						_img.conetResponse ( false )
-						return _img['snapshotData'] = data
-						
-					})
-	
-					
-				})
-				
-				
+				const arg: string = com.Args[0]
+				_img['snapshotUuid'] = arg.split(',')[0].split('.')[0]
+				return _view.connectInformationMessage.sockEmit(
+					'getFilesFromImap',
+					arg,
+					(err, buffer: string) => {
+						if (err) {
+							return errorProcess(err)
+						}
+						_view.sharedMainWorker
+						return _view.sharedMainWorker.decryptStreamWithAPKey(
+							buffer,
+							(err, data) => {
+								if (err) {
+									return errorProcess(err)
+								}
+
+								_img.snapshotReady(true)
+								_img.showLoading(false)
+								_img.loadingGetResponse(false)
+								_img.conetResponse(false)
+								return (_img['snapshotData'] = data)
+							}
+						)
+					}
+				)
 			}
 
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ _img.imgUrlHref ],
+				Args: [_img.imgUrlHref],
 				error: null,
-				subCom: 'getFile'
+				subCom: 'getFile',
 			}
-	
-			return _view.connectInformationMessage.emitRequest ( com, callBack )
 
+			return _view.connectInformationMessage.emitRequest(com, callBack)
 
-			setTimeout (() => {
-				_img.loadingImageGetResponse ( true )
-				setTimeout (() => {
-					_img.loadingImageGetResponse ( false )
-					_img.conetImageResponse ( true )
-					setTimeout (() => {
-						_img.loadingImageGetResponse ( false )
-						_img.conetImageResponse ( false )
-						_img.snapshotImageReady ( true )
-						_img.showImageLoading ( false )
-					}, 1000 )
-				}, 1000 )
-			}, 1000 )
+			setTimeout(() => {
+				_img.loadingImageGetResponse(true)
+				setTimeout(() => {
+					_img.loadingImageGetResponse(false)
+					_img.conetImageResponse(true)
+					setTimeout(() => {
+						_img.loadingImageGetResponse(false)
+						_img.conetImageResponse(false)
+						_img.snapshotImageReady(true)
+						_img.showImageLoading(false)
+					}, 1000)
+				}, 1000)
+			}, 1000)
 
-			_img.showImageLoading ( true )
-
+			_img.showImageLoading(true)
 		}
-
-
-		
-	}
+	},
 
 	//*** */
 	/** */

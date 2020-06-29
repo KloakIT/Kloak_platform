@@ -27,9 +27,15 @@ ko.bindingHandlers.animationTextIn = {
             const t = document.createTextNode(valueUnwrapped);
             element.appendChild(t);
             const timeLine = new TimelineLite({ onComplete: onCompleteAll });
-            const mySplitText = new SplitText(element, { type: "words, chars" });
+            const mySplitText = new SplitText(element, { type: 'words, chars' });
             const chars = mySplitText.chars;
-            timeLine.staggerFrom(mySplitText.chars, 0.6, { scale: 4, autoAlpha: 0, rotationX: -180, transformOrigin: "100% 50%", ease: Back.easeOut }, 0.02, null, () => {
+            timeLine.staggerFrom(mySplitText.chars, 0.6, {
+                scale: 4,
+                autoAlpha: 0,
+                rotationX: -180,
+                transformOrigin: '100% 50%',
+                ease: Back.easeOut,
+            }, 0.02, null, () => {
                 mySplitText.revert();
             });
         }
@@ -38,7 +44,7 @@ ko.bindingHandlers.animationTextIn = {
             const dammy = true;
         }
         //$( element ).slideUp( duration )   // Make the element invisible
-    }
+    },
 };
 ko.bindingHandlers.animationTextLineIn = {
     update: (element, valueAccessor, allBindings) => {
@@ -54,8 +60,13 @@ ko.bindingHandlers.animationTextLineIn = {
             const t = document.createTextNode(valueUnwrapped);
             element.appendChild(t);
             const timeLine = new TimelineLite({ onComplete: onCompleteAll });
-            const mySplitText = new SplitText(element, { type: "lines" });
-            timeLine.staggerFrom(mySplitText.lines, 0.5, { opacity: 0, rotationX: -120, force3D: true, transformOrigin: "top center -150" }, 0.1, null, () => {
+            const mySplitText = new SplitText(element, { type: 'lines' });
+            timeLine.staggerFrom(mySplitText.lines, 0.5, {
+                opacity: 0,
+                rotationX: -120,
+                force3D: true,
+                transformOrigin: 'top center -150',
+            }, 0.1, null, () => {
                 mySplitText.revert();
             });
         }
@@ -64,7 +75,7 @@ ko.bindingHandlers.animationTextLineIn = {
             const dammy = true;
         }
         //$( element ).slideUp( duration )   // Make the element invisible
-    }
+    },
 };
 const makeKeyPairData = (view, keypair) => {
     const length = keypair.publicKeyID.length;
@@ -72,7 +83,7 @@ const makeKeyPairData = (view, keypair) => {
     view.showKeyPair(true);
     let keyPairPasswordClass = new keyPairPassword(keypair, (passwd, deleteKey) => {
         view.showKeyPair(false);
-        keypair.keyPairPassword(keyPairPasswordClass = null);
+        keypair.keyPairPassword((keyPairPasswordClass = null));
         if (!passwd) {
             if (deleteKey) {
                 _view.deleteKey();
@@ -89,7 +100,7 @@ const makeKeyPairData = (view, keypair) => {
          * 		encryptoClass ready
          *
          *
-        **/
+         **/
     });
     keypair.keyPairPassword = ko.observable(keyPairPasswordClass);
     keypair.showLoginPasswordField = ko.observable(false);
@@ -101,12 +112,12 @@ const makeKeyPairData = (view, keypair) => {
         return keypair.showConform(true);
     };
     keypair.deleteKeyPairNext = function () {
-        localStorage.setItem("config", JSON.stringify({}));
+        localStorage.setItem('config', JSON.stringify({}));
         view.localServerConfig(null);
         view.connectedCoNET(false);
         view.connectToCoNET(false);
-        view.CoNETConnect(view.CoNETConnectClass = null);
-        view.imapSetup(view.imapFormClass = null);
+        view.CoNETConnect((view.CoNETConnectClass = null));
+        view.imapSetup((view.imapFormClass = null));
         keypair.showDeleteKeyPairNoite(false);
         keypair.delete_btn_view(false);
         localStorage.clear();
@@ -137,7 +148,9 @@ class showWebPageClass {
             let html = data.html;
             //      support HTMLComplete
             if (html) {
-                html = html.replace(/ srcset="[^"]+" /ig, ' ').replace(/ srcset='[^']+' /ig, ' ');
+                html = html
+                    .replace(/ srcset="[^"]+" /gi, ' ')
+                    .replace(/ srcset='[^']+' /gi, ' ');
                 let det = data.folder.shift();
                 const getData = (filename, _data, CallBack) => {
                     const pointStart = html.indexOf(`${filename}`);
@@ -156,21 +169,32 @@ class showWebPageClass {
                                  *          css link tag format support
                                  *
                                  */
-                                const _filename = filename.replace(/\-/g, '\\-').replace(/\//g, '\\/').replace(/\./g, '\\.').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+                                const _filename = filename
+                                    .replace(/\-/g, '\\-')
+                                    .replace(/\//g, '\\/')
+                                    .replace(/\./g, '\\.')
+                                    .replace(/\(/g, '\\(')
+                                    .replace(/\)/g, '\\)');
                                 const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
                                 const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
                                 /*
-                                if ( /^ src/i.test( hrefTest )) {
-                                    
-                                    const data1 = `data:${ mime };base64,` + _data
-                                    html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                    return doCallBack ()
-                                    
-                                }
-                                */
-                                const blob = new Blob([/^image/.test(mime) ? Buffer.from(_data, 'base64') : Buffer.from(_data, 'base64').toString()], { type: mime });
+                            if ( /^ src/i.test( hrefTest )) {
+                                
+                                const data1 = `data:${ mime };base64,` + _data
+                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
+                                return doCallBack ()
+                                
+                            }
+                            */
+                                const blob = new Blob([
+                                    /^image/.test(mime)
+                                        ? Buffer.from(_data, 'base64')
+                                        : Buffer.from(_data, 'base64').toString(),
+                                ], { type: mime });
                                 const link = (URL || webkitURL).createObjectURL(blob);
-                                html = html.replace(regex, ` src="${link}"`).replace(regex1, ` href="${link}"`);
+                                html = html
+                                    .replace(regex, ` src="${link}"`)
+                                    .replace(regex1, ` href="${link}"`);
                                 this.urlBlobList.push(link);
                             }
                             doCallBack();
@@ -178,7 +202,7 @@ class showWebPageClass {
                     }
                     doCallBack();
                 };
-                return getData(det.filename, det.data, err => {
+                return getData(det.filename, det.data, (err) => {
                     self.png(data.img);
                     const htmlBolb = new Blob([html], { type: 'text/html' });
                     const _url = (URL || webkitURL).createObjectURL(htmlBolb);
@@ -202,7 +226,8 @@ class showWebPageClass {
         this.showHtmlCodePage(false);
         this.png(null);
         this.htmlIframe(null);
-        this.urlBlobList.forEach(n => {
+        this.urlBlobList.forEach((n) => {
+            ;
             (URL || webkitURL).revokeObjectURL(n);
         });
         this.exit();
@@ -216,8 +241,14 @@ class showWebPageClass {
         this.showImgPage(false);
         const docu = this.mHtml();
         if (docu) {
-            $('iframe').contents().find("head").html(docu["window"].document.head.outerHTML);
-            $('iframe').contents().find("body").html(docu["window"].document.body.outerHTML);
+            $('iframe')
+                .contents()
+                .find('head')
+                .html(docu['window'].document.head.outerHTML);
+            $('iframe')
+                .contents()
+                .find('body')
+                .html(docu['window'].document.body.outerHTML);
         }
     }
 }
@@ -225,9 +256,9 @@ class workerManager {
     constructor(list) {
         this.workers = new Map();
         this.callbackPool = new Map();
-        list.forEach(n => {
+        list.forEach((n) => {
             const work = new Worker(`scripts/${n}.js`);
-            work.onmessage = evt => {
+            work.onmessage = (evt) => {
                 return this.doEvent(evt);
             };
             return this.workers.set(n, work);
@@ -260,7 +291,7 @@ class workerManager {
         const callback = {
             data: data,
             uuid: uuid_generate(),
-            workerName: workerName
+            workerName: workerName,
         };
         const kk = Buffer.from(Buffer.from(JSON.stringify(callback)).toString('base64'));
         this.callbackPool.set(callback.uuid, CallBack);
@@ -305,6 +336,7 @@ var view_layout;
             this.showMainPage = ko.observable(false);
             this.showStartupVideo = ko.observable(true);
             this.daggrHtml = ko.observable(false);
+            this.showFileStorage = ko.observable(false);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -328,10 +360,30 @@ var view_layout;
             this.nyt_menu = ko.observable(false);
             this.TitleLine1 = null;
             this.TitleLine2 = null;
-            this.networkSetupHeader = ['网络通讯线路设定', 'ネットワーク通信設定', 'Network connection setup', '網絡通訊線路設定'];
-            this.networkSetupDescription = ['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码', 'ローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'Local network module and the mail informationthe for connect to CoNet network', '指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼'];
-            this.networkSetupConnectShow = ['连接节点', 'ノードへ接続', 'Connect to node', '連接結點'];
-            this.networkDisconnect = ['解除连接', '接続を解除', 'Disconnect', '解除連結'];
+            this.networkSetupHeader = [
+                '网络通讯线路设定',
+                'ネットワーク通信設定',
+                'Network connection setup',
+                '網絡通訊線路設定',
+            ];
+            this.networkSetupDescription = [
+                '指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码',
+                'ローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+                'Local network module and the mail informationthe for connect to CoNet network',
+                '指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼',
+            ];
+            this.networkSetupConnectShow = [
+                '连接节点',
+                'ノードへ接続',
+                'Connect to node',
+                '連接結點',
+            ];
+            this.networkDisconnect = [
+                '解除连接',
+                '接続を解除',
+                'Disconnect',
+                '解除連結',
+            ];
             this.networkConnect = ko.observable(false);
             this.mainManuItems = ko.observableArray(mainMenuArray);
             this.tempAppHtml = ko.observable(false);
@@ -339,11 +391,11 @@ var view_layout;
             this.middleX = ko.observable(window.innerWidth / 2);
             this.middleY = ko.observable(window.innerHeight / 2);
             this.socketListen();
-            this.CanadaBackground.subscribe(val => {
+            this.CanadaBackground.subscribe((val) => {
                 if (val) {
                     $.ajax({
-                        url: '/scripts/CanadaSvg.js'
-                    }).done(data => {
+                        url: '/scripts/CanadaSvg.js',
+                    }).done((data) => {
                         eval(data);
                     });
                 }
@@ -354,7 +406,9 @@ var view_layout;
         /*** */
         afterInitConfig() {
             this.keyPair(this.localServerConfig().keypair);
-            if (this.keyPair() && this.keyPair().keyPairPassword() && typeof this.keyPair().keyPairPassword().inputFocus === 'function') {
+            if (this.keyPair() &&
+                this.keyPair().keyPairPassword() &&
+                typeof this.keyPair().keyPairPassword().inputFocus === 'function') {
                 this.keyPair().keyPairPassword().inputFocus(true);
                 this.sectionLogin(false);
             }
@@ -381,9 +435,9 @@ var view_layout;
              *
              */
             this.svgDemo_showLanguage();
-            config["account"] = config["keypair"] = null;
+            config['account'] = config['keypair'] = null;
             let _keyPairGenerateForm = new keyPairGenerateForm((_keyPair) => {
-                self.keyPairGenerateForm(_keyPairGenerateForm = null);
+                self.keyPairGenerateForm((_keyPairGenerateForm = null));
                 /**
                  *      key pair ready
                  */
@@ -391,30 +445,30 @@ var view_layout;
                 _keyPair._password = null;
                 config.account = _keyPair.email;
                 config.keypair = _keyPair;
-                localStorage.setItem("config", JSON.stringify(config));
+                localStorage.setItem('config', JSON.stringify(config));
                 _keyPair.passwordOK = true;
                 //self.localServerConfig ( config )
                 self.keyPair(_keyPair);
                 self.showMain();
                 /*
-                let uu: imapForm = null
-                return self.imapSetup ( uu = new imapForm ( _keyPair.email, null, function ( imapData: IinputData ) {
-                    self.imapSetup ( uu = null )
-                    self.imapData = imapData
-                    return self.sharedMainWorker.saveImapIInputData ( imapData, err => {
-                        return self.imapSetupClassExit ( imapData )
-                    })
-                }))
-                
-                //initPopupArea ()
-                */
+            let uu: imapForm = null
+            return self.imapSetup ( uu = new imapForm ( _keyPair.email, null, function ( imapData: IinputData ) {
+                self.imapSetup ( uu = null )
+                self.imapData = imapData
+                return self.sharedMainWorker.saveImapIInputData ( imapData, err => {
+                    return self.imapSetupClassExit ( imapData )
+                })
+            }))
+            
+            //initPopupArea ()
+            */
             });
             this.localServerConfig(config);
             this.afterInitConfig();
             this.keyPairGenerateForm(_keyPairGenerateForm);
         }
         getConfigFromLocalStorage() {
-            const configStr = localStorage.getItem("config");
+            const configStr = localStorage.getItem('config');
             if (!configStr) {
                 return this.initConfig({});
             }
@@ -434,14 +488,14 @@ var view_layout;
         initWelcomeView() {
             this.welcomeTitle(true);
             this.sectionLogin(false);
-            const dom = document.getElementById("body");
+            const dom = document.getElementById('body');
             const eve = () => {
                 clearTimeout(this.demoTimeout);
-                dom.removeEventListener("click", eve);
+                dom.removeEventListener('click', eve);
                 this.KloakTL.clear();
                 this.openClick();
             };
-            dom.addEventListener("click", eve);
+            dom.addEventListener('click', eve);
         }
         //          change language
         selectItem(that, site) {
@@ -453,7 +507,7 @@ var view_layout;
             this.languageIndex(index);
             this.tLang(lang[index]);
             $.cookie('langEH', this.tLang(), { expires: 180, path: '/' });
-            const obj = $("span[ve-data-bind]");
+            const obj = $('span[ve-data-bind]');
             obj.each(function (index, element) {
                 const ele = $(element);
                 const data = ele.attr('ve-data-bind');
@@ -529,11 +583,11 @@ var view_layout;
         showImapSetup() {
             _view.hideMainPage();
             _view.sectionLogin(true);
-            return _view.imapSetup(_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData, (imapData) => {
-                _view.imapSetup(_view.imapFormClass = null);
+            return _view.imapSetup((_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData, (imapData) => {
+                _view.imapSetup((_view.imapFormClass = null));
                 _view.sectionLogin(false);
                 return _view.imapSetupClassExit(imapData);
-            }));
+            })));
         }
         imapSetupClassExit(_imapData) {
             const self = this;
@@ -545,13 +599,13 @@ var view_layout;
         connectToNode() {
             const self = this;
             self.networkConnect(2);
-            return this.CoNETConnect(this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
+            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
-                    self.CoNETConnect(this.CoNETConnectClass = null);
+                    self.CoNETConnect((this.CoNETConnectClass = null));
                     return self.showImapSetup();
                 }
                 self.networkConnect(true);
-            }));
+            })));
         }
         reFreshLocalServer() {
             location.reload();
@@ -561,10 +615,10 @@ var view_layout;
             this.sectionLogin(false);
             const connectMainMenu = () => {
                 let am = null;
-                this.appsManager(am = new appsManager(() => {
+                this.appsManager((am = new appsManager(() => {
                     am = null;
                     return connectMainMenu();
-                }));
+                })));
             };
             connectMainMenu();
             $('.dimmable').dimmer({ on: 'hover' });
@@ -572,7 +626,7 @@ var view_layout;
                 on: 'focus',
                 movePopup: false,
                 position: 'top left',
-                inline: true
+                inline: true,
             });
             _view.connectInformationMessage.socketIo.removeEventListener('tryConnectCoNETStage', this.CoNETConnectClass.listenFun);
         }
@@ -591,7 +645,7 @@ var view_layout;
                 }
                 if (++i === 1) {
                     backGround_mask_circle.attr({
-                        stroke: "#FF000090",
+                        stroke: '#FF000090',
                     });
                     return setTimeout(() => {
                         changeLanguage();
@@ -599,7 +653,7 @@ var view_layout;
                 }
                 if (i > 5 || !_view.sectionWelcome()) {
                     main.remove();
-                    return _view.demoMainElm = main = null;
+                    return (_view.demoMainElm = main = null);
                 }
                 _view.selectItem();
                 _view.demoTimeout = setTimeout(() => {
@@ -608,26 +662,37 @@ var view_layout;
             };
             const width = window.innerWidth;
             const height = window.outerHeight;
-            let main = this.demoMainElm = Snap(width, height);
-            const backGround_mask_circle = main.circle(width / 2, height / 2, width / 1.7).attr({
+            let main = (this.demoMainElm = Snap(width, height));
+            const backGround_mask_circle = main
+                .circle(width / 2, height / 2, width / 1.7)
+                .attr({
                 fill: '#00000000',
-                stroke: "#FF000020",
+                stroke: '#FF000020',
                 strokeWidth: 5,
             });
             const wT = width / 2 - 35;
             const wY = 40 - height / 2;
             backGround_mask_circle.animate({
                 transform: `t${wT} ${wY}`,
-                r: 60
+                r: 60,
             }, 3000, mina.easeout, changeLanguage);
         }
         InitKloakLogoTimeLine() {
-            var colors = ["#E6E7E8", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52", "#152B52"];
+            var colors = [
+                '#E6E7E8',
+                '#152B52',
+                '#152B52',
+                '#152B52',
+                '#152B52',
+                '#152B52',
+                '#152B52',
+                '#152B52',
+            ];
             for (let i = 0; i < 8; i++) {
-                this.KloakTL.to("#start" + i, 1, {
-                    morphSVG: "#end" + i,
+                this.KloakTL.to('#start' + i, 1, {
+                    morphSVG: '#end' + i,
                     fill: colors[i],
-                    ease: Power2.easeInOut
+                    ease: Power2.easeInOut,
                 }, i * 0.05);
             }
         }
@@ -640,12 +705,12 @@ var view_layout;
             _view.KloakTL.restart();
         }
         deleteKey() {
-            localStorage.setItem("config", JSON.stringify({}));
+            localStorage.setItem('config', JSON.stringify({}));
             _view.localServerConfig(null);
             _view.connectedCoNET(false);
             _view.connectToCoNET(false);
-            _view.CoNETConnect(_view.CoNETConnectClass = null);
-            _view.imapSetup(_view.imapFormClass = null);
+            _view.CoNETConnect((_view.CoNETConnectClass = null));
+            _view.imapSetup((_view.imapFormClass = null));
             localStorage.clear();
             return _view.reFreshLocalServer();
         }
@@ -655,27 +720,28 @@ var view_layout;
             this.showMainPage(true);
             this.sectionLogin(false);
             this.connectInformationMessage = new connectInformationMessage('/', this.keyPair().publicKeyID, this);
-            this.connectInformationMessage.getServerPublicKey(err => {
-                this.keyPair()["localserverPublicKey"] = _view.connectInformationMessage.localServerPublicKey;
+            this.connectInformationMessage.getServerPublicKey((err) => {
+                this.keyPair()['localserverPublicKey'] =
+                    _view.connectInformationMessage.localServerPublicKey;
                 const self = this;
                 return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
                     if (err) {
                         return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
                     }
-                    if (data["imapData"]) {
-                        self.imapData = data["imapData"];
+                    if (data['imapData']) {
+                        self.imapData = data['imapData'];
                         //return view.imapSetupClassExit ( view.imapData )
                     }
                     /*
-                    let uu = null
-                    return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
-                        view.imapSetup ( uu = null )
-                        view.imapData = imapData
-                        return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
-                            return view.imapSetupClassExit ( imapData )
-                        })
-                    }))
-                    */
+                let uu = null
+                return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
+                    view.imapSetup ( uu = null )
+                    view.imapData = imapData
+                    return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
+                        return view.imapSetupClassExit ( imapData )
+                    })
+                }))
+                */
                 });
                 return console.dir(`local server public key ready!`);
             });
@@ -692,7 +758,7 @@ var view_layout;
             timeLine.from(elem, { rotation: 27, x: 8000, duration: 1 });
         }
         hideMainPage() {
-            this.hidePlanetElement(document.getElementById("showMainPage"), () => {
+            this.hidePlanetElement(document.getElementById('showMainPage'), () => {
                 _view.showMainPage(false);
             });
         }
@@ -704,7 +770,8 @@ var view_layout;
             }
             _view.showMainPage(false);
             _view.bodyBlue(false);
-            if (typeof appScript1 === 'object' && typeof appScript1.startup === 'function') {
+            if (typeof appScript1 === 'object' &&
+                typeof appScript1.startup === 'function') {
                 appScript1.startup(appScript1);
                 _view.appScript(appScript1);
             }
@@ -724,13 +791,24 @@ const mainMenuArray = [
     {
         name: 'librarium',
         img: '/images/kloakSearchIcon.svg',
-        header: ['私密无痕网页检索及快照', 'サイド検索及のスナップショット', 'The Librarium', '私密無痕網頁檢索及快照'],
-        description: ['流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载', 'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード', 'Web and image search, screenshot and files download via gateway.', '流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載'],
+        header: [
+            '私密无痕网页检索及快照',
+            'サイド検索及のスナップショット',
+            'The Librarium',
+            '私密無痕網頁檢索及快照',
+        ],
+        description: [
+            '流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
+            'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード',
+            'Web and image search, screenshot and files download via gateway.',
+            '流行檢索引擎關鍵字及圖像檢索，獲得指定網頁快照，文件和流媒體的下載',
+        ],
         extra: null,
         click: appScript,
         online: true,
-        htmlTemp: 'tempAppHtml'
-    }, {
+        htmlTemp: 'tempAppHtml',
+    },
+    {
         name: 'fortress',
         img: '/images/fileStorage.svg',
         header: ['堡垒', '堡塁', 'Fortress', '堡壘'],
@@ -738,39 +816,67 @@ const mainMenuArray = [
             '强安全私密无痕离线浏览器存储。文件打碎并加密保存在浏览器内部，整体系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
             'プライバシーと安全な離線ブラウザストレージ。ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
             'Offline file and media storage which divides the file into multiple, encrypted, and ordered parts and stores them locally in the browser.  When the user wants to access the file for editing for example , these parts will be reassembled together in the designated order. However for media files, they can be played from the browser without needing reassembly of the media.',
-            '強安全私密無痕離線瀏覽器存储。文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放'
+            '強安全私密無痕離線瀏覽器存储。文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放',
         ],
         extra: null,
-        click: null,
-        online: false
-    }, {
+        click: fileStorage,
+        htmlTemp: 'showFileStorage',
+        online: false,
+    },
+    {
         name: 'masquerade',
         img: '/images/Masquerade.svg',
         header: ['假面舞会', 'マスカレード', 'Masquerade', '假面舞會'],
-        description: ['去中心化无审查社交媒体', '検閲なしのソーシャルメディア', 'Decentralized no censorship social media', '強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+        description: [
+            '去中心化无审查社交媒体',
+            '検閲なしのソーシャルメディア',
+            'Decentralized no censorship social media',
+            '強加密點對點消息系統，支持群聊，文件多媒體傳輸和網頁鏈接快照',
+        ],
         extra: null,
         click: null,
-        online: true
-    }, {
+        online: true,
+    },
+    {
         img: '/images/message.svg',
         header: ['', '', 'Daggr', ''],
-        description: ['强加密点对点加密群聊，支持文件多媒体传输和网页链接快照', 'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定', 'EndtoEnd encrypted message system.', '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照'],
+        description: [
+            '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
+            'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+            'EndtoEnd encrypted message system.',
+            '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照',
+        ],
         extra: null,
         click: daggr,
         htmlTemp: 'daggrHtml',
-        online: false
-    }, {
+        online: false,
+    },
+    {
         img: '/images/generalspalding.svg',
-        header: ['史帕丁将军', 'Robert Spalding将軍', 'General Robert Spalding', '史帕丁將軍'],
-        description: ['前美空军准将，哈德逊研究所高级研究员，美国的智囊团和前白宫国家安全委员会的高级战略规划师', 'ハドソン研究所の上級研究者であり、アメリカのシンクタンクであり、元ホワイトハウス国家安全保障理事会の上級戦略立案者です', 'Robert S. Spalding III is a retired United States Air Force brigadier general. He currently serves as a senior fellow at the Hudson Institute.', '前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師'],
+        header: [
+            '史帕丁将军',
+            'Robert Spalding将軍',
+            'General Robert Spalding',
+            '史帕丁將軍',
+        ],
+        description: [
+            '前美空军准将，哈德逊研究所高级研究员，美国的智囊团和前白宫国家安全委员会的高级战略规划师',
+            'ハドソン研究所の上級研究者であり、アメリカのシンクタンクであり、元ホワイトハウス国家安全保障理事会の上級戦略立案者です',
+            'Robert S. Spalding III is a retired United States Air Force brigadier general. He currently serves as a senior fellow at the Hudson Institute.',
+            '前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師',
+        ],
         extra: null,
         click: null,
-        online: false
-    }
+        online: false,
+    },
 ];
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
 $(`.${_view.tLang()}`).addClass('active');
-window[`${"indexedDB"}`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"];
+window[`${'indexedDB'}`] =
+    window.indexedDB ||
+        window['mozIndexedDB'] ||
+        window['webkitIndexedDB'] ||
+        window['msIndexedDB'];
 gsap.registerPlugin(MorphSVGPlugin, SplitText);
-const CoNET_version = "0.1.43";
+const CoNET_version = '0.1.43';
