@@ -965,6 +965,18 @@ ul.plan-features {
 	margin-top: -5rem!important;
 	width: 100%!important;
 }
+
+.item-margin-right {
+	margin-left: auto;
+	margin-right: 0rem;
+}
+
+.kloak_background_blue {
+	background-color: #609FCE!important;
+}
+.kloak_background_teal {
+	background-color: #93AFB4!important;
+}
   /* ====================================================================================================================
 ANDY - MASONARY IMAGES
 ======================================================================================================================= */

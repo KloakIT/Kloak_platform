@@ -1,2 +1,53 @@
 #daggr
+	<!-- ko with: appScript -->
+	<!-- ko if: ! currentUser () -->
+	.selectCurrentUser
+		.ui.top.fixed.menu.borderless
+			.input( style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
+				.ui.right.fluid.icon.input.big
+					input( type="text" style = "color: rgba ( 0,0,0,0.5 ); border-radius: 500rem; " )
+					i.icon.link.search.circular.blue( style = "top: .21em;")
+		.allUser( style = "padding-top: 7rem; width: 95%; position: relative; margin: auto;" )
+			.ui.divided.items( data-bind = "foreach: userList "  style = "margin: 0px auto!important; max-width: 40rem;" )
+				.item
+					.ui.tiny.circular.image
+						img( data-bind = " attr: { src : img }")
+					.content
+						a.header( data-bind = "text: title, click: () => { $parent.selechuser ($index()) }")
+						.meta
+							span( data-bind = "text: keyID ")
+
+	<!-- /ko -->
 	
+	<!-- ko if: currentUser -->
+	.currentMessage
+		.ui.top.fixed.menu.borderless
+			<!-- ko with: currentUser -->
+			.item( style = "width: 100%;" )
+				img.ui.tiny.circular.image( data-bind = " attr: { src: img }")
+				.middle.aligned.content( style = "margin-left: 0.5rem;")
+					h3.ui.header( data-bind = " text: title" )
+				.input( style = " padding-left: 2rem; padding-right: 4rem;" )
+					.ui.right.fluid.icon.input.big
+						input( type="text" style = "color: rgba ( 0,0,0,0.5 ); border-radius: 500rem; " data-bind = " value: $parent.searchText" )
+						i.icon.link.search.circular.blue( style = "top: .21em;")
+
+			<!-- /ko -->
+		.chatArea( data-bind = "foreach: chatData " style = "padding-top: 5rem; padding-bottom: 7rem; transform: scaleY(-1); padding-left: 2rem; padding-right: 2rem;")
+			.item( data-bind = "css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem;")
+				<!-- ko if: textContent -->
+				.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" )
+					p.AppListHeader( data-bind = "text: textContent " style = "padding-bottom: 1rem;")
+					.ui.bottom.right.attached.label( data-bind = "text: create.toLocaleTimeString() ")
+				<!-- /ko -->
+		.ui.bottom.fixed.menu.borderless
+			.item( style = "width: 100%;" )
+				.input
+					.ui.right.input.big.icon( style = "width: 100%;" )
+						input( type="text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "value: textInput" )
+						i.icon.red.play.link.circular( data-bind = "click: getMessage " style = "margin-right: 3rem;top: .21em;")
+						i.teal.right.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: .21em;")
+
+	<!-- /ko -->
+
+	<!-- /ko  -->

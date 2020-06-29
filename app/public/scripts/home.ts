@@ -434,7 +434,7 @@ module view_layout {
 		public networkSetupDescription = ['指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码','ローカールネットワークモージュルとCoNet通信用メールアカウント設定','Local network module and the mail informationthe for connect to CoNet network','指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼']
 		public networkSetupConnectShow = ['连接节点','ノードへ接続','Connect to node','連接結點']
 		public networkDisconnect = ['解除连接','接続を解除','Disconnect','解除連結']
-		public networkConnect = ko.observable ( false )
+		public networkConnect: KnockoutObservable < number | boolean > = ko.observable ( false )
 		public mainManuItems = ko.observableArray ( mainMenuArray )
 		public tempAppHtml = ko.observable ( false )
 		public appScript = ko.observable ()
@@ -685,8 +685,10 @@ module view_layout {
 		
 		public showImapSetup () {
 			_view.hideMainPage ()
+			_view.sectionLogin ( true )
 			return _view.imapSetup ( _view.imapFormClass = new imapForm ( _view.keyPair().publicKeyID, _view.imapData, ( imapData: IinputData ) => {
 				_view.imapSetup ( _view.imapFormClass = null )
+				_view.sectionLogin ( false )
 				return _view.imapSetupClassExit ( imapData )
 			}))
 		}
@@ -857,8 +859,14 @@ module view_layout {
 			}
 			_view.showMainPage ( false )
 			_view.bodyBlue ( false )
-			appScript1.startup ( appScript1 )
-			_view.appScript ( appScript1 )
+			if ( typeof appScript1 === 'object' && typeof appScript1.startup === 'function') {
+				appScript1.startup ( appScript1 )
+				_view.appScript ( appScript1 )
+			} else {
+				_view.appScript ( new appScript1() )
+			}
+			
+			
 
 			eval ( showSwitch )
 		}
@@ -921,7 +929,7 @@ const _view = new view_layout.view ()
 
 ko.applyBindings ( _view , document.getElementById ( 'body' ))
 
-$(`.${ _view.tLang()}`).addClass ('active')
+$(`.${ _view.tLang()}`).addClass ( 'active' )
 window[`${ "indexedDB" }`] = window.indexedDB || window["mozIndexedDB"] || window["webkitIndexedDB"] || window["msIndexedDB"]
 gsap.registerPlugin( MorphSVGPlugin, SplitText )
 const CoNET_version = "0.1.43"

@@ -551,8 +551,10 @@ var view_layout;
         }
         showImapSetup() {
             _view.hideMainPage();
+            _view.sectionLogin(true);
             return _view.imapSetup(_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData, (imapData) => {
                 _view.imapSetup(_view.imapFormClass = null);
+                _view.sectionLogin(false);
                 return _view.imapSetupClassExit(imapData);
             }));
         }
@@ -700,8 +702,13 @@ var view_layout;
             }
             _view.showMainPage(false);
             _view.bodyBlue(false);
-            appScript1.startup(appScript1);
-            _view.appScript(appScript1);
+            if (typeof appScript1 === 'object' && typeof appScript1.startup === 'function') {
+                appScript1.startup(appScript1);
+                _view.appScript(appScript1);
+            }
+            else {
+                _view.appScript(new appScript1());
+            }
             eval(showSwitch);
         }
         resizeMiddleZise() {

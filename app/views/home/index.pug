@@ -238,54 +238,6 @@ block jumbotron1
 				<!-- /ko -->
 				//- with: keyPairGenerateForm
 
-				<!-- ko if: imapSetup -->
-				<!-- ko with: imapSetup -->
-
-				<!-- ko if: showForm -->
-				.card.centered.raised( style = " width: 100%;" )
-					.content.imapSetupForm( data-bind = "if: showForm ")
-						.ui.segment.teal
-							p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
-							p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
-						form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
-							.two.fields
-								.field.required( data-bind = " css: { error: emailAddressShowError ()}")
-									.ui.left.icon.input.huge
-										i.icon.outline.mail
-										input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
-								.field.required
-									.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
-										i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-										input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
-										button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
-											i.icon.angle.right
-				<!-- /ko -->
-				//-	if: showForm
-
-				<!-- ko if: showCheckProcess -->
-				.card.centered.raised( style = " width: 100%;" )
-
-					.content.checkImapData
-						
-						.ui.segment( data-bind = "css: { yellow: checkProcessing() < -1, red: checkImapError() > -1 }")
-							
-							p( data-bind = " visible: checkImapError() > -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[checkImapError()]")
-							p( data-bind = "visible: checkImapStep() > -1 && checkImapError() === -1, text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[checkImapStep()]")
-							Button.ui.icon.button.orange( data-bind = " visible: checkImapError() > -1, click: returnImapSetup, text: infoDefine [ $root.languageIndex() ].imapInformation.title " )
-							<!-- ko if: checkImapError() < 0 -->
-							.loaderCoNET( style = "position: relative;")
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
-							<!-- /ko -->
-				<!-- /ko -->
-				//-	if: showCheckProcess
-
-				<!-- /ko -->
-				//- if: imapSetup
-				<!-- /ko -->
-				//-	with: imapSetup
 	<!-- /ko -->
 
 	<!-- ko if: sectionAgreement -->
@@ -306,6 +258,33 @@ block jumbotron1
 					buttom.ui.button( data-bind = " text: infoDefine[ languageIndex() ].firstNote.disagree, click: function () { sectionAgreement(false); return sectionWelcome(true)} ")
 					.or
 					buttom.ui.positive.button( data-bind = " text: infoDefine[ languageIndex() ].home_index_view.agree, click: agreeClick ")
+	<!-- /ko -->
+
+	<!-- ko if: imapSetup -->
+	<!-- ko with: imapSetup -->
+
+	<!-- ko if: showForm -->
+	.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
+		.card.centered.raised( style = " width: 100%;" )
+			.content.imapSetupForm( data-bind = "if: showForm ")
+				.ui.segment.teal
+					p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
+					p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
+				form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
+					.two.fields
+						.field.required( data-bind = " css: { error: emailAddressShowError ()}")
+							.ui.left.icon.input.huge
+								i.icon.outline.mail
+								input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
+						.field.required
+							.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
+								i.icon.privacy( data-bind = " visible: !password() || !password().length ")
+								input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
+								button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
+									i.icon.angle.right
+	<!-- /ko -->
+	//-	if: showForm
+	<!-- /ko -->
 	<!-- /ko -->
 
 	//-		AppList 
@@ -340,13 +319,14 @@ block jumbotron1
 	<!-- /ko -->
 
 	<!-- ko if: daggrHtml -->
-	section#daggrHtml( style = " height: 100em;" )
+	section#daggrHtml
 		<!----------- start tempAppHtml DEBUG -------------->
 		
 		include ../shared/daggr
 
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->
+	
 
 	<!-- ko if: tempAppHtml -->
 	section#tempAppHtml( style = " height: 100em;" )
