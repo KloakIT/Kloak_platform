@@ -333,7 +333,9 @@ const appScript = {
                 self.showMain(false);
                 self.showSnapshop(true);
                 let y = null;
-                self.showWebPage((y = new showWebPageClass(search_text, buffer, uuid, () => {
+                let u = '';
+                u += buffer.map(n => { return n.data; });
+                self.showWebPage((y = new showWebPageClass(search_text, u, uuid, () => {
                     self.showWebPage((y = null));
                     self.showMain(true);
                     self.showSnapshop(false);

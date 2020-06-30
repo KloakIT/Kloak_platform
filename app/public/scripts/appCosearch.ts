@@ -379,7 +379,7 @@ const appScript = {
 				self.showDownload(true)
 				return _view.connectInformationMessage.fetchFiles(
 					arg,
-					(err, buffer: string) => {
+					( err, buffer: [{ uuid: string, data: Buffer }] ) => {
 						self.showDownload(false)
 						if (err) {
 							return errorProcess(err)
@@ -391,9 +391,10 @@ const appScript = {
 						self.showMain(false)
 						self.showSnapshop(true)
 						let y = null
-
+						let u = ''
+						u += buffer.map ( n => { return n.data })
 						self.showWebPage(
-							(y = new showWebPageClass(search_text, buffer, uuid, () => {
+							( y = new showWebPageClass(search_text, u, uuid, () => {
 								self.showWebPage((y = null))
 								self.showMain(true)
 								self.showSnapshop(false)
