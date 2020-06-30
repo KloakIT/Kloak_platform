@@ -33,7 +33,7 @@ class CoNETConnect {
 	public showNetworkError = ko.observable ( false )
 	public infoTextArray: KnockoutObservableArray < connectInfo > = ko.observableArray ([])
 	public keyPairSign: KnockoutObservable< keyPairSign > = ko.observable ( null )
-	private imapData: IinputData = this.view.imapData
+	private imapData: IinputData = this.view.imapData()
 	public account = this.imapData.account
 	public email = this.imapData.imapUserName
 	public nodeEmail = "node@Kloak.app"
@@ -97,6 +97,7 @@ class CoNETConnect {
 			 */
 			case 0: {
 				self.Loading ( false )
+				this.view.networkConnect (1)
 				self.showSendConnectMail ( true )
 				return self.infoTextArray.push ({ text: ko.observable ( 'timeOut' ), err: ko.observable ( true )})
 			}
@@ -175,6 +176,7 @@ class CoNETConnect {
 	public sendConnectMail () {
 		
 		this.Loading ( true )
+		this.view.networkConnect ( 2 )
 		this.showTryAgain ( false )
 		this.showSendConnectMail ( false )
 
@@ -243,10 +245,10 @@ class CoNETConnect {
 			})
 		}
 
-		if ( !this.view.imapData.confirmRisk ) {
-			this.view.imapData.confirmRisk = true
+		if ( !this.imapData.confirmRisk ) {
+			this.imapData.confirmRisk = true
 			
-			return _view.sharedMainWorker.saveImapIInputData ( this.view.imapData, err => {
+			return _view.sharedMainWorker.saveImapIInputData ( this.imapData, err => {
 				connect ()
 				return this.sendConnectMail ()
 			})

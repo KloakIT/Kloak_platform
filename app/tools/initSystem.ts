@@ -29,6 +29,8 @@ import * as Url from 'url'
 /**
  * 		define
  */
+OpenPgp.config.aead_protect = true
+OpenPgp.config.aead_mode = OpenPgp.enums.aead.experimental_gcm
 
 const InitKeyPair = () => {
 	const keyPair: keypair = {
@@ -558,6 +560,7 @@ export async function decryptoMessage ( keyObject: localServerKeyPair, publickey
 
 	return OpenPgp.decrypt ( option ).then ( async data => {
 		let ret = data.data
+		console.log ( ret )
 		try {
 			ret = JSON.parse ( ret )
 		} catch ( ex ) {

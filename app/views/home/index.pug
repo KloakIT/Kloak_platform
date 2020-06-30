@@ -69,20 +69,25 @@ block jumbotron1
 								
 							.content( style = "padding: 0.5rem; " )
 								a.header( href = "#" data-bind=" text: networkSetupHeader [ $root.languageIndex() ], click:  networkConnect()  === false ? _view.showImapSetup : null " style = " color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
+								.ui.label( data-bind = " text: 'KEY ID: ' + keyPair().publicKeyID " style = "text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);color: white;background-color: #609FCE;")
 								.description( style = "color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);" )
 									p( data-bind = "text: networkSetupDescription [ $root.languageIndex() ]")
 								<!-- ko if: imapData -->
 								.meta
-									.ui.label( data-bind = " text: imapData.imapUserName " style="background-color: #ECEEF7;color: #93AFB4;")
-								<!-- ko if: !networkConnect() -->
-								.extra
-									a.ui.blue.label.large( data-bind = "text: networkSetupConnectShow[ $root.languageIndex() ], click: connectToNode " )
-								<!-- /ko -->
+									span.ui.label( data-bind = " text: imapData().imapUserName " style="background-color: #ECEEF7;color: #93AFB4;")
+									<!-- ko if: !networkConnect() -->
+									span.ui.blue.label.link.large( data-bind = "text: networkSetupConnectShow[ $root.languageIndex() ], click: connectToNode " )
+									<!-- /ko -->
+									//- show timeout
+									<!-- ko if: networkConnect() === 1 -->
+								
+									span.ui.orange.link.label( data-bind = "click: () => { CoNETConnectClass.sendConnectMail()}, text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain" )
+									<!-- /ko -->
 
-								<!-- ko if: networkConnect() === true -->
-								.extra
-									.ui.red.label( data-bind = "text: networkDisconnect[ $root.languageIndex() ]" )
-								<!-- /ko -->
+									<!-- ko if: networkConnect() === true -->
+								
+									span.ui.red.link.label( data-bind = "text: networkDisconnect[ $root.languageIndex() ]" )
+									<!-- /ko -->
 
 								<!-- /ko -->
 								

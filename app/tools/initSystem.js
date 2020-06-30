@@ -29,6 +29,8 @@ const Url = require("url");
 /**
  * 		define
  */
+OpenPgp.config.aead_protect = true;
+OpenPgp.config.aead_mode = OpenPgp.enums.aead.experimental_gcm;
 const InitKeyPair = () => {
     const keyPair = {
         publicKey: null,
@@ -491,6 +493,7 @@ async function decryptoMessage(keyObject, publickey, message, CallBack) {
     };
     return OpenPgp.decrypt(option).then(async (data) => {
         let ret = data.data;
+        console.log(ret);
         try {
             ret = JSON.parse(ret);
         }

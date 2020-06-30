@@ -11,12 +11,14 @@ const daggerCurrentUser = [
 ];
 class daggr {
     constructor() {
-        this.userList = daggerCurrentUser;
+        this.userList = ko.observableArray(daggerCurrentUser);
         this.currentUser = ko.observable(null);
         this.searchShowLoading = ko.observable(false);
         this.textInput = ko.observable('');
         this.searchText = ko.observable('');
         this.chatData = ko.observableArray([]);
+        this.adduser = ko.observable(false);
+        this.searchInputText = ko.observable('');
         this.information = {
             delivered: ['已送达', '到着した', 'Delivered', '已送達']
         };
@@ -31,7 +33,11 @@ class daggr {
     saveMessage() {
     }
     selechuser(index) {
-        this.currentUser(this.userList[index]);
+        this.currentUser(this.userList()[index]);
+    }
+    addUser() {
+        this.userList.unshift({ img: '', title: 'newUser', keyID: this.searchInputText() });
+        this.adduser(false);
     }
     getMessage(obj) {
         const messageContent = obj.Args[1];

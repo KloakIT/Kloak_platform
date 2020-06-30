@@ -444,7 +444,7 @@ module view_layout {
 		public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
 		public AppList = ko.observable(false)
 
-		public imapData: IinputData = null
+		public imapData = ko.observable ( null )
 		public newVersion = ko.observable(null)
 		public showLanguageSelect = ko.observable(true)
 		private demoTimeout = null
@@ -727,7 +727,7 @@ module view_layout {
 			return _view.imapSetup(
 				(_view.imapFormClass = new imapForm(
 					_view.keyPair().publicKeyID,
-					_view.imapData,
+					_view.imapData(),
 					(imapData: IinputData) => {
 						_view.imapSetup((_view.imapFormClass = null))
 						_view.sectionLogin(false)
@@ -739,7 +739,7 @@ module view_layout {
 
 		public imapSetupClassExit(_imapData: IinputData) {
 			const self = this
-			this.imapData = _imapData
+			this.imapData ( _imapData )
 			this.sharedMainWorker.saveImapIInputData(_imapData, (err, data) => {
 				return this.showMain()
 			})
@@ -922,7 +922,7 @@ module view_layout {
 						}
 
 						if (data['imapData']) {
-							self.imapData = data['imapData']
+							self.imapData ( data['imapData'] )
 							//return view.imapSetupClassExit ( view.imapData )
 						}
 

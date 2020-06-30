@@ -31,7 +31,7 @@ class CoNETConnect {
         this.showNetworkError = ko.observable(false);
         this.infoTextArray = ko.observableArray([]);
         this.keyPairSign = ko.observable(null);
-        this.imapData = this.view.imapData;
+        this.imapData = this.view.imapData();
         this.account = this.imapData.account;
         this.email = this.imapData.imapUserName;
         this.nodeEmail = "node@Kloak.app";
@@ -82,6 +82,7 @@ class CoNETConnect {
              */
             case 0: {
                 self.Loading(false);
+                this.view.networkConnect(1);
                 self.showSendConnectMail(true);
                 return self.infoTextArray.push({ text: ko.observable('timeOut'), err: ko.observable(true) });
             }
@@ -140,6 +141,7 @@ class CoNETConnect {
     }
     sendConnectMail() {
         this.Loading(true);
+        this.view.networkConnect(2);
         this.showTryAgain(false);
         this.showSendConnectMail(false);
         const qtgateCommand = {
@@ -190,9 +192,9 @@ class CoNETConnect {
             _view.connectInformationMessage.emitLocalCommand('tryConnectCoNET', this.imapData, err => {
             });
         };
-        if (!this.view.imapData.confirmRisk) {
-            this.view.imapData.confirmRisk = true;
-            return _view.sharedMainWorker.saveImapIInputData(this.view.imapData, err => {
+        if (!this.imapData.confirmRisk) {
+            this.imapData.confirmRisk = true;
+            return _view.sharedMainWorker.saveImapIInputData(this.imapData, err => {
                 connect();
                 return this.sendConnectMail();
             });

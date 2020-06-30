@@ -5,8 +5,16 @@
 		.ui.top.fixed.menu.borderless
 			.input( style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
 				.ui.right.fluid.icon.input.big
-					input( type="text" style = "color: rgba ( 0,0,0,0.5 ); border-radius: 500rem; " )
+					<!-- ko if: ! adduser() -->
+					i.icon.link.plus.circle.circular.olive( data-bind = "click: () => { adduser( true ); }" style = "top: .21em; left: 0.5rem;")
 					i.icon.link.search.circular.blue( style = "top: .21em;")
+					<!-- /ko -->
+					input( type = "text" data-bind = "value: searchInputText, style: { 'border-radius': !adduser() ? '500rem': '' }" style = "color: rgba ( 0,0,0,0.5 );padding-left: 4rem;" )
+					<!-- ko if: adduser() -->
+					i.icon.link.close.circle.circular.grey( data-bind = "click: () => { adduser( false ); }" style = "top: .21em; left: 0.5rem;")
+					i.icon.link.play.circular.olive( data-bind = " click: addUser" style = "top: .21em;")
+					<!-- /ko -->
+					
 		.allUser( style = "padding-top: 7rem; width: 95%; position: relative; margin: auto;" )
 			.ui.divided.items( data-bind = "foreach: userList "  style = "margin: 0px auto!important; max-width: 40rem;" )
 				.item

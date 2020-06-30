@@ -28,13 +28,14 @@ interface messageContent {
 
 class daggr {
 	public name: 'daggr'
-	public userList = daggerCurrentUser
+	public userList = ko.observableArray ( daggerCurrentUser )
 	public currentUser: KnockoutObservable < currentUser > = ko.observable ( null )
 	public searchShowLoading = ko.observable ( false )
 	public textInput = ko.observable ('')
 	public searchText = ko.observable ('')
 	public chatData: KnockoutObservableArray < messageContent > = ko.observableArray ([])
-
+	public adduser = ko.observable ( false )
+	public searchInputText = ko.observable ('')
 	public information = {
 		delivered: ['已送达','到着した','Delivered','已送達']
 	}
@@ -56,8 +57,13 @@ class daggr {
 	}
 
 	public selechuser ( index ) {
-		this.currentUser ( this.userList [ index ])
+		this.currentUser ( this.userList() [ index ])
 
+	}
+
+	public addUser () {
+		this.userList.unshift( { img: '', title: 'newUser', keyID: this.searchInputText ()})
+		this.adduser ( false )
 	}
 
 	public getMessage ( obj: QTGateAPIRequestCommand ) {

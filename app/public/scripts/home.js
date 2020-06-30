@@ -344,7 +344,7 @@ var view_layout;
             */
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);
-            this.imapData = null;
+            this.imapData = ko.observable(null);
             this.newVersion = ko.observable(null);
             this.showLanguageSelect = ko.observable(true);
             this.demoTimeout = null;
@@ -583,7 +583,7 @@ var view_layout;
         showImapSetup() {
             _view.hideMainPage();
             _view.sectionLogin(true);
-            return _view.imapSetup((_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData, (imapData) => {
+            return _view.imapSetup((_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData(), (imapData) => {
                 _view.imapSetup((_view.imapFormClass = null));
                 _view.sectionLogin(false);
                 return _view.imapSetupClassExit(imapData);
@@ -591,7 +591,7 @@ var view_layout;
         }
         imapSetupClassExit(_imapData) {
             const self = this;
-            this.imapData = _imapData;
+            this.imapData(_imapData);
             this.sharedMainWorker.saveImapIInputData(_imapData, (err, data) => {
                 return this.showMain();
             });
@@ -729,7 +729,7 @@ var view_layout;
                         return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
                     }
                     if (data['imapData']) {
-                        self.imapData = data['imapData'];
+                        self.imapData(data['imapData']);
                         //return view.imapSetupClassExit ( view.imapData )
                     }
                     /*
