@@ -669,7 +669,9 @@ const appScript = {
                     ? currentItem.showImageLoading(false)
                     : currentItem.showLoading(false);
                 currentItem.loadingGetResponse(false);
-                currentItem['snapshotData'] = buffer;
+                let buff = '';
+                buff += buffer.map(n => { return n.data; });
+                currentItem['snapshotData'] = buff;
                 const item = {
                     uuid: com.requestSerial,
                     url: url,

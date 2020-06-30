@@ -759,8 +759,8 @@ const appScript = {
 			currentItem.loadingGetResponse(false)
 			currentItem.conetResponse(false)
 			currentItem.errorIndex(_view.connectInformationMessage.getErrorIndex(err))
-			currentItem.showError(true)
-			const currentElm = $(`#${currentItem.id}`)
+			currentItem.showError ( true )
+			const currentElm = $(`#${ currentItem.id }`)
 			return currentElm.popup({
 				on: 'click',
 				inline: true,
@@ -771,17 +771,17 @@ const appScript = {
 			})
 		}
 
-		const callBack = (err?, com?: QTGateAPIRequestCommand) => {
-			if (err) {
-				return showError(err)
+		const callBack = (err?, com?: QTGateAPIRequestCommand ) => {
+			if ( err ) {
+				return showError ( err )
 			}
-			if (!com) {
-				currentItem.loadingGetResponse(true)
-				return currentItem.conetResponse(false)
+			if ( !com ) {
+				currentItem.loadingGetResponse ( true )
+				return currentItem.conetResponse ( false )
 			}
 			if (com.error === -1) {
-				currentItem.loadingGetResponse(false)
-				return currentItem.conetResponse(true)
+				currentItem.loadingGetResponse ( false )
+				return currentItem.conetResponse ( true )
 			}
 			if (com.error) {
 				return showError(com.error)
@@ -794,21 +794,23 @@ const appScript = {
 
 			return _view.connectInformationMessage.fetchFiles(
 				arg,
-				(err, buffer: { uuid: string; data: string }[]) => {
-					currentItem.showDownload(false)
-					if (err) {
-						return showError(err)
+				( err, buffer: { uuid: string; data: string }[]) => {
+					currentItem.showDownload ( false )
+					if ( err ) {
+						return showError ( err )
 					}
 
 					isImage
-						? currentItem.snapshotImageReady(true)
-						: currentItem.snapshotReady(true)
+						? currentItem.snapshotImageReady ( true )
+						: currentItem.snapshotReady ( true )
 					isImage
-						? currentItem.showImageLoading(false)
-						: currentItem.showLoading(false)
-					currentItem.loadingGetResponse(false)
+						? currentItem.showImageLoading ( false )
+						: currentItem.showLoading ( false )
+					currentItem.loadingGetResponse (false)
+					let buff = ''
+					buff += buffer.map ( n => { return n.data })
+					currentItem ['snapshotData'] = buff
 
-					currentItem['snapshotData'] = buffer
 					const item: histeoryItem = {
 						uuid: com.requestSerial,
 						url: url,
@@ -822,21 +824,21 @@ const appScript = {
 						color: 0,
 					}
 
-					_view.historyData.unshift(item)
-					return currentItem.conetResponse(false)
+					_view.historyData.unshift ( item )
+					return currentItem.conetResponse ( false )
 				}
 			)
 		}
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'CoSearch',
-			Args: [url, width, height],
+			Args: [ url, width, height ],
 			error: null,
 			subCom: 'getSnapshop',
 			requestSerial: uuid_generate(),
 		}
 
-		return _view.connectInformationMessage.emitRequest(com, callBack)
+		return _view.connectInformationMessage.emitRequest ( com, callBack )
 	},
 
 	showSnapshotClick: (self, index, isImage?: boolean) => {

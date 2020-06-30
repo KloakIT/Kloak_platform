@@ -18,6 +18,8 @@ self.importScripts('/scripts/encryptoClass.js');
 self.importScripts('/scripts/jimp.min.js');
 self.importScripts('/scripts/jszip.min.js');
 openpgp.config.indutny_elliptic_path = '/scripts/lightweight/elliptic.min.js';
+openpgp.config.aead_protect = true;
+openpgp.config.aead_mode = openpgp.enums.aead.experimental_gcm;
 window.IDBTransaction = window.IDBTransaction || window["webkitIDBTransaction"] || window["msIDBTransaction"];
 window.IDBKeyRange = window.IDBKeyRange || window["webkitIDBKeyRange"] || window["msIDBKeyRange"];
 const returnCommand = (ports, cmd) => {

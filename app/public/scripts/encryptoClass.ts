@@ -427,7 +427,7 @@ class encryptoClass {
 	 * @param CallBack 
 	 */
 
-	public decryptWithAPKey ( encryptoText: string, binary: boolean, CallBack ) {
+	public async decryptWithAPKey ( encryptoText: string, binary: boolean, CallBack ) {
 
 		if ( !this.Kloak_AP_publicKey ) {
 			return CallBack ( new Error ('have no access point key!'))
@@ -436,16 +436,14 @@ class encryptoClass {
 		const option = {
 			privateKeys: this._privateKey,
 			publicKeys: this.Kloak_AP_publicKey,
-			message: null
+			message: await openpgp.message.readArmored ( encryptoText )
 
 		}
 		if ( binary ) {
 			option [ "format" ] = 'binary'
 		}
-		return openpgp.message.readArmored ( encryptoText ).then ( data => {
-			option.message = data
-			return openpgp.decrypt( option )
-		}).then ( _plaintext => {
+		return openpgp.decrypt( option )
+		.then ( _plaintext => {
 			if ( !option[ "format" ]) {
 				return CallBack ( null, _plaintext.data )
 			}
@@ -453,15 +451,11 @@ class encryptoClass {
 			return CallBack ( null, ret )
 
 		})
-		/*
 		.catch ( ex => {
-			if ( !ret) {
-				ret = true
-				return CallBack ( ex )
-			}
+			return CallBack ( ex )
 			
 		})
-		*/
+		
 
 	}
 

@@ -13,6 +13,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * 
+ * 	  decodeChunk = str => {
+		  	const yy = self.Buffer.from ( str, 'base64').toString('binary')
+		  	return _util2.default.str_to_Uint8Array( yy )
+	  };
+	  openpgp 27576 //decodeChunk = str => _util2.default.str_to_Uint8Array(atob(str));
+ * 
+ * 
  */
 
 import localWebServer from './app/localWebServer'
