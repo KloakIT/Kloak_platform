@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+declare const openpgp
 
 self.importScripts ('/scripts/lightweight/openpgp.min.js')
 self.importScripts ('/scripts/encryptoClass.js')
@@ -302,6 +303,3 @@ if ( sharedWorker ) {
 		doingCommand ( Buffer.from ( e.data ).toString(), self )
 	}
 }
-
-
-declare const openpgp

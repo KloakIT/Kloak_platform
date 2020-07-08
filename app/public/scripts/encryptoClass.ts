@@ -749,7 +749,7 @@ class encryptoClass {
 	}
 
 	public saveHistoryTable ( data, CallBack ) {
-		return this.encrypt_withMyPublicKey ( JSON.stringify ( data ), ( err, encryptedHistory ) => {
+		return this.encryptString_withMyPublicKey ( JSON.stringify ( data ), ( err, encryptedHistory ) => {
 			if ( err ) {
 				return CallBack ( err )
 			}

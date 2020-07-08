@@ -95,7 +95,6 @@ const makeKeyPairData = (view, keypair) => {
         view.password = passwd;
         keypair.showLoginPasswordField(false);
         view.showMain();
-        view.afterPasswordReady();
     });
     keypair.keyPairPassword = ko.observable(keyPairPasswordClass);
     keypair.showLoginPasswordField = ko.observable(false);
@@ -268,25 +267,14 @@ var view_layout;
                  */
                 self.password = _keyPair._password;
                 _keyPair._password = null;
-                config.account = _keyPair.email;
+                config.account = _keyPair.email || _keyPair.publicKeyID;
                 config.keypair = _keyPair;
                 localStorage.setItem('config', JSON.stringify(config));
                 _keyPair.passwordOK = true;
+                _keyPair._password = self.password;
                 //self.localServerConfig ( config )
                 self.keyPair(_keyPair);
                 self.showMain();
-                /*
-            let uu: imapForm = null
-            return self.imapSetup ( uu = new imapForm ( _keyPair.email, null, function ( imapData: IinputData ) {
-                self.imapSetup ( uu = null )
-                self.imapData = imapData
-                return self.sharedMainWorker.saveImapIInputData ( imapData, err => {
-                    return self.imapSetupClassExit ( imapData )
-                })
-            }))
-            
-            //initPopupArea ()
-            */
             });
             this.localServerConfig(config);
             this.afterInitConfig();
@@ -407,20 +395,16 @@ var view_layout;
             return _view.imapSetup((_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData(), (imapData) => {
                 _view.imapSetup((_view.imapFormClass = null));
                 _view.sectionLogin(false);
-                return _view.imapSetupClassExit(imapData);
+                _view.imapData(imapData);
+                _view.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
+                    return _view.showMain();
+                });
             })));
-        }
-        imapSetupClassExit(_imapData) {
-            const self = this;
-            this.imapData(_imapData);
-            this.sharedMainWorker.saveImapIInputData(_imapData, (err, data) => {
-                return this.showMain();
-            });
         }
         connectToNode() {
             const self = this;
             self.networkConnect(2);
-            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
+            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, err => {
                 if (typeof err === 'number' && err > -1) {
                     self.CoNETConnect((this.CoNETConnectClass = null));
                     return self.showImapSetup();
@@ -538,14 +522,13 @@ var view_layout;
         showMain() {
             this.sectionWelcome(false);
             this.showStartupVideo(false);
-            if (this.imapData) {
-                this.showMainPage(true);
-            }
-            this.sectionLogin(false);
+            this.afterPasswordReady();
         }
         afterPasswordReady() {
             const self = this;
-            this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
+            if (!this.connectInformationMessage) {
+                this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
+            }
             this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
                 if (err) {
                     return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
@@ -556,12 +539,15 @@ var view_layout;
                 if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
                     self.connectInformationMessage.socketListening(this.LocalServerUrl);
                 }
+                if (this.imapData()) {
+                    return this.showMainPage(true);
+                }
+                return this.showImapSetup();
             });
         }
         connectToLocalServer() {
             this.connectInformationMessage.getServerPublicKey((err) => {
-                this.keyPair()['localserverPublicKey'] =
-                    _view.connectInformationMessage.localServerPublicKey;
+                this.keyPair()['localserverPublicKey'] = _view.connectInformationMessage.localServerPublicKey;
                 const self = this;
                 return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
                     if (err) {
@@ -571,18 +557,7 @@ var view_layout;
                         self.imapData(data['imapData']);
                         //return view.imapSetupClassExit ( view.imapData )
                     }
-                    /*
-                let uu = null
-                return view.imapSetup ( uu = new imapForm ( keypair.email, view.imapData, function ( imapData: IinputData ) {
-                    view.imapSetup ( uu = null )
-                    view.imapData = imapData
-                    return view.sharedMainWorker.saveImapIInputData ( imapData, err => {
-                        return view.imapSetupClassExit ( imapData )
-                    })
-                }))
-                */
                 });
-                return console.dir(`local server public key ready!`);
             });
         }
         hidePlanetElement(elem, onCompleteAll) {
@@ -597,9 +572,7 @@ var view_layout;
             timeLine.from(elem, { rotation: 27, x: 8000, duration: 1 });
         }
         hideMainPage() {
-            this.hidePlanetElement(document.getElementById('showMainPage'), () => {
-                _view.showMainPage(false);
-            });
+            _view.showMainPage(false);
         }
         appClick(index) {
             const appScript1 = mainMenuArray[index].click;
