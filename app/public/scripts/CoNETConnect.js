@@ -32,12 +32,9 @@ class CoNETConnect {
         this.infoTextArray = ko.observableArray([]);
         this.keyPairSign = ko.observable(null);
         this.imapData = this.view.imapData();
-        this.account = this.imapData.account;
-        this.email = this.imapData.imapUserName;
         this.nodeEmail = "node@Kloak.app";
         this.inSendMail = false;
         const self = this;
-        this.imapData.publicKeyID = view.keyPair().publicKeyID;
         /*
         if ( !this.view.imapData.confirmRisk ) {
             this.showSendImapDataWarning ( true )
@@ -180,6 +177,10 @@ class CoNETConnect {
     }
     imapConform() {
         const self = this;
+        //		have no imapData
+        if (!this.imapData) {
+            return _view.showImapSetup();
+        }
         const connect = () => {
             this.showSendImapDataWarning(false);
             this.connetcError(-1);

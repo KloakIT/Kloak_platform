@@ -1001,19 +1001,64 @@ play-btn {
 	width: 100% !important;
 }
 
+.keyTextarea {
+	resize: none;
+    font-size: xx-small;
+    width: 100%;
+    height: 12rem;
+    font-family: monospace;
+    border: none;
+    background-color: transparent;
+    color: white;
+}
+.keyTextarea :focus {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
+}
+
 .item-margin-right {
 	margin-left: auto;
 	margin-right: 0rem;
 }
 
-.kloak_background_blue {
+.kloak_background_BrightBlue {
 	background-color: #609fce !important;
 }
-.kloak_background_teal {
-	background-color: #93afb4 !important;
+
+.kloak_background_PrimaryAquaBlue {
+	background-color:  #88B4C6 !important;
+}
+
+.kloak_background_PrimaryTeal {
+	background-color: #93AFB4 !important;
+}
+.kloak_background_DarkBlue {
+	background-color: #0F2850 !important;
+}
+.kloak_background_LightGrey {
+	background-color: #DBDBDB !important;
 }
 .kloak_color_lightGrey {
-	color: #dbdbdb;
+	color: #dbdbdb !important;
+}
+.kloak_color_PrimaryTeal {
+	color: #93AFB4 !important;
+}
+.kloak_color_DarkBlue {
+	color: #0F2850 !important;
+}
+.daggrInputTextarea {
+	resize: none;
+	border-color: #ECEEF7;
+	overflow: auto;
+	width: 100%;
+    margin-right: 4rem;
+}
+
+.daggrInputTextarea::focus {
+	border: none;
+	outline: none !important;
 }
 /* ====================================================================================================================
 ANDY - MASONARY IMAGES

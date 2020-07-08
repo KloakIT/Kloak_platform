@@ -137,6 +137,68 @@ const getImapSmtpHost = function (_email) {
     }
     return ret;
 };
+/**
+ *       qtgate_test1@icloud.com, APP密碼: xfry-skyx-dpox-jyrh
+郵箱帳號: qtgate_test2@icloud.com, APP密碼: cfes-ofqz-khho-dppa
+郵箱帳號: qtgate_test3@icloud.com, APP密碼: wipp-uvkb-cupb-ngnp
+郵箱帳號: qtgate_test4@icloud.com, APP密碼: pnoy-axvy-epdt-racp
+郵箱帳號: qtgate_test5@icloud.com, APP密碼: uaav-ehgw-mdir-mbcs
+郵箱帳號: qtgate_test6@icloud.com, APP密碼: tnkb-iixm-ewlv-pjsr
+郵箱帳號: qtgate_test7@icloud.com, APP密碼: ymdo-bfoe-qipo-islu
+郵箱帳號: qtgate_test8@icloud.com, APP密碼: qcit-qzjj-bmfn-ooui
+郵箱帳號: qtgate_test9@icloud.com, APP密碼: eajz-mxae-otnt-njmw
+郵箱帳號: qtgate_test10@icloud.com, APP密碼: oimd-qrvx-lelz-mogu
+郵箱帳號: qtgate_test11@icloud.com, APP密碼: ncqg-dadz-doln-udrt
+郵箱帳號: qtgate_test12@icloud.com, APP密碼: vjwe-neje-xinx-czvd
+郵箱帳號: qtgate_test13@icloud.com, APP密碼: uabm-fqnv-xuuz-ixbr
+郵箱帳號: qtgate_test14@icloud.com, APP密碼: ptkd-chac-rzxq-qyvj
+郵箱帳號: qtgate_test15@icloud.com, APP密碼: bunf-hhlr-bhbe-qsjy
+郵箱帳號: qtgate_test16@icloud.com, APP密碼: mfez-kqco-mrxy-lwmx
+郵箱帳號: qtgate_test17@icloud.com, APP密碼: zsyj-yyvq-vekk-sdos
+郵箱帳號: qtgate_test18@icloud.com, APP密碼: ygmt-ftoz-twad-yeeb
+郵箱帳號: qtgate_test19@icloud.com, APP密碼: ajyi-mvqr-cluc-ufxu
+郵箱帳號: qtgate_test20@icloud.com, APP密碼: dgiq-slit-nift-ywgy
+郵箱帳號: qtgate_test21@icloud.com, APP密碼: jflx-eakk-gowq-adwu
+郵箱帳號: qtgate_test22@icloud.com, APP密碼: rcbl-tmrw-skkw-wdnj
+郵箱帳號: qtgate_test23@icloud.com, APP密碼: qppa-hzvj-bcmr-uwxk
+郵箱帳號: qtgate_test24@icloud.com, APP密碼: fcji-uoag-drof-uhqf
+郵箱帳號: qtgate_test25@icloud.com, APP密碼: kvys-eszu-mnnr-nxav
+郵箱帳號: qtgate_test26@icloud.com, APP密碼: idbi-cuyl-ztvv-vogz
+郵箱帳號: qtgate_test27@icloud.com, APP密碼: sdeg-rkck-tzza-qapy
+郵箱帳號: qtgate_test28@icloud.com, APP密碼: etcb-ihzd-rbau-ekol
+郵箱帳號: qtgate_test29@icloud.com, APP密碼: tslh-ujpp-gbqj-wejo
+ */
+const CoNetTempAccount = [
+    { userName: 'qtgate_test1@icloud.com', passwd: 'xfry-skyx-dpox-jyrh' },
+    { userName: 'qtgate_test2@icloud.com', passwd: 'cfes-ofqz-khho-dppa' },
+    { userName: 'qtgate_test3@icloud.com', passwd: 'wipp-uvkb-cupb-ngnp' },
+    { userName: 'qtgate_test4@icloud.com', passwd: 'pnoy-axvy-epdt-racp' },
+    { userName: 'qtgate_test5@icloud.com', passwd: 'uaav-ehgw-mdir-mbcs' },
+    { userName: 'qtgate_test6@icloud.com', passwd: 'tnkb-iixm-ewlv-pjsr' },
+    { userName: 'qtgate_test7@icloud.com', passwd: 'ymdo-bfoe-qipo-islu' },
+    { userName: 'qtgate_test8@icloud.com', passwd: 'qcit-qzjj-bmfn-ooui' },
+    { userName: 'qtgate_test9@icloud.com', passwd: 'eajz-mxae-otnt-njmw' },
+    { userName: 'qtgate_test10@icloud.com', passwd: 'oimd-qrvx-lelz-mogu' },
+    { userName: 'qtgate_test11@icloud.com', passwd: 'ncqg-dadz-doln-udrt' },
+    { userName: 'qtgate_test12@icloud.com', passwd: 'vjwe-neje-xinx-czvd' },
+    { userName: 'qtgate_test13@icloud.com', passwd: 'uabm-fqnv-xuuz-ixbr' },
+    { userName: 'qtgate_test14@icloud.com', passwd: 'ptkd-chac-rzxq-qyvj' },
+    { userName: 'qtgate_test15@icloud.com', passwd: 'bunf-hhlr-bhbe-qsjy' },
+    { userName: 'qtgate_test16@icloud.com', passwd: 'mfez-kqco-mrxy-lwmx' },
+    { userName: 'qtgate_test17@icloud.com', passwd: 'zsyj-yyvq-vekk-sdos' },
+    { userName: 'qtgate_test18@icloud.com', passwd: 'ygmt-ftoz-twad-yeeb' },
+    { userName: 'qtgate_test19@icloud.com', passwd: 'ajyi-mvqr-cluc-ufxu' },
+    { userName: 'qtgate_test20@icloud.com', passwd: 'dgiq-slit-nift-ywgy' },
+    { userName: 'qtgate_test21@icloud.com', passwd: 'jflx-eakk-gowq-adwu' },
+    { userName: 'qtgate_test22@icloud.com', passwd: 'rcbl-tmrw-skkw-wdnj' },
+    { userName: 'qtgate_test23@icloud.com', passwd: 'qppa-hzvj-bcmr-uwxk' },
+    { userName: 'qtgate_test24@icloud.com', passwd: 'fcji-uoag-drof-uhqf' },
+    { userName: 'qtgate_test25@icloud.com', passwd: 'kvys-eszu-mnnr-nxav' },
+    { userName: 'qtgate_test26@icloud.com', passwd: 'idbi-cuyl-ztvv-vogz' },
+    { userName: 'qtgate_test27@icloud.com', passwd: 'sdeg-rkck-tzza-qapy' },
+    { userName: 'qtgate_test28@icloud.com', passwd: 'etcb-ihzd-rbau-ekol' },
+    { userName: 'qtgate_test29@icloud.com', passwd: 'tslh-ujpp-gbqj-wejo' }
+];
 class keyPairSign {
     constructor(exit) {
         this.exit = exit;
@@ -253,8 +315,8 @@ class imapForm {
         _view.connectInformationMessage.socketIo.once('imapTestFinish', imapTestFinish);
         const imapServer = getImapSmtpHost(self.emailAddress());
         const imapConnectData = {
-            email: self.account,
-            account: self.account,
+            email: null,
+            account: null,
             smtpServer: imapServer.smtp,
             smtpUserName: self.emailAddress(),
             smtpPortNumber: imapServer.SmtpPort,
@@ -315,5 +377,11 @@ class imapForm {
         this.showForm(true);
         this.showCheckProcess(false);
         this.checkImapError(-1);
+    }
+    useCoNetTempAccount() {
+        const account = CoNetTempAccount[parseInt((Math.random() * 28).toString())];
+        this.emailAddress(account.userName);
+        this.password(account.passwd);
+        return this.imapAccountGoCheckClick();
     }
 }

@@ -204,7 +204,7 @@ PT17OWXpUfDuuSaA+2Px8WMtc9trMDIiGCEM
 const signPublicKey = ( public_key, private_key ) => {
 	// Returns a new public key which is public_key + signature(public_key)
 	var dataToSign = {
-		userid: public_key.users[0].userId,
+		userId: public_key.users[0].userId,
 		key: public_key.primaryKey
 	}
 
@@ -227,7 +227,7 @@ const signPublicKey = ( public_key, private_key ) => {
 	signaturePacket.preferredCompressionAlgorithms = []
 	signaturePacket.preferredCompressionAlgorithms.push ( openpgp.enums.compression.zlib )
 	signaturePacket.preferredCompressionAlgorithms.push ( openpgp.enums.compression.zip )
-	signaturePacket.sign ( private_key.getEncryptionKeyPacket(), dataToSign )
+	signaturePacket.sign ( private_key, dataToSign )
   
 	var originalPackets = public_key.toPacketlist ()
 	var packetlist = new openpgp.packet.List ()

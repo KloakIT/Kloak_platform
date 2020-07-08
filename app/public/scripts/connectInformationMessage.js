@@ -103,8 +103,7 @@ const messageBoxDefine = {
 };
 const requestTimeOut = 1000 * 180;
 class connectInformationMessage {
-    constructor(url = "/", keyID, _view) {
-        this.url = url;
+    constructor(keyID, _view) {
         this.keyID = keyID;
         this._view = _view;
         this.offlineInfo = ko.observable(false);
@@ -112,7 +111,7 @@ class connectInformationMessage {
         this.showGreen = ko.observable(false);
         this.messageArray = ko.observable(null);
         this.socketIoOnline = false;
-        this.socketIo = io(this.url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true });
+        this.socketIo = null;
         this.localServerPublicKey = "";
         this.requestPool = new Map();
         this.first = true;
@@ -144,17 +143,32 @@ class connectInformationMessage {
             div.transition('fly down');
         });
         this.first = false;
-        this.socketListening();
     }
-    socketListening() {
+    socketListening(url) {
         const self = this;
+        if (this.socketIo) {
+            this.socketIo.close();
+            this.socketIo.removeAllListeners();
+            this.socketIo = null;
+            _view.networkConnect(false);
+            return _view.localServerConnected(false);
+        }
+        this.socketIo = io(url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true });
         this.socketIo.on('reconnect_failed', () => {
             console.dir(`reconnect_failed`);
             //self.showErrorMessage ( 'systemError' )
         });
         this.socketIo.on('connect', () => {
             console.dir(`on connect`);
-            return this.getServerPublicKey(err => {
+            return self.getServerPublicKey(err => {
+                if (err) {
+                    console.dir(`getServerPublicKey error!`, err);
+                }
+                _view.localServerConnected(true);
+                console.dir(`getServerPublicKey success!`);
+                if (_view.imapData) {
+                    _view.connectToNode();
+                }
             });
         });
         this.socketIo.on('reconnect', attempt => {
@@ -192,6 +206,13 @@ class connectInformationMessage {
                     }
                 }
             });
+        });
+        this.socketIo.on('disconnect', reason => {
+            if (reason === 'io server disconnect') {
+                // the disconnection was initiated by the server, you need to reconnect manuall
+                return this.socketIo.connect();
+            }
+            console.log(`socketIo.on ( 'disconnect' )`, reason);
         });
     }
     emitRequest(cmd, CallBack) {

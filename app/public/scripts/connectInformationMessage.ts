@@ -120,12 +120,13 @@ class connectInformationMessage {
 	public showGreen = ko.observable ( false )
 	public messageArray = ko.observable ( null )
 	public socketIoOnline = false
-	public socketIo =  io ( this.url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
+	public socketIo = null
+	
 	public localServerPublicKey = ""
 
 	private requestPool = new Map ()
 	private first = true
-	constructor ( private url: string = "/", private keyID: string, private _view ) {
+	constructor ( private keyID: string, private _view ) {
 
 		const self = this
 
@@ -141,12 +142,22 @@ class connectInformationMessage {
 		})
 
 		this.first = false
-		this.socketListening ()
+		
 		
 	}
 
-	private socketListening () {
+	public socketListening ( url: string ) {
 		const self = this
+
+		if ( this.socketIo ) {
+			this.socketIo.close ()
+			this.socketIo.removeAllListeners()
+			this.socketIo = null
+			_view.networkConnect ( false )
+			return _view.localServerConnected ( false )
+		}
+
+		this.socketIo =  io ( url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
 		this.socketIo.on ( 'reconnect_failed', () => {
 			console.dir ( `reconnect_failed`)
 			//self.showErrorMessage ( 'systemError' )
@@ -154,8 +165,15 @@ class connectInformationMessage {
 		
 		this.socketIo.on ( 'connect', () => {
 			console.dir (`on connect`)
-			return this.getServerPublicKey ( err => {
-				
+			return self.getServerPublicKey ( err => {
+				if ( err ) {
+					console.dir (`getServerPublicKey error!`, err )
+				}
+				_view.localServerConnected ( true )
+				console.dir (`getServerPublicKey success!`)
+				if ( _view.imapData ) {
+					_view.connectToNode ()
+				}
 			})
 		})
 		
@@ -205,6 +223,14 @@ class connectInformationMessage {
 				}
 				
 			})
+		})
+
+		this.socketIo.on ( 'disconnect', reason => {
+			if ( reason === 'io server disconnect') {
+				// the disconnection was initiated by the server, you need to reconnect manuall
+				return this.socketIo.connect()
+			}
+			console.log ( `socketIo.on ( 'disconnect' )`, reason )
 		})
 
 

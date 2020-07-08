@@ -3,31 +3,57 @@
 	<!-- ko if: ! currentUser () -->
 	.selectCurrentUser
 		.ui.top.fixed.menu.borderless
-			.input.ui.grid( style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
-				.six.wide.column
-					.ui.label.blue.big( data-bind = "text: $root.keyPair().publicKeyID")
-				.ten.wide.column
-					.ui.right.fluid.icon.input.big
+			.input.ui.grid(  data-bind = "style: { 'padding-right': $root.middleX() > 237 ? '4rem' : '0rem' }" style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
+				.one.wide.column
+					.button.circular.ui.icon.blue( data-bind = " click: () => { showPublicKey ( !showPublicKey()); showPrivateKey ( false );publicKeyTextShowCopy ( false );}" style = "margin-top: 0.4rem;")
+						i.icon.key
+						
+				.fifteen.wide.column
+					.ui.right.fluid.icon.input.big( style = "margin-left: 1rem;width: 100%;")
 						
 						<!-- ko if: ! adduser() -->
-						i.icon.link.plus.circle.circular.olive( data-bind = "click: () => { adduser( true ); }" style = "top: .21em; left: 0.5rem;")
-						i.icon.link.search.circular.blue( style = "top: .21em;")
+						i.icon.link.plus.circle.circular.olive( data-bind = "click: () => { adduser( true ); }" style = "left: 0.5rem;")
 						<!-- /ko -->
 						input( type = "text" data-bind = "value: searchInputText, style: { 'border-radius': !adduser() ? '500rem': '' }" style = "color: rgba ( 0,0,0,0.5 );padding-left: 4rem;" )
 						<!-- ko if: adduser() -->
-						i.icon.link.close.circle.circular.grey( data-bind = "click: () => { adduser( false ); }" style = "top: .21em; left: 0.5rem;")
-						i.icon.link.play.circular.olive( data-bind = " click: addUser" style = "top: .21em;")
+						i.icon.link.close.circle.circular.grey( data-bind = "click: () => { adduser( false ); }" style = "left: 0.5rem;")
+						i.icon.link.play.circular.olive( data-bind = " click: addUser" )
 						<!-- /ko -->
 					
 		.allUser( style = "padding-top: 7rem; width: 95%; position: relative; margin: auto;" )
-			.ui.divided.items( data-bind = "foreach: userList "  style = "margin: 0px auto!important; max-width: 40rem;" )
-				.item
-					.ui.tiny.circular.image
-						img( data-bind = " attr: { src : img }")
-					.content
-						a.header( data-bind = "text: title, click: () => { $parent.selechuser ($index()) }")
-						.meta
-							span( data-bind = "text: keyID ")
+			<!-- ko if: showPublicKey -->
+				.ui.label.blue
+					span( data-bind = "text: $root.keyPair().publicKeyID")
+				.ui.segment( data-bind = "click: copyPublicKey " style = "background-color: transparent; padding: 0px;")
+					<!-- ko if: publicKeyTextShowCopy -->
+						.ui.teal.right.ribbon.label( data-bind = "text: infoDefine [ $root.languageIndex() ].copied" style= "left: calc(100% + 1.2em);top: 1rem;")
+					<!-- /ko -->
+					textarea#publicKeyText.textarea.keyTextarea( data-bind = " text: $root.keyPair().publicKey " style = "color: grey;")
+					
+				.ui.basic.buttons
+					.ui.button.kloak_color_teal( data-bind = "text: infoDefine [ $root.languageIndex() ].privatyKeyTitleShow ,click: () => { showPrivateKey ( !showPrivateKey() );} ")
+					
+				<!-- ko if: showPrivateKey ()-->
+					
+					.ui.segment( data-bind = "click: copyPrivateKey " style = "background-color: transparent; padding: 0px;")
+						.header.kloak_color_PrimaryTeal( data-bind = "text: infoDefine [ $root.languageIndex() ].privatyKeyTitle " )
+						<!-- ko if: privateTextShowCopy -->
+							.ui.teal.right.ribbon.label( data-bind = "text: infoDefine [ $root.languageIndex() ].copied" style= "left: calc(100% + 1.2em);top: 1rem;")
+						<!-- /ko -->
+						textarea#privateKeyText.keyTextarea( data-bind = "text: $root.keyPair().privateKey " style="background-color: #cd5c5c4a;color: grey;")
+				<!-- /ko -->
+			<!-- /ko -->
+
+			<!-- ko if: !showPublicKey() -->
+				.ui.divided.items( data-bind = "foreach: userList "  style = "margin: 0px auto!important; max-width: 40rem;" )
+					.item
+						.ui.tiny.circular.image
+							img( data-bind = " attr: { src : img }")
+						.content
+							a.header( data-bind = "text: title, click: () => { $parent.selechuser ($index()) }")
+							.meta
+								span( data-bind = "text: keyID ")
+			<!-- /ko -->
 
 	<!-- /ko -->
 	
@@ -36,13 +62,13 @@
 		.ui.top.fixed.menu.borderless
 			<!-- ko with: currentUser -->
 			.item( style = "width: 100%;" )
-				img.ui.tiny.circular.image( data-bind = " attr: { src: img }")
+				img.ui.tiny.circular.image( data-bind = " attr: { src: img }" style = "width: 55px;")
 				.middle.aligned.content( style = "margin-left: 0.5rem;")
 					h3.ui.header( data-bind = " text: title" )
 				.input( style = " padding-left: 2rem; padding-right: 4rem;" )
 					.ui.right.fluid.icon.input.big
 						input( type="text" style = "color: rgba ( 0,0,0,0.5 ); border-radius: 500rem; " data-bind = " value: $parent.searchText" )
-						i.icon.link.search.circular.blue( style = "top: .21em;")
+						i.icon.link.search.circular.blue( style = "top: 0.25rem;right: .37rem;")
 
 			<!-- /ko -->
 		.chatArea( data-bind = "foreach: chatData " style = "padding-top: 5rem; padding-bottom: 7rem; transform: scaleY(-1); padding-left: 2rem; padding-right: 2rem;")
@@ -59,8 +85,8 @@
 			.item( style = "width: 100%;" )
 				.input
 					.ui.right.input.big.icon( style = "width: 100%;" )
-						input( type = "text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "value: textInput" )
-						i.teal.play.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: .21em;")
+						textarea.daggrInputTextarea( type = "text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "value: textInput" )
+						i.teal.play.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: 0.25rem;")
 
 	<!-- /ko -->
 

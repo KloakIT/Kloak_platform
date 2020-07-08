@@ -49,56 +49,59 @@ block jumbotron1
 					h3.sub.header( data-bind="animationTextLineIn: infoDefine [ languageIndex() ].cover.firstTitle3" style = "color: white; text-align: center;" )
 			.AppList.CoContent.content
 				.searchItems( style = "padding-bottom: 10rem;" )
+								
+					.content( style = "padding: 0.5rem; " )
+						<!-- ko if: showLocalServerDisconnect() -->
+							.ui.buttons
+								button.ui.button.kloak_background_lightGrey( data-bind = "click: () => { showLocalServerDisconnect ( false );}, text: infoDefine [ languageIndex() ].home_index_view.cancel ")
+								.or
+								button.ui.positive.button.kloak_background_DarkBlue( data-bind = "click: connectLocalServer, text: infoDefine [ languageIndex() ].airplaneMode" )
+						<!-- /ko -->
+						<!-- ko if: !showLocalServerDisconnect() -->
+							<!-- ko if: localServerConnected() -->
+								a.ui.labeled.button( data-bind = "click: () => { showLocalServerDisconnect ( true )}" style = "margin: 1rem; margin-left: 0;" tabindex="0")
+									.ui.vk.button
+										i.icon.home
+										<!-- ko text: LocalServerUrl --><!-- /ko -->
+
+									<!-- ko if: imapData -->
+										.ui.label.basic.left.pointing( data-bind = " css: { 'kloak_color_DarkBlue': networkConnect() !== 1, 'red': networkConnect() === 1}")
+											<!-- ko text: imapData().imapUserName --><!-- /ko -->
+											
+											<!-- ko if: !networkConnect() -->
+												.detail( data-bind = "text: networkSetupConnectShow[ $root.languageIndex() ], click: connectToNode " )
+											<!-- /ko -->
+
+											<!-- ko if: networkConnect() === 2 -->
+											.ui.active.inverted.dimmer
+												.ui.mini.loader
+											<!-- /ko -->
+										
+											<!-- ko if: networkConnect() === 1 -->
+												i.icon.sync.alternate( style = "margin-left: 0.5rem; margin-right: 0;")
+											<!-- /ko -->
+
+											<!-- ko if: networkConnect() === true -->
+											<!-- /ko -->
+
+									<!-- /ko -->
+								
+							<!-- /ko -->
+							<!-- ko if: !localServerConnected() -->
+								button.circular.ui.icon.button.kloak_background_BrightBlue.kloak_color_lightGrey( data-bind = " click: connectLocalServer")
+									i.icon.plane
+							<!-- /ko -->
+						<!-- /ko -->
+					.ui.divider
 					.ui.items.unstackable.divided
-						
-						.ui.middle.aligned.item
-							a.image( href = "#" data-bind = " click: networkConnect() === false ? _view.showImapSetup : null " )
-								<!-- ko if: networkConnect() === true -->
-								img( src = "/images/Kloak_icon.svg")
-								<!-- /ko -->
-
-								<!-- ko if: networkConnect() !== true -->
-								.img( data-bind = "style: { opacity: networkConnect() ? 0.5 : 1 }")
-									include netConnect.svg
-
-								<!-- ko if: networkConnect() > 1 -->
-									.ui.active.centered.loader
-								<!-- /ko -->
-
-								<!-- /ko -->
-								
-							.content( style = "padding: 0.5rem; " )
-								a.header( href = "#" data-bind=" text: networkSetupHeader [ $root.languageIndex() ], click:  networkConnect()  === false ? _view.showImapSetup : null " style = " color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
-								.ui.label( data-bind = " text: 'KEY ID: ' + keyPair().publicKeyID " style = "text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);color: white;background-color: #609FCE;")
-								.description( style = "color: white; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);" )
-									p( data-bind = "text: networkSetupDescription [ $root.languageIndex() ]")
-								<!-- ko if: imapData -->
-								.meta
-									span.ui.label( data-bind = " text: imapData().imapUserName " style="background-color: #ECEEF7;color: #93AFB4;")
-									<!-- ko if: !networkConnect() -->
-									span.ui.blue.label.link.large( data-bind = "text: networkSetupConnectShow[ $root.languageIndex() ], click: connectToNode " )
-									<!-- /ko -->
-									//- show timeout
-									<!-- ko if: networkConnect() === 1 -->
-								
-									span.ui.orange.link.label( data-bind = "click: () => { CoNETConnectClass.sendConnectMail()}, text: infoDefine[ $root.languageIndex() ].linuxUpdate.tryAgain" )
-									<!-- /ko -->
-
-									<!-- ko if: networkConnect() === true -->
-								
-									span.ui.red.link.label( data-bind = "text: networkDisconnect[ $root.languageIndex() ]" )
-									<!-- /ko -->
-
-								<!-- /ko -->
-								
 
 						<!-- ko foreach: mainManuItems -->
 						.ui.middle.aligned.item
-							a.image( href = "#" data-bind = " click: () => { $root.appClick ( $index()) }" )
+							a.image( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
 								img( data-bind = "attr: { src: img }, style: { opacity: ( online && $root.networkConnect() === true || !online ) ? 1 : 0.5 } ")
 								
 							.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
-								a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ], click: () => { $root.appClick ( $index()) }" style = " color: white;")
+								a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ], click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" style = " color: white;")
 								.meta
 									span
 								.description( style = "color: white")
@@ -114,6 +117,8 @@ block jumbotron1
 	section#CanadaBackground( style = "top: 0rem; position: absolute;width: 100%;")
 		include coSearchImage.html
 	<!-- /ko -->
+
+	
 
 	<!-- ko if: sectionLogin() -->
 		.CoContent.content( data-bind = "style: { 'margin-top': middleY() / 1.25 }")
@@ -266,30 +271,30 @@ block jumbotron1
 	<!-- /ko -->
 
 	<!-- ko if: imapSetup -->
-	<!-- ko with: imapSetup -->
-
-	<!-- ko if: showForm -->
-	.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
-		.card.centered.raised( style = " width: 100%;" )
-			.content.imapSetupForm( data-bind = "if: showForm ")
-				.ui.segment.teal
-					p( data-bind = "html: infoDefine [ $root.languageIndex() ].imapInformation.infomation ")
-					p( data-bind = "html: infoDefine[ $root.languageIndex() ].imapInformation.tempImapAccount")
-				form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
-					.two.fields
-						.field.required( data-bind = " css: { error: emailAddressShowError ()}")
-							.ui.left.icon.input.huge
-								i.icon.outline.mail
-								input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
-						.field.required
-							.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
-								i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-								input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
-								button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
-									i.icon.angle.right
-	<!-- /ko -->
-	//-	if: showForm
-	<!-- /ko -->
+		<!-- ko with: imapSetup -->
+			<!-- ko if: showForm -->
+				.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
+					.card.centered.raised( style = " width: 100%;" )
+						.content.imapSetupForm( data-bind = "if: showForm ")
+							.ui.segment.teal
+								p.kloak_color_PrimaryTeal( style = "font-size: large;" )
+									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.infomation --><!-- /ko -->
+									a.ui.label.teal.link.big( data-bind = " click: useCoNetTempAccount, text: infoDefine [ $root.languageIndex() ].imapInformation.coNetTempAccount ")
+									
+							form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
+								.two.fields
+									.field( data-bind = " css: { error: emailAddressShowError ()}")
+										.ui.left.icon.input.huge
+											i.icon.outline.mail
+											input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
+									.field
+										.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
+											i.icon.privacy( data-bind = " visible: !password() || !password().length ")
+											input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
+											button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
+												i.icon.angle.right
+			<!-- /ko -->
+		<!-- /ko -->
 	<!-- /ko -->
 
 	//-		AppList 
@@ -328,6 +333,16 @@ block jumbotron1
 		<!----------- start tempAppHtml DEBUG -------------->
 		
 		include ../shared/daggr
+
+		<!----------- end tempAppHtml DEBUG ----------------->
+	<!-- /ko -->
+
+	<!-- ko if: muteHtml -->
+
+	section#muteHtml
+		<!----------- start tempAppHtml DEBUG -------------->
+		
+		include ../shared/muteHtml
 
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->

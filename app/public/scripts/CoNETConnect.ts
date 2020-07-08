@@ -34,8 +34,6 @@ class CoNETConnect {
 	public infoTextArray: KnockoutObservableArray < connectInfo > = ko.observableArray ([])
 	public keyPairSign: KnockoutObservable< keyPairSign > = ko.observable ( null )
 	private imapData: IinputData = this.view.imapData()
-	public account = this.imapData.account
-	public email = this.imapData.imapUserName
 	public nodeEmail = "node@Kloak.app"
 	private inSendMail = false
 	private pingTimeOut () {
@@ -44,7 +42,6 @@ class CoNETConnect {
 
 	constructor ( private view: view_layout.view, private isKeypairBeSign: boolean, private ready: ( err ) => void ) {
 		const self = this
-		this.imapData.publicKeyID = view.keyPair().publicKeyID
 		/*
 		if ( !this.view.imapData.confirmRisk ) {
 			this.showSendImapDataWarning ( true )
@@ -225,6 +222,10 @@ class CoNETConnect {
 
 	public imapConform () {
 		const self = this
+		//		have no imapData
+		if ( !this.imapData ) {
+			return _view.showImapSetup ()
+		}
 		const connect = () => {
 			
 			this.showSendImapDataWarning ( false )

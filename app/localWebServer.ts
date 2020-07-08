@@ -216,6 +216,7 @@ export default class localServer {
 			return uuid
 			
 		}
+
 		socket.on ( 'checkImap', ( imapConnectData, CallBack1 ) => {
 			
 			console.log (`on checkImap typeof CallBack1 = [${ typeof CallBack1 }]`)
@@ -402,6 +403,13 @@ export default class localServer {
 			
 			
 		})
+
+		socket.once ('disconnect', () => {
+			console.dir (`${ clientName } on disconnect!`)
+			
+		})
+
+
 /*
 		socket.on ('getUrl', ( url: string, CallBack ) => {
 			const uu = new URLSearchParams ( url )

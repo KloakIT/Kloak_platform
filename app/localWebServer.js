@@ -335,6 +335,9 @@ class localServer {
                 return socket.emit(_uuid, null, this.localKeyPair.publicKey);
             });
         });
+        socket.once('disconnect', () => {
+            console.dir(`${clientName} on disconnect!`);
+        });
         /*
                 socket.on ('getUrl', ( url: string, CallBack ) => {
                     const uu = new URLSearchParams ( url )

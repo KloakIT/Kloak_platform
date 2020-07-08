@@ -95,12 +95,7 @@ const makeKeyPairData = (view, keypair) => {
         view.password = passwd;
         keypair.showLoginPasswordField(false);
         view.showMain();
-        /**
-         *
-         * 		encryptoClass ready
-         *
-         *
-         **/
+        view.afterPasswordReady();
     });
     keypair.keyPairPassword = ko.observable(keyPairPasswordClass);
     keypair.showLoginPasswordField = ko.observable(false);
@@ -124,180 +119,6 @@ const makeKeyPairData = (view, keypair) => {
         return view.reFreshLocalServer();
     };
 };
-class showWebPageClass {
-    constructor(showUrl, zipBase64Stream, zipBase64StreamUuid, exit) {
-        this.showUrl = showUrl;
-        this.zipBase64Stream = zipBase64Stream;
-        this.zipBase64StreamUuid = zipBase64StreamUuid;
-        this.exit = exit;
-        this.showLoading = ko.observable(true);
-        this.htmlIframe = ko.observable(null);
-        this.showErrorMessage = ko.observable(false);
-        this.showHtmlCodePage = ko.observable(false);
-        this.showImgPage = ko.observable(true);
-        this.png = ko.observable('');
-        this.mHtml = ko.observable('');
-        this.urlBlobList = [];
-        const self = this;
-        _view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
-            //showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
-            if (err) {
-                return self.showErrorMessageProcess();
-            }
-            _view.bodyBlue(false);
-            let html = data.html;
-            //      support HTMLComplete
-            if (html) {
-                html = html
-                    .replace(/ srcset="[^"]+" /gi, ' ')
-                    .replace(/ srcset='[^']+' /gi, ' ');
-                let det = data.folder.shift();
-                const getData = (filename, _data, CallBack) => {
-                    const pointStart = html.indexOf(`${filename}`);
-                    const doCallBack = () => {
-                        det = data.folder.shift();
-                        if (!det) {
-                            return CallBack();
-                        }
-                        return getData(det.filename, det.data, CallBack);
-                    };
-                    if (pointStart > -1) {
-                        return getFilenameMime(filename, (err, mime) => {
-                            if (mime && !/javascript/.test(mime)) {
-                                /**
-                                 *
-                                 *          css link tag format support
-                                 *
-                                 */
-                                const _filename = filename
-                                    .replace(/\-/g, '\\-')
-                                    .replace(/\//g, '\\/')
-                                    .replace(/\./g, '\\.')
-                                    .replace(/\(/g, '\\(')
-                                    .replace(/\)/g, '\\)');
-                                const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
-                                const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
-                                /*
-                            if ( /^ src/i.test( hrefTest )) {
-                                
-                                const data1 = `data:${ mime };base64,` + _data
-                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                return doCallBack ()
-                                
-                            }
-                            */
-                                const blob = new Blob([
-                                    /^image/.test(mime)
-                                        ? Buffer.from(_data, 'base64')
-                                        : Buffer.from(_data, 'base64').toString(),
-                                ], { type: mime });
-                                const link = (URL || webkitURL).createObjectURL(blob);
-                                html = html
-                                    .replace(regex, ` src="${link}"`)
-                                    .replace(regex1, ` href="${link}"`);
-                                this.urlBlobList.push(link);
-                            }
-                            doCallBack();
-                        });
-                    }
-                    doCallBack();
-                };
-                return getData(det.filename, det.data, (err) => {
-                    self.png(data.img);
-                    const htmlBolb = new Blob([html], { type: 'text/html' });
-                    const _url = (URL || webkitURL).createObjectURL(htmlBolb);
-                    self.showLoading(false);
-                    self.htmlIframe(_url);
-                    self.urlBlobList.push(_url);
-                });
-            }
-            html = mhtml2html.convert(data.mhtml);
-            self.png(data.img);
-            self.showLoading(false);
-            self.mHtml(html);
-        });
-    }
-    showErrorMessageProcess() {
-        this.showLoading(false);
-        this.showErrorMessage(true);
-    }
-    close() {
-        this.showImgPage(false);
-        this.showHtmlCodePage(false);
-        this.png(null);
-        this.htmlIframe(null);
-        this.urlBlobList.forEach((n) => {
-            ;
-            (URL || webkitURL).revokeObjectURL(n);
-        });
-        this.exit();
-    }
-    imgClick() {
-        this.showHtmlCodePage(false);
-        this.showImgPage(true);
-    }
-    htmlClick() {
-        this.showHtmlCodePage(true);
-        this.showImgPage(false);
-        const docu = this.mHtml();
-        if (docu) {
-            $('iframe')
-                .contents()
-                .find('head')
-                .html(docu['window'].document.head.outerHTML);
-            $('iframe')
-                .contents()
-                .find('body')
-                .html(docu['window'].document.body.outerHTML);
-        }
-    }
-}
-class workerManager {
-    constructor(list) {
-        this.workers = new Map();
-        this.callbackPool = new Map();
-        list.forEach((n) => {
-            const work = new Worker(`scripts/${n}.js`);
-            work.onmessage = (evt) => {
-                return this.doEvent(evt);
-            };
-            return this.workers.set(n, work);
-        });
-    }
-    doEvent(evt) {
-        const jsonData = Buffer.from(Buffer.from(evt.data).toString(), 'base64').toString();
-        let data = null;
-        try {
-            data = JSON.parse(jsonData);
-        }
-        catch (ex) {
-            return new EvalError(`workerManager JSON.parse error [${ex.message}]`);
-        }
-        const callBack = this.callbackPool.get(data.uuid);
-        if (!callBack) {
-            return console.log(`workerManager: [${new Date().toLocaleTimeString()}] have not callback about message from [${data.workerName}] content = [${data.data}]`);
-        }
-        return callBack(null, data);
-    }
-    /**
-     *
-     *
-     */
-    postFun(workerName, data, CallBack) {
-        const worker = this.workers.get(workerName);
-        if (!worker) {
-            return CallBack(new Error('no worker'));
-        }
-        const callback = {
-            data: data,
-            uuid: uuid_generate(),
-            workerName: workerName,
-        };
-        const kk = Buffer.from(Buffer.from(JSON.stringify(callback)).toString('base64'));
-        this.callbackPool.set(callback.uuid, CallBack);
-        return worker.postMessage(kk, [kk.buffer]);
-    }
-}
 var view_layout;
 (function (view_layout) {
     class view {
@@ -337,6 +158,9 @@ var view_layout;
             this.showStartupVideo = ko.observable(true);
             this.daggrHtml = ko.observable(false);
             this.showFileStorage = ko.observable(false);
+            this.muteHtml = ko.observable(false);
+            this.localServerConnected = ko.observable(false);
+            this.showLocalServerDisconnect = ko.observable(false);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -344,6 +168,7 @@ var view_layout;
             */
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);
+            this.LocalServerUrl = window.location.href.split(/https?\:\/\//i)[1].split(/\//)[0];
             this.imapData = ko.observable(null);
             this.newVersion = ko.observable(null);
             this.showLanguageSelect = ko.observable(true);
@@ -390,7 +215,7 @@ var view_layout;
             this.appScript = ko.observable();
             this.middleX = ko.observable(window.innerWidth / 2);
             this.middleY = ko.observable(window.innerHeight / 2);
-            this.socketListen();
+            this.getConfigFromLocalStorage();
             this.CanadaBackground.subscribe((val) => {
                 if (val) {
                     $.ajax({
@@ -480,10 +305,6 @@ var view_layout;
                 return this.initConfig({});
             }
             return this.initConfig(config);
-        }
-        socketListen() {
-            let self = this;
-            return this.getConfigFromLocalStorage();
         }
         initWelcomeView() {
             this.welcomeTitle(true);
@@ -717,9 +538,27 @@ var view_layout;
         showMain() {
             this.sectionWelcome(false);
             this.showStartupVideo(false);
-            this.showMainPage(true);
+            if (this.imapData) {
+                this.showMainPage(true);
+            }
             this.sectionLogin(false);
-            this.connectInformationMessage = new connectInformationMessage('/', this.keyPair().publicKeyID, this);
+        }
+        afterPasswordReady() {
+            const self = this;
+            this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
+            this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
+                if (err) {
+                    return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
+                }
+                if (data['imapData']) {
+                    self.imapData(data['imapData']);
+                }
+                if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
+                    self.connectInformationMessage.socketListening(this.LocalServerUrl);
+                }
+            });
+        }
+        connectToLocalServer() {
             this.connectInformationMessage.getServerPublicKey((err) => {
                 this.keyPair()['localserverPublicKey'] =
                     _view.connectInformationMessage.localServerPublicKey;
@@ -784,6 +623,10 @@ var view_layout;
             this.middleX(window.innerWidth / 2);
             this.middleY(window.innerHeight / 2);
         }
+        connectLocalServer() {
+            _view.showLocalServerDisconnect(false);
+            _view.connectInformationMessage.socketListening(this.LocalServerUrl);
+        }
     }
     view_layout.view = view;
 })(view_layout || (view_layout = {}));
@@ -792,10 +635,10 @@ const mainMenuArray = [
         name: 'librarium',
         img: '/images/kloakSearchIcon.svg',
         header: [
-            '私密无痕网页检索及快照',
-            'サイド検索及のスナップショット',
+            '图书馆',
+            '図書館',
             'The Librarium',
-            '私密無痕網頁檢索及快照',
+            '圖書館',
         ],
         description: [
             '流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
@@ -824,6 +667,22 @@ const mainMenuArray = [
         online: false,
     },
     {
+        name: 'mute',
+        img: '/images/encrypted.svg',
+        header: ['哑语', 'ミュート', 'Mute', '啞語'],
+        description: [
+            '加密解密工具',
+            '暗号化と平文するツール',
+            'Encrypted and decrypted tool',
+            '加密解密工具',
+        ],
+        extra: null,
+        click: mute,
+        online: false,
+        htmlTemp: 'muteHtml'
+    }
+    /*,
+    {
         name: 'masquerade',
         img: '/images/Masquerade.svg',
         header: ['假面舞会', 'マスカレード', 'Masquerade', '假面舞會'],
@@ -836,7 +695,8 @@ const mainMenuArray = [
         extra: null,
         click: null,
         online: true,
-    },
+    }*/
+    ,
     {
         img: '/images/message.svg',
         header: ['', '', 'Daggr', ''],

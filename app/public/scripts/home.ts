@@ -117,15 +117,13 @@ ko.bindingHandlers.animationTextLineIn = {
 const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
 	const length = keypair.publicKeyID.length
 	keypair.publicKeyID = keypair.publicKeyID.substr(length - 16)
-	view.showKeyPair(true)
-	let keyPairPasswordClass = new keyPairPassword(
-		keypair,
-		(passwd: string, deleteKey: boolean) => {
-			view.showKeyPair(false)
-			keypair.keyPairPassword((keyPairPasswordClass = null))
+	view.showKeyPair ( true )
+	let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string, deleteKey: boolean ) => {
+			view.showKeyPair ( false )
+			keypair.keyPairPassword (( keyPairPasswordClass = null))
 
-			if (!passwd) {
-				if (deleteKey) {
+			if ( !passwd ) {
+				if ( deleteKey ) {
 					_view.deleteKey()
 				}
 				return _view.initWelcomeView()
@@ -134,16 +132,11 @@ const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
 
 			keypair.passwordOK = true
 			view.password = passwd
-			keypair.showLoginPasswordField(false)
+			keypair.showLoginPasswordField ( false )
 
 			view.showMain()
+			view.afterPasswordReady ()
 
-			/**
-			 *
-			 * 		encryptoClass ready
-			 *
-			 *
-			 **/
 		}
 	)
 
@@ -171,231 +164,6 @@ const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
 	}
 }
 
-class showWebPageClass {
-	public showLoading = ko.observable(true)
-	public htmlIframe = ko.observable(null)
-	public showErrorMessage = ko.observable(false)
-	public showHtmlCodePage = ko.observable(false)
-	public showImgPage = ko.observable(true)
-	public showErrorMessageProcess() {
-		this.showLoading(false)
-		this.showErrorMessage(true)
-	}
-	public png = ko.observable('')
-	public mHtml = ko.observable('')
-
-	private urlBlobList = []
-
-	public close() {
-		this.showImgPage(false)
-		this.showHtmlCodePage(false)
-		this.png(null)
-		this.htmlIframe(null)
-		this.urlBlobList.forEach((n) => {
-			;(URL || webkitURL).revokeObjectURL(n)
-		})
-		this.exit()
-	}
-
-	public imgClick() {
-		this.showHtmlCodePage(false)
-		this.showImgPage(true)
-	}
-
-	public htmlClick() {
-		this.showHtmlCodePage(true)
-		this.showImgPage(false)
-		const docu = this.mHtml()
-		if (docu) {
-			$('iframe')
-				.contents()
-				.find('head')
-				.html(docu['window'].document.head.outerHTML)
-			$('iframe')
-				.contents()
-				.find('body')
-				.html(docu['window'].document.body.outerHTML)
-		}
-	}
-
-	constructor(
-		public showUrl: string,
-		private zipBase64Stream: string,
-		private zipBase64StreamUuid: string,
-		private exit: () => void
-	) {
-		const self = this
-		_view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP(
-			zipBase64StreamUuid,
-			zipBase64Stream,
-			(
-				err,
-				data: {
-					mhtml: string
-					img: string
-					html: string
-					folder: [{ filename: string; data: string }]
-				}
-			) => {
-				//showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
-				if (err) {
-					return self.showErrorMessageProcess()
-				}
-
-				_view.bodyBlue(false)
-
-				let html = data.html
-				//      support HTMLComplete
-				if (html) {
-					html = html
-						.replace(/ srcset="[^"]+" /gi, ' ')
-						.replace(/ srcset='[^']+' /gi, ' ')
-					let det = data.folder.shift()
-					const getData = (filename: string, _data: string, CallBack) => {
-						const pointStart = html.indexOf(`${filename}`)
-
-						const doCallBack = () => {
-							det = data.folder.shift()
-							if (!det) {
-								return CallBack()
-							}
-							return getData(det.filename, det.data, CallBack)
-						}
-
-						if (pointStart > -1) {
-							return getFilenameMime(filename, (err, mime) => {
-								if (mime && !/javascript/.test(mime)) {
-									/**
-									 *
-									 *          css link tag format support
-									 *
-									 */
-									const _filename = filename
-										.replace(/\-/g, '\\-')
-										.replace(/\//g, '\\/')
-										.replace(/\./g, '\\.')
-										.replace(/\(/g, '\\(')
-										.replace(/\)/g, '\\)')
-									const regex = new RegExp(
-										` src=("|')\.\/${_filename}("|')`,
-										'g'
-									)
-									const regex1 = new RegExp(
-										` href=("|')\.\/${_filename}("|')`,
-										'g'
-									)
-									/*
-                                if ( /^ src/i.test( hrefTest )) {
-                                    
-                                    const data1 = `data:${ mime };base64,` + _data
-                                    html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                    return doCallBack ()
-                                    
-                                }
-                                */
-									const blob = new Blob(
-										[
-											/^image/.test(mime)
-												? Buffer.from(_data, 'base64')
-												: Buffer.from(_data, 'base64').toString(),
-										],
-										{ type: mime }
-									)
-									const link = (URL || webkitURL).createObjectURL(blob)
-									html = html
-										.replace(regex, ` src="${link}"`)
-										.replace(regex1, ` href="${link}"`)
-									this.urlBlobList.push(link)
-								}
-								doCallBack()
-							})
-						}
-
-						doCallBack()
-					}
-
-					return getData(det.filename, det.data, (err) => {
-						self.png(data.img)
-
-						const htmlBolb = new Blob([html], { type: 'text/html' })
-						const _url = (URL || webkitURL).createObjectURL(htmlBolb)
-
-						self.showLoading(false)
-						self.htmlIframe(_url)
-						self.urlBlobList.push(_url)
-					})
-				}
-				html = mhtml2html.convert(data.mhtml)
-				self.png(data.img)
-				self.showLoading(false)
-				self.mHtml(html)
-			}
-		)
-	}
-}
-
-class workerManager {
-	public workers: Map<string, Worker> = new Map()
-	private callbackPool: Map<string, any> = new Map()
-
-	private doEvent(evt: MessageEvent) {
-		const jsonData = Buffer.from(
-			Buffer.from(evt.data).toString(),
-			'base64'
-		).toString()
-		let data: workerDataEvent = null
-		try {
-			data = JSON.parse(jsonData)
-		} catch (ex) {
-			return new EvalError(`workerManager JSON.parse error [${ex.message}]`)
-		}
-
-		const callBack = this.callbackPool.get(data.uuid)
-		if (!callBack) {
-			return console.log(
-				`workerManager: [${new Date().toLocaleTimeString()}] have not callback about message from [${
-					data.workerName
-				}] content = [${data.data}]`
-			)
-		}
-		return callBack(null, data)
-	}
-
-	constructor(list: string[]) {
-		list.forEach((n) => {
-			const work = new Worker(`scripts/${n}.js`)
-			work.onmessage = (evt) => {
-				return this.doEvent(evt)
-			}
-			return this.workers.set(n, work)
-		})
-	}
-	/**
-	 *
-	 *
-	 */
-
-	public postFun(workerName: string, data: any, CallBack) {
-		const worker = this.workers.get(workerName)
-		if (!worker) {
-			return CallBack(new Error('no worker'))
-		}
-
-		const callback: workerDataEvent = {
-			data: data,
-			uuid: uuid_generate(),
-			workerName: workerName,
-		}
-
-		const kk = Buffer.from(
-			Buffer.from(JSON.stringify(callback)).toString('base64')
-		)
-
-		this.callbackPool.set(callback.uuid, CallBack)
-		return worker.postMessage(kk, [kk.buffer])
-	}
-}
-
 module view_layout {
 	export class view {
 		public connectInformationMessage = null
@@ -407,11 +175,9 @@ module view_layout {
 		public LocalLanguage = 'up'
 		public menu = Menu
 		public modalContent = ko.observable('')
-		public keyPairGenerateForm: KnockoutObservable<
-			keyPairGenerateForm
-		> = ko.observable()
-		public tLang = ko.observable(initLanguageCookie())
-		public languageIndex = ko.observable(lang[this.tLang()])
+		public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
+		public tLang = ko.observable( initLanguageCookie ())
+		public languageIndex = ko.observable( lang[this.tLang()])
 		public localServerConfig = ko.observable()
 		public keyPair: KnockoutObservable<keypair> = ko.observable(InitKeyPair())
 		public hacked = ko.observable(false)
@@ -435,6 +201,10 @@ module view_layout {
 		public showStartupVideo = ko.observable(true)
 		public daggrHtml = ko.observable(false)
 		public showFileStorage = ko.observable(false)
+		public muteHtml = ko.observable ( false )
+	
+		public localServerConnected = ko.observable ( false )
+		public showLocalServerDisconnect = ko.observable ( false )
 		/*
         public worker = new workerManager ([
             'mHtml2Html'
@@ -443,7 +213,7 @@ module view_layout {
 
 		public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
 		public AppList = ko.observable(false)
-
+		public LocalServerUrl = window.location.href.split ( /https?\:\/\//i )[1].split(/\//)[0]
 		public imapData = ko.observable ( null )
 		public newVersion = ko.observable(null)
 		public showLanguageSelect = ko.observable(true)
@@ -485,9 +255,7 @@ module view_layout {
 			'Disconnect',
 			'解除連結',
 		]
-		public networkConnect: KnockoutObservable<number | boolean> = ko.observable(
-			false
-		)
+		public networkConnect: KnockoutObservable < number | boolean> = ko.observable( false )
 		public mainManuItems = ko.observableArray(mainMenuArray)
 		public tempAppHtml = ko.observable(false)
 		public appScript = ko.observable()
@@ -547,7 +315,7 @@ module view_layout {
 					_keyPair._password = null
 					config.account = _keyPair.email
 					config.keypair = _keyPair
-					localStorage.setItem('config', JSON.stringify(config))
+					localStorage.setItem ('config', JSON.stringify(config))
 					_keyPair.passwordOK = true
 
 					//self.localServerConfig ( config )
@@ -585,13 +353,9 @@ module view_layout {
 				return this.initConfig({})
 			}
 
-			return this.initConfig(config)
+			return this.initConfig( config) 
 		}
 
-		private socketListen() {
-			let self = this
-			return this.getConfigFromLocalStorage()
-		}
 
 		public initWelcomeView() {
 			this.welcomeTitle(true)
@@ -608,7 +372,7 @@ module view_layout {
 		}
 
 		constructor() {
-			this.socketListen()
+			this.getConfigFromLocalStorage()
 			this.CanadaBackground.subscribe((val) => {
 				if (val) {
 					$.ajax({
@@ -721,9 +485,9 @@ module view_layout {
 			//this.showImapSetup ()
 		}
 
-		public showImapSetup() {
-			_view.hideMainPage()
-			_view.sectionLogin(true)
+		public showImapSetup () {
+			_view.hideMainPage ()
+			_view.sectionLogin ( true )
 			return _view.imapSetup(
 				(_view.imapFormClass = new imapForm(
 					_view.keyPair().publicKeyID,
@@ -747,7 +511,7 @@ module view_layout {
 
 		public connectToNode() {
 			const self = this
-			self.networkConnect(2)
+			self.networkConnect( 2 )
 			return this.CoNETConnect(
 				(this.CoNETConnectClass = new CoNETConnect(
 					this,
@@ -899,16 +663,38 @@ module view_layout {
 		}
 
 		public showMain() {
-			this.sectionWelcome(false)
-			this.showStartupVideo(false)
-			this.showMainPage(true)
-			this.sectionLogin(false)
-			this.connectInformationMessage = new connectInformationMessage(
-				'/',
-				this.keyPair().publicKeyID,
-				this
-			)
-			this.connectInformationMessage.getServerPublicKey((err) => {
+			this.sectionWelcome ( false )
+			this.showStartupVideo ( false )
+			if ( this.imapData ) {
+				this.showMainPage ( true )
+			}
+			
+			this.sectionLogin ( false )
+			
+		}
+
+		public afterPasswordReady () {
+			const self = this
+			this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
+			this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), ( err, data: keypair ) => {
+				if ( err ) {
+					return console.dir( `sharedMainWorker.getKeyPairInfo return Error!`)
+				}
+
+				if ( data ['imapData'] ) {
+					self.imapData ( data['imapData'] )
+					
+				}
+
+				if ( /localhost|127\.0\.0\.1/i.test( this.LocalServerUrl )) {
+					self.connectInformationMessage.socketListening ( this.LocalServerUrl )
+				}
+			})
+		}
+
+		public connectToLocalServer () {
+			
+			this.connectInformationMessage.getServerPublicKey ((err) => {
 				this.keyPair()['localserverPublicKey'] =
 					_view.connectInformationMessage.localServerPublicKey
 				const self = this
@@ -985,6 +771,14 @@ module view_layout {
 			this.middleX(window.innerWidth / 2)
 			this.middleY(window.innerHeight / 2)
 		}
+
+		
+
+		public connectLocalServer () {
+			_view.showLocalServerDisconnect ( false )
+			_view.connectInformationMessage.socketListening ( this.LocalServerUrl )
+		}
+
 	}
 }
 
@@ -993,10 +787,10 @@ const mainMenuArray = [
 		name: 'librarium',
 		img: '/images/kloakSearchIcon.svg',
 		header: [
-			'私密无痕网页检索及快照',
-			'サイド検索及のスナップショット',
+			'图书馆',
+			'図書館',
 			'The Librarium',
-			'私密無痕網頁檢索及快照',
+			'圖書館',
 		],
 		description: [
 			'流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
@@ -1025,6 +819,22 @@ const mainMenuArray = [
 		online: false,
 	},
 	{
+		name: 'mute',
+		img: '/images/encrypted.svg',
+		header: ['哑语', 'ミュート', 'Mute', '啞語'],
+		description: [
+			'加密解密工具',
+			'暗号化と平文するツール',
+			'Encrypted and decrypted tool',
+			'加密解密工具',
+		],
+		extra: null,
+		click: mute,
+		online: false,
+		htmlTemp: 'muteHtml'
+	}
+	/*,
+	{
 		name: 'masquerade',
 		img: '/images/Masquerade.svg',
 		header: ['假面舞会', 'マスカレード', 'Masquerade', '假面舞會'],
@@ -1037,7 +847,8 @@ const mainMenuArray = [
 		extra: null,
 		click: null,
 		online: true,
-	},
+	}*/
+	,
 	{
 		img: '/images/message.svg',
 		header: ['', '', 'Daggr', ''],

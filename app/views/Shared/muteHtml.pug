@@ -1,0 +1,34 @@
+#mute
+	<!-- ko with: appScript -->
+	.selectCurrentUser
+		.ui.top.fixed.menu.borderless
+			.input( style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
+				.ui.label.blue.big( data-bind = "click: () => { showPrivateKey( false ); return showPublicKey ( !showPublicKey() ); }, text: $root.keyPair().publicKeyID ")
+				.ui.label.red.big.link( data-bind = "visible: !showAddUser(), click: () => { showAddUser ( true );} , text: infoDefine [ $root.languageIndex() ].addUser ")
+				
+		
+		.allUser( style = "padding-top: 8rem; width: 95%; position: relative; margin: auto;" )
+			
+			<!-- ko if: !showPublicKey ()-->
+			<!-- ko if: showAddUser -->
+				form.ui.form.addUser( style = "margin: 0px auto!important; max-width: 20rem;" data-bind = "submit: addUser")
+					.field
+						input( data-bind="value: addUser_name, attr: { placeholder:  infoDefine [ $root.languageIndex() ].addUserNameInputPlaceholder } " type="text" )
+					.field
+						input( data-bind="value: addUser_keyID , attr: { placeholder:  infoDefine [ $root.languageIndex() ].addUserKeyIDInputPlaceholder } " type="text")
+					.field
+					input.ui.submit.blue.button( data-bind=" text: infoDefine [ $root.languageIndex() ].addUser " type = "submit" )
+
+			<!-- /ko -->
+
+			<!-- ko if: !showAddUser() -->
+			items.ui.list.middle.aligned.divided( data-bind = " foreach: userList " style = "margin: 0px auto!important; max-width: 20rem;" )
+				.item
+					img.ui.avatar.image( data-bind = "src: img")
+					.content
+						.header( data-bind = " text: name ")
+						.subHeader( data-bind = "text: keyID")
+			<!-- /ko -->
+			<!-- /ko -->
+
+	<!-- /ko -->

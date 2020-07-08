@@ -19,6 +19,10 @@ class daggr {
         this.chatData = ko.observableArray([]);
         this.adduser = ko.observable(false);
         this.searchInputText = ko.observable('');
+        this.showPublicKey = ko.observable(false);
+        this.showPrivateKey = ko.observable(false);
+        this.publicKeyTextShowCopy = ko.observable(false);
+        this.privateTextShowCopy = ko.observable(false);
         this.information = {
             delivered: ['已送达', '到着した', 'Delivered', '已送達']
         };
@@ -88,5 +92,21 @@ class daggr {
             }
             return console.dir(`_view.connectInformationMessage.emitRequest return success!`);
         });
+    }
+    copyPublicKey() {
+        const copyText = document.getElementById("publicKeyText");
+        copyText['select']();
+        copyText['setSelectionRange'](0, 99999); /*For mobile devices*/
+        document.execCommand("copy");
+        this.publicKeyTextShowCopy(true);
+        this.privateTextShowCopy(false);
+    }
+    copyPrivateKey() {
+        const copyText = document.getElementById("privateKeyText");
+        copyText['select']();
+        copyText['setSelectionRange'](0, 99999); /*For mobile devices*/
+        document.execCommand("copy");
+        this.publicKeyTextShowCopy(false);
+        this.privateTextShowCopy(true);
     }
 }

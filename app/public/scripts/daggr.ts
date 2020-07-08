@@ -18,7 +18,7 @@ interface currentUser {
 }
 
 interface messageContent {
-	create: Date
+	create: any
 	textContent: string
 	readTimestamp: any
 	attachedFile: any
@@ -36,6 +36,10 @@ class daggr {
 	public chatData: KnockoutObservableArray < messageContent > = ko.observableArray ([])
 	public adduser = ko.observable ( false )
 	public searchInputText = ko.observable ('')
+	public showPublicKey = ko.observable ( false )
+	public showPrivateKey = ko.observable ( false )
+	public publicKeyTextShowCopy = ko.observable ( false )
+	public privateTextShowCopy = ko.observable ( false )
 	public information = {
 		delivered: ['已送达','到着した','Delivered','已送達']
 	}
@@ -131,6 +135,24 @@ class daggr {
 			return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
 			
 		})
+	}
+
+	public copyPublicKey () {
+		const copyText = document.getElementById ( "publicKeyText" )
+		copyText['select']()
+		copyText['setSelectionRange'] ( 0, 99999 ) /*For mobile devices*/
+		document.execCommand ( "copy" )
+		this.publicKeyTextShowCopy ( true )
+		this.privateTextShowCopy ( false )
+	}
+
+	public copyPrivateKey () {
+		const copyText = document.getElementById ( "privateKeyText" )
+		copyText['select']()
+		copyText['setSelectionRange'] ( 0, 99999 ) /*For mobile devices*/
+		document.execCommand ( "copy" )
+		this.publicKeyTextShowCopy ( false )
+		this.privateTextShowCopy ( true )
 	}
 
 }
