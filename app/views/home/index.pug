@@ -59,13 +59,13 @@ block jumbotron1
 						<!-- /ko -->
 						<!-- ko if: !showLocalServerDisconnect() -->
 							<!-- ko if: localServerConnected() -->
-								a.ui.labeled.button( data-bind = "click: () => { showLocalServerDisconnect ( true )}" style = "margin: 1rem; margin-left: 0;" tabindex="0")
-									.ui.vk.button
+								a.ui.labeled.button( style = "margin: 1rem; margin-left: 0;" tabindex="0" )
+									.ui.vk.button( data-bind = "click: () => { showLocalServerDisconnect ( true )}" )
 										i.icon.home
 										<!-- ko text: LocalServerUrl --><!-- /ko -->
 
 									<!-- ko if: imapData -->
-										.ui.label.basic.left.pointing( data-bind = " css: { 'kloak_color_DarkBlue': networkConnect() !== 1, 'red': networkConnect() === 1}")
+										.ui.label.basic.left.pointing( data-bind = " click: connectLocalServer, css: { 'kloak_color_DarkBlue': networkConnect() !== 1, 'red': networkConnect() === 1 }")
 											<!-- ko text: imapData().imapUserName --><!-- /ko -->
 											
 											<!-- ko if: !networkConnect() -->

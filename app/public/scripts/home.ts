@@ -710,14 +710,15 @@ module view_layout {
 
 		}
 
-		public appClick(index) {
+		public appClick( index ) {
 			const appScript1 = mainMenuArray[index].click
 			const showSwitch = `_view.${mainMenuArray[index].htmlTemp}( true )`
 			if (!appScript1 || !showSwitch) {
 				return
 			}
-			_view.showMainPage(false)
-			_view.bodyBlue(false)
+			_view.showMainPage ( false )
+			_view.bodyBlue ( false )
+			_view.sectionLogin ( false )
 			if (
 				typeof appScript1 === 'object' &&
 				typeof appScript1.startup === 'function'
@@ -739,6 +740,7 @@ module view_layout {
 		
 
 		public connectLocalServer () {
+
 			_view.showLocalServerDisconnect ( false )
 			_view.connectInformationMessage.socketListening ( this.LocalServerUrl )
 		}

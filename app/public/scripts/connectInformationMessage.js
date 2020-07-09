@@ -147,11 +147,16 @@ class connectInformationMessage {
     socketListening(url) {
         const self = this;
         if (this.socketIo) {
-            this.socketIo.close();
-            this.socketIo.removeAllListeners();
-            this.socketIo = null;
-            _view.networkConnect(false);
-            return _view.localServerConnected(false);
+            if (_view.localServerConnected()) {
+                this.socketIo.close();
+                this.socketIo.removeAllListeners();
+                this.socketIo = null;
+                _view.networkConnect(false);
+                return _view.localServerConnected(false);
+            }
+            if (_view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
+                return _view.CoNETConnect().sendConnectMail();
+            }
         }
         this.socketIo = io(url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true });
         this.socketIo.on('reconnect_failed', () => {

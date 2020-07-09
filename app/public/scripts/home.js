@@ -582,6 +582,7 @@ var view_layout;
             }
             _view.showMainPage(false);
             _view.bodyBlue(false);
+            _view.sectionLogin(false);
             if (typeof appScript1 === 'object' &&
                 typeof appScript1.startup === 'function') {
                 appScript1.startup(appScript1);
