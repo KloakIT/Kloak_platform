@@ -1,76 +1,107 @@
 #fileStorage
 	<!-- ko with: appScript -->
 		a#hiddenAnchor(style="display: none")
+		input#hiddenInput(type="file" style="display: none" multiple)
+		.fileStorageOverlay#fileStorageOverlay
+			video#kloak_Video.kloakVideo(controls)
 		.fileStorageWrapper
 			.fileStorageHeader 
-				.searchWrapper
-					input.searchInput(placeholder="Search file storage" data-bind="textInput: searchKey, hasFocus: showSuggestions(true)" )
-					i.search.icon(style="position: absolute; left: 10px; top: .65rem; color: grey; font-weight: 300")
+				.searchContainer
+					.searchBar
+						input.searchInput(placeholder="Search file storage" data-bind="textInput: searchKey, hasFocus: showSuggestions(true)" )
+						i.search.icon.searchIcon
+					.mobileSearchIcon(data-bind="click: () => {mobileShowSearch(!mobileShowSearch())}, style: {'border': mobileShowSearch() ? '1px solid rgba(0, 0, 0, 0)' : '1px solid rgba(0, 0, 0, 0.15)'}")
+						i.search.icon.searchIcon(style="margin: 0px !important")
+					input.mobileSearchInput#mobileSearchInput(placeholder="Search file storage" data-bind="textInput: searchKey, hasFocus: showSuggestions(true), style: {'transform': mobileShowSearch() ? 'scaleX(1)' : 'scaleX(0)', 'opacity': mobileShowSearch() ? '1' : '0'}" )
+					.mobileUploadButton(data-bind="click: () => {uploadFileClick()}")
+						i.plus.icon.mobileUploadIcon(style="margin: 0px 0px 2.5px 0px !important; color: rgba(0,0,0,0.7)")
 					<!-- ko if: showSuggestions-->
 					.searchSuggestions#searchSuggestions(data-bind="foreach: searchSuggestions, style: {'height': searchSuggestions().length > 0 ? '16rem' : '0px'}")
-						.searchSuggestion(data-bind="click: $parent.searchSuggestionClick")
+						.searchSuggestion(data-bind="click: $parent.searchSuggestionClick, css: {'searchSuggestionsBorder' : $parent.searchSuggestions.length > 0}")
 							i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}")
 							.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
 							p(data-bind="text: $data.urlShow")
 					<!-- /ko -->
-			.fileStorageContent(data-bind="foreach: { data: fileStorageData, as: 'file' }, event: {drop: (data,e) => {ondrop(e,data)}, dragover: (data, e) => {dragover(e)}}, click: (data, event) => {showSuggestions(false); hideColorOptions(data, event);}")
-				.fileStorageItem(data-bind="style: {'height': $parent.selectedFile() == $index() ? 'auto' : '5rem'}")
-					.fileStorageItemUpper
-						.fileStorageLeft
-							i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer;" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}, click: $parent.showColorOptions")
-							.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
-							p.dateText(data-bind="text: $parent.getDate(time_stamp, 'full')")
-							.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
-							p.filenameText(data-bind="text: file.urlShow" style="margin-right: 15px !important; width: 20ch")
-							p.fileDomainText(data-bind="text: file.url.split('/').splice(0,3).join('/')")
-						.fileInnerWrapper
-							.ui.active.inline.loader.tiny(style="visibility: hidden" data-bind="attr: {'id': 'loader' + $index()}, style: {'visibility': $parent.showLoader() === $index() ? 'visible' : 'hidden'}")
-							.fileStorageOptions(data-bind="click: () => {$parent.showOptions($index())}")
-								svg(xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:serif="http://www.serif.com/" width="4px" height="100%" viewBox="0 0 30 130" version="1.1" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;")
-									g(transform="matrix(1,0,0,1,-182.936,-145.89)")
-										circle(cx="197.885" cy="160.839" r="14.949" style="fill:rgb(93,93,93);")
-										g(transform="matrix(1,0,0,1,0,49.9097)")
+					//- .uploadIconWrapper(data-bind="click: () => {uploadFileClick()}")
+					//- 	i.plus.icon.uploadIcon(style="margin: 0 !important; height: 1.18em")
+			
+			.fileStorageContent(data-bind="event: {drop: (data,e) => {ondrop(e,data)}, dragover: (data, e) => {dragover(e)}, dragleave: (data, e) => {dragleave(e)}}, click: (data, event) => {showSuggestions(false); hideColorOptions(data, event);}")
+				.fileDragOverlay#fileDragOverlay
+					h3="Drop files to upload"
+				<!-- ko foreach: currentUploads() -->
+				.fileStorageItem(data-bind="style: {'height': '5rem'}" style="display: flex; align-items: center; justify-content: space-between")
+					.currentFileLeft(style="display: flex; align-items: center")
+						i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer;")
+						.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
+						p.dateText(data-bind="text: $parent.getDate($data.date, 'full')" style="margin: 0px !important")
+						.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
+						p.filenameText(data-bind="text: $data.filename" style="margin: 0px !important")
+					.currentFileRight
+						.ui.active.inline.loader.small
+				<!-- /ko -->
+				<!-- ko if: currentUploads().length > 0 -->
+				.hypen(style="height: 1px; width: 100%; content:''; background-color: rgba(100,100,100,0.3);")
+				<!-- /ko -->
+				.fileStorageInner(data-bind="foreach: { data: fileStorageData, as: 'file' }")
+					.fileStorageItem(data-bind="style: {'height': $parent.selectedFile() == $index() ? 'auto' : '5rem'}")
+						.fileStorageItemUpper
+							.fileStorageLeft
+								i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer;" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}, click: $parent.showColorOptions")
+								.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
+								p.dateText(data-bind="text: $parent.getDate(time_stamp, 'full')")
+								.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
+								p.filenameText(data-bind="text: file.urlShow" style="margin-right: 15px !important;")
+								p.fileDomainText(data-bind="text: file.url.split('/').splice(0,3).join('/')")
+							.fileInnerWrapper
+								.ui.active.inline.loader.tiny(style="visibility: hidden" data-bind="attr: {'id': 'loader' + $index()}, style: {'visibility': $parent.showLoader() === $index() ? 'visible' : 'hidden'}")
+								.fileStorageOptions(data-bind="click: () => {$parent.showOptions($index())}")
+									svg(xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:serif="http://www.serif.com/" width="4px" height="100%" viewBox="0 0 30 130" version="1.1" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;")
+										g(transform="matrix(1,0,0,1,-182.936,-145.89)")
 											circle(cx="197.885" cy="160.839" r="14.949" style="fill:rgb(93,93,93);")
-										g(transform="matrix(1,0,0,1,0,99.8097)")
-											circle(cx="197.885" cy="160.839" r="14.949" style="fill:rgb(93,93,93);")
-					.fileStorageItemLower(data-bind="style: {'transform': $parent.selectedFile() == $index() ? 'scaleY(1)' : 'scaleY(0)'}")
-						//- .hypen(style="height: 1px; width: 100%; content:''; background-color: rgba(100,100,100,0.2)")
-						.fileDetails
-							.fileInnerUpper
-								.fileInnerDetails
-									.fileInnerDetail
-										p.fileDetailHeader="Path(s)"
-										p.fileDetailText(data-bind="text: './' + file.path")
-									.fileInnerDetail
-										p.fileDetailHeader="Filename"
-										p.fileDetailText(data-bind="text: file.urlShow")
-									.fileInnerDetail
-										p.fileDetailHeader="Extension"
-										p.fileDetailText(data-bind="text: file.urlShow.split('.').slice(-1)")
-									.fileInnerDetail
-										p.fileDetailHeader="UUID"
-										p.fileDetailText(data-bind="text: file.uuid")
-								.fileInnerDetails
-									.fileInnerDetail
-										p.fileDetailHeader="Domain"
-										p.fileDetailText(data-bind="text: file.domain")
-									.fileInnerDetail
-										p.fileDetailHeader="URL"
-										p.fileDetailText(data-bind="text: file.url")
-									.fileInnerDetail
-										p.fileDetailHeader="Tag(s)"
-										.fileStorageTags(data-bind="foreach: file.tag")
-											.fileStorageTag(data-bind="click: () => {$parentContext.$parent.fileTagClick('#' + $data)}")
-												p.fileStorageTagText(data-bind="text: $data")
-										//- p.fileDetailText(data-bind="text: '[ ' + file.tag.filter(tag => tag !== undefined || null).join(', ') + ' ]'")
-									.fileInnerDetail
-										p.fileDetailHeader="Date"
-										p.fileDetailText(data-bind="text: $parent.getDate(time_stamp, 'full')")
-							.fileInnerLower
-								button.fileActionButton.downloadActionBtn(data-bind="click: (data, event) => $parent.fileAction(data, event, 'download')")
-									i.download.icon.downloadIcon(style="margin: 0px !important")
-								button.fileActionButton.deleteActionBtn(data-bind="click: (data, event) => $parent.fileAction(data, event, 'delete')")
-									i.trash.alternate.icon.deleteIcon(style="margin: 0px !important")
+											g(transform="matrix(1,0,0,1,0,49.9097)")
+												circle(cx="197.885" cy="160.839" r="14.949" style="fill:rgb(93,93,93);")
+											g(transform="matrix(1,0,0,1,0,99.8097)")
+												circle(cx="197.885" cy="160.839" r="14.949" style="fill:rgb(93,93,93);")
+						.fileStorageItemLower(data-bind="style: {'transform': $parent.selectedFile() == $index() ? 'scaleY(1)' : 'scaleY(0)'}")
+							//- .hypen(style="height: 1px; width: 100%; content:''; background-color: rgba(100,100,100,0.2)")
+							.fileDetails
+								.fileInnerUpper
+									.fileInnerDetails
+										.fileInnerDetail
+											p.fileDetailHeader="Path(s)"
+											p.fileDetailText(data-bind="text: './' + file.path")
+										.fileInnerDetail
+											p.fileDetailHeader="Filename"
+											p.fileDetailText(data-bind="text: file.urlShow")
+										.fileInnerDetail
+											p.fileDetailHeader="Extension"
+											p.fileDetailText(data-bind="text: file.urlShow.split('.').slice(-1)")
+										.fileInnerDetail
+											p.fileDetailHeader="UUID"
+											p.fileDetailText(data-bind="text: file.uuid")
+									.fileInnerDetails
+										.fileInnerDetail
+											p.fileDetailHeader="Domain"
+											p.fileDetailText(data-bind="text: file.domain")
+										.fileInnerDetail
+											p.fileDetailHeader="URL"
+											p.fileDetailText(data-bind="text: file.url")
+										.fileInnerDetail
+											p.fileDetailHeader="Tag(s)"
+											.fileStorageTags(data-bind="foreach: file.tag")
+												.fileStorageTag(data-bind="click: () => {$parentContext.$parent.fileTagClick('#' + $data)}")
+													p.fileStorageTagText(data-bind="text: $data")
+											//- p.fileDetailText(data-bind="text: '[ ' + file.tag.filter(tag => tag !== undefined || null).join(', ') + ' ]'")
+										.fileInnerDetail
+											p.fileDetailHeader="Date"
+											p.fileDetailText(data-bind="text: $parent.getDate(time_stamp, 'full')")
+								.fileInnerLower
+									button.fileActionButton.playActionBtn(data-bind="click: (data, event) => $parent.fileAction(data, event, 'watch')")
+										i.play.icon.downloadIcon(style="margin: 0px !important")
+									button.fileActionButton.downloadActionBtn(data-bind="click: (data, event) => $parent.fileAction(data, event, 'download')")
+										i.download.icon.downloadIcon(style="margin: 0px !important")
+									button.fileActionButton.deleteActionBtn(data-bind="click: (data, event) => $parent.fileAction(data, event, 'delete')")
+										i.trash.alternate.icon.deleteIcon(style="margin: 0px !important")
 						//- select(data-bind="foreach: $parent.colorOptions, event: {change: $parent.changeColor}, value: $index() + ' ' + $data.color")
 						//- 	option.colorOptions(style="text-transform: capitalize" data-bind="text: $data.charAt(0).toUpperCase() + $data.slice(1), attr: {'value': $parentContext.$index() + ' ' + $data}")
 			.colorMenu#colorMenu(data-bind="foreach: { data: colorOptions, as: 'colorRow' }")

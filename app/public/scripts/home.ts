@@ -117,26 +117,26 @@ ko.bindingHandlers.animationTextLineIn = {
 const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
 	const length = keypair.publicKeyID.length
 	keypair.publicKeyID = keypair.publicKeyID.substr(length - 16)
-	view.showKeyPair ( true )
-	let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string, deleteKey: boolean ) => {
-			view.showKeyPair ( false )
-			keypair.keyPairPassword (( keyPairPasswordClass = null))
+	view.showKeyPair(true)
+	let keyPairPasswordClass = new keyPairPassword(
+		keypair,
+		(passwd: string, deleteKey: boolean) => {
+			view.showKeyPair(false)
+			keypair.keyPairPassword((keyPairPasswordClass = null))
 
-			if ( !passwd ) {
-				if ( deleteKey ) {
-					_view.deleteKey ()
+			if (!passwd) {
+				if (deleteKey) {
+					_view.deleteKey()
 				}
-				return _view.initWelcomeView ()
+				return _view.initWelcomeView()
 			}
 			//      password OK
 
 			keypair.passwordOK = true
 			view.password = passwd
-			keypair.showLoginPasswordField ( false )
+			keypair.showLoginPasswordField(false)
 
 			view.showMain()
-			
-
 		}
 	)
 
@@ -175,9 +175,11 @@ module view_layout {
 		public LocalLanguage = 'up'
 		public menu = Menu
 		public modalContent = ko.observable('')
-		public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
-		public tLang = ko.observable( initLanguageCookie ())
-		public languageIndex = ko.observable( lang[this.tLang()])
+		public keyPairGenerateForm: KnockoutObservable<
+			keyPairGenerateForm
+		> = ko.observable()
+		public tLang = ko.observable(initLanguageCookie())
+		public languageIndex = ko.observable(lang[this.tLang()])
 		public localServerConfig = ko.observable()
 		public keyPair: KnockoutObservable<keypair> = ko.observable(InitKeyPair())
 		public hacked = ko.observable(false)
@@ -201,10 +203,11 @@ module view_layout {
 		public showStartupVideo = ko.observable(true)
 		public daggrHtml = ko.observable(false)
 		public showFileStorage = ko.observable(false)
-		public muteHtml = ko.observable ( false )
-	
-		public localServerConnected = ko.observable ( false )
-		public showLocalServerDisconnect = ko.observable ( false )
+		public showGeneralSpalding = ko.observable(false)
+		public muteHtml = ko.observable(false)
+
+		public localServerConnected = ko.observable(false)
+		public showLocalServerDisconnect = ko.observable(false)
 		/*
         public worker = new workerManager ([
             'mHtml2Html'
@@ -213,8 +216,10 @@ module view_layout {
 
 		public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
 		public AppList = ko.observable(false)
-		public LocalServerUrl = window.location.href.split ( /https?\:\/\//i )[1].split(/\//)[0]
-		public imapData = ko.observable ( null )
+		public LocalServerUrl = window.location.href
+			.split(/https?\:\/\//i)[1]
+			.split(/\//)[0]
+		public imapData = ko.observable(null)
 		public newVersion = ko.observable(null)
 		public showLanguageSelect = ko.observable(true)
 		private demoTimeout = null
@@ -255,7 +260,9 @@ module view_layout {
 			'Disconnect',
 			'解除連結',
 		]
-		public networkConnect: KnockoutObservable < number | boolean> = ko.observable( false )
+		public networkConnect: KnockoutObservable<number | boolean> = ko.observable(
+			false
+		)
 		public mainManuItems = ko.observableArray(mainMenuArray)
 		public tempAppHtml = ko.observable(false)
 		public appScript = ko.observable()
@@ -276,7 +283,7 @@ module view_layout {
 			}
 		}
 
-		private initConfig ( config ) {
+		private initConfig(config) {
 			const self = this
 
 			if (config && config.keypair && config.keypair.publicKeyID) {
@@ -304,8 +311,9 @@ module view_layout {
 			this.svgDemo_showLanguage()
 			config['account'] = config['keypair'] = null
 
-			let _keyPairGenerateForm = new keyPairGenerateForm (( _keyPair: keypair ) => {
-					self.keyPairGenerateForm (( _keyPairGenerateForm = null ))
+			let _keyPairGenerateForm = new keyPairGenerateForm(
+				(_keyPair: keypair) => {
+					self.keyPairGenerateForm((_keyPairGenerateForm = null))
 					/**
 					 *      key pair ready
 					 */
@@ -314,12 +322,12 @@ module view_layout {
 					_keyPair._password = null
 					config.account = _keyPair.email || _keyPair.publicKeyID
 					config.keypair = _keyPair
-					localStorage.setItem ( 'config', JSON.stringify( config ))
+					localStorage.setItem('config', JSON.stringify(config))
 					_keyPair.passwordOK = true
 					_keyPair._password = self.password
 					//self.localServerConfig ( config )
-					self.keyPair( _keyPair )
-					self.showMain ()
+					self.keyPair(_keyPair)
+					self.showMain()
 				}
 			)
 			this.localServerConfig(config)
@@ -339,9 +347,8 @@ module view_layout {
 				return this.initConfig({})
 			}
 
-			return this.initConfig( config) 
+			return this.initConfig(config)
 		}
-
 
 		public initWelcomeView() {
 			this.welcomeTitle(true)
@@ -471,14 +478,18 @@ module view_layout {
 			//this.showImapSetup ()
 		}
 
-		public showImapSetup () {
-			_view.hideMainPage ()
-			_view.sectionLogin ( true )
-			return _view.imapSetup (( _view.imapFormClass = new imapForm ( _view.keyPair().publicKeyID, _view.imapData(), ( imapData: IinputData ) => {
-						_view.imapSetup (( _view.imapFormClass = null ))
-						_view.sectionLogin ( false )
-						_view.imapData ( imapData )
-						_view.sharedMainWorker.saveImapIInputData ( imapData, ( err, data ) => {
+		public showImapSetup() {
+			_view.hideMainPage()
+			_view.sectionLogin(true)
+			return _view.imapSetup(
+				(_view.imapFormClass = new imapForm(
+					_view.keyPair().publicKeyID,
+					_view.imapData(),
+					(imapData: IinputData) => {
+						_view.imapSetup((_view.imapFormClass = null))
+						_view.sectionLogin(false)
+						_view.imapData(imapData)
+						_view.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
 							return _view.showMain()
 						})
 					}
@@ -488,14 +499,18 @@ module view_layout {
 
 		public connectToNode() {
 			const self = this
-			self.networkConnect ( 2 )
-			return this.CoNETConnect (( this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified, err => {
+			self.networkConnect(2)
+			return this.CoNETConnect(
+				(this.CoNETConnectClass = new CoNETConnect(
+					this,
+					this.keyPair().verified,
+					(err) => {
 						if (typeof err === 'number' && err > -1) {
 							self.CoNETConnect((this.CoNETConnectClass = null))
 							return self.showImapSetup()
 						}
-						self.networkConnect( true )
-						self.connectedCoNET ( true )
+						self.networkConnect(true)
+						self.connectedCoNET(true)
 					}
 				))
 			)
@@ -630,70 +645,73 @@ module view_layout {
 			_view.localServerConfig(null)
 			_view.connectedCoNET(false)
 			_view.connectToCoNET(false)
-			_view.CoNETConnect(( _view.CoNETConnectClass = null ))
-			_view.imapSetup (( _view.imapFormClass = null ))
+			_view.CoNETConnect((_view.CoNETConnectClass = null))
+			_view.imapSetup((_view.imapFormClass = null))
 			localStorage.clear()
 			return _view.reFreshLocalServer()
 		}
 
 		public showMain() {
-			this.sectionWelcome ( false )
-			this.showStartupVideo ( false )
-			this.afterPasswordReady ()
-			
+			this.sectionWelcome(false)
+			this.showStartupVideo(false)
+			this.afterPasswordReady()
 		}
 
-		public afterPasswordReady () {
+		public afterPasswordReady() {
 			const self = this
-			if ( !this.connectInformationMessage ) {
-				this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
+			if (!this.connectInformationMessage) {
+				this.connectInformationMessage = new connectInformationMessage(
+					this.keyPair().publicKeyID,
+					this
+				)
 			}
 
-			this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), ( err, data: keypair ) => {
-				if ( err ) {
-					return console.dir( `sharedMainWorker.getKeyPairInfo return Error!`)
+			this.sharedMainWorker.getKeyPairInfo(
+				this.keyPair(),
+				(err, data: keypair) => {
+					if (err) {
+						return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`)
+					}
+
+					if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
+						self.connectInformationMessage.socketListening(this.LocalServerUrl)
+					}
+
+					if (data['imapData']) {
+						self.imapData(data['imapData'])
+					}
+
+					if (this.imapData()) {
+						return this.showMainPage(true)
+					}
+
+					self.connectInformationMessage.socketListening(this.LocalServerUrl)
+
+					return this.showImapSetup()
 				}
-
-				
-
-				if ( /localhost|127\.0\.0\.1/i.test( this.LocalServerUrl )) {
-					self.connectInformationMessage.socketListening ( this.LocalServerUrl )
-				}
-
-				if ( data ['imapData'] ) {
-					self.imapData ( data['imapData'] )
-					
-				}
-
-				if ( this.imapData () ) {
-					return this.showMainPage ( true )
-				}
-
-				self.connectInformationMessage.socketListening ( this.LocalServerUrl )
-				
-				return this.showImapSetup ()
-			})
+			)
 		}
 
-		public connectToLocalServer () {
-			
-			this.connectInformationMessage.getServerPublicKey (( err ) => {
-				this.keyPair()['localserverPublicKey'] = _view.connectInformationMessage.localServerPublicKey
+		public connectToLocalServer() {
+			this.connectInformationMessage.getServerPublicKey((err) => {
+				this.keyPair()['localserverPublicKey'] =
+					_view.connectInformationMessage.localServerPublicKey
 				const self = this
 				return this.sharedMainWorker.getKeyPairInfo(
-					this.keyPair(), ( err, data: keypair ) => {
-						if ( err ) {
-							return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
+					this.keyPair(),
+					(err, data: keypair) => {
+						if (err) {
+							return console.dir(
+								`sharedMainWorker.getKeyPairInfo return Error!`
+							)
 						}
 
-						if ( data['imapData'] ) {
-							self.imapData ( data['imapData'] )
+						if (data['imapData']) {
+							self.imapData(data['imapData'])
 							//return view.imapSetupClassExit ( view.imapData )
 						}
-
 					}
 				)
-				
 			})
 		}
 
@@ -711,19 +729,18 @@ module view_layout {
 		}
 
 		public hideMainPage() {
-			_view.showMainPage( false )
-
+			_view.showMainPage(false)
 		}
 
-		public appClick( index ) {
+		public appClick(index) {
 			const appScript1 = mainMenuArray[index].click
 			const showSwitch = `_view.${mainMenuArray[index].htmlTemp}( true )`
 			if (!appScript1 || !showSwitch) {
 				return
 			}
-			_view.showMainPage ( false )
-			_view.bodyBlue ( false )
-			_view.sectionLogin ( false )
+			_view.showMainPage(false)
+			_view.bodyBlue(false)
+			_view.sectionLogin(false)
 			if (
 				typeof appScript1 === 'object' &&
 				typeof appScript1.startup === 'function'
@@ -742,14 +759,10 @@ module view_layout {
 			this.middleY(window.innerHeight / 2)
 		}
 
-		
-
-		public connectLocalServer () {
-
-			_view.showLocalServerDisconnect ( false )
-			_view.connectInformationMessage.socketListening ( this.LocalServerUrl )
+		public connectLocalServer() {
+			_view.showLocalServerDisconnect(false)
+			_view.connectInformationMessage.socketListening(this.LocalServerUrl)
 		}
-
 	}
 }
 
@@ -757,12 +770,7 @@ const mainMenuArray = [
 	{
 		name: 'librarium',
 		img: '/images/kloakSearchIcon.svg',
-		header: [
-			'图书馆',
-			'図書館',
-			'The Librarium',
-			'圖書館',
-		],
+		header: ['图书馆', '図書館', 'The Librarium', '圖書館'],
 		description: [
 			'流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
 			'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード',
@@ -802,8 +810,8 @@ const mainMenuArray = [
 		extra: null,
 		click: mute,
 		online: false,
-		htmlTemp: 'muteHtml'
-	}
+		htmlTemp: 'muteHtml',
+	},
 	/*,
 	{
 		name: 'masquerade',
@@ -819,7 +827,6 @@ const mainMenuArray = [
 		click: null,
 		online: true,
 	}*/
-	,
 	{
 		img: '/images/message.svg',
 		header: ['', '', 'Daggr', ''],
@@ -849,8 +856,9 @@ const mainMenuArray = [
 			'前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師',
 		],
 		extra: null,
-		click: null,
+		click: genSpalding,
 		online: false,
+		htmlTemp: 'showGeneralSpalding',
 	},
 ]
 

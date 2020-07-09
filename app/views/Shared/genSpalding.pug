@@ -1,0 +1,254 @@
+#genSpalding
+	<!-- ko with: appScript -->
+		.spalding_mobileMenu#spalding_mobileMenu
+				.spalding_iconWrapper
+					svg(viewBox="0 0 24 24" fill="ghostwhite" width="30px" height="30px" class="menuCloseIcon" data-bind="click: () => {mobileMenuAction()}")
+						path(fill-rule="evenodd" d="M17.999 4l-6.293 6.293L5.413 4 4 5.414l6.292 6.293L4 18l1.413 1.414 6.293-6.292 6.293 6.292L19.414 18l-6.294-6.293 6.294-6.293z")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('home'); mobileMenuAction(); selectedBlog(null); categoryFilter('')}, css: {mobileLinkActive: currentPage() === 'home'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[0]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('about'); mobileMenuAction(); selectedBlog(null); categoryFilter('')}, css: {mobileLinkActive: currentPage() === 'about'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[1]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('social'); mobileMenuAction(); selectedBlog(null); categoryFilter('')}, css: {mobileLinkActive: currentPage() === 'social'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[2]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('watch'); mobileMenuAction(); selectedBlog(null); categoryFilter('')}, css: {mobileLinkActive: currentPage() === 'watch'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[3]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('listen'); mobileMenuAction(); selectedBlog(null); categoryFilter('')}, css: {mobileLinkActive: currentPage() === 'listen'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[4]")
+				//- a.mobileLink(data-bind="click: () => {navigatePage('translated')}, css: {mobileLinkActive: currentPage() === 'translated'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[5]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('read'); mobileMenuAction(); selectedBlog(null)}, css: {mobileLinkActive: currentPage() === 'read'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[6]")
+				a.spalding_mobileLink(data-bind="click: () => {navigatePage('contact'); mobileMenuAction(); selectedBlog(null)}, css: {mobileLinkActive: currentPage() === 'contact'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[7]")
+		.spalding_header
+			.spalding_desktopHeader
+				.spalding_logoBox
+					h1.spalding_name(data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.logo['name']")
+					h1.spalding_title(data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.logo['title']")
+				nav.spalding_nav
+					a.spalding_navLink(data-bind="click: () => {navigatePage('home'); selectedBlog(null); categoryFilter('')}, css: {linkActive: currentPage() === 'home'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[0]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('about'); selectedBlog(null); categoryFilter('')}, css: {linkActive: currentPage() === 'about'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[1]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('social'); selectedBlog(null); categoryFilter('')}, css: {linkActive: currentPage() === 'social'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[2]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('watch'); selectedBlog(null); categoryFilter('')}, css: {linkActive: currentPage() === 'watch'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[3]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('listen'); selectedBlog(null); categoryFilter('')}, css: {linkActive: currentPage() === 'listen'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[4]")
+					//- a.navLink(data-bind="click: () => {navigatePage('translated')}, css: {linkActive: currentPage() === 'translated'}, text: infoDefine[ $root.languageIndex() ].spalding.mainPage.menu[5]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('read'); selectedBlog(null)}, css: {linkActive: currentPage() === 'read'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[6]")
+					a.spalding_navLink(data-bind="click: () => {navigatePage('contact'); selectedBlog(null)}, css: {linkActive: currentPage() === 'contact'}, text: infoDefine[ _view.languageIndex() ].spalding.mainPage.menu[7]")
+					//- p.navLink(style="font-weight: 300")="|"
+					//- <svg viewBox="0 0 24 24" fill="currentColor" width="30px" height="30px" typography="NavAlpha" class="account-icon"><path fill-rule="evenodd" d="M19.62 19.29l.026.71h-2.421l-.028-.658c-.119-2.71-2.48-4.833-5.374-4.833-2.894 0-5.254 2.123-5.373 4.833L6.421 20H4l.027-.71c.098-2.56 1.658-4.896 4.04-6.135-1.169-.99-1.848-2.402-1.848-3.9C6.219 6.357 8.733 4 11.823 4c3.09 0 5.605 2.357 5.605 5.255 0 1.497-.68 2.909-1.85 3.9 2.383 1.239 3.944 3.574 4.041 6.135zM11.822 6.273c-1.754 0-3.18 1.338-3.18 2.982 0 1.645 1.426 2.982 3.18 2.982 1.754 0 3.18-1.337 3.18-2.982 0-1.644-1.426-2.982-3.18-2.982z"></path></svg>
+			.spalding_mobileHeader
+				.spalding_menuIcon(data-bind="click: () => {mobileMenuAction()}")
+					svg(viewBox="0 0 24 24" fill="black" width="40px" height="40px" data-ux="IconHamburger" class="mobileMenuIcon")
+						g
+							path(fill-rule="evenodd" d="M4 8h16V6H4z")
+							path(fill-rule="evenodd" d="M4 13.096h16v-2.001H4z")
+							path(fill-rule="evenodd" d="M4 18.346h16v-2H4z")
+				.spalding_mobileLogo
+					h1.spalding_name(data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.logo['name']")
+					h1.spalding_title(data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.logo['title']")
+		.spalding_contentBody
+			<!-- ko if: currentPage() === "home" -->
+				section.spalding_homeSection
+					.spalding_hero
+						.spalding_leftSection
+							.spalding_heroContainer
+								img.spalding_heroImage(src="/images/spalding/home-hero.jpg")
+								.spalding_leftOverlay(data-bind="style: { 'left': _view.languageIndex() === 0 ? '3.7rem' : _view.languageIndex() === 1 ? '-2.2rem' : _view.languageIndex() === 2 ? '-1rem' : _view.languageIndex() === 3 ? '3.7rem' : '0rem'}")
+									.spalding_mainTitle
+										h1.spalding_leftSectionTitle.ui.header( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionTitle, style: { 'letter-spacing': _view.languageIndex() === 2 ? '0.6rem': '2rem', 'margin-right': _view.languageIndex() === 2 ? '-0.6rem' : '-2rem', 'margin-bottom': '0'}")
+										p.spalding_leftSectionSubTitle.sub.header.spalding_reset-margin-top-bottom( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionSubTitle1")
+										p.spalding_leftSectionSubTitle.sub.header.spalding_reset-margin-top-bottom( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionSubTitle2")
+						.spalding_rightSection
+							h2.spalding_hero-title( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.herotitle")
+							p.spalding_hero-book-title( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionTitle" )
+							p.spalding_hero-book-subtitle( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionSubTitle1")
+							p.spalding_hero-book-subtitle( data-bind="text: infoDefine[ _view.languageIndex() ].spalding.mainPage.rightSectionSubTitle2" style="margin: 0px")
+					//- .main
+					//- 	.main-books
+					//- 		.mainTop
+					//- 			a.affiliateLink(href="https://www.amazon.com/gp/product/0593084349?tag=randohouseinc6036-20")
+					//- 				img.affiliateImage(src="/images/amazon-logo.png" style="height: 150px")
+					//- 			a.affiliateLink(href="https://bookshop.org/books/stealth-war-how-china-took-over-while-america-s-elite-slept/9780593084342")
+					//- 				img.affiliateImage(src="/images/bookshop-logo.jpg")
+					//- 			a.affiliateLink(href="https://books.apple.com/us/book/id1464419597")
+					//- 				img.affiliateImage(src="/images/apple-books.png")
+					//- 		.mainBottom
+					//- 			a.affiliateLink(href="https://www.barnesandnoble.com/w/stealth-war-robert-spalding/1131637949?ean=9780593084342&st=AFF&2sid=Random%20House%20Inc_8373827_NA&sourceId=AFFRandom%20House%20Inc")
+					//- 				img.affiliateImage(src="/images/barnes&noble-logo.png" style="width: 400px; height: auto")
+					//- 			a.affiliateLink(href="https://www.audible.com/pd/Stealth-War-Audiobook/0593164938?qid=1586875123&sr=1-1&ref=a_search_c3_lProduct_1_1&pf_rd_p=e81b7c27-6880-467a-b5a7-13cef5d729fe&pf_rd_r=7GV7KF86104D742NR7DA")
+					//- 				img.affiliateImage(src="/images/audible-logo.png" style="width: 350px; height: auto")
+
+						.main-sample
+							h2.sample-title="Listen to a clip!"
+							.sample-placeholder
+			<!-- /ko -->    
+
+			<!-- ko if: currentPage() === "about" -->
+				section.spalding_aboutSection
+					.spalding_container
+						h1.spalding_aboutTitle="About Rob"
+
+						img.spalding_aboutImage(src='./images/spalding/about-image.jpg' alt="Spalding About Image")
+
+						.spalding_aboutUpperText
+							p.spalding_aboutTopText="Rob Spalding is a national security policy strategist, globally recognized for his knowledge of Chinese economic competition and influence. He has served in senior positions of strategy and diplomacy within the Defense and State Departments for more than 26 years, retiring as a brigadier general. He was the chief architect for the Trump Administration’s widely praised National Security Strategy (NSS), and the Senior Director for Strategy to the President at the National Security Council." 
+							p.spalding_aboutMiddleText="His groundbreaking work on competition in Secure 5G has reset the global environment for the next phase of the information age."
+
+						.spalding_aboutBottomText
+							p.spalding_aboutText.aboutTextLeft="Dr. Spalding has written extensively on national security matters. His book, STEALTH WAR: HOW CHINA TOOK OVER WHILE AMERICA’S ELITE SLEPT (Portfolio; 2019) is an executive summary of his almost decade-long work countering Chinese Communist Party influence. His work has been published in The Washington Post, The Washington Times, Foreign Affairs, The American Interest, War on the Rocks, FedTech Magazine, Defense One, The Diplomat, and other sites and edited volumes. His Air Power Journal article on America’s Two Air Forces is frequently used in the West Point curriculum. He has been interviewed on numerous stations including BBC, FOX News, CNBC and OAN, as well as both national and international radio and YouTube channels."
+							p.spalding_aboutText.aboutTextRight="Dr. Spalding is an Olmsted Scholar, a Life Member of the Council on Foreign Relations, a Senior Fellow at the Hudson Institute, Washington, D.C., and a Senior Associate Fellow at the Henry Jackson Society, London. He has lectured globally, including engagements at European Cybersec 2019, KAS-ASPI, the Naval War College, National Defense University, Air War College, Columbia University, S. Rajaratnam School of International Studies in Singapore, Johns Hopkins Applied Physics Laboratory and other Professional Military Educational institutions. Dr. Spalding holds a doctorate in economics and mathematics from the University of Missouri, Kansas City. He was a distinguished graduate of the Defense Language Institute in Monterey, and is fluent in Chinese Mandarin."
+			<!-- /ko -->
+
+				//- <!-- ko if: currentPage() === "social" -->
+				//- section.socialSection
+				//- 	.socialImageHeader
+				//- 		.socialImageContainer
+				//- 			img.socialImage(src='./images/socialimageleft.jpg' alt='Social Page Header Image Left')
+
+				//- 		.socialImageContainer
+				//- 			img.socialImage(src='./images/socialimageright.jpg' alt='Social Page Header Image Right')
+
+				//- 	.socialTwitter
+				//- 		h1.socialTitle="Twitter"
+				//- 		.twitterContainer
+				//- 			img(src='http://placehold.it/1150x1000' alt="Placeholder")
+
+				//- <!-- /ko -->
+
+			<!-- ko if: currentPage() === "social" -->
+				section.spalding_socialSection
+					.spalding_socialImageHeader
+						.spalding_socialImageContainer
+							img.spalding_socialImage(src='./images/spalding/socialimageleft.jpg' alt='Social Page Header Image Left')
+
+						.spalding_socialImageContainer
+							img.spalding_socialImage(src='./images/spalding/socialimageright.jpg' alt='Social Page Header Image Right')
+
+					.spalding_socialTwitter
+						h1.spalding_socialTitle="Twitter"
+						.spalding_twitterContainer
+							.spalding_tweets
+								p.spalding_tweets-label="Tweets"
+								p.spalding_tweets-author="by @robert_spalding"
+							.spalding_twitterPosts(data-bind="foreach:tweetTimeline")
+								.spalding_twitterContent
+									.spalding_twitterProfile
+										img.spalding_circle-profile(data-bind="attr: {src: user.profile_image_url}")
+										.spalding_twitterUserText
+											
+												p.spalding_tweet-name(data-bind="text: user.name")
+											
+												p.spalding_tweet-screen-name(data-bind="text: '@' + user.screen_name")
+											
+												p.spalding_tweet-text(data-bind="text: full_text")
+									.spalding_twitter-column
+										.spalding_tweet-box
+											p.spalding_timestamp-label(data-bind="text: $parent.getDate(created_at)")
+							.spalding_load-tweet
+								button.spalding_load-tweet-button(data-bind="loadmoretweets")="Load more Tweets"
+			<!-- /ko -->
+
+			<!-- ko if: currentPage() === "watch" -->
+			.placeholder(style="width: 100%; display: flex; justify-content: center; padding: 50px; text-transform: uppercase")
+				h1="Work in progress!"
+			<!-- /ko -->
+
+			<!-- ko if: currentPage() === "listen" -->
+			.placeholder(style="width: 100%; display: flex; justify-content: center; padding: 50px; text-transform: uppercase")
+				h1="Work in progress!"
+			<!-- /ko -->
+
+			<!-- ko if: currentPage() === "translated" -->
+			.placeholder(style="width: 100%; display: flex; justify-content: center; padding: 50px; text-transform: uppercase")
+				h1="Work in progress!"
+			<!-- /ko -->
+
+			<!-- ko if: currentPage() === "read" -->
+				section.spalding_readSection
+					h1.spalding_blogPageTitle="My Blog"
+					.spalding_blogContainer
+						.spalding_blogSection
+							<!-- ko ifnot: selectedBlog() -->
+								<!-- ko foreach: filteredBlogs() -->
+								.spalding_blogItem(data-bind="attr: {'id': 'blog ' + $index()}, click: () => {$parent.selectedBlog($parent.allBlogs()[$index()])}")
+									<!-- ko if: $data.image_url -->
+									img.spalding_blogImage(data-bind="attr: {'src': $data.image_url}")
+									<!-- /ko -->
+									.spalding_blogDetail
+										<!-- ko if: $data.category -->
+										p.blogDetailTop(data-bind="text: $data.created_date + '       |       ' + $data.category")
+										<!-- /ko -->
+										<!-- ko ifnot: $data.category -->
+										p.blogDetailTop(data-bind="text: $data.created_date")
+										<!-- /ko -->
+										h2.blogDetailTitle(data-bind="text: $data.title")
+										p.blogDetailShortDesc(data-bind="text: $data.short_desc")
+										p.blogDetailContinue(data-bind="attr: {'id': 'blog ' + $index()}")="Continue Reading"
+								<!-- /ko -->
+							<!-- /ko -->
+							<!-- ko if: selectedBlog() -->
+							.spalding_blogFullPost
+								p.spalding_blogFullBack(data-bind="click: () => {selectedBlog(null)}")="< All Posts"
+								h2(data-bind="text: selectedBlog().title")
+								<!-- ko if: selectedBlog().category -->
+								p.blogDetailTop(data-bind="text: selectedBlog().created_date + '       |       ' + selectedBlog().category")
+								<!-- /ko -->
+								<!-- ko ifnot: selectedBlog().category -->
+								p.blogDetailTop(data-bind="text: selectedBlog().created_date")
+								<!-- /ko -->
+								.spalding_selectedBlogText(data-bind="foreach: selectedBlog().long_text")
+									<!-- ko if: typeof $data === 'object' -->
+									img.spalding_blogFullImage(data-bind="attr: {'src': $data.img}")
+									<!-- /ko -->
+									<!-- ko if: typeof $data === 'string' -->
+									p.spalding_blogFullText(data-bind="html: $data")
+									<!-- /ko -->
+							<!-- /ko -->
+						.spalding_filterList
+							.spalding_filterListHeader
+								h2="Categories"
+							.spalding_filterListItems
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter(''); selectedBlog(null)}, style: {'font-weight': categoryFilter() === '' ? '700' : '300', 'color': categoryFilter() === '' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="All Posts"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('5G'); selectedBlog(null)}, style: {'font-weight': categoryFilter() === '5G' ? '700' : '300', 'color': categoryFilter() === '5G' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="5G"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('CCP'); selectedBlog(null)}, style: {'font-weight': categoryFilter() === 'CCP' ? '700' : '300', 'color': categoryFilter() === 'CCP' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="CCP"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('International'); selectedBlog(null)},style: {'font-weight': categoryFilter() === 'International' ? '700' : '300', 'color': categoryFilter() === 'International' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="International"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('Reading List'); selectedBlog(null)},style: {'font-weight': categoryFilter() === 'Reading List' ? '700' : '300', 'color': categoryFilter() === 'Reading List' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="Reading List"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('Speaking Tours'); selectedBlog(null)}, style: {'font-weight': categoryFilter() === 'Speaking Tours' ? '700' : '300', 'color': categoryFilter() === 'Speaking Tours' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="Speaking Tours"
+								p.spalding_filterListItem(data-bind="click: () => {categoryFilter('Strategy'); selectedBlog(null)}, style: {'font-weight': categoryFilter() === 'Strategy' ? '700' : '300', 'color': categoryFilter() === 'Strategy' ? 'rgba(68, 114, 219, 1)' : 'rgba(0, 0, 0, 0.75)'}")="Strategy"
+							<!-- ko if: selectedBlog() !== null -->
+							.spalding_recentListItems
+								.spalding_filterListHeader
+									h2="Recent Posts"
+							<!-- ko foreach: allBlogs().filter(blog => blog !== selectedBlog()).slice(0,3) -->
+								.spalding_recentListItem(data-bind="click: () => {$parent.selectedBlog($data)}")
+									img.spalding_recentItemImage(data-bind="attr: {'src': $data.image_url}")
+									.spalding_recentListText
+										p.spalding_recentListTitle(data-bind="text: $data.title")
+										p.spalding_recentListDate(data-bind="text: $data.created_date")
+							<!-- /ko -->
+							<!-- /ko -->
+			<!-- /ko -->
+
+			<!-- ko if: currentPage() === "contact" -->
+				section.spalding_contactSection
+					h1.spalding_carouselTitle="Photo Gallery"
+					.spalding_carouselUpper
+						.spalding_carousel
+							ul.spalding_carouselTrack#carouselTrack(data-bind="foreach: carouselImages")
+								img.spalding_carouselImage(data-bind="attr: {src: '/images/spalding/carousel/' + $data + '.jpg', id: $data, name: $index}, click: () => {$parent.selectCarouselImage($index())} ")
+						.spalding_carouselButtons
+							button.spalding_carouselButton
+								img.spalding_carouselArrow(src='/images/spalding/icons/left-arrow.svg' data-bind="click: () => {navigateImage('previous')}")
+							button.spalding_carouselButton
+								img.spalding_carouselArrow(src='/images/spalding/icons/right-arrow.svg' data-bind="click: () => {navigateImage('next')}")
+					.spalding_carouselBottom
+						.spalding_carouselMenu#carouselMenu
+							ul.spalding_carouselMenuTrack#carouselMenuTrack(data-bind="foreach: carouselImages")
+								img.spalding_carouselMenuImage(data-bind="attr: {src: '/images/spalding/carousel/' + $data + '.jpg', id: $data + '-menu', name: $index}, click: () => {$parent.selectCarouselImage($index())} ")
+						.spalding_carouselMenuButtons
+							button.spalding_carouselMenuButton
+								img.spalding_carouselMenuArrow(src='/images/spalding/icons/left-arrow.svg' data-bind="click: () => {scrollMenu('backwards')}")
+							button.spalding_carouselMenuButton
+								img.spalding_carouselMenuArrow(src='/images/spalding/icons/right-arrow.svg' data-bind="click: () => {scrollMenu('forwards')}")
+					.spalding_contactForm
+						.spalding_contactInputContainer
+							input.spalding_contactInput(data-bind="textInput: contactName, value: contactName, hasFocus: contactNameSelected")
+							p.spalding_placeholder#placeholder="Name"
+						.spalding_contactInputContainer
+							input.spalding_contactInput(data-bind="textInput: contactEmail, value: contactEmail, hasFocus: contactEmailSelected")
+							p.spalding_placeholder#placeholder="Email*"
+						textarea.spalding_contactMessage(placeholder="Message")
+			<!-- /ko -->
+	<!-- /ko -->

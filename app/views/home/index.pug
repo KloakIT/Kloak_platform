@@ -356,6 +356,14 @@ block jumbotron1
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko-->
 	
+	<!-- ko if: showGeneralSpalding -->
+	section#generalSpalding
+		<!----------- start tempAppHtml DEBUG -------------->
+		
+		include ../shared/genSpalding
+
+		<!----------- end tempAppHtml DEBUG ----------------->
+	<!-- /ko-->
 
 	<!-- ko if: tempAppHtml -->
 	section#tempAppHtml( style = " height: 100em;" )

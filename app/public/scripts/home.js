@@ -157,6 +157,7 @@ var view_layout;
             this.showStartupVideo = ko.observable(true);
             this.daggrHtml = ko.observable(false);
             this.showFileStorage = ko.observable(false);
+            this.showGeneralSpalding = ko.observable(false);
             this.muteHtml = ko.observable(false);
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
@@ -167,7 +168,9 @@ var view_layout;
             */
             this.appsManager = ko.observable(null);
             this.AppList = ko.observable(false);
-            this.LocalServerUrl = window.location.href.split(/https?\:\/\//i)[1].split(/\//)[0];
+            this.LocalServerUrl = window.location.href
+                .split(/https?\:\/\//i)[1]
+                .split(/\//)[0];
             this.imapData = ko.observable(null);
             this.newVersion = ko.observable(null);
             this.showLanguageSelect = ko.observable(true);
@@ -404,7 +407,7 @@ var view_layout;
         connectToNode() {
             const self = this;
             self.networkConnect(2);
-            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, err => {
+            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
                     self.CoNETConnect((this.CoNETConnectClass = null));
                     return self.showImapSetup();
@@ -549,7 +552,8 @@ var view_layout;
         }
         connectToLocalServer() {
             this.connectInformationMessage.getServerPublicKey((err) => {
-                this.keyPair()['localserverPublicKey'] = _view.connectInformationMessage.localServerPublicKey;
+                this.keyPair()['localserverPublicKey'] =
+                    _view.connectInformationMessage.localServerPublicKey;
                 const self = this;
                 return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
                     if (err) {
@@ -610,12 +614,7 @@ const mainMenuArray = [
     {
         name: 'librarium',
         img: '/images/kloakSearchIcon.svg',
-        header: [
-            '图书馆',
-            '図書館',
-            'The Librarium',
-            '圖書館',
-        ],
+        header: ['图书馆', '図書館', 'The Librarium', '圖書館'],
         description: [
             '流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
             'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード',
@@ -655,8 +654,8 @@ const mainMenuArray = [
         extra: null,
         click: mute,
         online: false,
-        htmlTemp: 'muteHtml'
-    }
+        htmlTemp: 'muteHtml',
+    },
     /*,
     {
         name: 'masquerade',
@@ -672,7 +671,6 @@ const mainMenuArray = [
         click: null,
         online: true,
     }*/
-    ,
     {
         img: '/images/message.svg',
         header: ['', '', 'Daggr', ''],
@@ -702,8 +700,9 @@ const mainMenuArray = [
             '前美空軍準將，哈德遜研究所高級研究員，美國的智囊團和前白宮國家安全委員會的高級戰略規劃師',
         ],
         extra: null,
-        click: null,
+        click: genSpalding,
         online: false,
+        htmlTemp: 'showGeneralSpalding',
     },
 ];
 const _view = new view_layout.view();
