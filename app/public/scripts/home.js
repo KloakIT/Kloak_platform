@@ -533,15 +533,16 @@ var view_layout;
                 if (err) {
                     return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
                 }
-                if (data['imapData']) {
-                    self.imapData(data['imapData']);
-                }
                 if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
                     self.connectInformationMessage.socketListening(this.LocalServerUrl);
+                }
+                if (data['imapData']) {
+                    self.imapData(data['imapData']);
                 }
                 if (this.imapData()) {
                     return this.showMainPage(true);
                 }
+                self.connectInformationMessage.socketListening(this.LocalServerUrl);
                 return this.showImapSetup();
             });
         }

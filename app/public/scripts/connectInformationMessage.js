@@ -147,11 +147,12 @@ class connectInformationMessage {
     socketListening(url) {
         const self = this;
         if (this.socketIo) {
-            if (_view.localServerConnected()) {
+            if (_view.connectedCoNET()) {
                 this.socketIo.close();
                 this.socketIo.removeAllListeners();
                 this.socketIo = null;
                 _view.networkConnect(false);
+                _view.connectedCoNET(false);
                 return _view.localServerConnected(false);
             }
             if (_view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
