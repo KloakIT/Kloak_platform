@@ -410,6 +410,7 @@ var view_layout;
                     return self.showImapSetup();
                 }
                 self.networkConnect(true);
+                self.connectedCoNET(true);
             })));
         }
         reFreshLocalServer() {

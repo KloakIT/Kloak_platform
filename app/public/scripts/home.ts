@@ -494,7 +494,8 @@ module view_layout {
 							self.CoNETConnect((this.CoNETConnectClass = null))
 							return self.showImapSetup()
 						}
-						self.networkConnect(true)
+						self.networkConnect( true )
+						self.connectedCoNET ( true )
 					}
 				))
 			)

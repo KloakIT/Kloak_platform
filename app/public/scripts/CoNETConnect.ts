@@ -127,9 +127,7 @@ class CoNETConnect {
 				_view.sharedMainWorker.decryptJsonWithAPKey ( publicKeyMessage, err => {
 
 				})
-
-					
-					return this.ready ( null )
+				return this.ready ( null )
 				
 				
 				
