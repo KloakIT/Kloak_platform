@@ -55,7 +55,8 @@ class daggr {
             textContent: messageContent.textContent,
             readTimestamp: ko.observable(false),
             attachedFile: null,
-            isSelf: false
+            isSelf: false,
+            rows: messageContent.textContent.split(/\r?\n/g).length
         };
         this.textInput('');
         this.chatData.unshift(message);
@@ -68,7 +69,8 @@ class daggr {
             textContent: this.textInput(),
             readTimestamp: ko.observable(false),
             attachedFile: null,
-            isSelf: true
+            isSelf: true,
+            rows: this.textInput().split(/\r?\n/g).length
         };
         const com = {
             command: 'daggr',
@@ -83,35 +85,23 @@ class daggr {
         message.create = ko.observable(null);
         this.textInput('');
         this.chatData.unshift(message);
-        return window.scrollTo(0, document.body.scrollHeight);
-        /*
-
-        return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-            
-            if ( err ) {
-                return errorProcess ( err )
+        window.scrollTo(0, document.body.scrollHeight);
+        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
+            if (err) {
+                return errorProcess(err);
             }
-            
-            
-
-            if ( !com ) {
-                message.create = ko.observable ( null )
-                this.textInput ('')
-                window.scrollTo ( 0, document.body.scrollHeight )
-                return this.chatData.unshift ( message )
-                 
+            if (!com) {
+                message.create = ko.observable(null);
+                this.textInput('');
+                window.scrollTo(0, document.body.scrollHeight);
+                return this.chatData.unshift(message);
             }
-
-            if ( com.error === -1 ) {
-                
-                message.create( new Date())
-                return console.dir (com )
+            if (com.error === -1) {
+                message.create(new Date());
+                return console.dir(com);
             }
-
-            return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
-            
-        })
-        */
+            return console.dir(`_view.connectInformationMessage.emitRequest return success!`);
+        });
     }
     copyPublicKey() {
         const copyText = document.getElementById("publicKeyText");
@@ -130,7 +120,8 @@ class daggr {
         this.privateTextShowCopy(true);
     }
     getHeight(index) {
-        const text = this.chatData()[index];
-        const rows = ;
+        const d = document.getElementById(this.chatData()[index].uuid);
+        const high = d.scrollTop + d.scrollHeight;
+        return high + 'px';
     }
 }

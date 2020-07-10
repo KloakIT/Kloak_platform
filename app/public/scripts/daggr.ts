@@ -24,6 +24,7 @@ interface messageContent {
 	attachedFile: any
 	isSelf: boolean
 	uuid: string
+	rows: number
 }
 
 class daggr {
@@ -81,7 +82,8 @@ class daggr {
 			textContent: messageContent.textContent,
 			readTimestamp: ko.observable ( false ),
 			attachedFile: null,
-			isSelf: false
+			isSelf: false,
+			rows: messageContent.textContent.split (/\r?\n/g).length 
 		}
 		this.textInput ('')
 		this.chatData.unshift ( message )
@@ -95,7 +97,8 @@ class daggr {
 			textContent: this.textInput (),
 			readTimestamp: ko.observable ( false ),
 			attachedFile: null,
-			isSelf: true
+			isSelf: true,
+			rows: this.textInput ().split (/\r?\n/g).length 
 		}
 
 		const com: QTGateAPIRequestCommand = {
@@ -117,8 +120,8 @@ class daggr {
 		this.textInput ('')
 		
 		this.chatData.unshift ( message )
-		return window.scrollTo ( 0, document.body.scrollHeight )
-		/*
+		window.scrollTo ( 0, document.body.scrollHeight )
+		
 
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			
@@ -145,7 +148,7 @@ class daggr {
 			return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
 			
 		})
-		*/
+		
 	}
 
 	public copyPublicKey () {
@@ -168,8 +171,9 @@ class daggr {
 
 	public getHeight ( index ) {
 		
-		const text = this.chatData()[ index ]
-		const rows = 
+		const d = document.getElementById( this.chatData()[index].uuid )
+		const high = d.scrollTop + d.scrollHeight
+		return high + 'px'
 		
 	}
 
