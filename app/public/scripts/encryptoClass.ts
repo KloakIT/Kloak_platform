@@ -405,18 +405,23 @@ class encryptoClass {
 
 	public decryptStreamWithoutPublicKey = async ( encryptoText: string, CallBack ) => {
 		const _self = this
-		const option = {
-			privateKeys: this._privateKey,
-			message: await openpgp.message.readArmored ( encryptoText ),
-			format: 'binary'
-		}
-		return openpgp.message.readArmored ( encryptoText ).then ( data => {
-			option.message = data
-			return openpgp.decrypt( option )
-		}).then ( _plaintext => {
-			const ret = Buffer.from ( _plaintext.data )
-			return CallBack ( null, ret )
+		return openpgp.message.readArmored ( encryptoText ).then ( mem => {
+			const option = {
+				privateKeys: this._privateKey,
+				message: mem,
+				format: 'binary'
+			}
+			return openpgp.message.readArmored ( encryptoText ).then ( data => {
+				option.message = data
+				return openpgp.decrypt( option )
+			}).then ( _plaintext => {
+				const ret = Buffer.from ( _plaintext.data )
+				return CallBack ( null, ret )
+			})
+		}).catch ( ex => {
+			CallBack ( ex )
 		})
+		
 	}
 
 
@@ -433,28 +438,33 @@ class encryptoClass {
 			return CallBack ( new Error ('have no access point key!'))
 		}
 
-		const option = {
-			privateKeys: this._privateKey,
-			publicKeys: this.Kloak_AP_publicKey,
-			message: await openpgp.message.readArmored ( encryptoText )
-
-		}
-		if ( binary ) {
-			option [ "format" ] = 'binary'
-		}
-		return openpgp.decrypt( option )
-		.then ( _plaintext => {
-			if ( !option[ "format" ]) {
-				return CallBack ( null, _plaintext.data )
+		return openpgp.message.readArmored ( encryptoText )
+			.then ( msm => {
+			const option = {
+				privateKeys: this._privateKey,
+				publicKeys: this.Kloak_AP_publicKey,
+				message: msm 
+	
 			}
-			const ret = Buffer.from ( _plaintext.data )
-			return CallBack ( null, ret )
+			if ( binary ) {
+				option [ "format" ] = 'binary'
+			}
+			return openpgp.decrypt ( option )
+			.then ( _plaintext => {
+				if ( !option[ "format" ]) {
+					return CallBack ( null, _plaintext.data )
+				}
+				const ret = Buffer.from ( _plaintext.data )
+				return CallBack ( null, ret )
 
-		})
-		.catch ( ex => {
+			})
+		}).catch ( ex => {
 			return CallBack ( ex )
 			
 		})
+
+		
+		
 		
 
 	}

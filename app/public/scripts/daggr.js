@@ -80,22 +80,38 @@ class daggr {
         const errorProcess = (err) => {
             return console.log(err);
         };
-        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
-            if (err) {
-                return errorProcess(err);
+        message.create = ko.observable(null);
+        this.textInput('');
+        this.chatData.unshift(message);
+        return window.scrollTo(0, document.body.scrollHeight);
+        /*
+
+        return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+            
+            if ( err ) {
+                return errorProcess ( err )
             }
-            if (!com) {
-                message.create = ko.observable(null);
-                this.textInput('');
-                window.scrollTo(0, document.body.scrollHeight);
-                return this.chatData.unshift(message);
+            
+            
+
+            if ( !com ) {
+                message.create = ko.observable ( null )
+                this.textInput ('')
+                window.scrollTo ( 0, document.body.scrollHeight )
+                return this.chatData.unshift ( message )
+                 
             }
-            if (com.error === -1) {
-                message.create(new Date());
-                return console.dir(com);
+
+            if ( com.error === -1 ) {
+                
+                message.create( new Date())
+                return console.dir (com )
             }
-            return console.dir(`_view.connectInformationMessage.emitRequest return success!`);
-        });
+
+            return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
+            
+        })
+        */
     }
     copyPublicKey() {
         const copyText = document.getElementById("publicKeyText");
@@ -112,5 +128,9 @@ class daggr {
         document.execCommand("copy");
         this.publicKeyTextShowCopy(false);
         this.privateTextShowCopy(true);
+    }
+    getHeight(index) {
+        const text = this.chatData()[index];
+        const rows = ;
     }
 }

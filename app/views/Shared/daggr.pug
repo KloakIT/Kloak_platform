@@ -74,7 +74,8 @@
 		.chatArea( data-bind = "foreach: chatData " style = "padding-top: 5rem; padding-bottom: 7rem; transform: scaleY(-1); padding-left: 2rem; padding-right: 2rem;")
 			.item( data-bind = "css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem;")
 				<!-- ko if: textContent -->
-				.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" style = "border-radius: 1rem;")
+				textarea( data-bind = " attr: { 'id': 'daggrTextArea-' + $index() }, text: textContent, style: { 'height': function() { return $parent.getHeight( $index()) }}" style = "padding-bottom: 1rem; border-radius: 1rem; width: 100%; resize: none; padding: 1rem;" readOnly disabled )
+				//-.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" style = "border-radius: 1rem;")
 					p.AppListHeader( data-bind = "text: textContent " style = "padding-bottom: 1rem;" )
 				<!-- /ko -->
 				<!-- ko if: create() -->
@@ -85,7 +86,7 @@
 			.item( style = "width: 100%;" )
 				.input
 					.ui.right.input.big.icon( style = "width: 100%;" )
-						textarea.daggrInputTextarea( type = "text" style = "color: rgba ( 0,0,0,0.5 );" data-bind = "textInput: textInput, style: { 'height': textInputHeight() + 'rem'}" )
+						textarea.daggrInputTextarea( style = "color: rgba ( 0,0,0,0.5 );" data-bind = "textInput: textInput, style: { 'height': textInputHeight() + 'rem'}" )
 						i.teal.play.icon.chevron.circular.link( data-bind = "click: snedMessage " style = "top: 0.25rem;")
 
 	<!-- /ko -->

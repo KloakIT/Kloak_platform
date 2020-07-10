@@ -106,12 +106,19 @@ class daggr {
 			requestSerial: uuid_generate ()
 		}
 
+
+
 		const errorProcess = ( err ) => {
-			
-			
 			
 			return console.log ( err )
 		}
+
+		message.create = ko.observable ( null )
+		this.textInput ('')
+		
+		this.chatData.unshift ( message )
+		return window.scrollTo ( 0, document.body.scrollHeight )
+		/*
 
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			
@@ -138,6 +145,7 @@ class daggr {
 			return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
 			
 		})
+		*/
 	}
 
 	public copyPublicKey () {
@@ -156,6 +164,13 @@ class daggr {
 		document.execCommand ( "copy" )
 		this.publicKeyTextShowCopy ( false )
 		this.privateTextShowCopy ( true )
+	}
+
+	public getHeight ( index ) {
+		
+		const text = this.chatData()[ index ]
+		const rows = 
+		
 	}
 
 }
