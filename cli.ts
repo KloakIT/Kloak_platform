@@ -19,6 +19,14 @@
 		  	return _util2.default.str_to_Uint8Array( yy )
 	  };
 	  openpgp 27576 //decodeChunk = str => _util2.default.str_to_Uint8Array(atob(str));
+
+	  if (checksum !== checksumVerifiedString && (checksum || _config2.default.checksum_required)) {
+		console.dir ( "Ascii armor integrity check on message failed: '" + checksum + "' should be '" + checksumVerifiedString + "'" )
+		//throw new Error("Ascii armor integrity check on message failed: '" + checksum + "' should be '" + checksumVerifiedString + "'");
+	  }
+
+	  openpgp 27430 //decodeChunk = str => _util2.default.str_to_Uint8Array(atob(str));
+		
  * 
  * 
  */

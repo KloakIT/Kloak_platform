@@ -40,6 +40,7 @@ class daggr {
 	public showPrivateKey = ko.observable ( false )
 	public publicKeyTextShowCopy = ko.observable ( false )
 	public privateTextShowCopy = ko.observable ( false )
+	public textInputHeight = ko.observable (3)
 	public information = {
 		delivered: ['已送达','到着した','Delivered','已送達']
 	}
@@ -57,7 +58,9 @@ class daggr {
 	}
 
 	constructor () {
-
+		this.textInput.subscribe ( newValue => {
+			this.textInputHeight (( newValue.split ( /\r?\n/g ).length - 1 ) * 1.4  + 3 )
+		})
 	}
 
 	public selechuser ( index ) {

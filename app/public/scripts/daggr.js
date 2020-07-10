@@ -23,9 +23,13 @@ class daggr {
         this.showPrivateKey = ko.observable(false);
         this.publicKeyTextShowCopy = ko.observable(false);
         this.privateTextShowCopy = ko.observable(false);
+        this.textInputHeight = ko.observable(3);
         this.information = {
             delivered: ['已送达', '到着した', 'Delivered', '已送達']
         };
+        this.textInput.subscribe(newValue => {
+            this.textInputHeight((newValue.split(/\r?\n/g).length - 1) * 1.4 + 3);
+        });
     }
     messageToJson() {
         const chatData = JSON.parse(JSON.stringify(this.chatData()));
