@@ -305,18 +305,22 @@ class imapForm {
         };
         const errorProcess = function (err) {
             removeAllListen();
-            if (typeof err === "number") {
-                return self.checkImapError(err);
+            if (err) {
+                if (typeof err === "number") {
+                    return self.checkImapError(err);
+                }
+                return self.errorProcess(err);
             }
-            return self.errorProcess(err);
+            return self.exit(this.imapConnectData);
         };
         _view.connectInformationMessage.socketIo.on('smtpTest', smtpTest);
         _view.connectInformationMessage.socketIo.on('imapTest', imapTest);
         _view.connectInformationMessage.socketIo.once('imapTestFinish', imapTestFinish);
         const imapServer = getImapSmtpHost(self.emailAddress());
+        const account = _view.keyPair().email || _view.keyPair().publicKeyID;
         const imapConnectData = {
-            email: null,
-            account: null,
+            email: account,
+            account: account,
             smtpServer: imapServer.smtp,
             smtpUserName: self.emailAddress(),
             smtpPortNumber: imapServer.SmtpPort,

@@ -213,7 +213,7 @@
 	border-bottom-left-radius: 7px;
 }
 .shadowText {
-	text-shadow: 10px 10px 30px rgba(0, 0, 0, 0.4);
+	text-shadow: 0.5rem 0.5rem 1rem rgba(0, 0, 0, 0.6);
 }
 
 .shadowText2 {
@@ -656,6 +656,7 @@ ul.plan-features {
 	overflow: hidden;
 	padding: 2em;
 	position: relative;
+	translate: ;
 }
 
 .loaderCoNET-div {

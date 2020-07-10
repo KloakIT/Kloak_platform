@@ -314,7 +314,7 @@ class imapForm {
 		
 		let self = this
 		this.checkProcessing ( true )
-		this.checkImapStep (0)
+		this.checkImapStep ( 0 )
 		
 		const imapTest = function ( err ) {
 			if ( err && typeof err === "string" || err !== null && err > -1 ) {
@@ -353,11 +353,14 @@ class imapForm {
 
 		const errorProcess = function ( err ) {
 			removeAllListen ()
-			if ( typeof err === "number") {
-				return self.checkImapError ( err )
+			if ( err ) {
+				if ( typeof err === "number") {
+					return self.checkImapError ( err )
+				}
+	
+				return self.errorProcess ( err )
 			}
-
-			return self.errorProcess ( err )
+			return self.exit ( this.imapConnectData )
 		}
 
 		_view.connectInformationMessage.socketIo.on ( 'smtpTest', smtpTest )
@@ -365,10 +368,10 @@ class imapForm {
 		_view.connectInformationMessage.socketIo.once ( 'imapTestFinish', imapTestFinish )
 
 		const imapServer = getImapSmtpHost( self.emailAddress ())
-
+		const account = _view.keyPair().email || _view.keyPair().publicKeyID
 		const imapConnectData = {
-			email: null,
-			account: null,
+			email: account,
+			account: account,
 			smtpServer: imapServer.smtp,
 			smtpUserName:  self.emailAddress(),
 			smtpPortNumber: imapServer.SmtpPort,
@@ -395,10 +398,12 @@ class imapForm {
 
 		}
 		this.imapConnectData = imapConnectData
+		
 		return _view.connectInformationMessage.emitLocalCommand ( 'checkImap', imapConnectData, err => {
 
 		})
-
+		
+		
 	}
 
 	private checkEmailAddress ( email: string ) {
@@ -459,7 +464,7 @@ class imapForm {
 	}
 
 	public useCoNetTempAccount () {
-		const account = CoNetTempAccount[parseInt ((Math.random () * 28).toString())]
+		const account = CoNetTempAccount[ parseInt (( Math.random () * 28 ).toString()) ]
 		this.emailAddress ( account.userName )
 		this.password ( account.passwd )
 		return this.imapAccountGoCheckClick ()

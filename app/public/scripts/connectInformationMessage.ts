@@ -158,6 +158,7 @@ class connectInformationMessage {
 				_view.connectedCoNET ( false )
 				return _view.localServerConnected ( false )
 			}
+			
 			if ( _view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
 				return _view.CoNETConnect().sendConnectMail()
 			}

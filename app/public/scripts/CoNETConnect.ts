@@ -174,26 +174,26 @@ class CoNETConnect {
 		this.view.networkConnect ( 2 )
 		this.showTryAgain ( false )
 		this.showSendConnectMail ( false )
-
+		const self = this
 		const qtgateCommand: QTGateCommand = {
-			account: this.imapData.account,
+			account: _view.imapData().account,
 			QTGateVersion: CoNET_version,
-			imapData: this.imapData,
+			imapData: _view.imapData(),
 			command: 'connect',
 			error: null,
 			callback: null,
-			language: this.imapData.language,
+			language: _view.imapData().language,
 			publicKey: this.view.keyPair().publicKey
 		}
 
 		return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
 			if ( err ) {
-				return this.listingConnectStage ( null, -1, "" )
+				return self.listingConnectStage ( null, -1, "" )
 			}
 			const localCommand = {
 				message: data, 
-				imapData: this.imapData,
-				toMail: this.nodeEmail
+				imapData: _view.imapData(),
+				toMail: self.nodeEmail
 			}
 			
 			return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
