@@ -103,62 +103,45 @@ export default class localServer {
 	private localKeyPair: localServerKeyPair = null
 	private serverKeyPassword = Uuid.v4()
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
-	private socketKetIDPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss> = new Map()
-
-	private getMatchKeySocket ( keyID: string ) {
-		const keys = this.socketKetIDPool.keys()
-		const reg = new RegExp ( keyID,'i')
-		let index = -1 
-		this.socketKetIDPool.forEach ( n => {
-			
-		})
-	}
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
 		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
 		const socket = this.requestPool.get ( uuid )
+
 		if ( !socket ) {
-			
-			const socket = this.socketKetIDPool.get ( uuid )
-
-			if ( !socket ) {
-				console.dir ( this.socketKetIDPool.keys() )
-				return console.log (`Get cmd that have no matched socket [${ uuid }]\n\n ` )
-			}
-
-			return socket.emit ( uuid, mail )
+			return console.log (`Get cmd that have no matched socket [${ uuid }]\n\n ` )
 		}
 
 		socket.emit ( 'doingRequest', mail, uuid )
 	}
 	
-	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean ) {
+	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean, keyID ) {
 		
 		//		have CoGate connect
-		let userConnet: CoNETConnectCalss = socket [ "userConnet" ] = socket [ "userConnet" ] || this.imapConnectPool.get ( imapData.publicKeyID )
+		let ConnectCalss: CoNETConnectCalss = this.imapConnectPool.get ( keyID )
 		
-		if ( userConnet ) {
-			console.log (`${ imapData.account } have userConnet userConnet.pingUuid = [${ userConnet.pingUuid }]`)
+		if ( ConnectCalss ) {
+			console.log (`${ imapData.account } have CoNETConnectCalss `)
 
 			let dontNeedReset = true
 			
-			if ( userConnet.lastAccessTime && typeof userConnet.lastAccessTime.getTime === "function" ) {
-				dontNeedReset = ( new Date ().getTime () - userConnet.lastAccessTime.getTime ()) < resetConnectTimeLength
+			if ( ConnectCalss.lastAccessTime && typeof ConnectCalss.lastAccessTime.getTime === "function" ) {
+				dontNeedReset = ( new Date ().getTime () - ConnectCalss.lastAccessTime.getTime ()) < resetConnectTimeLength
 			}
 			
 
-			if ( dontNeedReset && ! userConnet.pingUuid ) {
+			if ( dontNeedReset && ! ConnectCalss.pingUuid ) {
 				
 				console.log ( `tryConnectCoNET already have room; [${ userConnet.socket.id }]` )
 				
-				socket.join ( userConnet.socket.id )
+				socket.join ( keyID )
 				
-				return userConnet.Ping ( sendMail )
+				return ConnectCalss.Ping ( sendMail )
 			}
 
-			userConnet.destroy ()
+			ConnectCalss.destroy ()
 			
 		}
 
@@ -172,11 +155,11 @@ export default class localServer {
 				
 				//		network error
 				if ( / ECONNRESET /i.test) {
-					if ( typeof userConnet.destroy === 'function' ) {
-						userConnet.destroy ()
+					if ( typeof ConnectCalss.destroy === 'function' ) {
+						ConnectCalss.destroy ()
 					}
 					
-					this.imapConnectPool.set ( imapData.publicKeyID, userConnet = socket [ "userConnet" ] = makeConnect ())
+					this.imapConnectPool.set ( imapData.publicKeyID, ConnectCalss = makeConnect ())
 					
 					
 				}
@@ -191,7 +174,7 @@ export default class localServer {
 			}, _exitFunction )
 		}
 		
-		return this.imapConnectPool.set ( imapData.publicKeyID, userConnet = socket ["userConnet"] = makeConnect ())
+		return this.imapConnectPool.set ( imapData.publicKeyID, ConnectCalss = socket ["userConnet"] = makeConnect ())
 		
 	}
 
@@ -243,7 +226,7 @@ export default class localServer {
 				return 
 			}
 			const keyPair: localServerKeyPair = socket ["keypair"]
-			console.dir (`on tryConnectCoNET`)
+			
 			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, imapData, ( err, data ) => {
 				if ( err ) {
 					console.log ( 'checkImap Tool.decryptoMessage error\n', err )
@@ -254,7 +237,7 @@ export default class localServer {
 				} catch ( ex ) {
 					return socket.emit ( uuid, 'system' )
 				}
-				return this.tryConnectCoNET ( socket, data, sendMail )
+				return this.tryConnectCoNET ( socket, data, sendMail, keyPair.publicID )
 			})
 
 			
@@ -273,7 +256,7 @@ export default class localServer {
 			this.requestPool.set ( request_uuid, socket )
 			const keyPair: localServerKeyPair = socket ["keypair"]
 
-			let userConnet: CoNETConnectCalss = socket [ "userConnet" ] = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
+			let userConnet: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
 			if ( ! userConnet ) {
 				saveLog ( `doingRequest on ${ uuid } but have not CoNETConnectCalss need restart! socket.emit ( 'systemErr' )`)
 				return socket.emit ( uuid, new Error ('have no connect to node'))
@@ -394,7 +377,7 @@ export default class localServer {
 				}
 				
 				console.dir ( data.publicID )
-				socket[ "keypair" ] = data
+				socket [ "keypair" ] = data
 				this.socketKetIDPool.set ( data.publicID.slice(24), socket )
 				console.dir ( this.socketKetIDPool.keys() )
 				return socket.emit ( _uuid, null, this.localKeyPair.publicKey )
@@ -404,8 +387,18 @@ export default class localServer {
 			
 		})
 
-		socket.once ('disconnect', () => {
-			console.dir (`${ clientName } on disconnect!`)
+		socket.once ( 'disconnect', () => {
+
+			
+			const keypair: localServerKeyPair = socket[ 'keypair' ]
+			if ( !keypair ) {
+				return console.dir (`${ clientName } have no keypair on disconnect! `)
+			}
+			const keyID = keypair.publicID
+			const connect = this.socketKetIDPool.delete ( keyID )
+			if ( !connect ) {
+				return console.dir (`${ clientName } have no socket in socketKetIDPool on disconnect! `)
+			}
 			
 		})
 

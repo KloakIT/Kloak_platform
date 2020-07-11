@@ -93,7 +93,7 @@ class daggr {
 	public snedMessage () {
 		const message: messageContent = {
 			uuid: uuid_generate (),
-			create: new Date(),
+			create: new Date().toISOString(),
 			textContent: this.textInput (),
 			readTimestamp: ko.observable ( false ),
 			attachedFile: null,
@@ -116,10 +116,10 @@ class daggr {
 			return console.log ( err )
 		}
 
-		message.create = ko.observable ( null )
+		
 		this.textInput ('')
 		
-		this.chatData.unshift ( message )
+		//this.chatData.unshift ( message )
 		window.scrollTo ( 0, document.body.scrollHeight )
 		
 
