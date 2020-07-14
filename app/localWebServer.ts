@@ -25,7 +25,6 @@ import * as Uuid from 'node-uuid'
 import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
 import * as mime from 'mime-types'
-import * as OpenPgp from 'openpgp'
 
 const Package = require ( '../package.json' )
 
@@ -92,6 +91,7 @@ const imapErrorCallBack = ( message: string ) => {
 
 const resetConnectTimeLength = 1000 * 60 * 30
 
+
 export default class localServer {
 	private expressServer = Express()
 	private httpServer = HTTP.createServer ( this.expressServer )
@@ -103,8 +103,8 @@ export default class localServer {
 	private localKeyPair: localServerKeyPair = null
 	private serverKeyPassword = Uuid.v4()
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
-	private imapConnectPool: Map <string, CoNETConnectCalss> = new Map()
-
+	private imapConnectPool: Map <string, CoNETConnectCalss > = new Map()
+	private destoryConnectTimePool: Map <string, any > = new Map ()
 	private catchCmd ( mail: string, uuid: string ) {
 		
 		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
@@ -121,7 +121,7 @@ export default class localServer {
 		
 		//		have CoGate connect
 		let ConnectCalss: CoNETConnectCalss = this.imapConnectPool.get ( keyID )
-		
+		clearTimeout ( this.destoryConnectTimePool.get ( keyID ))
 		if ( ConnectCalss ) {
 			console.log (`${ imapData.account } have CoNETConnectCalss `)
 
@@ -134,9 +134,9 @@ export default class localServer {
 
 			if ( dontNeedReset && ! ConnectCalss.pingUuid ) {
 				
-				console.log ( `tryConnectCoNET already have room; [${ userConnet.socket.id }]` )
+				console.log ( `tryConnectCoNET already have room; [${ keyID }]` )
 				
-				socket.join ( keyID )
+				
 				
 				return ConnectCalss.Ping ( sendMail )
 			}
@@ -159,8 +159,8 @@ export default class localServer {
 						ConnectCalss.destroy ()
 					}
 					
-					this.imapConnectPool.set ( imapData.publicKeyID, ConnectCalss = makeConnect ())
 					
+					makeConnect ()
 					
 				}
 			}
@@ -168,14 +168,13 @@ export default class localServer {
 		}
 
 		const makeConnect = () => {
-			 
-			return new CoNETConnectCalss ( imapData, this.socketServer, socket, ( mail, uuid ) => {
+			ConnectCalss = new CoNETConnectCalss ( imapData, this.socketServer, socket, ( mail, uuid ) => {
 				return this.catchCmd ( mail, uuid )
 			}, _exitFunction )
+			return this.imapConnectPool.set ( keyID, ConnectCalss )
 		}
 		
-		return this.imapConnectPool.set ( imapData.publicKeyID, ConnectCalss = socket ["userConnet"] = makeConnect ())
-		
+		return makeConnect()
 	}
 
 	
@@ -377,9 +376,10 @@ export default class localServer {
 				}
 				
 				console.dir ( data.publicID )
+				const keyID = data.publicID.slice( 24 )
 				socket [ "keypair" ] = data
-				this.socketKetIDPool.set ( data.publicID.slice(24), socket )
-				console.dir ( this.socketKetIDPool.keys() )
+				
+				socket.join ( keyID )
 				return socket.emit ( _uuid, null, this.localKeyPair.publicKey )
 			})
 			
@@ -391,14 +391,39 @@ export default class localServer {
 
 			
 			const keypair: localServerKeyPair = socket[ 'keypair' ]
+
 			if ( !keypair ) {
 				return console.dir (`${ clientName } have no keypair on disconnect! `)
 			}
 			const keyID = keypair.publicID
-			const connect = this.socketKetIDPool.delete ( keyID )
-			if ( !connect ) {
-				return console.dir (`${ clientName } have no socket in socketKetIDPool on disconnect! `)
-			}
+			const adminNamespace = this.socketServer.of ( keyID  )
+			return adminNamespace.clients (( err, clients ) => {
+				
+				if ( err ) {
+					return console.log ( `socketServer.of ( ${ keyID } ).clients get error, `, err )
+				}
+				if ( !clients || !clients.length ) {
+					console.dir (`socket.once ( 'disconnect' ) adminNamespace.clients = [${ clients.length }]`)
+					const connectClass = this.imapConnectPool.get ( keyID )
+					if ( connectClass ) {
+						//
+						this.imapConnectPool.delete ( keyID )
+						connectClass.destroy()
+						return 
+						//
+						if ( typeof connectClass.destroy === 'function' ) {
+
+							console.log ( `socketServer.of ( ${ keyID } ) have no more clients disconnect CoNet connect!` )
+							const time = setTimeout (() => {
+								this.imapConnectPool.delete ( keyID )
+								connectClass.destroy()
+
+							}, resetConnectTimeLength )
+							this.destoryConnectTimePool.set ( keyID, time )
+						}
+					}
+				}
+			})
 			
 		})
 

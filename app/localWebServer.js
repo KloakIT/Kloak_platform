@@ -82,8 +82,8 @@ class localServer {
         this.localKeyPair = null;
         this.serverKeyPassword = Uuid.v4();
         this.requestPool = new Map();
-        this.socketKetIDPool = new Map();
         this.imapConnectPool = new Map();
+        this.destoryConnectTimePool = new Map();
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
         Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
@@ -122,61 +122,50 @@ class localServer {
             });
         });
     }
-    getMatchKeySocket(keyID) {
-        const keys = this.socketKetIDPool.keys();
-        const reg = new RegExp(keyID, 'i');
-        let index = -1;
-        this.socketKetIDPool.forEach(n => {
-        });
-    }
     catchCmd(mail, uuid) {
         console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
         const socket = this.requestPool.get(uuid);
         if (!socket) {
-            const socket = this.socketKetIDPool.get(uuid);
-            if (!socket) {
-                console.dir(this.socketKetIDPool.keys());
-                return console.log(`Get cmd that have no matched socket [${uuid}]\n\n `);
-            }
-            return socket.emit(uuid, mail);
+            return console.log(`Get cmd that have no matched socket [${uuid}]\n\n `);
         }
         socket.emit('doingRequest', mail, uuid);
     }
-    tryConnectCoNET(socket, imapData, sendMail) {
+    tryConnectCoNET(socket, imapData, sendMail, keyID) {
         //		have CoGate connect
-        let userConnet = socket["userConnet"] = socket["userConnet"] || this.imapConnectPool.get(imapData.publicKeyID);
-        if (userConnet) {
-            console.log(`${imapData.account} have userConnet userConnet.pingUuid = [${userConnet.pingUuid}]`);
+        let ConnectCalss = this.imapConnectPool.get(keyID);
+        clearTimeout(this.destoryConnectTimePool.get(keyID));
+        if (ConnectCalss) {
+            console.log(`${imapData.account} have CoNETConnectCalss `);
             let dontNeedReset = true;
-            if (userConnet.lastAccessTime && typeof userConnet.lastAccessTime.getTime === "function") {
-                dontNeedReset = (new Date().getTime() - userConnet.lastAccessTime.getTime()) < resetConnectTimeLength;
+            if (ConnectCalss.lastAccessTime && typeof ConnectCalss.lastAccessTime.getTime === "function") {
+                dontNeedReset = (new Date().getTime() - ConnectCalss.lastAccessTime.getTime()) < resetConnectTimeLength;
             }
-            if (dontNeedReset && !userConnet.pingUuid) {
-                console.log(`tryConnectCoNET already have room; [${userConnet.socket.id}]`);
-                socket.join(userConnet.socket.id);
-                return userConnet.Ping(sendMail);
+            if (dontNeedReset && !ConnectCalss.pingUuid) {
+                console.log(`tryConnectCoNET already have room; [${keyID}]`);
+                return ConnectCalss.Ping(sendMail);
             }
-            userConnet.destroy();
+            ConnectCalss.destroy();
         }
         const _exitFunction = err => {
             console.trace(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
             if (err && err.message) {
                 //		network error
                 if (/ ECONNRESET /i.test) {
-                    if (typeof userConnet.destroy === 'function') {
-                        userConnet.destroy();
+                    if (typeof ConnectCalss.destroy === 'function') {
+                        ConnectCalss.destroy();
                     }
-                    this.imapConnectPool.set(imapData.publicKeyID, userConnet = socket["userConnet"] = makeConnect());
+                    makeConnect();
                 }
             }
             return console.log(`_exitFunction doing nathing!`);
         };
         const makeConnect = () => {
-            return new coNETConnect_1.default(imapData, this.socketServer, socket, (mail, uuid) => {
+            ConnectCalss = new coNETConnect_1.default(imapData, this.socketServer, socket, (mail, uuid) => {
                 return this.catchCmd(mail, uuid);
             }, _exitFunction);
+            return this.imapConnectPool.set(keyID, ConnectCalss);
         };
-        return this.imapConnectPool.set(imapData.publicKeyID, userConnet = socket["userConnet"] = makeConnect());
+        return makeConnect();
     }
     listenAfterPassword(socket) {
         let sendMail = false;
@@ -214,7 +203,6 @@ class localServer {
                 return;
             }
             const keyPair = socket["keypair"];
-            console.dir(`on tryConnectCoNET`);
             return Tool.decryptoMessage(this.localKeyPair, keyPair.publicKey, imapData, (err, data) => {
                 if (err) {
                     console.log('checkImap Tool.decryptoMessage error\n', err);
@@ -225,7 +213,7 @@ class localServer {
                 catch (ex) {
                     return socket.emit(uuid, 'system');
                 }
-                return this.tryConnectCoNET(socket, data, sendMail);
+                return this.tryConnectCoNET(socket, data, sendMail, keyPair.publicID);
             });
         });
         socket.on('doingRequest', (request_uuid, request, CallBack1) => {
@@ -238,7 +226,7 @@ class localServer {
             };
             this.requestPool.set(request_uuid, socket);
             const keyPair = socket["keypair"];
-            let userConnet = socket["userConnet"] = socket["userConnet"] || this.imapConnectPool.get(keyPair.publicID);
+            let userConnet = socket["userConnet"] || this.imapConnectPool.get(keyPair.publicID);
             if (!userConnet) {
                 saveLog(`doingRequest on ${uuid} but have not CoNETConnectCalss need restart! socket.emit ( 'systemErr' )`);
                 return socket.emit(uuid, new Error('have no connect to node'));
@@ -329,14 +317,43 @@ class localServer {
                     return socket.emit(_uuid, err);
                 }
                 console.dir(data.publicID);
+                const keyID = data.publicID.slice(24);
                 socket["keypair"] = data;
-                this.socketKetIDPool.set(data.publicID.slice(24), socket);
-                console.dir(this.socketKetIDPool.keys());
+                socket.join(keyID);
                 return socket.emit(_uuid, null, this.localKeyPair.publicKey);
             });
         });
         socket.once('disconnect', () => {
-            console.dir(`${clientName} on disconnect!`);
+            const keypair = socket['keypair'];
+            if (!keypair) {
+                return console.dir(`${clientName} have no keypair on disconnect! `);
+            }
+            const keyID = keypair.publicID;
+            const adminNamespace = this.socketServer.of(keyID);
+            return adminNamespace.clients((err, clients) => {
+                if (err) {
+                    return console.log(`socketServer.of ( ${keyID} ).clients get error, `, err);
+                }
+                if (!clients || !clients.length) {
+                    console.dir(`socket.once ( 'disconnect' ) adminNamespace.clients = [${clients.length}]`);
+                    const connectClass = this.imapConnectPool.get(keyID);
+                    if (connectClass) {
+                        //
+                        this.imapConnectPool.delete(keyID);
+                        connectClass.destroy();
+                        return;
+                        //
+                        if (typeof connectClass.destroy === 'function') {
+                            console.log(`socketServer.of ( ${keyID} ) have no more clients disconnect CoNet connect!`);
+                            const time = setTimeout(() => {
+                                this.imapConnectPool.delete(keyID);
+                                connectClass.destroy();
+                            }, resetConnectTimeLength);
+                            this.destoryConnectTimePool.set(keyID, time);
+                        }
+                    }
+                }
+            });
         });
         /*
                 socket.on ('getUrl', ( url: string, CallBack ) => {

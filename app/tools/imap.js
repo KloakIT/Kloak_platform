@@ -51,12 +51,8 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.doCommandCallback = null;
         this._login = false;
         this.first = true;
-        this.idleCallBack = null;
-        this.isWaitLogout = false;
         this.waitLogoutCallBack = null;
-        this._newMailChunk = buffer_1.Buffer.alloc(0);
         this.idleResponsrTime = null;
-        this.canDoLogout = false;
         this.ready = false;
         this.appendWaitResponsrTimeOut = null;
         this.runningCommand = null;
@@ -64,9 +60,9 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.idleNextStop = null;
         this.reNewCount = 0;
         this.isImapUserLoginSuccess = false;
-        this.waitingDoingIdleStop = false;
-        this.idleDoingDone = false;
         this.newSwitchRet = false;
+        this.doingIdle = false;
+        this.needLoginout = null;
     }
     commandProcess(text, cmdArray, next, callback) { }
     serverCommandError(err, CallBack) {
@@ -76,15 +72,18 @@ class ImapServerSwitchStream extends Stream.Transform {
         }
     }
     idleDoingDown() {
-        timers_1.clearTimeout(this.idleNextStop);
-        if (this.idleDoingDone) {
-            return this.debug ? console.log(`idleDoingDown do nothing because already doing!`) : null;
+        if (!this.doingIdle) {
+            return console.dir(`idleDoingDown stop because this.doingIdle === false!`);
         }
+        this.doingIdle = false;
+        timers_1.clearTimeout(this.idleNextStop);
         if (this.writable) {
-            this.idleDoingDone = true;
             this.debug ? debugOut(`DONE`, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
             return this.push(`DONE\r\n`);
         }
+        /**
+         *
+         */
         return this.imapServer.destroyAll(null);
     }
     doCapability(capability) {
@@ -219,7 +218,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     */
                     if (/^inbox$/i.test(this.imapServer.listenFolder)) {
                         console.log(`capability open inbox !`);
-                        this.canDoLogout = this.ready = true;
+                        this.ready = true;
                         return this.imapServer.emit('ready');
                     }
                     if (newMail && typeof this.imapServer.newMail === 'function') {
@@ -230,11 +229,11 @@ class ImapServerSwitchStream extends Stream.Transform {
                     if (typeof this.imapServer.newMail === 'function') {
                         this.idleNoop();
                     }
-                    this.canDoLogout = this.ready = true;
+                    this.ready = true;
                     this.imapServer.emit('ready');
                 });
             }
-            this.canDoLogout = this.ready = true;
+            this.ready = true;
             this.imapServer.emit('ready');
         };
         this.commandProcess = (text, cmdArray, next, callback) => {
@@ -261,10 +260,10 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
     doNewMail(UID = '') {
         this.reNewCount--;
-        this.canDoLogout = false;
         this.runningCommand = 'doNewMail';
         this.seachUnseen((err, newMailIds, havemore) => {
             if (err) {
+                this.runningCommand = null;
                 return this.imapServer.destroyAll(err);
             }
             let haveMoreNewMail = false;
@@ -295,6 +294,9 @@ class ImapServerSwitchStream extends Stream.Transform {
                         debug ? exports.saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err.message}]`) : null;
                         return this.imapServer.destroyAll(err);
                     }
+                    if (this.needLoginout) {
+                        return this.idleNoop();
+                    }
                     if (haveMoreNewMail || havemore || this.newSwitchRet) {
                         return this.doNewMail();
                     }
@@ -306,36 +308,13 @@ class ImapServerSwitchStream extends Stream.Transform {
             return this.idleNoop();
         });
     }
-    checkLogout(CallBack) {
-        if (!this.isWaitLogout) {
-            //console.log (`[${ this.imapServer.imapSerialID }] checkLogout have not waiting logout`)
-            return CallBack();
-        }
-        const _callBack = () => {
-            if (this.exitWithDeleteBox) {
-                return this.deleteBox(() => {
-                    return this.logout_process(CallBack);
-                });
-            }
-            return this.logout_process(CallBack);
-        };
-        if (!this.canDoLogout) {
-            this.isWaitLogout = true;
-            this.idleCallBack = _callBack;
-            return; //console.trace (`[${ this.imapServer.imapSerialID }] checkLogout canDoLogout = false, set this.isWaitLogout = true &&  this.idleCallBack = CallBack`)
-        }
-        return _callBack();
-    }
     idleNoop() {
-        if (this.isWaitLogout) {
-            if (this.idleCallBack && typeof this.idleCallBack === 'function') {
-                return this.idleCallBack();
-            }
-            return console.log(`idleNoop have this.isWaitLogout but have not this.idleCallBack ${typeof this.idleCallBack}`);
+        if (this.needLoginout) {
+            return this._logoutWithoutCheck(() => {
+            });
         }
-        this.canDoLogout = true;
         this.newSwitchRet = false;
-        this.idleDoingDone = false;
+        this.doingIdle = true;
         this.runningCommand = 'idle';
         if (!this.ready) {
             this.ready = true;
@@ -346,11 +325,11 @@ class ImapServerSwitchStream extends Stream.Transform {
                 console.log(`IDLE doCommandCallback! error`, err);
                 return this.imapServer.destroyAll(err);
             }
-            this.waitingDoingIdleStop = false;
             this.runningCommand = null;
-            if (this.idleCallBack) {
-                this.idleCallBack();
-                return this.idleCallBack = null;
+            if (this.needLoginout) {
+                return this._logoutWithoutCheck(() => {
+                    this.needLoginout();
+                });
             }
             //console.log(`IDLE DONE newSwitchRet = [${newSwitchRet}] nextRead = [${this.nextRead}]`)
             if (this.newSwitchRet || this.reNewCount > 0) {
@@ -368,11 +347,6 @@ class ImapServerSwitchStream extends Stream.Transform {
                 }
             }, NoopLoopWaitingTime);
         });
-        this.idleNextStop = this.imapServer.idleSupport
-            ? timers_1.setTimeout(() => {
-                this.idleDoingDown();
-            }, idleInterval)
-            : null;
         this.commandProcess = (text, cmdArray, next, callback) => {
             //console.log (`idleNoop commandProcess coming ${ text }\n${ cmdArray }`)
             switch (cmdArray[0]) {
@@ -380,7 +354,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 case '+':
                 case '*': {
                     timers_1.clearTimeout(this.idleResponsrTime);
-                    if (/^RECENT$|^EXISTS$/i.test(cmdArray[2]) || this.isWaitLogout) {
+                    if (/^RECENT$|^EXISTS$/i.test(cmdArray[2])) {
                         this.newSwitchRet = true;
                         if (this.imapServer.idleSupport) {
                             this.idleDoingDown();
@@ -396,9 +370,27 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.cmd = `${this.Tag} ${name}`;
         this.debug ? debugOut(this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (this.writable) {
+            this.idleNextStop = this.imapServer.idleSupport
+                ? timers_1.setTimeout(() => {
+                    this.idleDoingDown();
+                }, idleInterval)
+                : null;
             return this.push(this.cmd + '\r\n');
         }
+        this.doingIdle = false;
         return this.imapServer.destroyAll(null);
+    }
+    loginoutWithCheck(CallBack) {
+        if (this.needLoginout) {
+            return CallBack();
+        }
+        this.needLoginout = CallBack;
+        if (this.runningCommand === 'doNewMail') {
+            return;
+        }
+        if (this.doingIdle) {
+            return this.idleDoingDown();
+        }
     }
     login(text, cmdArray, next, _callback) {
         this.doCommandCallback = (err) => {
@@ -496,7 +488,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             return this.push(this.cmd + '\r\n');
         this.imapServer.destroyAll(null);
     }
-    _logout(CallBack) {
+    _logoutWithoutCheck(CallBack) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
         if (!this.isImapUserLoginSuccess) {
             return CallBack();
@@ -529,9 +521,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             CallBack = subject;
             subject = null;
         }
-        this.canDoLogout = false;
         this.doCommandCallback = (err, info) => {
-            this.canDoLogout = true;
             if (err && /TRYCREATE|Mailbox/i.test(err.message)) {
                 return this.createBox(false, this.imapServer.writeFolder, err1 => {
                     if (err1) {
@@ -580,17 +570,12 @@ class ImapServerSwitchStream extends Stream.Transform {
         }
     }
     appendStreamV4(Base64Data = '', subject = null, folderName, CallBack) {
-        if (!this.canDoLogout) {
-            return CallBack(new Error(`wImap busy!`));
-        }
         if (!Base64Data) {
             Base64Data = '';
         }
-        this.canDoLogout = false;
         this.doCommandCallback = (err, response) => {
             //this.debug ? saveLog (`appendStreamV2 doing this.doCommandCallback`) : null
             timers_1.clearTimeout(this.appendWaitResponsrTimeOut);
-            this.canDoLogout = true;
             if (err) {
                 if (/TRYCREATE/i.test(err.message)) {
                     return this.createBox(false, this.imapServer.writeFolder, err1 => {
@@ -751,32 +736,6 @@ class ImapServerSwitchStream extends Stream.Transform {
             return this.push(this.cmd + '\r\n');
         return this.imapServer.destroyAll(null);
     }
-    logout(callback) {
-        if (this.isWaitLogout) {
-            return callback();
-        }
-        this.isWaitLogout = true;
-        this.checkLogout(callback);
-    }
-    logout_process(callback) {
-        //console.trace ('logout')
-        if (!this.writable) {
-            console.log(`logout_process [! this.writable] run return callback ()`);
-            if (callback && typeof callback === 'function') {
-                return callback();
-            }
-        }
-        const doLogout = () => {
-            return this._logout(callback);
-        };
-        if (this.imapServer.listenFolder && this.runningCommand) {
-            //console.trace ()
-            //saveLog  (`logout_process [${ this.imapServer.imapSerialID }] this.imapServer.listenFolder && this.runningCommand = [${ this.runningCommand }]`)
-            this.idleCallBack = doLogout;
-            return this.idleDoingDown();
-        }
-        doLogout();
-    }
     flagsDeleted(num, CallBack) {
         this.doCommandCallback = err => {
             //saveLog ( `ImapServerSwitchStream this.flagsDeleted [${ this.imapServer.listenFolder }] doing flagsDeleted success! typeof CallBack = [${ typeof CallBack }]`)
@@ -919,7 +878,7 @@ class qtGateImap extends Event.EventEmitter {
         else {
             this.socket = Tls.connect({ rejectUnauthorized: !this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect);
         }
-        return this.socket.once('error', err => {
+        return this.socket.on('error', err => {
             return this.destroyAll(err);
         });
     }
@@ -941,7 +900,7 @@ class qtGateImap extends Event.EventEmitter {
             return _end();
         }
         this.imapEnd = true;
-        return this.imapStream.logout(() => {
+        return this.imapStream.loginoutWithCheck(() => {
             if (this.socket && typeof this.socket.end === 'function') {
                 this.socket.end();
             }
@@ -966,7 +925,7 @@ exports.seneMessageToFolder = (IMapConnect, writeFolder, message, subject, CallB
         Async.series([
             next => wImap.imapStream.createBox(false, writeFolder, next),
             next => wImap.imapStream.appendStreamV4(message, subject, writeFolder, next),
-            next => wImap.imapStream._logout(next)
+            next => wImap.imapStream._logoutWithoutCheck(next)
         ], err => {
             _callback = true;
             if (err) {
@@ -1097,7 +1056,7 @@ class imapPeer extends Event.EventEmitter {
             if (subject === this.pingUuid) {
                 this.pingUuid = null;
                 console.log(`CoNETConnected`);
-                console.log(attr);
+                //console.log (attr)
                 timers_1.clearTimeout(this.waitingReplyTimeOut);
                 return this.emit('CoNETConnected', attr);
             }
@@ -1183,7 +1142,7 @@ class imapPeer extends Event.EventEmitter {
         this.doingDestroy = true;
         this.peerReady = false;
         if (this.rImap) {
-            return this.rImap.imapStream._logout(() => {
+            return this.rImap.imapStream.loginoutWithCheck(() => {
                 if (typeof this.exit === 'function') {
                     this.exit(err);
                 }
