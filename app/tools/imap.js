@@ -1043,7 +1043,7 @@ class imapPeer extends Event.EventEmitter {
         this.newReadImap();
     }
     mail(email) {
-        console.log(`imapPeer new mail:\n\n${email.toString()} this.pingUuid = [${this.pingUuid}]`);
+        //console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = exports.getMailSubject(email);
         const attr = exports.getMailAttached(email);
         this.lastAccessTime = new Date();

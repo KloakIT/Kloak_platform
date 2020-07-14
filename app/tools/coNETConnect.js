@@ -108,20 +108,24 @@ class default_1 extends Imap.imapPeer {
         if (/^imap\.mail\.me\.com/.test(this.imapData.imapServer)) {
             imapClone.imapServer = 'p03-imap.mail.me.com';
         }
-        const rImap = new Imap.qtGateImapRead(imapClone, fileName, true, mail => {
+        let rImap = new Imap.qtGateImapRead(imapClone, fileName, true, mail => {
             const attr = Imap.getMailAttached(mail);
             console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
             if (!callback) {
                 callback = true;
                 CallBack(null, attr);
             }
-            return rImap.destroyAll(null);
+            return rImap.logout();
         });
         rImap.once('error', err => {
             console.log(`CoNetConnect.getFile on error`, err);
             return rImap.destroyAll(null);
         });
         rImap.once('end', err => {
+            console.dir(`[${fileName}]rImap.once END`);
+            rImap.destroyAll(null);
+            rImap.removeAllListeners();
+            rImap = null;
             if (err) {
                 if (!callback) {
                     if (this.timeoutCount["fileName"]++ < 3) {

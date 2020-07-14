@@ -1107,7 +1107,8 @@ export class qtGateImap extends Event.EventEmitter {
 		this.imapEnd = true
 
 		if ( this.socket && typeof this.socket.end === 'function' ) {
-			this.socket.end ()
+            this.socket.end ()
+            
 		}
 		
         return this.emit ( 'end', err )
@@ -1204,6 +1205,7 @@ export const getMailAttached = ( email: Buffer ) => {
         return ''
     }
     const attachment = email.slice ( attachmentStart + 4 )
+   
     return attachment.toString()
 }
 
@@ -1308,9 +1310,10 @@ export class imapPeer extends Event.EventEmitter {
 
     private mail ( email: Buffer ) {
         
-		console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
+		//console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = getMailSubject ( email )
-		const attr = getMailAttached (  email )
+        const attr = getMailAttached ( email )
+        
 		this.lastAccessTime = new Date ()
 		if ( subject ) {
 

@@ -124,7 +124,7 @@ export default class extends Imap.imapPeer {
 			imapClone.imapServer = 'p03-imap.mail.me.com'
 		}
 
-		const rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( imapClone, fileName, true, mail => {
+		let rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( imapClone, fileName, true, mail => {
 			
 			const attr = Imap.getMailAttached ( mail )
 			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
@@ -132,7 +132,7 @@ export default class extends Imap.imapPeer {
 				callback = true
 				CallBack ( null, attr )
 			}
-			return rImap.destroyAll( null )
+			return rImap.logout ()
 		})
 
 		rImap.once ( 'error', err => {
@@ -141,6 +141,10 @@ export default class extends Imap.imapPeer {
 		})
 
 		rImap.once( 'end', err => {
+			console.dir (`[${ fileName }]rImap.once END`)
+			rImap.destroyAll ( null )
+			rImap.removeAllListeners ()
+			rImap = null
 			if ( err ) {
 				if ( !callback ) {
 					if ( this.timeoutCount[ "fileName" ] ++ < 3 ) {
@@ -148,10 +152,12 @@ export default class extends Imap.imapPeer {
 						return this.getFile ( fileName, CallBack  )
 					}
 					callback = true
+
 					return CallBack ( err )
 				}
 				
 			}
+			
 			return saveLog (`getFile [${ fileName }] success!`)
 		})
 

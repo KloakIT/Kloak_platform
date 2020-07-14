@@ -19,7 +19,8 @@
             const yy = self.Buffer.from ( str, 'base64').toString('binary')
             return _util2.default.str_to_Uint8Array( yy )
       };
-      openpgp 27576 //decodeChunk = str => _util2.default.str_to_Uint8Array(atob(str));
+      openpgp 28085 openPGPJS v4.10.6
+      //decodeChunk = str => _util2.default.str_to_Uint8Array(atob(str));
 
       if (checksum !== checksumVerifiedString && (checksum || _config2.default.checksum_required)) {
         console.dir ( "Ascii armor integrity check on message failed: '" + checksum + "' should be '" + checksumVerifiedString + "'" )
