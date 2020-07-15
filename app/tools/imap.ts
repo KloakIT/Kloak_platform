@@ -191,8 +191,8 @@ class ImapServerSwitchStream extends Stream.Transform {
             const __CallBack = () => {
                 
                 let index = -1
-                if (!this._buffer.length || (index = this._buffer.indexOf('\r\n')) < 0) {
-                    if (!this.callback) {
+                if ( !this._buffer.length || (index = this._buffer.indexOf ( '\r\n' )) < 0 ) {
+                    if ( !this.callback ) {
                         //      this is for IDLE do DONE command
                         //this.emit ( 'hold' )
                         this.callback = true

@@ -655,11 +655,26 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
-            const arg = com.Args[0];
-            currentItem.snapshotUuid = arg.split(',')[0].split('.')[0];
+            const files = com.Args;
+            currentItem.snapshotUuid = com.requestSerial;
             currentItem.showDownload(true);
             currentItem.showLoading(false);
-            return _view.connectInformationMessage.fetchFiles(arg, (err, buffer) => {
+            let currentIndex = 0;
+            const getBufferfromImap = (CallBack) => {
+                const _currentFileObj = files[currentIndex];
+                return _view.connectInformationMessage.fetchFiles(_currentFileObj.fileName, (err, dataBuffer) => {
+                    if (err) {
+                        return CallBack(err);
+                    }
+                    _currentFileObj['data'] = dataBuffer[0].data;
+                    _currentFileObj['sha1sum'] = dataBuffer[0].sha1sum;
+                    if (++currentIndex > files.length - 1) {
+                        return CallBack();
+                    }
+                    return getBufferfromImap(CallBack);
+                });
+            };
+            return getBufferfromImap(err => {
                 currentItem.showDownload(false);
                 if (err) {
                     return showError(err);
@@ -671,17 +686,15 @@ const appScript = {
                     ? currentItem.showImageLoading(false)
                     : currentItem.showLoading(false);
                 currentItem.loadingGetResponse(false);
-                let buff = '';
-                buff += buffer.map(n => { return n.data; });
-                currentItem['snapshotData'] = buff;
+                currentItem['snapshotData'] = dataArray;
                 const item = {
                     uuid: com.requestSerial,
                     url: url,
                     detail: currentItem.description,
                     urlShow: currentItem.urlShow,
-                    fileIndex: buffer,
+                    fileIndex: dataArray,
                     icon: '.file.image.outline',
-                    tag: ['search', 'html'],
+                    tag: ['search', 'html', 'snapshot'],
                     times_tamp: new Date(),
                     domain: getUrlDomain(url),
                     color: 0,

@@ -407,7 +407,7 @@ class connectInformationMessage {
 		let data = []
 		let currentFIle = filesArray.shift ()
 		let repertTime = 0
-		const _callBack = ( _err, _data ) => {
+		const _callBack = ( _err, _data, sha1sum ) => {
 			if ( _err ) {
 				if ( ++ repertTime > 4 ) {
 					return CallBack ( _err )
@@ -416,7 +416,8 @@ class connectInformationMessage {
 			}
 			data.push ({
 				uuid: currentFIle,
-				data: _data
+				data: _data,
+				sha1sum: sha1sum
 			})
 			if ( filesArray.length ) {
 				currentFIle = filesArray.shift ()

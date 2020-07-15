@@ -110,10 +110,11 @@ class default_1 extends Imap.imapPeer {
         }
         let rImap = new Imap.qtGateImapRead(imapClone, fileName, true, mail => {
             const attr = Imap.getMailAttached(mail);
+            const subject = Imap.getMailSubject(mail);
             console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
             if (!callback) {
                 callback = true;
-                CallBack(null, attr);
+                CallBack(null, attr, subject);
             }
             return rImap.logout();
         });

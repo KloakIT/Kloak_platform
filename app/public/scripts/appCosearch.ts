@@ -695,9 +695,7 @@ const appScript = {
 			}
 			self.imageButtonShowLoading(true)
 
-			return _view.connectInformationMessage.emitRequest(
-				com,
-				(err, com: QTGateAPIRequestCommand) => {
+			return _view.connectInformationMessage.emitRequest( com, ( err, com: QTGateAPIRequestCommand ) => {
 					if (err) {
 						return errorProcess(err)
 					}
@@ -721,9 +719,9 @@ const appScript = {
 						return errorProcess('timeOut')
 					}
 
-					self.imageButtonShowLoading(false)
-					self.imageConetResponse(false)
-					self.imageLoadingGetResponse(false)
+					self.imageButtonShowLoading ( false )
+					self.imageConetResponse ( false )
+					self.imageLoadingGetResponse ( false ) 
 
 					self.imageItemsArray(args.param)
 					self.returnSearchResultItemsInit(self.imageItemsArray())
@@ -740,7 +738,7 @@ const appScript = {
 	// CHANGED ============================================
 	// CHANGED ============================================
 	// CHANGED ============================================
-	getSnapshotClick: (self, index, isImage?: boolean) => {
+	getSnapshotClick: ( self, index, isImage?: boolean ) => {
 		let currentItem: googleSearchResultItemlocal = null
 		if (isImage) {
 			currentItem = self.searchSimilarImagesList()[index]
@@ -759,7 +757,7 @@ const appScript = {
 				: currentItem.showLoading(false)
 			currentItem.loadingGetResponse(false)
 			currentItem.conetResponse(false)
-			currentItem.errorIndex(_view.connectInformationMessage.getErrorIndex(err))
+			currentItem["errorIndex"](_view.connectInformationMessage.getErrorIndex(err))
 			currentItem.showError ( true )
 			const currentElm = $(`#${ currentItem.id }`)
 			return currentElm.popup({
@@ -780,23 +778,41 @@ const appScript = {
 				currentItem.loadingGetResponse ( true )
 				return currentItem.conetResponse ( false )
 			}
-			if (com.error === -1) {
+			if ( com.error === -1 ) {
 				currentItem.loadingGetResponse ( false )
 				return currentItem.conetResponse ( true )
 			}
-			if (com.error) {
+			if ( com.error ) {
 				return showError(com.error)
 			}
 
-			const arg: string = com.Args[0]
-			currentItem.snapshotUuid = arg.split(',')[0].split('.')[0]
-			currentItem.showDownload(true)
-			currentItem.showLoading(false)
+			const files: any[] = com.Args
+			currentItem.snapshotUuid = com.requestSerial
+			currentItem.showDownload ( true )
+			currentItem.showLoading ( false )
+			
+			
+			let currentIndex = 0
 
-			return _view.connectInformationMessage.fetchFiles(
-				arg,
-				( err, buffer: { uuid: string; data: string }[]) => {
-					currentItem.showDownload ( false )
+			const getBufferfromImap = ( CallBack ) => {
+				const _currentFileObj = files [ currentIndex ]
+				return _view.connectInformationMessage.fetchFiles ( _currentFileObj.fileName, ( err, dataBuffer ) => {
+					if ( err ) {
+						return CallBack ( err )
+					}
+					
+					
+					_currentFileObj ['data'] = dataBuffer[0].data
+					_currentFileObj ['sha1sum'] = dataBuffer[0].sha1sum
+					if ( ++currentIndex > files.length -1 ) {
+						return CallBack ()
+					}
+					return getBufferfromImap ( CallBack )
+				})
+			}
+			
+			return getBufferfromImap ( err => {
+				currentItem.showDownload ( false )
 					if ( err ) {
 						return showError ( err )
 					}
@@ -808,27 +824,30 @@ const appScript = {
 						? currentItem.showImageLoading ( false )
 						: currentItem.showLoading ( false )
 					currentItem.loadingGetResponse (false)
-					let buff = ''
-					buff += buffer.map ( n => { return n.data })
-					currentItem ['snapshotData'] = buff
+					
+					
+					currentItem ['snapshotData'] = dataArray
 
 					const item: histeoryItem = {
 						uuid: com.requestSerial,
 						url: url,
 						detail: currentItem.description,
 						urlShow: currentItem.urlShow,
-						fileIndex: buffer,
+						fileIndex: dataArray,
 						icon: '.file.image.outline',
-						tag: ['search', 'html'],
+						tag: ['search', 'html', 'snapshot'],
 						times_tamp: new Date(),
-						domain: getUrlDomain(url),
+						domain: getUrlDomain ( url ),
 						color: 0,
 					}
 
 					_view.historyData.unshift ( item )
 					return currentItem.conetResponse ( false )
-				}
-			)
+			})
+
+					
+				
+			
 		}
 
 		const com: QTGateAPIRequestCommand = {

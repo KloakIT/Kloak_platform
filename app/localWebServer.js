@@ -126,7 +126,17 @@ class localServer {
         console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
         const socket = this.requestPool.get(uuid);
         if (!socket) {
-            return console.log(`Get cmd that have no matched socket [${uuid}]\n\n `);
+            const keyIdRoom = this.socketServer.of(uuid);
+            return keyIdRoom.clients((err, clients) => {
+                if (err) {
+                    console.log(err);
+                    return console.dir(`keyIdRoom [${uuid}] get Error`);
+                }
+                keyIdRoom.emit(uuid, mail);
+                if (!clients.length) {
+                    return console.dir(`keyIdRoom [${uuid}] have not client!`);
+                }
+            });
         }
         socket.emit('doingRequest', mail, uuid);
     }
@@ -255,12 +265,12 @@ class localServer {
                 }
                 console.time(`getFilesFromImap ${_files}`);
                 let ret = '';
-                return userConnect.getFile(_files, (err, data) => {
-                    console.timeEnd(`getFilesFromImap ${_files}`);
+                return userConnect.getFile(_files, (err, data, subject) => {
+                    console.timeEnd(`getFilesFromImap ${_files} `);
                     if (err) {
                         return _callBack(err);
                     }
-                    return _callBack(null, data.toString());
+                    return _callBack(null, data, subject);
                 });
             });
         });
