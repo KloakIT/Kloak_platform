@@ -1,16 +1,19 @@
 
 class showWebPageClass {
-	public showLoading = ko.observable(true)
-	public htmlIframe = ko.observable(null)
-	public showErrorMessage = ko.observable(false)
-	public showHtmlCodePage = ko.observable(false)
-	public showImgPage = ko.observable(true)
+	public showLoading = ko.observable ( true )
+	public htmlIframe = ko.observable ( null )
+	public showErrorMessage = ko.observable ( false )
+	public showHtmlCodePage = ko.observable ( false )
+	public showMultimediaObjButton = ko.observable ( false )
+	public MultimediaObjArray = ko.observableArray ()
+	public showImgPage = ko.observable ( true )
+	public showMultimediaPage = ko.observable ( false )
 	public showErrorMessageProcess() {
-		this.showLoading(false)
-		this.showErrorMessage(true)
+		this.showLoading ( false )
+		this.showErrorMessage ( true )
 	}
-	public png = ko.observable('')
-	public mHtml = ko.observable('')
+	public png = ko.observable ('')
+	public mHtml = ko.observable ('')
 
 	private urlBlobList = []
 
@@ -25,16 +28,24 @@ class showWebPageClass {
 		this.exit()
 	}
 
-	public imgClick() {
-		this.showHtmlCodePage(false)
-		this.showImgPage(true)
+	public imgClick () {
+		this.showMultimediaPage ( false )
+		this.showHtmlCodePage (false )
+		this.showImgPage ( true )
+	}
+
+	public showMultimedia () {
+		this.showHtmlCodePage ( false )
+		this.showImgPage ( false )
+		this.showMultimediaPage ( true )
 	}
 
 	public htmlClick() {
-		this.showHtmlCodePage(true)
-		this.showImgPage(false)
-		const docu = this.mHtml()
-		if (docu) {
+		this.showHtmlCodePage ( true )
+		this.showImgPage ( false )
+		this.showMultimediaPage ( false )
+		const docu = this.mHtml ()
+		if ( docu ) {
 			$('iframe')
 				.contents()
 				.find('head')
@@ -46,38 +57,30 @@ class showWebPageClass {
 		}
 	}
 
-	constructor(
-		public showUrl: string,
-		private zipBase64Stream: string,
-		private zipBase64StreamUuid: string,
-		private exit: () => void
-	) {
+	public showMultimediaObj () {
+
+		this.showMultimediaObjButton ( true )
+		if ( this.multimediaObj.length ) {
+			return this.MultimediaObjArray ( this.multimediaObj )
+		}
+		this.MultimediaObjArray ( [ this.multimediaObj ] )
+		
+	}
+
+	constructor( public showUrl: string, private zipBase64Stream: string, private zipBase64StreamUuid: string, private multimediaObj, private exit: () => void ) {
 		const self = this
-		_view.sharedMainWorker.decryptStreamWithAPKeyAndUnZIP(
-			zipBase64StreamUuid,
-			zipBase64Stream,
-			(
-				err,
-				data: {
-					mhtml: string
-					img: string
-					html: string
-					folder: [{ filename: string; data: string }]
-				}
-			) => {
-				//showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
-				if (err) {
+
+			/*
+				if ( err ) {
 					return self.showErrorMessageProcess()
 				}
+			*/
+				_view.bodyBlue ( false )
 
-				_view.bodyBlue(false)
-
-				let html = data.html
+				let html = null
 				//      support HTMLComplete
-				if (html) {
-					html = html
-						.replace(/ srcset="[^"]+" /gi, ' ')
-						.replace(/ srcset='[^']+' /gi, ' ')
+				if ( html ) {
+					html = html.replace(/ srcset="[^"]+" /gi, ' ').replace(/ srcset='[^']+' /gi, ' ')
 					let det = data.folder.shift()
 					const getData = (filename: string, _data: string, CallBack) => {
 						const pointStart = html.indexOf(`${filename}`)
@@ -90,7 +93,7 @@ class showWebPageClass {
 							return getData(det.filename, det.data, CallBack)
 						}
 
-						if (pointStart > -1) {
+						if ( pointStart > -1 ) {
 							return getFilenameMime(filename, (err, mime) => {
 								if (mime && !/javascript/.test(mime)) {
 									/**
@@ -153,11 +156,16 @@ class showWebPageClass {
 						self.urlBlobList.push(_url)
 					})
 				}
-				html = mhtml2html.convert(data.mhtml)
-				self.png(data.img)
-				self.showLoading(false)
-				self.mHtml(html)
-			}
-		)
+
+				html = null//mhtml2html.convert ( )//data.mhtml )
+				self.png () //data.img )
+				self.showLoading ( false )
+				self.mHtml ( html )
+
+				if ( multimediaObj ) {
+					this.showMultimediaObj ()
+				}
 	}
+		
+	
 }

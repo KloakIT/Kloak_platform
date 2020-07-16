@@ -758,15 +758,11 @@ const appScript = {
 			currentItem.loadingGetResponse(false)
 			currentItem.conetResponse(false)
 			currentItem["errorIndex"](_view.connectInformationMessage.getErrorIndex(err))
-			currentItem.showError ( true )
+			
 			const currentElm = $(`#${ currentItem.id }`)
 			return currentElm.popup({
 				on: 'click',
 				inline: true,
-				onHidden: function () {
-					currentItem.showError(false)
-					currentItem.errorIndex(null)
-				},
 			})
 		}
 
@@ -786,12 +782,11 @@ const appScript = {
 				return showError(com.error)
 			}
 
-			const files: any[] = com.Args
+			const files: any[] = com.Args[0]
+			
 			currentItem.snapshotUuid = com.requestSerial
 			currentItem.showDownload ( true )
 			currentItem.showLoading ( false )
-			
-			
 			let currentIndex = 0
 
 			const getBufferfromImap = ( CallBack ) => {
@@ -801,7 +796,6 @@ const appScript = {
 						return CallBack ( err )
 					}
 					
-					
 					_currentFileObj ['data'] = dataBuffer[0].data
 					_currentFileObj ['sha1sum'] = dataBuffer[0].sha1sum
 					if ( ++currentIndex > files.length -1 ) {
@@ -810,40 +804,47 @@ const appScript = {
 					return getBufferfromImap ( CallBack )
 				})
 			}
+
+			try {
+				currentItem ["multimediaObj"] = JSON.parse ( com.Args[1] )
+			} catch ( ex ) {
+				console.dir (`have not multimediaObj`)
+			}
 			
-			return getBufferfromImap ( err => {
+			//return getBufferfromImap ( err => {
 				currentItem.showDownload ( false )
-					if ( err ) {
-						return showError ( err )
-					}
+				if ( err ) {
+					return showError ( err )
+				}
 
-					isImage
-						? currentItem.snapshotImageReady ( true )
-						: currentItem.snapshotReady ( true )
-					isImage
-						? currentItem.showImageLoading ( false )
-						: currentItem.showLoading ( false )
-					currentItem.loadingGetResponse (false)
-					
-					
-					currentItem ['snapshotData'] = dataArray
+				isImage
+					? currentItem.snapshotImageReady ( true )
+					: currentItem.snapshotReady ( true )
+				isImage
+					? currentItem.showImageLoading ( false )
+					: currentItem.showLoading ( false )
+				currentItem.loadingGetResponse (false)
+				
+				
+				currentItem ['snapshotData'] = null
+				
+				const item: histeoryItem = {
+					uuid: com.requestSerial,
+					url: url,
+					detail: currentItem.description,
+					urlShow: currentItem.urlShow,
+					fileIndex: null,
+					icon: '.file.image.outline',
+					tag: ['search', 'html', 'snapshot'],
+					times_tamp: new Date(),
+					domain: getUrlDomain ( url ),
+					color: 0,
 
-					const item: histeoryItem = {
-						uuid: com.requestSerial,
-						url: url,
-						detail: currentItem.description,
-						urlShow: currentItem.urlShow,
-						fileIndex: dataArray,
-						icon: '.file.image.outline',
-						tag: ['search', 'html', 'snapshot'],
-						times_tamp: new Date(),
-						domain: getUrlDomain ( url ),
-						color: 0,
-					}
+				}
 
-					_view.historyData.unshift ( item )
-					return currentItem.conetResponse ( false )
-			})
+				//_view.historyData.unshift ( item )
+				return currentItem.conetResponse ( false )
+			//})
 
 					
 				
@@ -861,26 +862,22 @@ const appScript = {
 		return _view.connectInformationMessage.emitRequest ( com, callBack )
 	},
 
-	showSnapshotClick: (self, index, isImage?: boolean) => {
-		self.showMain(false)
-		self.showSnapshop(true)
+	showSnapshotClick: ( self, index, isImage?: boolean ) => {
+		self.showMain ( false )
+		self.showSnapshop ( true )
 		let currentItem = null
-		if (isImage) {
-			currentItem = self.searchSimilarImagesList()[index]
+		if ( isImage ) {
+			currentItem = self.searchSimilarImagesList()[ index ]
 		} else {
-			currentItem = self.searchItemList()[index]
+			currentItem = self.searchItemList()[ index ]
 		}
 		let y = null
 
-		self.showWebPage(
-			(y = new showWebPageClass(
-				isImage ? currentItem.clickUrl : currentItem.url,
-				currentItem.snapshotData,
-				currentItem.snapshotUuid,
-				() => {
-					self.showWebPage((y = null))
-					self.showMain(true)
-					self.showSnapshop(false)
+		self.showWebPage (
+			( y = new showWebPageClass ( isImage ? currentItem.clickUrl : currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, currentItem ['multimediaObj'], () => {
+					self.showWebPage(( y = null ))
+					self.showMain ( true )
+					self.showSnapshop ( false )
 				}
 			))
 		)

@@ -732,10 +732,10 @@ module view_layout {
 			_view.showMainPage(false)
 		}
 
-		public appClick(index) {
-			const appScript1 = mainMenuArray[index].click
+		public appClick ( index ) {
+			const appScript1: any = mainMenuArray [ index ].click
 			const showSwitch = `_view.${mainMenuArray[index].htmlTemp}( true )`
-			if (!appScript1 || !showSwitch) {
+			if (!appScript1 || !showSwitch ) {
 				return
 			}
 			_view.showMainPage(false)
@@ -745,10 +745,10 @@ module view_layout {
 				typeof appScript1 === 'object' &&
 				typeof appScript1.startup === 'function'
 			) {
-				appScript1.startup(appScript1)
-				_view.appScript(appScript1)
+				appScript1.startup ( appScript1)
+				_view.appScript ( appScript1 )
 			} else {
-				_view.appScript(new appScript1())
+				_view.appScript( new appScript1())
 			}
 
 			eval(showSwitch)

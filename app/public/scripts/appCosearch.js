@@ -628,16 +628,11 @@ const appScript = {
                 : currentItem.showLoading(false);
             currentItem.loadingGetResponse(false);
             currentItem.conetResponse(false);
-            currentItem.errorIndex(_view.connectInformationMessage.getErrorIndex(err));
-            currentItem.showError(true);
+            currentItem["errorIndex"](_view.connectInformationMessage.getErrorIndex(err));
             const currentElm = $(`#${currentItem.id}`);
             return currentElm.popup({
                 on: 'click',
                 inline: true,
-                onHidden: function () {
-                    currentItem.showError(false);
-                    currentItem.errorIndex(null);
-                },
             });
         };
         const callBack = (err, com) => {
@@ -655,7 +650,7 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
-            const files = com.Args;
+            const files = com.Args[0];
             currentItem.snapshotUuid = com.requestSerial;
             currentItem.showDownload(true);
             currentItem.showLoading(false);
@@ -674,34 +669,40 @@ const appScript = {
                     return getBufferfromImap(CallBack);
                 });
             };
-            return getBufferfromImap(err => {
-                currentItem.showDownload(false);
-                if (err) {
-                    return showError(err);
-                }
-                isImage
-                    ? currentItem.snapshotImageReady(true)
-                    : currentItem.snapshotReady(true);
-                isImage
-                    ? currentItem.showImageLoading(false)
-                    : currentItem.showLoading(false);
-                currentItem.loadingGetResponse(false);
-                currentItem['snapshotData'] = dataArray;
-                const item = {
-                    uuid: com.requestSerial,
-                    url: url,
-                    detail: currentItem.description,
-                    urlShow: currentItem.urlShow,
-                    fileIndex: dataArray,
-                    icon: '.file.image.outline',
-                    tag: ['search', 'html', 'snapshot'],
-                    times_tamp: new Date(),
-                    domain: getUrlDomain(url),
-                    color: 0,
-                };
-                _view.historyData.unshift(item);
-                return currentItem.conetResponse(false);
-            });
+            try {
+                currentItem["multimediaObj"] = JSON.parse(com.Args[1]);
+            }
+            catch (ex) {
+                console.dir(`have not multimediaObj`);
+            }
+            //return getBufferfromImap ( err => {
+            currentItem.showDownload(false);
+            if (err) {
+                return showError(err);
+            }
+            isImage
+                ? currentItem.snapshotImageReady(true)
+                : currentItem.snapshotReady(true);
+            isImage
+                ? currentItem.showImageLoading(false)
+                : currentItem.showLoading(false);
+            currentItem.loadingGetResponse(false);
+            currentItem['snapshotData'] = null;
+            const item = {
+                uuid: com.requestSerial,
+                url: url,
+                detail: currentItem.description,
+                urlShow: currentItem.urlShow,
+                fileIndex: null,
+                icon: '.file.image.outline',
+                tag: ['search', 'html', 'snapshot'],
+                times_tamp: new Date(),
+                domain: getUrlDomain(url),
+                color: 0,
+            };
+            //_view.historyData.unshift ( item )
+            return currentItem.conetResponse(false);
+            //})
         };
         const com = {
             command: 'CoSearch',
@@ -723,7 +724,7 @@ const appScript = {
             currentItem = self.searchItemList()[index];
         }
         let y = null;
-        self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, () => {
+        self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, currentItem['multimediaObj'], () => {
             self.showWebPage((y = null));
             self.showMain(true);
             self.showSnapshop(false);

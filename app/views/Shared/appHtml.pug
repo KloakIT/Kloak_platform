@@ -30,7 +30,6 @@
 									<!-- /ko -->
 
 
-
 									<!-- ko if: searchInputText().length -->
 
 										i.icon.search.link.circular( style = "box-shadow: 0 0 0 0.1em; color: #4285f4!important;" data-bind = "click: search_form, css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse } ")
@@ -624,7 +623,7 @@
 		<!-- /ko -->
 
 		<!-- ko if: showSnapshop () -->
-		#subPage( data-bind = " with: showWebPage ")
+		#subPage( data-bind = " with: showWebPage " )
 			
 			.ui.top.fixed.menu.borderless
 				.item( style = "width: 90%; margin: 0 auto;" )
@@ -633,24 +632,31 @@
 							.ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
 								i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
 								input( style = "color: rgba ( 0,0,0,0.5 );" readonly data-bind = "value: showUrl" )
-								<!-- ko if: showHtmlCodePage() && ! showLoading() -->
-								i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
-								<!-- /ko -->
+								<!-- ko if: ! showLoading() -->
+									<!-- ko if: !showImgPage() -->
+									i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
+									<!-- /ko -->
 
-								<!-- ko if: showImgPage() && ! showLoading() -->
-								i.icon.link.code.circular( data-bind = " click: htmlClick " style="left: auto; right: .5em; color:#346b0b!important;" )
+									<!-- ko if: showMultimediaObjButton () && !showMultimediaPage () -->
+										i.icon.circular.red.youtube.link( data-bind = " click: showMultimedia" style = "right: 3.5rem; left: auto;")
+									<!-- /ko -->
+
+									<!-- ko if: !showHtmlCodePage()  -->
+									i.icon.link.code.circular( data-bind = " click: htmlClick, style: { right: showMultimediaPage () ? '3.5rem' : '.5em' } " style="left: auto ; color:#346b0b!important;" )
+									<!-- /ko -->
 								<!-- /ko -->
 						
 						<!-- ko if: showLoading -->
-						.field
-							p( data-bind = " text: messageBoxDefine ['LoadingPage'][$root.languageIndex()]" style = "color: grey;")
-						.field
-							.loaderCoNET( style = " margin-top: 3em;")
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
+							.field
+								p( data-bind = " text: messageBoxDefine ['LoadingPage'][$root.languageIndex()]" style = "color: grey;")
+							.field
+								.loaderCoNET( style = " margin-top: 3em;")
+									.loaderCoNET-div
+									.loaderCoNET-div
+									.loaderCoNET-div
+									.loaderCoNET-div
 						<!-- /ko -->
+
 						<!-- ko if: showErrorMessage -->
 							.ui.error.message
 								span
@@ -666,76 +672,92 @@
 				img( data-bind = " attr: { src: png }" style = "border: none;margin: 7em 1em 1em 1em;")
 			<!-- /ko -->
 
+			<!-- ko if: showMultimediaPage -->
+				.CoContent( style = "margin: 1em; margin-top: 7rem;")
+					.ui.divided.items.searchItems
+					
+						<!-- ko foreach: MultimediaObjArray -->
+							.item
+								.image
+									img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+								.content
+									.header( data-bind =" text: fulltitle" )
+									.description
+										p( data-bind = " text: description ")
+									.extra
+						<!-- /ko -->
+			<!-- /ko -->
+
 		<!-- /ko -->
 
 		<!-- ko if: showSearchSimilarImagesResult () -->
-		.closeButton( style = "z-index: 999;top: 1.3em; left: 1em; position: fixed; width: 2em;" )
-			i.icon.left.chevron.link.circular.teal( data-bind = "click: closeSimilarImagesResult " )
-		
-		<!-- ko if: !showSnapshop() -->
-		.images-wrapper( data-bind = " foreach: searchSimilarImagesList ")
-			.image-wrapper(data-bind="event: {mouseleave: function(){showOptions(false)}, mouseenter: function() {showOptions(true)}}")
-				<!-- ko if: showOptions() -->
-				.image-overlay
-					a.image-btn-link.border-left(data-bind="click: function(){$parents[0].getSnapshotClick($parents[0], $index(), true)}" style="width: auto; justify-content: center;")
-						<!-- ko if: showImageLoading -->
-						i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }")
-						<!-- /ko -->
+			.closeButton( style = "z-index: 999;top: 1.3em; left: 1em; position: fixed; width: 2em;" )
+				i.icon.left.chevron.link.circular.teal( data-bind = "click: closeSimilarImagesResult " )
+			
+			<!-- ko if: !showSnapshop() -->
+				.images-wrapper( data-bind = " foreach: searchSimilarImagesList ")
+					.image-wrapper(data-bind="event: {mouseleave: function(){showOptions(false)}, mouseenter: function() {showOptions(true)}}")
+						<!-- ko if: showOptions() -->
+							.image-overlay
+								a.image-btn-link.border-left(data-bind="click: function(){$parents[0].getSnapshotClick($parents[0], $index(), true)}" style="width: auto; justify-content: center;")
+									<!-- ko if: showImageLoading -->
+										i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }")
+									<!-- /ko -->
 
-						<!-- ko if: showImageError -->
-						i.icon.info.circle.red.link(data-bind="click: function(){$parents[0].getSnapshotClick($parents[0], $index(), true)}")
-						<!-- /ko -->
+									<!-- ko if: showImageError -->
+										i.icon.info.circle.red.link(data-bind="click: function(){$parents[0].getSnapshotClick($parents[0], $index(), true)}")
+									<!-- /ko -->
 
-						<!-- ko if: snapshotImageReady -->
-						i.icon.file.image.outline.olive.link( data-bind = "click: function() { $parents[0].showSnapshotClick( $parents[0], $index(), true)}" )
-						<!-- /ko -->
+									<!-- ko if: snapshotImageReady -->
+										i.icon.file.image.outline.olive.link( data-bind = "click: function() { $parents[0].showSnapshotClick( $parents[0], $index(), true)}" )
+									<!-- /ko -->
 
-						<!-- ko if: !showImageLoading() && !showImageError() && !snapshotImageReady() -->
-						i.icon.object.group.grey.link
+									<!-- ko if: !showImageLoading() && !showImageError() && !snapshotImageReady() -->
+										i.icon.object.group.grey.link
+									<!-- /ko -->
+								a.image-btn-link.border-right(data-bind="text: clickUrl.substring(0,20) + '...', attr: { 'href': clickUrl, 'target': '_blank' }" style="background-color: #8BB2CB; color: ghostwhite")
 						<!-- /ko -->
-					a.image-btn-link.border-right(data-bind="text: clickUrl.substring(0,20) + '...', attr: { 'href': clickUrl, 'target': '_blank' }" style="background-color: #8BB2CB; color: ghostwhite")
-				<!-- /ko -->
-				.image-info
-					.image-text(data-bind=" text: size")
-					a.image-link(data-bind="text: domain, attr: {'href': domain, 'target': '_blank'}")
-				img.image-item( data-bind = "attr: { src: imgSrc }")
-		<!-- /ko -->
+						.image-info
+							.image-text(data-bind=" text: size")
+							a.image-link(data-bind="text: domain, attr: {'href': domain, 'target': '_blank'}")
+						img.image-item( data-bind = "attr: { src: imgSrc }")
+			<!-- /ko -->
 		<!-- /ko -->
 
 		<!-- ko if: Object.keys(currentDownloads()).length > 0 || Object.keys(finishedDownloads()).length > 0 -->
-		.downloadIndicator(data-bind="style: {'height': showDownloadProgress() ? 'auto' : '3rem'}")
-			a#hiddenAnchor(style="position: absolute; visibility: none")
-			.downloadHeader(data-bind="click: () => {showDownloadProgress(!showDownloadProgress())}, style: {'opacity' : showDownloadProgress() ? '1' : '0.75'}")
-				p(data-bind="text: Object.keys(currentDownloads()).length > 0 ? 'Downloading ' + Object.keys(currentDownloads()).length + ' file(s)' : 'No active downloads'")
-				<!-- ko if: showDownloadProgress() -->
-				i.chevron.down.icon(style="margin-bottom: 5px")
-				<!-- /ko -->
-				<!-- ko if: !showDownloadProgress() -->
-				i.chevron.up.icon(style="margin-bottom: 5px")
-				<!-- /ko -->
-			.downloadList(data-bind="style: {'transform': showDownloadProgress() ? 'scaleY(1)' : 'scaleY(0)'}")
-				<!-- ko foreach: Object.keys(currentDownloads()) -->
-				.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
-					p(data-bind="text: $parent.currentDownloads()[$data].filename" )
-						.downloadProgress
-							.progressBar
-								.uncomplete
-								.complete(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}")
-							.ui.active.inline.loader.tiny(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial + 'loader'}")
-							//- a.downloadAnchor(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}" style="display: none")
-							//- 	i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $parent.currentDownloads()[$data].requestSerial}")
-				<!-- /ko -->
-				
-				<!-- ko foreach: finishedDownloads() -->
-				.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
-					p(data-bind="text: $data.filename" )
-						.downloadProgress
-							.progressBar
-								.uncomplete
-								.complete(style="width: 100%")
-							a.downloadAnchor(data-bind="attr: {'id': $data.requestSerial}")
-								i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $data.requestSerial}, click: () => {$parent.assembleAndDownload($data.requestSerial)}")
-				<!-- /ko -->
+			.downloadIndicator(data-bind="style: {'height': showDownloadProgress() ? 'auto' : '3rem'}")
+				a#hiddenAnchor(style="position: absolute; visibility: none")
+				.downloadHeader(data-bind="click: () => {showDownloadProgress(!showDownloadProgress())}, style: {'opacity' : showDownloadProgress() ? '1' : '0.75'}")
+					p(data-bind="text: Object.keys(currentDownloads()).length > 0 ? 'Downloading ' + Object.keys(currentDownloads()).length + ' file(s)' : 'No active downloads'")
+					<!-- ko if: showDownloadProgress() -->
+					i.chevron.down.icon(style="margin-bottom: 5px")
+					<!-- /ko -->
+					<!-- ko if: !showDownloadProgress() -->
+					i.chevron.up.icon(style="margin-bottom: 5px")
+					<!-- /ko -->
+				.downloadList(data-bind="style: {'transform': showDownloadProgress() ? 'scaleY(1)' : 'scaleY(0)'}")
+					<!-- ko foreach: Object.keys(currentDownloads()) -->
+					.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
+						p(data-bind="text: $parent.currentDownloads()[$data].filename" )
+							.downloadProgress
+								.progressBar
+									.uncomplete
+									.complete(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}")
+								.ui.active.inline.loader.tiny(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial + 'loader'}")
+								//- a.downloadAnchor(data-bind="attr: {'id': $parent.currentDownloads()[$data].requestSerial}" style="display: none")
+								//- 	i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $parent.currentDownloads()[$data].requestSerial}")
+					<!-- /ko -->
+					
+					<!-- ko foreach: finishedDownloads() -->
+					.downloadItem(data-bind="style: {'display': $parent.showDownloadProgress() ? 'block' : 'hidden'}")
+						p(data-bind="text: $data.filename" )
+							.downloadProgress
+								.progressBar
+									.uncomplete
+									.complete(style="width: 100%")
+								a.downloadAnchor(data-bind="attr: {'id': $data.requestSerial}")
+									i.download.icon.downloadIcon(style="margin-bottom: 5px " data-bind="attr: {'name': $data.requestSerial}, click: () => {$parent.assembleAndDownload($data.requestSerial)}")
+					<!-- /ko -->
 		<!-- /ko -->
 		
 	
