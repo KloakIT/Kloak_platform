@@ -154,6 +154,13 @@ class sharedWorkerManager {
         };
         return this.emitCommand(cmd, CallBack);
     }
+    unzipHTML(uuid, base64, Callback) {
+        const cmd = {
+            command: 'unzipHTML',
+            args: [uuid, base64]
+        };
+        return this.emitCommand(cmd, Callback);
+    }
     decryptStreamWithoutPublicKey(message, CallBack) {
         const cmd = {
             command: 'decryptStreamWithoutPublicKey',

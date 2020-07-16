@@ -92,37 +92,44 @@ const appScript = {
         };
         new Assembler(requestUuid, callback);
     },
+    createFileHistory: (history, extraTags) => {
+        if (extraTags) {
+            history.tag = [...extraTags, ...history.tag];
+            history.tag = history.tag.filter(tag => tag !== null || undefined || "");
+        }
+        let req = window.indexedDB.open('kloak-history', 1);
+        req.onupgradeneeded = (e) => {
+            this.db = e.target.result;
+            this.db.createObjectStore('history');
+        };
+        req.onsuccess = (e) => {
+            const db = e.target.result;
+            const fs = db
+                .transaction('history', 'readonly')
+                .objectStore('history');
+            fs.get(0).onsuccess = (e) => {
+                let fileHistory = [];
+                if (e.target.result) {
+                    fileHistory = e.target.result;
+                }
+                fileHistory.push(history);
+                const fs = db
+                    .transaction('history', 'readwrite')
+                    .objectStore('history');
+                console.log(fs);
+                fs.put(fileHistory, 0).onsuccess = (e) => { };
+            };
+        };
+        req.onerror = (e) => {
+            console.log('Unable to open IndexedDB!');
+        };
+    },
     downloaderCallback: async (e) => {
         const command = e.cmd;
         const payload = e.payload;
         switch (command) {
             case 'CREATE_FILE_HISTORY':
-                let req = window.indexedDB.open('kloak-history', 1);
-                req.onupgradeneeded = (e) => {
-                    this.db = e.target.result;
-                    this.db.createObjectStore('history');
-                };
-                req.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const fs = db
-                        .transaction('history', 'readonly')
-                        .objectStore('history');
-                    fs.get(0).onsuccess = (e) => {
-                        let fileHistory = [];
-                        if (e.target.result) {
-                            fileHistory = e.target.result;
-                        }
-                        fileHistory.push(payload);
-                        const fs = db
-                            .transaction('history', 'readwrite')
-                            .objectStore('history');
-                        console.log(fs);
-                        fs.put(fileHistory, 0).onsuccess = (e) => { };
-                    };
-                };
-                req.onerror = (e) => {
-                    console.log('Unable to open IndexedDB!');
-                };
+                appScript.createFileHistory(payload);
                 break;
             case 'FILE_DOWNLOAD_FINISHED':
                 const finishedItem = await appScript.currentDownloads()[payload.requestUuid];
@@ -610,6 +617,7 @@ const appScript = {
     // CHANGED ============================================
     // CHANGED ============================================
     getSnapshotClick: (self, index, isImage) => {
+        console.log(self);
         let currentItem = null;
         if (isImage) {
             currentItem = self.searchSimilarImagesList()[index];
@@ -629,10 +637,15 @@ const appScript = {
             currentItem.loadingGetResponse(false);
             currentItem.conetResponse(false);
             currentItem["errorIndex"](_view.connectInformationMessage.getErrorIndex(err));
-            const currentElm = $(`#${currentItem.id}`);
+            currentItem['showError'](true);
+            const currentElm = $(`#${currentItem['id']}`);
             return currentElm.popup({
                 on: 'click',
                 inline: true,
+                onHidden: function () {
+                    currentItem['showError'](false);
+                    currentItem['errorIndex'](null);
+                },
             });
         };
         const callBack = (err, com) => {
@@ -654,55 +667,51 @@ const appScript = {
             currentItem.snapshotUuid = com.requestSerial;
             currentItem.showDownload(true);
             currentItem.showLoading(false);
-            let currentIndex = 0;
-            const getBufferfromImap = (CallBack) => {
-                const _currentFileObj = files[currentIndex];
-                return _view.connectInformationMessage.fetchFiles(_currentFileObj.fileName, (err, dataBuffer) => {
-                    if (err) {
-                        return CallBack(err);
-                    }
-                    _currentFileObj['data'] = dataBuffer[0].data;
-                    _currentFileObj['sha1sum'] = dataBuffer[0].sha1sum;
-                    if (++currentIndex > files.length - 1) {
-                        return CallBack();
-                    }
-                    return getBufferfromImap(CallBack);
-                });
+            self.showDownloadProcess(true);
+            console.log(files);
+            const snapshotCallback = (e) => {
+                const command = e.cmd;
+                const payload = e.payload;
+                switch (command) {
+                    case 'CREATE_FILE_HISTORY':
+                        appScript.createFileHistory(payload, ['snapshot', 'librarium', 'html']);
+                        break;
+                    case 'FILE_DOWNLOAD_FINISHED':
+                        currentItem.showDownload(false);
+                        isImage
+                            ? currentItem.snapshotImageReady(true)
+                            : currentItem.snapshotReady(true);
+                        isImage
+                            ? currentItem.showImageLoading(false)
+                            : currentItem.showLoading(false);
+                        currentItem.loadingGetResponse(false);
+                        console.log("FILE FINISHED DOWNLOADING!");
+                        break;
+                }
             };
-            try {
-                currentItem["multimediaObj"] = JSON.parse(com.Args[1]);
-            }
-            catch (ex) {
-                console.dir(`have not multimediaObj`);
-            }
-            //return getBufferfromImap ( err => {
-            currentItem.showDownload(false);
-            if (err) {
-                return showError(err);
-            }
-            isImage
-                ? currentItem.snapshotImageReady(true)
-                : currentItem.snapshotReady(true);
-            isImage
-                ? currentItem.showImageLoading(false)
-                : currentItem.showLoading(false);
-            currentItem.loadingGetResponse(false);
-            currentItem['snapshotData'] = null;
-            const item = {
-                uuid: com.requestSerial,
-                url: url,
-                detail: currentItem.description,
-                urlShow: currentItem.urlShow,
-                fileIndex: null,
-                icon: '.file.image.outline',
-                tag: ['search', 'html', 'snapshot'],
-                times_tamp: new Date(),
-                domain: getUrlDomain(url),
-                color: 0,
-            };
-            //_view.historyData.unshift ( item )
-            return currentItem.conetResponse(false);
-            //})
+            const snapshotDownloader = new Downloader(snapshotCallback, com.requestSerial, {
+                hasProgress: false
+            });
+            files.forEach(file => {
+                console.log(file);
+                const downloadObj = {
+                    url: currentItem.url,
+                    downloadFilename: com.requestSerial,
+                    acceptRanges: null,
+                    fileExtension: null,
+                    totalLength: null,
+                    contentType: null,
+                    lastModified: new Date(),
+                    downloadUuid: file.fileName,
+                    offset: file.currentStartOffset,
+                    currentlength: file.currentLength,
+                    eof: file.eof,
+                    stopDownload: false,
+                    requestUuid: com.requestSerial
+                };
+                snapshotDownloader.addToQueue(downloadObj);
+            });
+            snapshotDownloader.start();
         };
         const com = {
             command: 'CoSearch',
@@ -714,8 +723,6 @@ const appScript = {
         return _view.connectInformationMessage.emitRequest(com, callBack);
     },
     showSnapshotClick: (self, index, isImage) => {
-        self.showMain(false);
-        self.showSnapshop(true);
         let currentItem = null;
         if (isImage) {
             currentItem = self.searchSimilarImagesList()[index];
@@ -723,13 +730,28 @@ const appScript = {
         else {
             currentItem = self.searchItemList()[index];
         }
-        let y = null;
-        self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, currentItem.snapshotData, currentItem.snapshotUuid, currentItem['multimediaObj'], () => {
-            self.showWebPage((y = null));
-            self.showMain(true);
-            self.showSnapshop(false);
-        })));
-    },
+        const callback = (e) => {
+            const hiddenAnchor = document.getElementById('hiddenAnchor');
+            fetch(e.url).then(res => {
+                return res.arrayBuffer();
+            }).then(buffer => {
+                URL.revokeObjectURL(e.url);
+                let y = null;
+                self.showMain(false);
+                self.showSnapshop(true);
+                self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(buffer).toString('base64'), currentItem.snapshotUuid, null, () => {
+                    self.showWebPage((y = null));
+                    self.showMain(true);
+                    self.showSnapshop(false);
+                })));
+            });
+        };
+        new Assembler(currentItem.snapshotUuid, callback);
+    }
+    // CHANGED ============================================
+    // CHANGED ============================================
+    // CHANGED ============================================
+    ,
     // CHANGED ============================================
     // CHANGED ============================================
     // CHANGED ============================================

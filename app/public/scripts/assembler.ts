@@ -105,6 +105,7 @@ class Assembler {
 		let fileUint8Array: Uint8Array = null
 		let fileIndex: kloakIndex = null
 		let requestUuid: string = null
+		let temp = []
 
 		const log = (message: string) => {
 			console.log(`<${new Date().toLocaleString()}> ${message}`)
@@ -129,9 +130,33 @@ class Assembler {
 					fileIndex = payload[Object.keys(payload)[0]]
 					break
 				case 'RETRIEVED_PIECE':
-					console.log(payload.arrBuffer)
+					if (!fileIndex.totalLength) {
+						temp.push(payload)
+						if (payload.end) {
+							let totalLength = 0;
+
+							temp.forEach(payload => {
+								totalLength += payload.arrBuffer.byteLength
+							})
+
+							fileUint8Array = new Uint8Array(totalLength)
+
+							temp.forEach(payload => {
+								fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset))
+							})
+
+							const postMessage = self.postMessage as any
+							postMessage({
+								cmd: 'ASSEMBLED_FILE',
+								payload: { fileUrl: createBlob() },
+							})
+							
+							temp = null
+						}
+						return
+					}
 					if (!fileUint8Array) {
-						fileUint8Array = new Uint8Array(fileIndex.totalLength)
+						fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
 						fileUint8Array.set(
 							new Uint8Array(payload.arrBuffer),
 							parseInt(payload.offset)
@@ -145,7 +170,8 @@ class Assembler {
 
 					if (payload.end) {
 						console.log('FINISHED')
-						self.postMessage({
+						const postMessage = self.postMessage as any
+						postMessage({
 							cmd: 'ASSEMBLED_FILE',
 							payload: { fileUrl: createBlob() },
 						})
@@ -173,11 +199,11 @@ class Assembler {
 			return new Promise((resolve, reject) => {
 				const req = indexedDB.open(database, 1)
 				req.onupgradeneeded = (e) => {
-					db = e.target.result
+					db = e.target['result']
 				}
 				req.onsuccess = (e) => {
-					db = e.target.result
-					if (e.target.readyState === 'done') {
+					db = e.target['result']
+					if (e.target['readyState'] === 'done') {
 						resolve()
 					}
 				}
@@ -190,7 +216,8 @@ class Assembler {
 		const getFileIndex = (filename: string) => {
 			fs = db.transaction('kloak-index', 'readwrite').objectStore('kloak-index')
 			fs.get(filename).onsuccess = (e) => {
-				self.postMessage({ cmd: 'FILE_INDEX', payload: e.target.result })
+				const postMessage = self.postMessage as any
+				postMessage({ cmd: 'FILE_INDEX', payload: e.target.result })
 			}
 		}
 
@@ -204,10 +231,11 @@ class Assembler {
 					.transaction('kloak-files', 'readonly')
 					.objectStore('kloak-files')
 				fs.get(pieces[keys[i]]).onsuccess = (e) => {
-					const pgpMessage = pgpStart.concat(e.target.result, pgpEnd)
+					const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd)
 					const arrBuffer = Buffer.from(pgpMessage).buffer
 					console.log(arrBuffer)
-					self.postMessage(
+					const postMessage = self.postMessage as any
+					postMessage(
 						{
 							cmd: 'RETRIEVED_PIECE',
 							payload: {
@@ -216,7 +244,7 @@ class Assembler {
 								arrBuffer,
 							},
 						},
-						arrBuffer
+						[arrBuffer]
 					)
 				}
 			}

@@ -69,7 +69,15 @@ class showWebPageClass {
 
 	constructor( public showUrl: string, private zipBase64Stream: string, private zipBase64StreamUuid: string, private multimediaObj, private exit: () => void ) {
 		const self = this
-
+		_view.sharedMainWorker.unzipHTML(
+			zipBase64StreamUuid,
+			zipBase64Stream,
+			(err, data) => {
+				//showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+				if (err) {
+					console.log(err)
+					return self.showErrorMessageProcess()
+				}
 			/*
 				if ( err ) {
 					return self.showErrorMessageProcess()
@@ -157,15 +165,14 @@ class showWebPageClass {
 					})
 				}
 
-				html = null//mhtml2html.convert ( )//data.mhtml )
-				self.png () //data.img )
+				html = mhtml2html.convert ( data.mhtml )//data.mhtml )
+				self.png ( data.img ) //data.img )
 				self.showLoading ( false )
 				self.mHtml ( html )
 
 				if ( multimediaObj ) {
 					this.showMultimediaObj ()
 				}
+			})
 	}
-		
-	
 }

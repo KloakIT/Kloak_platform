@@ -71,6 +71,7 @@ class Assembler {
             let fileUint8Array = null;
             let fileIndex = null;
             let requestUuid = null;
+            let temp = [];
             const log = (message) => {
                 console.log(`<${new Date().toLocaleString()}> ${message}`);
             };
@@ -92,7 +93,26 @@ class Assembler {
                         fileIndex = payload[Object.keys(payload)[0]];
                         break;
                     case 'RETRIEVED_PIECE':
-                        console.log(payload.arrBuffer);
+                        if (!fileIndex.totalLength) {
+                            temp.push(payload);
+                            if (payload.end) {
+                                let totalLength = 0;
+                                temp.forEach(payload => {
+                                    totalLength += payload.arrBuffer.byteLength;
+                                });
+                                fileUint8Array = new Uint8Array(totalLength);
+                                temp.forEach(payload => {
+                                    fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset));
+                                });
+                                const postMessage = self.postMessage;
+                                postMessage({
+                                    cmd: 'ASSEMBLED_FILE',
+                                    payload: { fileUrl: createBlob() },
+                                });
+                                temp = null;
+                            }
+                            return;
+                        }
                         if (!fileUint8Array) {
                             fileUint8Array = new Uint8Array(fileIndex.totalLength);
                             fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset));
@@ -101,7 +121,8 @@ class Assembler {
                         fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset));
                         if (payload.end) {
                             console.log('FINISHED');
-                            self.postMessage({
+                            const postMessage = self.postMessage;
+                            postMessage({
                                 cmd: 'ASSEMBLED_FILE',
                                 payload: { fileUrl: createBlob() },
                             });
@@ -128,11 +149,11 @@ class Assembler {
                 return new Promise((resolve, reject) => {
                     const req = indexedDB.open(database, 1);
                     req.onupgradeneeded = (e) => {
-                        db = e.target.result;
+                        db = e.target['result'];
                     };
                     req.onsuccess = (e) => {
-                        db = e.target.result;
-                        if (e.target.readyState === 'done') {
+                        db = e.target['result'];
+                        if (e.target['readyState'] === 'done') {
                             resolve();
                         }
                     };
@@ -144,7 +165,8 @@ class Assembler {
             const getFileIndex = (filename) => {
                 fs = db.transaction('kloak-index', 'readwrite').objectStore('kloak-index');
                 fs.get(filename).onsuccess = (e) => {
-                    self.postMessage({ cmd: 'FILE_INDEX', payload: e.target.result });
+                    const postMessage = self.postMessage;
+                    postMessage({ cmd: 'FILE_INDEX', payload: e.target.result });
                 };
             };
             const getFileData = (obj) => {
@@ -157,17 +179,18 @@ class Assembler {
                         .transaction('kloak-files', 'readonly')
                         .objectStore('kloak-files');
                     fs.get(pieces[keys[i]]).onsuccess = (e) => {
-                        const pgpMessage = pgpStart.concat(e.target.result, pgpEnd);
+                        const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd);
                         const arrBuffer = Buffer.from(pgpMessage).buffer;
                         console.log(arrBuffer);
-                        self.postMessage({
+                        const postMessage = self.postMessage;
+                        postMessage({
                             cmd: 'RETRIEVED_PIECE',
                             payload: {
                                 offset: keys[i],
                                 end: i === keys.length - 1,
                                 arrBuffer,
                             },
-                        }, arrBuffer);
+                        }, [arrBuffer]);
                     };
                 }
             };

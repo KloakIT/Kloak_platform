@@ -240,11 +240,12 @@ const signPublicKey = ( public_key, private_key ) => {
 }
 
 
-const showHTMLComplete = ( uuid: string, zipStream, CallBack ) => {
+const showHTMLComplete = ( uuid: string, base64zipStream: string, CallBack ) => {
 	const errCallBack = err => {
+		console.log(err)
 		CallBack ( err )
 	}
-	return JSZip.loadAsync ( zipStream /*, { base64: true }*/).then ( zip => {
+	return JSZip.loadAsync ( base64zipStream , { base64: true }).then ( zip => {
 		const ret = {
 			img: null,
 			html: null,
@@ -914,6 +915,11 @@ class encryptoClass {
 			}
 			showHTMLComplete ( uuid, data, CallBack )
 		})
+	}
+
+	// ANDY CHANGED ======================
+	public unzipHTML ( uuid, base64:string, CallBack ) {
+		showHTMLComplete ( uuid, base64, CallBack )
 	}
 
 }

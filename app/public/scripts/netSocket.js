@@ -202,6 +202,12 @@ const doingCommand = (message, ports) => {
         case 'decryptStreamWithAPKeyAndUnZIP': {
             return encryptoClassObj.decryptStreamWithAPKeyAndUnZIP(cmd.args[0], cmd.args[1], encryptoClassObjCallBack);
         }
+        // ANDY CHANGED ====================================
+        // ANDY CHANGED ====================================
+        // ANDY CHANGED ====================================
+        case 'unzipHTML': {
+            return encryptoClassObj.unzipHTML(cmd.args[0], cmd.args[1], encryptoClassObjCallBack);
+        }
         case 'decryptStreamWithoutPublicKey': {
             return encryptoClassObj.decryptStreamWithoutPublicKey(cmd.args, encryptoClassObjCallBack);
         }

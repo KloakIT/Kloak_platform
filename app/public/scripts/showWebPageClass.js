@@ -17,83 +17,90 @@ class showWebPageClass {
         this.mHtml = ko.observable('');
         this.urlBlobList = [];
         const self = this;
-        /*
-            if ( err ) {
-                return self.showErrorMessageProcess()
+        _view.sharedMainWorker.unzipHTML(zipBase64StreamUuid, zipBase64Stream, (err, data) => {
+            //showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
+            if (err) {
+                console.log(err);
+                return self.showErrorMessageProcess();
             }
-        */
-        _view.bodyBlue(false);
-        let html = null;
-        //      support HTMLComplete
-        if (html) {
-            html = html.replace(/ srcset="[^"]+" /gi, ' ').replace(/ srcset='[^']+' /gi, ' ');
-            let det = data.folder.shift();
-            const getData = (filename, _data, CallBack) => {
-                const pointStart = html.indexOf(`${filename}`);
-                const doCallBack = () => {
-                    det = data.folder.shift();
-                    if (!det) {
-                        return CallBack();
-                    }
-                    return getData(det.filename, det.data, CallBack);
-                };
-                if (pointStart > -1) {
-                    return getFilenameMime(filename, (err, mime) => {
-                        if (mime && !/javascript/.test(mime)) {
-                            /**
-                             *
-                             *          css link tag format support
-                             *
-                             */
-                            const _filename = filename
-                                .replace(/\-/g, '\\-')
-                                .replace(/\//g, '\\/')
-                                .replace(/\./g, '\\.')
-                                .replace(/\(/g, '\\(')
-                                .replace(/\)/g, '\\)');
-                            const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
-                            const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
-                            /*
-                        if ( /^ src/i.test( hrefTest )) {
-                            
-                            const data1 = `data:${ mime };base64,` + _data
-                            html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                            return doCallBack ()
-                            
-                        }
-                        */
-                            const blob = new Blob([
-                                /^image/.test(mime)
-                                    ? Buffer.from(_data, 'base64')
-                                    : Buffer.from(_data, 'base64').toString(),
-                            ], { type: mime });
-                            const link = (URL || webkitURL).createObjectURL(blob);
-                            html = html
-                                .replace(regex, ` src="${link}"`)
-                                .replace(regex1, ` href="${link}"`);
-                            this.urlBlobList.push(link);
-                        }
-                        doCallBack();
-                    });
+            /*
+                if ( err ) {
+                    return self.showErrorMessageProcess()
                 }
-                doCallBack();
-            };
-            return getData(det.filename, det.data, (err) => {
-                self.png(data.img);
-                const htmlBolb = new Blob([html], { type: 'text/html' });
-                const _url = (URL || webkitURL).createObjectURL(htmlBolb);
-                self.showLoading(false);
-                self.htmlIframe(_url);
-                self.urlBlobList.push(_url);
-            });
-        }
-        html = null; //mhtml2html.convert ( )//data.mhtml )
-        self.png(); //data.img )
-        self.showLoading(false);
-        self.mHtml(html);
-        if (multimediaObj) {
-            this.showMultimediaObj();
-        }
+            */
+            _view.bodyBlue(false);
+            let html = null;
+            //      support HTMLComplete
+            if (html) {
+                html = html.replace(/ srcset="[^"]+" /gi, ' ').replace(/ srcset='[^']+' /gi, ' ');
+                let det = data.folder.shift();
+                const getData = (filename, _data, CallBack) => {
+                    const pointStart = html.indexOf(`${filename}`);
+                    const doCallBack = () => {
+                        det = data.folder.shift();
+                        if (!det) {
+                            return CallBack();
+                        }
+                        return getData(det.filename, det.data, CallBack);
+                    };
+                    if (pointStart > -1) {
+                        return getFilenameMime(filename, (err, mime) => {
+                            if (mime && !/javascript/.test(mime)) {
+                                /**
+                                 *
+                                 *          css link tag format support
+                                 *
+                                 */
+                                const _filename = filename
+                                    .replace(/\-/g, '\\-')
+                                    .replace(/\//g, '\\/')
+                                    .replace(/\./g, '\\.')
+                                    .replace(/\(/g, '\\(')
+                                    .replace(/\)/g, '\\)');
+                                const regex = new RegExp(` src=("|')\.\/${_filename}("|')`, 'g');
+                                const regex1 = new RegExp(` href=("|')\.\/${_filename}("|')`, 'g');
+                                /*
+                            if ( /^ src/i.test( hrefTest )) {
+                                
+                                const data1 = `data:${ mime };base64,` + _data
+                                html = html.replace ( regex, data1 ).replace ( regex, data1 )
+                                return doCallBack ()
+                                
+                            }
+                            */
+                                const blob = new Blob([
+                                    /^image/.test(mime)
+                                        ? Buffer.from(_data, 'base64')
+                                        : Buffer.from(_data, 'base64').toString(),
+                                ], { type: mime });
+                                const link = (URL || webkitURL).createObjectURL(blob);
+                                html = html
+                                    .replace(regex, ` src="${link}"`)
+                                    .replace(regex1, ` href="${link}"`);
+                                this.urlBlobList.push(link);
+                            }
+                            doCallBack();
+                        });
+                    }
+                    doCallBack();
+                };
+                return getData(det.filename, det.data, (err) => {
+                    self.png(data.img);
+                    const htmlBolb = new Blob([html], { type: 'text/html' });
+                    const _url = (URL || webkitURL).createObjectURL(htmlBolb);
+                    self.showLoading(false);
+                    self.htmlIframe(_url);
+                    self.urlBlobList.push(_url);
+                });
+            }
+            html = mhtml2html.convert(data.mhtml); //data.mhtml )
+            self.png(data.img); //data.img )
+            self.showLoading(false);
+            self.mHtml(html);
+            if (multimediaObj) {
+                this.showMultimediaObj();
+            }
+        });
     }
     showErrorMessageProcess() {
         this.showLoading(false);
