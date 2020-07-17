@@ -263,21 +263,6 @@ interface QTGate_DnsAddress {
 	url: string
 }
 
-interface kloak_downloadObj {
-	url: string
-	downloadFilename: string
-	acceptRanges: string
-	fileExpansion: string
-	totalLength: number
-	contentType: string
-	lastModified: Date
-	downloading: string
-	offset: number
-	currentlength: number
-	eof: boolean
-	stopDownload: boolean
-}
-
 interface IConnectCommand {
 	region: string
 	account: string
@@ -811,6 +796,10 @@ interface kloak_downloadObj {
 	eof: boolean
 	stopDownload: boolean
 	requestUuid?: string
+}
+
+interface downloaderOptions {
+	hasProgress: boolean
 }
 
 interface databaseWorkers {

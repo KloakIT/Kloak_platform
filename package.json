@@ -17,7 +17,7 @@
 		"prepublish": "npm run snyk-protect"
 	},
 	"devDependencies": {
-		"@types/asn1js": "^0.0.1",
+		"@types/asn1js": "^0.0.2",
 		"@types/async": "^3.2.3",
 		"@types/cookie-parser": "^1.4.2",
 		"@types/express": "^4.17.7",
@@ -31,8 +31,14 @@
 		"@types/socket.io": "^2.1.8",
 		"@types/socket.io-client": "^1.4.33",
 		"electron": "^9.1.0",
-		"electron-builder-squirrel-windows": "^22.7.0",
-		"mhtml2html": "^3.0.0"
+		"electron-builder-squirrel-windows": "^22.8.0",
+		"mhtml2html": "^3.0.0",
+		"socket.io-client": "^2.3.0",
+		"snapsvg": "^0.5.1",
+		"knockout": "^3.5.1",
+		"jquery": "^3.5.1",
+		"jszip": "^3.5.0",
+		"jimp": "0.14.0"
 	},
 	"build": {
 		"appId": "com.Kloak.Platform",
@@ -89,19 +95,13 @@
 		"async": "^3.2.0",
 		"core-js": "^3.6.5",
 		"express": "^4.17.1",
-		"jimp": "0.14.0",
-		"jquery": "^3.5.1",
-		"jszip": "^3.5.0",
-		"knockout": "^3.5.1",
 		"mime-types": "^2.1.27",
 		"node-uuid": "^1.4.8",
 		"nodemailer": "^6.4.10",
 		"openpgp": "^4.10.6",
 		"pug": "^3.0.0",
-		"snapsvg": "^0.5.1",
-		"snyk": "^1.361.3",
-		"socket.io": "^2.3.0",
-		"socket.io-client": "^2.3.0"
+		"snyk": "^1.362.1",
+		"socket.io": "^2.3.0"
 	},
 	"snyk": true,
 	"bin": "cli.js"

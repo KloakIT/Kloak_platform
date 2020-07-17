@@ -1,12 +1,12 @@
 class Assembler {
 	private requestUuid: string
 	private downloadIndex: kloakIndex
+	private fileOffsets = []
+	private fileUuids = []
 	private assembler: Worker
 	private databaseWorker: Worker
 	private callback: Function
-	private isLocal: boolean = false
-	constructor(requestUuid: string, callback: Function, isLocal = false) {
-		this.isLocal = isLocal
+	constructor(requestUuid: string, callback: Function) {
 		this.callback = callback
 		this.requestUuid = requestUuid
 		this.assembler = new GenericWorker(this.assemblerWorkerFn).getWorker()
@@ -27,24 +27,36 @@ class Assembler {
 		console.log(`<${new Date().toLocaleString()}> ${message}`)
 	}
 
-	messageChannel = (e) => {
+	messageChannel = async (e) => {
 		const command = e.data.cmd
-		const type = e.data.type
 		const payload = e.data.payload
+		let uuid = null;
 		switch (command) {
 			case 'FILE_INDEX':
 				this.downloadIndex = payload
-				this.databaseWorker.postMessage({
-					cmd: 'RETRIEVE_DATA',
-					payload: { database: 'kloak-files', index: this.downloadIndex },
+				this.fileOffsets = await Object.keys(this.downloadIndex[this.requestUuid].pieces).sort()
+				console.log(this.fileOffsets)
+				await this.fileOffsets.forEach(offset => {
+					this.fileUuids.push(this.downloadIndex[this.requestUuid].pieces[offset])
 				})
+				
 				this.assembler.postMessage({
 					cmd: 'START',
 					payload: this.downloadIndex,
 				})
 				break
+			case 'NEXT_PIECE':
+				uuid = await this.fileUuids.shift()
+
+				this.databaseWorker.postMessage({
+					cmd: 'RETRIEVE_DATA',
+					payload: { database: 'kloak-files', uuid },
+				})
+				
+				break;
 			case 'RETRIEVED_PIECE':
 				const pgpMessage = Buffer.from(payload.arrBuffer).toString()
+				console.log(pgpMessage)
 				_view.sharedMainWorker.decryptStreamWithoutPublicKey(
 					pgpMessage,
 					(err, data) => {
@@ -56,37 +68,16 @@ class Assembler {
 							{
 								cmd: 'RETRIEVED_PIECE',
 								payload: {
-									offset: parseInt(payload.offset),
-									end: payload.end,
+									end: this.fileUuids.length === 0,
+									offset: parseInt(this.fileOffsets.shift()),
 									arrBuffer: arrBuffer,
 								},
 							},
-							arrBuffer
+							[arrBuffer]
 						)
 					}
 				)
 				return
-
-				_view.sharedMainWorker.decryptStreamWithAPKey(
-					pgpMessage,
-					(err, data) => {
-						if (err) {
-							return console.log(err)
-						}
-						this.assembler.postMessage(
-							{
-								cmd: 'RETRIEVED_PIECE',
-								payload: {
-									offset: parseInt(payload.offset),
-									end: payload.end,
-									arrBuffer: data.data,
-								},
-							},
-							Buffer.from(data.data).buffer
-						)
-					}
-				)
-				break
 			case 'ASSEMBLED_FILE':
 				this.callback({
 					filename: this.requestUuid,
@@ -102,10 +93,11 @@ class Assembler {
 	}
 
 	assemblerWorkerFn = () => {
+		let requestUuid = null
 		let fileUint8Array: Uint8Array = null
 		let fileIndex: kloakIndex = null
-		let requestUuid: string = null
-		let temp = []
+		let tempPieces = []
+		let offset = 0;
 
 		const log = (message: string) => {
 			console.log(`<${new Date().toLocaleString()}> ${message}`)
@@ -120,66 +112,163 @@ class Assembler {
 			return fileUrl
 		}
 
-		self.addEventListener('message', (e) => {
+		self.addEventListener('message', async (e) => {
 			const command = e.data.cmd
 			const payload = e.data.payload
+			const postMessage = self.postMessage as any
 			switch (command) {
 				case 'START':
 					log('Assembler: Assembly Worker started.')
 					requestUuid = Object.keys(payload)[0]
-					fileIndex = payload[Object.keys(payload)[0]]
+					fileIndex = await payload[Object.keys(payload)[0]]
+					if (fileIndex.totalLength) {
+						fileUint8Array = new Uint8Array(fileIndex['totalLength'] as any)
+					}
+					postMessage({
+						cmd: 'NEXT_PIECE',
+						payload: {},
+					})
 					break
 				case 'RETRIEVED_PIECE':
-					if (!fileIndex.totalLength) {
-						temp.push(payload)
-						if (payload.end) {
-							let totalLength = 0;
-
-							temp.forEach(payload => {
-								totalLength += payload.arrBuffer.byteLength
-							})
-
-							fileUint8Array = new Uint8Array(totalLength)
-
-							temp.forEach(payload => {
-								fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset))
-							})
-
-							const postMessage = self.postMessage as any
-							postMessage({
-								cmd: 'ASSEMBLED_FILE',
-								payload: { fileUrl: createBlob() },
-							})
-							
-							temp = null
-						}
-						return
-					}
 					if (!fileUint8Array) {
-						fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
-						fileUint8Array.set(
-							new Uint8Array(payload.arrBuffer),
-							parseInt(payload.offset)
-						)
+						tempPieces.push(payload)
+						if (payload.end) {
+							let totalLength = 0
+							tempPieces.forEach(piece => {
+								totalLength += piece.arrBuffer.byteLength
+							})
+							fileUint8Array = await new Uint8Array(totalLength)
+							tempPieces.forEach(piece => {
+								fileUint8Array.set(new Uint8Array(piece.arrBuffer), piece.offset)
+							})
+						}
+					} else {
+						fileUint8Array.set(new Uint8Array(payload.arrBuffer), payload.offset)
+					}
+					if (!payload.end) {
+						postMessage({
+							cmd: 'NEXT_PIECE',
+							payload: {},
+						})
 						return
 					}
-					fileUint8Array.set(
-						new Uint8Array(payload.arrBuffer),
-						parseInt(payload.offset)
-					)
+					postMessage({
+						cmd: 'ASSEMBLED_FILE',
+						payload: { fileUrl: createBlob() },
+					})
 
-					if (payload.end) {
-						console.log('FINISHED')
-						const postMessage = self.postMessage as any
-						postMessage({
-							cmd: 'ASSEMBLED_FILE',
-							payload: { fileUrl: createBlob() },
-						})
-					}
-					break
-				case 'RETRIEVED_FINISH':
-					console.log('finished')
-					console.log(fileUint8Array)
+					// PROBLEM HERE
+					// if (!fileIndex.totalLength) {
+					// 	await tempPieces.push(payload)
+					// } else {
+					// 	if (!fileUint8Array) {
+					// 		fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
+					// 	}
+					// 	fileUint8Array.set(payload.arrBuffer, offset)
+					// 	console.log(payload.arrBuffer)
+					// 	offset += payload.arrBuffer.byteLength
+					// }
+					// const postMessage = self.postMessage as any
+					// if (payload.end) {
+					// 	const postMessage = self.postMessage as any
+					// 	postMessage({
+					// 		cmd: 'ASSEMBLED_FILE',
+					// 		payload: { fileUrl: createBlob() },
+					// 	})
+					// 	return
+					// }
+					// if (!payload.end) {
+					// 	postMessage({
+					// 		cmd: 'NEXT_PIECE',
+					// 		payload: {},
+					// 	})
+					// 	return
+					// }
+
+					// if(payload.end) {
+					// 	// if (fileUint8Array) {
+					// 	// 	const postMessage = self.postMessage as any
+					// 	// 	postMessage({
+					// 	// 		cmd: 'ASSEMBLED_FILE',
+					// 	// 		payload: { fileUrl: createBlob() },
+					// 	// 	})
+					// 	// 	return
+					// 	// }
+					// 	// let totalLength = 0
+					// 	// await tempPieces.map(piece => {
+					// 	// 	totalLength += piece.arrBuffer.byteLength
+					// 	// })
+
+					// 	// await tempPieces.map(async piece => {
+					// 	// 	fileUint8Array = await new Uint8Array(totalLength)
+					// 	// 	fileUint8Array.set(piece.arrBuffer, offset)
+					// 	// 	offset += piece.arrBuffer.byteLength
+					// 	// 	console.log(offset)
+					// 	// })
+
+					// 	// const postMessage = self.postMessage as any
+					// 	// 	postMessage({
+					// 	// 		cmd: 'ASSEMBLED_FILE',
+					// 	// 		payload: { fileUrl: createBlob() },
+					// 	// 	})
+					// }
+					// break;
+
+				// case 'RETRIEVED_PIECE':
+				// 	if (!fileIndex.totalLength) {
+				// 		console.log(payload)
+				// 		temp[payload.offset] = payload
+				// 		if (payload.end) {
+				// 			let totalLength = 0;
+				// 			let keys = Object.keys(fileIndex[requestUuid].pieces).sort()
+				// 			keys.forEach(key => {
+				// 				totalLength += temp[key].arrBuffer.byteLength
+				// 			})
+				// 			console.log(totalLength)
+				// 			// let chunksize = temp[]
+				// 			// console.log(temp)
+				// 			// temp.forEach(payload => {
+				// 			// 	totalLength += payload.arrBuffer.byteLength
+				// 			// })
+
+				// 			// fileUint8Array = new Uint8Array(totalLength)
+
+				// 			// temp.forEach(payload => {
+
+				// 			// 	fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset))
+				// 			// })
+
+				// 			// const postMessage = self.postMessage as any
+				// 			// postMessage({
+				// 			// 	cmd: 'ASSEMBLED_FILE',
+				// 			// 	payload: { fileUrl: createBlob() },
+				// 			// })
+							
+				// 			// temp = null
+				// 		}
+				// 		return
+				// 	}
+				// 	if (!fileUint8Array) {
+				// 		fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
+				// 		fileUint8Array.set(
+				// 			new Uint8Array(payload.arrBuffer),
+				// 			parseInt(payload.offset)
+				// 		)
+				// 		return
+				// 	}
+				// 	fileUint8Array.set(
+				// 		new Uint8Array(payload.arrBuffer),
+				// 		parseInt(payload.offset)
+				// 	)
+
+				// 	if (payload.end) {
+				// 		console.log('FINISHED')
+				// 		const postMessage = self.postMessage as any
+				// 		postMessage({
+				// 			cmd: 'ASSEMBLED_FILE',
+				// 			payload: { fileUrl: createBlob() },
+				// 		})
+				// 	}
 					break
 				default:
 					break
@@ -217,36 +306,31 @@ class Assembler {
 			fs = db.transaction('kloak-index', 'readwrite').objectStore('kloak-index')
 			fs.get(filename).onsuccess = (e) => {
 				const postMessage = self.postMessage as any
-				postMessage({ cmd: 'FILE_INDEX', payload: e.target.result })
+				postMessage({ cmd: 'FILE_INDEX', payload: e.target['result'] })
 			}
 		}
 
-		const getFileData = (obj: kloakIndex) => {
-			const pieces = obj[Object.keys(obj)[0]].pieces
-			const keys = Object.keys(pieces)
+		const getFileData = (uuid) => {
 			const pgpStart = '-----BEGIN PGP MESSAGE-----\n\n'
 			const pgpEnd = '\n-----END PGP MESSAGE-----'
-			for (let i = 0; i < keys.length; i++) {
-				fs = db
-					.transaction('kloak-files', 'readonly')
-					.objectStore('kloak-files')
-				fs.get(pieces[keys[i]]).onsuccess = (e) => {
-					const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd)
-					const arrBuffer = Buffer.from(pgpMessage).buffer
-					console.log(arrBuffer)
-					const postMessage = self.postMessage as any
-					postMessage(
-						{
-							cmd: 'RETRIEVED_PIECE',
-							payload: {
-								offset: keys[i],
-								end: i === keys.length - 1,
-								arrBuffer,
-							},
+			
+			fs = db
+				.transaction('kloak-files', 'readonly')
+				.objectStore('kloak-files')
+
+			fs.get(uuid).onsuccess = async (e) => {
+				const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd)
+				const arrBuffer = Buffer.from(pgpMessage).buffer
+				const postMessage = self.postMessage as any
+				postMessage(
+					{
+						cmd: 'RETRIEVED_PIECE',
+						payload: {
+							arrBuffer,
 						},
-						[arrBuffer]
-					)
-				}
+					},
+					[arrBuffer]
+				)
 			}
 		}
 
@@ -265,11 +349,11 @@ class Assembler {
 					if (currentDB !== payload.database) {
 						currentDB = payload.database
 						instanceInit(payload.database).then(() => {
-							getFileData(payload.index)
+							getFileData(payload.uuid)
 						})
 						return
 					}
-					getFileData(payload.index)
+					getFileData(payload.uuid)
 					break
 				default:
 					break

@@ -7,13 +7,15 @@ class Downloader {
 	private downloadQueue: Array<kloak_downloadObj> = []
 	private indexDBWorker: databaseWorker
 	private dataDBWorker: databaseWorker
+	private options: downloaderOptions
 	private callback: Function
-	constructor(callback: Function, requestUuid: string) {
+	constructor(callback: Function, requestUuid: string, options: downloaderOptions = {hasProgress: true}) {
 		if (!window.indexedDB) {
 			alert(
 				"Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser."
 			)
 		}
+		this.options = options
 		this.callback = callback
 		this.requestUuid = requestUuid
 		this.indexDBWorker = this.createDatabaseWorker('index')
@@ -236,9 +238,11 @@ class Downloader {
 										arrayBuffer: arrBuffer,
 									},
 								},
-								arrBuffer
+								[arrBuffer]
 							)
+							if (this.options['hasProgress']) {
 							this.updateProgress(downloadObj)
+							}
 						}
 					)
 				}

@@ -381,37 +381,37 @@ const appScript = {
 					return self.showMainSearchForm(false)
 				}
 
-				const arg: string = com.Args[0]
-				const uuid = arg.split(',')[0].split('.')[0]
+				// const arg: string = com.Args[0]
+				// const uuid = arg.split(',')[0].split('.')[0]
 
-				self.showDownload(true)
-				return _view.connectInformationMessage.fetchFiles(
-					arg,
-					( err, buffer: [{ uuid: string, data: Buffer }] ) => {
-						self.showDownload(false)
-						if (err) {
-							return errorProcess(err)
-						}
+				// self.showDownload(true)
+				// return _view.connectInformationMessage.fetchFiles(
+				// 	arg,
+				// 	( err, buffer: [{ uuid: string, data: Buffer }] ) => {
+				// 		self.showDownload(false)
+				// 		if (err) {
+				// 			return errorProcess(err)
+				// 		}
 
-						self.showInputLoading(false)
-						_view.CanadaBackground(false)
-						self.showMainSearchForm(false)
-						self.showMain(false)
-						self.showSnapshop(true)
-						let y = null
-						let u = ''
-						u += buffer.map ( n => { return n.data })
-						self.showWebPage(
-							( y = new showWebPageClass(search_text, u, uuid, () => {
-								self.showWebPage((y = null))
-								self.showMain(true)
-								self.showSnapshop(false)
-								_view.CanadaBackground(true)
-								self.showMainSearchForm(true)
-							}))
-						)
-					}
-				)
+				// 		self.showInputLoading(false)
+				// 		_view.CanadaBackground(false)
+				// 		self.showMainSearchForm(false)
+				// 		self.showMain(false)
+				// 		self.showSnapshop(true)
+				// 		let y = null
+				// 		let u = ''
+				// 		u += buffer.map ( n => { return n.data })
+				// 		self.showWebPage(
+				// 			( y = new showWebPageClass(search_text, u, uuid, null,() => {
+				// 				self.showWebPage((y = null))
+				// 				self.showMain(true)
+				// 				self.showSnapshop(false)
+				// 				_view.CanadaBackground(true)
+				// 				self.showMainSearchForm(true)
+				// 			}))
+				// 		)
+				// 	}
+				// )
 			}
 		)
 	},
@@ -836,9 +836,9 @@ const appScript = {
 					url: currentItem.url,
 					downloadFilename: com.requestSerial,
 					acceptRanges: null,
-					fileExtension: null,
+					fileExtension: 'zip',
 					totalLength: null,
-					contentType: null,
+					contentType: 'application/zip',
 					lastModified: new Date(),
 					downloadUuid: file.fileName,
 					offset: file.currentStartOffset,
@@ -850,7 +850,6 @@ const appScript = {
 
 				snapshotDownloader.addToQueue(downloadObj)
 			})
-
 			snapshotDownloader.start()
 		}
 
@@ -899,7 +898,7 @@ const appScript = {
 			})
 		}
 		new Assembler(currentItem.snapshotUuid, callback)
-	}
+	},
 
 	// CHANGED ============================================
 	// CHANGED ============================================

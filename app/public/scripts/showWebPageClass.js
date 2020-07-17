@@ -93,10 +93,12 @@ class showWebPageClass {
                     self.urlBlobList.push(_url);
                 });
             }
-            html = mhtml2html.convert(data.mhtml); //data.mhtml )
+            if (data.mhtml) {
+                html = mhtml2html.convert(data.mhtml);
+                self.mHtml(html);
+            }
             self.png(data.img); //data.img )
             self.showLoading(false);
-            self.mHtml(html);
             if (multimediaObj) {
                 this.showMultimediaObj();
             }

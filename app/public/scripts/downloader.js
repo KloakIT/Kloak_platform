@@ -1,5 +1,5 @@
 class Downloader {
-    constructor(callback, requestUuid) {
+    constructor(callback, requestUuid, options = { hasProgress: true }) {
         this.requestUuid = null;
         this.downloadObject = null;
         this.downloadIndex = null;
@@ -203,8 +203,10 @@ class Downloader {
                                     downloadUuid: downloadObj.downloadUuid,
                                     arrayBuffer: arrBuffer,
                                 },
-                            }, arrBuffer);
-                            this.updateProgress(downloadObj);
+                            }, [arrBuffer]);
+                            if (this.options['hasProgress']) {
+                                this.updateProgress(downloadObj);
+                            }
                         });
                     }
                     this.sleep(1000).then(() => {
@@ -216,6 +218,7 @@ class Downloader {
         if (!window.indexedDB) {
             alert("Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser.");
         }
+        this.options = options;
         this.callback = callback;
         this.requestUuid = requestUuid;
         this.indexDBWorker = this.createDatabaseWorker('index');
