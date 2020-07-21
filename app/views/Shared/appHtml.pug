@@ -539,7 +539,7 @@
 												<!-- /ko -->
 
 												<!-- ko if: showDownload -->
-												spam( style = "position: relative; padding-right: 25px;")
+												span( style = "position: relative; padding-right: 25px;")
 													img( src = "/images/downloads1.gif" style = "width: 20px; position: absolute;" )
 												<!-- /ko -->
 
@@ -631,10 +631,10 @@
 						.field( style = "width: 100%;" )
 							.ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
 								i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
-								input( style = "color: rgba ( 0,0,0,0.5 );" readonly data-bind = "value: showUrl" )
+								input( style = "color: rgba ( 0,0,0,0.5 );padding-right: 7rem!important;" readonly data-bind = "value: showUrl" )
 								<!-- ko if: ! showLoading() -->
 									<!-- ko if: !showImgPage() -->
-									i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
+										i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
 									<!-- /ko -->
 
 									<!-- ko if: showMultimediaObjButton () && !showMultimediaPage () -->
@@ -673,19 +673,132 @@
 			<!-- /ko -->
 
 			<!-- ko if: showMultimediaPage -->
-				.CoContent( style = "margin: 1em; margin-top: 7rem;")
-					.ui.divided.items.searchItems
-					
-						<!-- ko foreach: MultimediaObjArray -->
-							.item
-								.image
-									img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
-								.content
-									.header( data-bind =" text: fulltitle" )
-									.description
-										p( data-bind = " text: description ")
-									.extra
-						<!-- /ko -->
+				<!-- ko with: MultimediaObjArray() -->
+					.CoContent( style = "margin: 1em; margin-top: 7rem;")
+						.ui.divided.items.searchItems
+							<!-- ko if: thumbnails -->
+								.item
+									.image
+										img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+									.content
+										.header( data-bind =" text: title" )
+										.description
+											
+											p
+												<!-- ko if: longer -->
+													span.ui.label
+														i.icon.history
+														span( data-bind =" text: longer ")
+												<!-- /ko -->
+
+												<!-- ko if: upload_date -->
+													span.ui.label
+														i.icon.calendar.alternate.outline
+														span( data-bind = " text: upload_date ")
+												<!-- /ko -->
+
+												<!-- ko if: view_count -->
+													span.ui.label
+														i.icon.eye
+														span( data-bind = " text: view_count ")
+												<!-- /ko -->
+
+												<!-- ko if: like_count -->
+													span.ui.label
+														i.icon.thumbs.up.outline
+														span( data-bind = " text: like_count ")
+												<!-- /ko -->
+
+
+											p( data-bind = " text: description ")
+										.extra
+											<!-- ko if: audio -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+											<!-- /ko -->
+
+											<!-- ko if: video480 -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+											<!-- /ko -->
+
+											<!-- ko if: video720 -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+													
+											<!-- /ko -->
+
+											<!-- ko if: video2k -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+											<!-- /ko -->
+
+											<!-- ko if: video4k -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+											<!-- /ko -->
+
+											<!-- ko if: video8k -->
+												span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+											<!-- /ko -->
+											
+							<!-- /ko -->
+							<!-- ko if: entries -->
+								<!-- ko foreach: entries -->
+									.item
+										.image
+											img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+										.content
+											.header( data-bind =" text: title" )
+											.description
+												p
+													<!-- ko if: longer -->
+														span.ui.label
+															i.icon.history
+															span( data-bind =" text: longer ")
+													<!-- /ko -->
+
+													<!-- ko if: upload_date -->
+														span.ui.label
+															i.icon.calendar.alternate.outline
+															span( data-bind = " text: upload_date ")
+													<!-- /ko -->
+
+													<!-- ko if: view_count -->
+														span.ui.label
+															i.icon.eye
+															span( data-bind = " text: view_count ")
+													<!-- /ko -->
+
+													<!-- ko if: like_count -->
+														span.ui.label
+															i.icon.thumbs.up.outline
+															span( data-bind = " text: like_count ")
+													<!-- /ko -->
+												p( data-bind = " text: description ")
+											.extra
+												<!-- ko if: audio -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+												<!-- /ko -->
+
+												<!-- ko if: video480 -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+												<!-- /ko -->
+
+												<!-- ko if: video720 -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+														
+												<!-- /ko -->
+
+												<!-- ko if: video2k -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+												<!-- /ko -->
+
+												<!-- ko if: video4k -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+												<!-- /ko -->
+
+												<!-- ko if: video8k -->
+													span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+												<!-- /ko -->
+								<!-- /ko -->
+							<!-- /ko -->
+				<!-- /ko -->
 			<!-- /ko -->
 
 		<!-- /ko -->
@@ -699,7 +812,7 @@
 					.image-wrapper(data-bind="event: {mouseleave: function(){showOptions(false)}, mouseenter: function() {showOptions(true)}}")
 						<!-- ko if: showOptions() -->
 							.image-overlay
-								a.image-btn-link.border-left(data-bind="click: function(){$parents[0].getSnapshotClick($parents[0], $index(), true)}" style="width: auto; justify-content: center;")
+								a.image-btn-link.border-left(data-bind="click: function(){ $parents[0].getSnapshotClick($parents[0], $index(), true)}" style="width: auto; justify-content: center;")
 									<!-- ko if: showImageLoading -->
 										i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }")
 									<!-- /ko -->

@@ -34,7 +34,7 @@ class Assembler {
                     break;
                 case 'RETRIEVED_PIECE':
                     const pgpMessage = Buffer.from(payload.arrBuffer).toString();
-                    console.log(pgpMessage);
+                    //console.log(pgpMessage)
                     _view.sharedMainWorker.decryptStreamWithoutPublicKey(pgpMessage, (err, data) => {
                         if (err) {
                             return console.log(err);

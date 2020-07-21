@@ -672,8 +672,13 @@ const appScript = {
             currentItem.snapshotUuid = com.requestSerial;
             currentItem.showDownload(true);
             currentItem.showLoading(false);
+            try {
+                currentItem['multimediaObj'] = JSON.parse(com.Args[1]);
+            }
+            catch (ex) {
+                console.dir(`have not multimediaObj`);
+            }
             self.showDownloadProcess(true);
-            console.log(files);
             const snapshotCallback = (e) => {
                 const command = e.cmd;
                 const payload = e.payload;
@@ -744,7 +749,7 @@ const appScript = {
                 let y = null;
                 self.showMain(false);
                 self.showSnapshop(true);
-                self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(buffer).toString('base64'), currentItem.snapshotUuid, null, () => {
+                self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(buffer).toString('base64'), currentItem.snapshotUuid, currentItem.multimediaObj, () => {
                     self.showWebPage((y = null));
                     self.showMain(true);
                     self.showSnapshop(false);

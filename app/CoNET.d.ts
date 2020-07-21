@@ -796,6 +796,7 @@ interface kloak_downloadObj {
 	eof: boolean
 	stopDownload: boolean
 	requestUuid?: string
+	
 }
 
 interface downloaderOptions {

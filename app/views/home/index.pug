@@ -392,4 +392,24 @@ block jumbotron1
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->
 
+	script#ajaxLableButton( type = "text/html" )
+		a.ui.label( data-bind = " css: { 'orange' : loading() === 5, 'red': error() },  click: click ")
+			<!-- ko if: error -->
+				i.icon.info.circle
+				span( data-bind = " text: messageBoxDefine [ error() ] [ $root.languageIndex() ]")
+			<!-- /ko -->
+
+			<!-- ko if: !error () -->
+				<!-- ko if: loading() === false || loading() === 5 -->
+					i( data-bind = " attr: { 'class': 'icon ' + iconName } ")
+				<!-- /ko -->
+
+				<!-- ko if: loading() !== false && loading() < 5 -->
+					i.icon.notched.circle.loading( data-bind = "css: { 'yellow': loading() === 2, 'green': loading() === 3, 'blue': loading() === 4 }")
+				<!-- /ko -->
+
+			<!-- /ko -->
+			span( data-bind = "text: labelText [ $root.languageIndex() ] ")
+
+
 

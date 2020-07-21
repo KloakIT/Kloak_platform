@@ -117,10 +117,10 @@ export default class localServer {
 					console.log ( err )
 					return console.dir (`keyIdRoom [${ uuid }] get Error` )
 				}
-				keyIdRoom.emit ( uuid, mail )
 				if ( !clients.length ) {
-					return console.dir (`keyIdRoom [${ uuid }] have not client!`)
+					console.dir (`keyIdRoom [${ uuid }] have not client!`)
 				}
+				keyIdRoom.emit ( uuid, mail )
 				
 			})
 			
@@ -134,6 +134,7 @@ export default class localServer {
 		//		have CoGate connect
 		let ConnectCalss: CoNETConnectCalss = this.imapConnectPool.get ( keyID )
 		clearTimeout ( this.destoryConnectTimePool.get ( keyID ))
+		
 		if ( ConnectCalss ) {
 			console.log (`${ imapData.account } have CoNETConnectCalss `)
 
@@ -385,6 +386,7 @@ export default class localServer {
 			return Tool.getPublicKeyInfo ( publicKey, ( err, data: localServerKeyPair ) => {
 				
 				if ( err ) {
+					console.log ( `Tool.getPublicKeyInfo ERROR!`, err )
 					return socket.emit ( _uuid, err )
 				}
 				
@@ -392,8 +394,17 @@ export default class localServer {
 				const keyID = data.publicID.slice( 24 )
 				socket [ "keypair" ] = data
 				
-				socket.join ( keyID )
-				return socket.emit ( _uuid, null, this.localKeyPair.publicKey )
+				return socket.join ( keyID, () => {
+					console.dir (`client 【${ keyID }】 join room!\n\n\n`)
+					socket.emit ( _uuid, null, this.localKeyPair.publicKey )
+					return this.socketServer.of ( keyID ).clients( ( err, clients ) => {
+						if ( err ) {
+							return console.log ( err )
+						}
+						console.dir (`clients = [${ clients }]`)
+					})
+				})
+				
 			})
 			
 			
@@ -415,27 +426,7 @@ export default class localServer {
 				if ( err ) {
 					return console.log ( `socketServer.of ( ${ keyID } ).clients get error, `, err )
 				}
-				if ( !clients || !clients.length ) {
-					console.dir (`socket.once ( 'disconnect' ) adminNamespace.clients = [${ clients.length }]`)
-					const connectClass = this.imapConnectPool.get ( keyID )
-					if ( connectClass ) {
-						//
-						this.imapConnectPool.delete ( keyID )
-						connectClass.destroy()
-						return 
-						//
-						if ( typeof connectClass.destroy === 'function' ) {
-
-							console.log ( `socketServer.of ( ${ keyID } ) have no more clients disconnect CoNet connect!` )
-							const time = setTimeout (() => {
-								this.imapConnectPool.delete ( keyID )
-								connectClass.destroy()
-
-							}, resetConnectTimeLength )
-							this.destoryConnectTimePool.set ( keyID, time )
-						}
-					}
-				}
+				
 			})
 			
 		})

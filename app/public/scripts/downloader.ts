@@ -227,8 +227,8 @@ class Downloader {
 							// if (err) {
 							// 	return console.dir(err)
 							// }
-							console.log(buffer[0].data)
-							const arrBuffer: ArrayBuffer = Buffer.from(buffer[0].data).buffer
+							//console.log(buffer[0].data)
+							const arrBuffer: ArrayBuffer = Buffer.from ( buffer[0].data ).buffer
 							this.updateIndex(downloadObj)
 							this.dataDBWorker.instance.postMessage(
 								{

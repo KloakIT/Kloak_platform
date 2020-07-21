@@ -41,7 +41,7 @@ class daggr {
 	public showPrivateKey = ko.observable ( false )
 	public publicKeyTextShowCopy = ko.observable ( false )
 	public privateTextShowCopy = ko.observable ( false )
-	public textInputHeight = ko.observable (3)
+	public textInputHeight = ko.observable ( 3 )
 	public information = {
 		delivered: ['已送达','到着した','Delivered','已送達']
 	}

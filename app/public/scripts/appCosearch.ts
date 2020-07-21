@@ -297,24 +297,22 @@ const appScript = {
 		 * 		test Unit
 		 */
 
-		return _view.connectInformationMessage.emitRequest(
-			com,
-			(err, com: QTGateAPIRequestCommand) => {
-				if (err) {
-					return errorProcess(err)
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+				if ( err ) {
+					return errorProcess ( err )
 				}
 
-				if (!com) {
-					return self.loadingGetResponse(true)
+				if ( !com ) {
+					return self.loadingGetResponse ( true )
 				}
 
-				if (com.error === -1) {
-					self.loadingGetResponse(false)
-					return self.conetResponse(true)
+				if ( com.error === -1 ) {
+					self.loadingGetResponse ( false )
+					return self.conetResponse ( true )
 				}
 
-				if (com.error) {
-					return errorProcess(com.error)
+				if ( com.error ) {
+					return errorProcess ( com.error )
 				}
 
 				self.showInputLoading(false)
@@ -331,11 +329,11 @@ const appScript = {
 				 * 		}
 				 */
 
-				if (com.subCom === 'downloadFile') {
+				if ( com.subCom === 'downloadFile' ) {
 					const args: kloak_downloadObj = com.Args[0]
 
-					self.showDownloadProcess(true)
-					if (self.currentDownloads()[com.requestSerial]) {
+					self.showDownloadProcess ( true )
+					if ( self.currentDownloads()[ com.requestSerial ]) {
 						const download: kloakDownloads = self.currentDownloads()[
 							com.requestSerial
 						]
@@ -792,18 +790,22 @@ const appScript = {
 				return currentItem.conetResponse ( true )
 			}
 			if ( com.error ) {
-				return showError(com.error)
+				return showError ( com.error )
 			}
 
 			const files: any[] = com.Args[0]
 			currentItem.snapshotUuid = com.requestSerial
 			currentItem.showDownload ( true )
 			currentItem.showLoading ( false )
+			try {
+				currentItem ['multimediaObj'] = JSON.parse ( com.Args[1] )
+			} catch ( ex ) {
+				console.dir (`have not multimediaObj`)
+			}
 			
 
-			self.showDownloadProcess(true)
+			self.showDownloadProcess ( true )
 
-			console.log(files)
 
 			const snapshotCallback = (e) => {
 				const command = e.cmd
@@ -826,11 +828,11 @@ const appScript = {
 				}
 			}
 
-			const snapshotDownloader = new Downloader(snapshotCallback, com.requestSerial, {
+			const snapshotDownloader = new Downloader ( snapshotCallback, com.requestSerial, {
 				hasProgress: false
 			})
 
-			files.forEach(file => {
+			files.forEach ( file => {
 				console.log(file)
 				const downloadObj: kloak_downloadObj = {
 					url: currentItem.url,
@@ -848,9 +850,10 @@ const appScript = {
 					requestUuid: com.requestSerial
 				}
 
-				snapshotDownloader.addToQueue(downloadObj)
+				snapshotDownloader.addToQueue ( downloadObj )
 			})
-			snapshotDownloader.start()
+
+			snapshotDownloader.start ()
 		}
 
 		const com: QTGateAPIRequestCommand = {
@@ -883,11 +886,11 @@ const appScript = {
 				self.showMain(false)
 				self.showSnapshop(true)
 				self.showWebPage(
-					(y = new showWebPageClass(
+					(y = new showWebPageClass (
 						isImage ? currentItem.clickUrl : currentItem.url,
 						Buffer.from(buffer).toString('base64'),
 						currentItem.snapshotUuid, 
-						null,
+						currentItem.multimediaObj,
 						() => {
 							self.showWebPage((y = null))
 							self.showMain(true)

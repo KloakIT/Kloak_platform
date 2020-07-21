@@ -29,8 +29,8 @@ const Url = require("url");
 /**
  * 		define
  */
-OpenPgp.config.aead_protect = true;
-OpenPgp.config.aead_mode = OpenPgp.enums.aead.experimental_gcm;
+//OpenPgp.config.aead_protect = true
+//OpenPgp.config.aead_mode = OpenPgp.enums.aead.experimental_gcm
 const InitKeyPair = () => {
     const keyPair = {
         publicKey: null,
@@ -155,9 +155,10 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     //console.log (`getKeyPairInfo test password!`)
     return privateKey1.decrypt(password).then(keyOK => {
         //console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
-        ret.passwordOK = keyOK;
+        ret.passwordOK = true;
         ret._password = password;
         didCallback = true;
+        console.dir(ret);
         return CallBack(null, ret);
     }).catch(err => {
         console.log(`privateKey1.decrypt catch ERROR didCallback = [${didCallback}]`, err);
@@ -166,24 +167,21 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
         }
     });
 };
-exports.getPublicKeyInfo = (publicKey, CallBack) => {
-    return OpenPgp.key.readArmored(publicKey).then(_key => {
-        const ret = {
-            publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
-            publicKeys: _key.keys,
-            privateKey: null
-            //nikeName: getNickName ( user.userId.userid ),
-            //email: getEmailAddress ( user.userId.userid ),
-            //keyID: key.primaryKey.getFingerprint().toUpperCase(),
-            //otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
-            //KloakValid: getQTGateSign ( user ),
-            //publicKeys: _key.keys
-        };
-        return CallBack(null, ret);
-    }).catch(ex => {
-        console.trace(ex.message);
-        return CallBack(ex);
-    });
+exports.getPublicKeyInfo = async (publicKey, CallBack) => {
+    const _key = await OpenPgp.key.readArmored(publicKey);
+    const ret = {
+        publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
+        publicKeys: _key.keys,
+        privateKey: null
+        //nikeName: getNickName ( user.userId.userid ),
+        //email: getEmailAddress ( user.userId.userid ),
+        //keyID: key.primaryKey.getFingerprint().toUpperCase(),
+        //otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
+        //KloakValid: getQTGateSign ( user ),
+        //publicKeys: _key.keys
+    };
+    console.log(`getPublicKeyInfo return localServerKeyPair!`, ret);
+    return CallBack(null, ret);
 };
 exports.createKeyPairObj = () => {
 };
@@ -399,7 +397,7 @@ const _smtpVerify = (imapData, CallBack) => {
             user: imapData.smtpUserName,
             pass: imapData.smtpUserPassword
         },
-        connectionTimeout: (1000 * 15).toString(),
+        connectionTimeout: (1000 * 10).toString(),
         tls: {
             rejectUnauthorized: imapData.smtpIgnoreCertificate,
             ciphers: imapData.ciphers
@@ -407,20 +405,8 @@ const _smtpVerify = (imapData, CallBack) => {
         debug: true
     };
     const transporter = Nodemailer.createTransport(option);
+    console.dir(option);
     return transporter.verify(CallBack);
-    //DEBUG ? saveLog ( `transporter.verify callback [${ JSON.stringify ( err )}] success[${ success }]` ) : null
-    /*
-    if ( err ) {
-        const _err = JSON.stringify ( err )
-        if ( /Invalid login|AUTH/i.test ( _err ))
-            return CallBack ( 8 )
-        if ( /certificate/i.test ( _err ))
-            return CallBack ( 9 )
-        return CallBack ( 10 )
-    }
-
-    return CallBack()
-    */
 };
 exports.smtpVerify = (imapData, CallBack) => {
     console.log(`doing smtpVerify!`);
@@ -523,6 +509,7 @@ const testSmtpAndSendMail = (imapData, CallBack) => {
     });
 };
 exports.sendCoNETConnectRequestEmail = (imapData, toEmail, message, CallBack) => {
+    console.dir(`sendCoNETConnectRequestEmail`);
     return Async.waterfall([
         next => testSmtpAndSendMail(imapData, next),
         next => {

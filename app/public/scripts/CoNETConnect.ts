@@ -197,7 +197,7 @@ class CoNETConnect {
 			}
 			
 			return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
-
+				
 			})
 		})
 

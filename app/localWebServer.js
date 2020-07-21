@@ -132,10 +132,10 @@ class localServer {
                     console.log(err);
                     return console.dir(`keyIdRoom [${uuid}] get Error`);
                 }
-                keyIdRoom.emit(uuid, mail);
                 if (!clients.length) {
-                    return console.dir(`keyIdRoom [${uuid}] have not client!`);
+                    console.dir(`keyIdRoom [${uuid}] have not client!`);
                 }
+                keyIdRoom.emit(uuid, mail);
             });
         }
         socket.emit('doingRequest', mail, uuid);
@@ -324,13 +324,22 @@ class localServer {
             CallBack(_uuid);
             return Tool.getPublicKeyInfo(publicKey, (err, data) => {
                 if (err) {
+                    console.log(`Tool.getPublicKeyInfo ERROR!`, err);
                     return socket.emit(_uuid, err);
                 }
                 console.dir(data.publicID);
                 const keyID = data.publicID.slice(24);
                 socket["keypair"] = data;
-                socket.join(keyID);
-                return socket.emit(_uuid, null, this.localKeyPair.publicKey);
+                return socket.join(keyID, () => {
+                    console.dir(`client 【${keyID}】 join room!\n\n\n`);
+                    socket.emit(_uuid, null, this.localKeyPair.publicKey);
+                    return this.socketServer.of(keyID).clients((err, clients) => {
+                        if (err) {
+                            return console.log(err);
+                        }
+                        console.dir(`clients = [${clients}]`);
+                    });
+                });
             });
         });
         socket.once('disconnect', () => {
@@ -343,25 +352,6 @@ class localServer {
             return adminNamespace.clients((err, clients) => {
                 if (err) {
                     return console.log(`socketServer.of ( ${keyID} ).clients get error, `, err);
-                }
-                if (!clients || !clients.length) {
-                    console.dir(`socket.once ( 'disconnect' ) adminNamespace.clients = [${clients.length}]`);
-                    const connectClass = this.imapConnectPool.get(keyID);
-                    if (connectClass) {
-                        //
-                        this.imapConnectPool.delete(keyID);
-                        connectClass.destroy();
-                        return;
-                        //
-                        if (typeof connectClass.destroy === 'function') {
-                            console.log(`socketServer.of ( ${keyID} ) have no more clients disconnect CoNet connect!`);
-                            const time = setTimeout(() => {
-                                this.imapConnectPool.delete(keyID);
-                                connectClass.destroy();
-                            }, resetConnectTimeLength);
-                            this.destoryConnectTimePool.set(keyID, time);
-                        }
-                    }
                 }
             });
         });

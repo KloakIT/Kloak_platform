@@ -302,139 +302,6 @@ const initLanguageCookie = () => {
 const DayTime = 1000 * 60 * 60 * 24;
 const monthTime = 30 * DayTime;
 const yearTime = 12 * monthTime;
-const getPlanPrice = function (plan, isAnnualPlan) {
-    const _plan = planArray[planArray.findIndex(function (n) {
-        return n.name === plan;
-    })];
-    if (!_plan) {
-        return null;
-    }
-    return isAnnualPlan ? _plan.annually : _plan.monthlyPay;
-};
-const planArray = [
-    {
-        name: 'free',
-        showName: ['免费用户', '無料ユーザー', 'FREE USER', '免費用戶'],
-        monthlyPay: 0,
-        annually: 0,
-        annuallyMonth: 0,
-        next: 'p1',
-        share: 0,
-        internet: 0,
-        tail: ko.observable(false),
-        multi_gateway: 0,
-        showNote: false,
-        showButton: ko.observable(false),
-        features: [
-            {
-                title: ['代理区域', 'エリア', 'Region', '代理區域'],
-                detail: [
-                    '欧洲2区域',
-                    'ヨーロッパ 2 エリア',
-                    '2 regions in Europe',
-                    '歐洲2區域',
-                ],
-            },
-            {
-                title: ['服务器', 'サーバー', 'Server', '伺服器'],
-                detail: ['共享', '共有', 'Share', '共享'],
-            },
-            {
-                title: ['月流量限制', '月データ制限', 'Bandwidth', '月流量限制'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-            {
-                title: ['多代理', 'マルチプロクシ', 'Multi-Gateway', '多代理'],
-                detail: ['1', '1', '1', '1'],
-            },
-            {
-                title: ['客户端数', '端末数', 'Devices', '客戶端數'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-        ],
-    },
-    {
-        name: 'p1',
-        showName: ['普通用户', '普通ユーザー', 'NORMAL USER', '普通用戶'],
-        monthlyPay: 688,
-        annually: 5988,
-        annuallyMonth: 499,
-        next: 'p2',
-        share: 0,
-        internet: 0,
-        tail: ko.observable(false),
-        multi_gateway: 0,
-        showNote: false,
-        showButton: ko.observable(false),
-        features: [
-            {
-                title: ['代理区域', 'エリア', 'Region', '代理區域'],
-                detail: [
-                    '全球16区域',
-                    'グローバル16区域',
-                    '16 regions worldwide ',
-                    '全球16區域',
-                ],
-            },
-            {
-                title: ['服务器', 'サーバー', 'Server', '伺服器'],
-                detail: ['共享', '共有', 'Share', '共享'],
-            },
-            {
-                title: ['月流量限制', '月データ制限', 'Bandwidth', '月流量限制'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-            {
-                title: ['多代理', 'マルチプロクシ', 'Multi-Gateway', '多代理'],
-                detail: ['2', '2', '2', '2'],
-            },
-            {
-                title: ['客户端数', '端末数', 'Devices', '客戶端數'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-        ],
-    },
-    {
-        name: 'p2',
-        showName: ['超级用户', 'スーパーユーザー', 'POWER USER', '超級用戶'],
-        monthlyPay: 1988,
-        annually: 19999,
-        annuallyMonth: 1667,
-        share: 0,
-        internet: 0,
-        multi_gateway: 0,
-        showNote: false,
-        tail: ko.observable(false),
-        showButton: ko.observable(false),
-        features: [
-            {
-                title: ['代理区域', 'エリア', 'Region', '代理區域'],
-                detail: [
-                    '全球16区域',
-                    'グローバル16区域',
-                    '16 regions worldwide ',
-                    '全球16區域',
-                ],
-            },
-            {
-                title: ['服务器', 'サーバー', 'Server', '伺服器'],
-                detail: ['独占', '独占', 'Dedicated', '獨占'],
-            },
-            {
-                title: ['月流量限制', '月データ制限', 'Bandwidth', '月流量限制'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-            {
-                title: ['多代理', 'マルチプロクシ', 'Multi-Gateway', '多代理'],
-                detail: ['4', '4', '4', '4'],
-            },
-            {
-                title: ['客户端数', '端末数', 'Devices', '客戶端數'],
-                detail: ['无限制', '無制限', 'Unlimited', '無限制'],
-            },
-        ],
-    },
-];
 const nextExpirDate = function (expire) {
     const now = new Date();
     const _expire = new Date(expire);
@@ -481,13 +348,6 @@ const getAmount = function (amount) {
     const ret = amount.split('.');
     return ret.length === 1 ? amount + '.00' : amount;
 };
-const getCurrentPlanCancelBalance = function (expiration, planName) {
-    const price = getPlanPrice(planName, true);
-    const normalPrice = getPlanPrice(planName, false);
-    const usedMonth = 12 - getRemainingMonth(expiration);
-    const passedCost = Math.round((price - normalPrice * usedMonth) * 100) / 100;
-    return passedCost > 0 ? passedCost : 0;
-};
 const getExpire = function (startDate, isAnnual) {
     const start = new Date(startDate);
     const now = new Date();
@@ -501,17 +361,6 @@ function getExpireWithMonths(month) {
     let date = new Date();
     return date.addMonths(month);
 }
-const getCurrentPlanUpgradelBalance = function (expiration, planName, isAnnual) {
-    if (!isAnnual) {
-        return getPlanPrice(planName, false);
-    }
-    const price = getPlanPrice(planName, true);
-    if (!price)
-        return null;
-    const usedMonth = 12 - getRemainingMonth(expiration) + 1;
-    const passedCost = Math.round((price - (price * usedMonth) / 12) * 100) / 100;
-    return passedCost;
-};
 const initPopupArea = function () {
     const popItem = $('.activating.element').popup('hide');
     const inline = popItem.hasClass('inline');
@@ -552,6 +401,12 @@ const infoDefine = [
         privatyKeyTitle: '解密用私密钥不应提供给任何人',
         airplaneMode: '脱机模式',
         coSearch: {
+            audio: '音频',
+            video480: '低分辨率',
+            video720: '720p',
+            video2k: '2K',
+            video4k: '4K',
+            video8k: '8K',
             searchInputPlaceholder: '请输入检索关键字组合或网址',
             SearchText: '搜索',
             totalResults: ['大约有', '条记录'],
@@ -1381,6 +1236,12 @@ const infoDefine = [
         airplaneMode: 'オフラインモードに',
         privatyKeyTitle: 'プライベトキーは誰にも提供しないでください',
         coSearch: {
+            audio: '',
+            video480: '低い解像度',
+            video720: '720p',
+            video2k: '2K',
+            video4k: '4K',
+            video8k: '8K',
             searchInputPlaceholder: 'サーチキーワードまたはウェーブアドレス',
             SearchText: '検索',
             totalResults: ['約', '件'],
@@ -2231,6 +2092,12 @@ const infoDefine = [
         airplaneMode: 'Offline mode',
         privatyKeyTitle: 'This private key should not provide to any body.',
         coSearch: {
+            audio: '',
+            video480: 'lower',
+            video720: '720p',
+            video2k: '2K',
+            video4k: '4K',
+            video8k: '8K',
             searchInputPlaceholder: 'Search or type a URL',
             SearchText: 'Search',
             totalResults: ['About', 'results'],
@@ -3135,6 +3002,12 @@ const infoDefine = [
         airplaneMode: '脫機模式',
         privatyKeyTitle: '解密用私密鑰不應提供給任何人',
         coSearch: {
+            audio: '',
+            video480: '低分辨率',
+            video720: '720p',
+            video2k: '2K',
+            video4k: '4K',
+            video8k: '8K',
             searchInputPlaceholder: '請輸入檢索關鍵字組合或網址',
             SearchText: '搜尋',
             totalResults: ['大約有', '條記錄'],
