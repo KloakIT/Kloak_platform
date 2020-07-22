@@ -297,7 +297,7 @@ export default class localServer {
 
 				const _files = data
 				
-				console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
+				console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] `  )
 				
 				
 				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
@@ -308,10 +308,9 @@ export default class localServer {
 				}
 
 				console.time ( `getFilesFromImap ${ _files }` )
-				let ret = ''
 				
-				return userConnect.getFile ( _files, ( err, data, subject ) => {
-					console.timeEnd ( `getFilesFromImap ${ _files } ` )
+				return userConnect.getFileV1 ( _files, ( err, data, subject ) => {
+					console.timeEnd ( `getFilesFromImap ${ _files }` )
 					
 					if ( err ) {
 						return _callBack ( err )

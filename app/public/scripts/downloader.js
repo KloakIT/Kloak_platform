@@ -178,42 +178,31 @@ class Downloader {
             });
         };
         this.consumeQueue = () => {
-            this.isConsumeQueueRunning = true;
-            switch (true) {
-                case this.downloadState === 'stop':
-                case this.downloadState === 'pause':
-                case this.downloadQueue.length === 0:
-                    this.isConsumeQueueRunning = false;
-                    return;
-                case this.downloadQueue.length > 0:
-                    if (this.downloadState === 'running') {
-                        const downloadObj = this.downloadQueue.shift();
-                        // TESTING DOWNLOAD
-                        // TESTING DOWNLOAD
-                        _view.connectInformationMessage.fetchFiles(downloadObj.downloadUuid, (err, buffer) => {
-                            // if (err) {
-                            // 	return console.dir(err)
-                            // }
-                            //console.log(buffer[0].data)
-                            const arrBuffer = Buffer.from(buffer[0].data).buffer;
-                            this.updateIndex(downloadObj);
-                            this.dataDBWorker.instance.postMessage({
-                                cmd: 'SAVE_DATA',
-                                payload: {
-                                    downloadUuid: downloadObj.downloadUuid,
-                                    arrayBuffer: arrBuffer,
-                                },
-                            }, [arrBuffer]);
-                            if (this.options['hasProgress']) {
-                                this.updateProgress(downloadObj);
-                            }
-                        });
-                    }
-                    this.sleep(1000).then(() => {
-                        this.consumeQueue();
-                    });
-                    break;
-            }
+            const downloadObj = this.downloadQueue.shift();
+            // TESTING DOWNLOAD
+            // TESTING DOWNLOAD
+            this.downloadState = 'pause';
+            _view.connectInformationMessage.fetchFiles(downloadObj.downloadUuid, (err, buffer) => {
+                // if (err) {
+                // 	return console.dir(err)
+                // }
+                console.log(buffer[0].data);
+                const arrBuffer = Buffer.from(buffer[0].data).buffer;
+                this.updateIndex(downloadObj);
+                this.dataDBWorker.instance.postMessage({
+                    cmd: 'SAVE_DATA',
+                    payload: {
+                        downloadUuid: downloadObj.downloadUuid,
+                        arrayBuffer: arrBuffer,
+                    },
+                }, [arrBuffer]);
+                if (this.options['hasProgress']) {
+                    this.updateProgress(downloadObj);
+                }
+                if (this.downloadQueue.length > 0) {
+                    this.consumeQueue();
+                }
+            });
         };
         if (!window.indexedDB) {
             alert("Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser.");

@@ -488,6 +488,39 @@ class ImapServerSwitchStream extends Stream.Transform {
             return this.push(this.cmd + '\r\n');
         this.imapServer.destroyAll(null);
     }
+    openBoxV1(folder, CallBack) {
+        this.newSwitchRet = false;
+        let UID = 0;
+        this.doCommandCallback = (err) => {
+            if (err) {
+                return CallBack(err);
+            }
+            CallBack(null, this.newSwitchRet, UID);
+        };
+        this.commandProcess = (text, cmdArray, next, _callback) => {
+            switch (cmdArray[0]) {
+                case '*': {
+                    if (/^EXISTS$|^UIDNEXT$|UNSEEN/i.test(cmdArray[2])) {
+                        const _num = text.split('UNSEEN ')[1];
+                        if (_num) {
+                            UID = parseInt(_num.split(']')[0]);
+                        }
+                        this.newSwitchRet = true;
+                    }
+                    return _callback();
+                }
+                default:
+                    return _callback();
+            }
+        };
+        const conText = this.imapServer.condStoreSupport ? ' (CONDSTORE)' : '';
+        this.Tag = `A${this.imapServer.TagCount1()}`;
+        this.cmd = `${this.Tag} SELECT "${folder}"${conText}`;
+        this.debug ? debugOut(this.cmd, false, folder || this.imapServer.imapSerialID) : null;
+        if (this.writable)
+            return this.push(this.cmd + '\r\n');
+        this.imapServer.destroyAll(new Error('imapServer un-writeable'));
+    }
     _logoutWithoutCheck(CallBack) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
         if (!this.isImapUserLoginSuccess) {
@@ -676,11 +709,12 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
     fetch(fetchNum, callback) {
         this.doCommandCallback = (err) => {
-            //console.log (`ImapServerSwitchStream doing doCommandCallback [${ newSwitchRet }]`)
+            console.log(`ImapServerSwitchStream doing doCommandCallback [${this.newSwitchRet}]`);
             return callback(err, this.newSwitchRet);
         };
         this.newSwitchRet = false;
         this.commandProcess = (text1, cmdArray, next, _callback) => {
+            console.log(`fetch this.commandProces [${text1}]`);
             switch (cmdArray[0]) {
                 case '*': {
                     if (/^FETCH$/i.test(cmdArray[2])) {
@@ -847,7 +881,7 @@ class qtGateImap extends Event.EventEmitter {
         this.literalPlus = null;
         this.fetchAddCom = '';
         this.imapEnd = false;
-        this.imapSerialID = Crypto.createHash('md5').update(this.listenFolder + this.writeFolder).digest('hex').toUpperCase();
+        this.imapSerialID = Crypto.createHash('md5').update(JSON.stringify(this.IMapConnect)).digest('hex').toUpperCase();
         this.port = typeof this.IMapConnect.imapPortNumber === 'object' ? this.IMapConnect.imapPortNumber[0] : this.IMapConnect.imapPortNumber;
         this.connectTimeOut = null;
         this.connect();
@@ -895,15 +929,18 @@ class qtGateImap extends Event.EventEmitter {
         return this.emit('end', err);
     }
     logout(CallBack = null) {
+        console.log(`IMAP logout`);
         const _end = () => {
             if (typeof CallBack === 'function') {
                 return CallBack();
             }
         };
         if (this.imapEnd) {
+            console.log(`this.imapEnd`);
             return _end();
         }
         this.imapEnd = true;
+        console.log(`this.imapStream.loginoutWithCheck`);
         return this.imapStream.loginoutWithCheck(() => {
             if (this.socket && typeof this.socket.end === 'function') {
                 this.socket.end();

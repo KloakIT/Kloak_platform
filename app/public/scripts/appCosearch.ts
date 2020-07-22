@@ -832,6 +832,8 @@ const appScript = {
 				hasProgress: false
 			})
 
+			console.log(files)
+
 			files.forEach ( file => {
 				console.log(file)
 				const downloadObj: kloak_downloadObj = {

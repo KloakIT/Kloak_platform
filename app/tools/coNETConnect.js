@@ -18,6 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Imap = require("./imap");
 const Tool = require("./initSystem");
 const Fs = require("fs");
+const Async = require("async");
 let logFileFlag = 'w';
 const saveLog = (err, _console = false) => {
     if (!err) {
@@ -128,18 +129,16 @@ class default_1 extends Imap.imapPeer {
         });
         rImap.once('end', err => {
             console.dir(`[${fileName}]rImap.once END`);
-            rImap.destroyAll(null);
             rImap.removeAllListeners();
             rImap = null;
-            if (err) {
-                if (!callback) {
-                    if (this.timeoutCount["fileName"]++ < 3) {
-                        saveLog(`getFile got error [${err}]\nDoing getFile again!\n`);
-                        return this.getFile(fileName, CallBack);
-                    }
-                    callback = true;
-                    return CallBack(err);
+            if (!callback) {
+                if (this.timeoutCount["fileName"]++ < 3) {
+                    saveLog(`getFile got error [${err}]\nDoing getFile again!\n`);
+                    return this.getFile(fileName, CallBack);
                 }
+                console.log(`getFile callback === false && timeoutCount =【${this.timeoutCount["fileName"]}】`);
+                callback = true;
+                return CallBack('GetFile got maximum tryed.');
             }
             return saveLog(`getFile [${fileName}] success!`);
         });
@@ -161,5 +160,126 @@ class default_1 extends Imap.imapPeer {
             }, idle_wait_timeout);
         });
     }
+    getFileV1(fileName, CallBack) {
+        let callback = false;
+        let idle_wait_timeout_process = null;
+        if (!this.timeoutCount["fileName"]) {
+            this.timeoutCount["fileName"] = 1;
+        }
+        const imapClone = JSON.parse(JSON.stringify(this.imapData));
+        if (/^imap\.mail\.me\.com/.test(this.imapData.imapServer)) {
+            imapClone.imapServer = 'p03-imap.mail.me.com';
+        }
+        const rImap = new Imap.qtGateImap(imapClone, null, false, null, true, mail => {
+            clearTimeout(idle_wait_timeout_process);
+            const attr = Imap.getMailAttached(mail);
+            const subject = Imap.getMailSubject(mail);
+            console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
+            if (!callback) {
+                callback = true;
+                CallBack(null, attr, subject);
+            }
+        });
+        rImap.once('error', err => {
+            rImap.destroyAll(err);
+        });
+        rImap.once('ready', () => {
+            rImap.imapSerialID = fileName;
+            console.log(`getFileV1 rImap.once ( 'ready' )`);
+            return Async.series([
+                next => rImap.imapStream.openBoxV1(fileName, next),
+                next => rImap.imapStream.fetch(1, next)
+            ], err => {
+                let doAgain = false;
+                if (err) {
+                    if (++this.timeoutCount["fileName"] < 3) {
+                        console.dir(`getFileV1 [${fileName}] this.timeoutCount[ "fileName" ] < 3, doing again`);
+                        doAgain = true;
+                    }
+                }
+                return rImap.imapStream._logoutWithoutCheck(() => {
+                    if (doAgain) {
+                        console.log(`getFileV1 [${fileName}] doAgain`);
+                        return this.getFile(fileName, CallBack);
+                    }
+                    console.log(`getFileV1【${fileName}】success!`);
+                });
+            });
+        });
+        console.log(`new rImap success!`);
+    }
 }
 exports.default = default_1;
+/**
+ *
+ *
+ *
+ */
+/*
+const imap = {"email":"2B92E647A2EEBE3620CDFC7B0486D502A6EAD0E8","account":"2B92E647A2EEBE3620CDFC7B0486D502A6EAD0E8","smtpServer":"smtp.mail.me.com","smtpUserName":"qtgate_test20@icloud.com","smtpPortNumber":[465,587,994],"smtpSsl":true,"smtpIgnoreCertificate":false,"smtpUserPassword":"dgiq-slit-nift-ywgy","imapServer":"imap.mail.me.com","imapPortNumber":993,"imapSsl":true,"imapUserName":"qtgate_test20@icloud.com","imapIgnoreCertificate":false,"imapUserPassword":"dgiq-slit-nift-ywgy","timeZoneOffset":420,"language":"tw","imapTestResult":null,"clientFolder":"89a3e98b-8d55-4cfe-83f0-6237ece496bf","serverFolder":"fe9a88f7-916e-4100-846a-eab5086d3231","randomPassword":"df65fa74-52b1-44ec-b006-15a0a83a5618","uuid":"37ed5324-86b4-4f7f-be61-65843bd7ed65","confirmRisk":true,"clientIpAddress":null,"ciphers":null,"sendToQTGate":false}
+const getFileV1 = ( imapData: IinputData, fileName: string, CallBack ) => {
+    let callback = false
+    let idle_wait_timeout_process = null
+    
+    
+    if ( /^imap\.mail\.me\.com/.test ( imapData.imapServer )) {
+        imapData.imapServer = 'p03-imap.mail.me.com'
+    }
+
+    const rImap = new Imap.qtGateImap ( imapData, null, false, null, true, mail => {
+        clearTimeout ( idle_wait_timeout_process )
+        const attr = Imap.getMailAttached ( mail )
+        const subject = Imap.getMailSubject ( mail )
+        console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
+        if ( !callback ) {
+            callback = true
+            CallBack ( null, attr, subject )
+        }
+    } )
+    
+    rImap.once ( 'error', err => {
+        rImap.destroyAll ( err )
+    })
+
+
+    rImap.once ( 'ready', () => {
+        console.log (`getFileV1 rImap.once ( 'ready' )`)
+        return Async.series ([
+            
+            next => rImap.imapStream.openBoxV1 ( fileName, next ),
+            next => rImap.imapStream.fetch ( 1, next )
+        ], err => {
+            
+            let doAgain = false
+            if ( err ) {
+                console.log (`getFileV1 Async.series error`, err )
+                if ( ++ this.timeoutCount[ "fileName" ] < 3 ) {
+                    console.dir ( `getFileV1 this.timeoutCount[ "fileName" ] < 3, doing again`)
+                    doAgain = true
+                }
+                
+                
+            }
+            console.log (`Async.series success!`, err )
+            return rImap.imapStream._logoutWithoutCheck (() => {
+                console.log (`rImap.logout success!` )
+                if ( doAgain ) {
+                    return this.getFile ( fileName, CallBack )
+                }
+                console.log (`getFileV1【${ fileName }】success!`)
+            })
+            
+        })
+    })
+
+    console.log (`new rImap success!`)
+}
+
+getFileV1 (imap, '83ae9b48-d6b6-4edb-94e9-22fbad88fd02', ( err, data, uuid ) => {
+    if ( err ) {
+        return console.log ( err)
+    }
+    console.log (`SUCCESS\n[${ data.length }] [${ uuid }]`)
+})
+
+/** */ 

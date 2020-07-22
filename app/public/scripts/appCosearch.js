@@ -702,6 +702,7 @@ const appScript = {
             const snapshotDownloader = new Downloader(snapshotCallback, com.requestSerial, {
                 hasProgress: false
             });
+            console.log(files);
             files.forEach(file => {
                 console.log(file);
                 const downloadObj = {

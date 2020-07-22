@@ -353,7 +353,8 @@ class ImapServerSwitchStream extends Stream.Transform {
 					this.runningCommand = null
 					if ( err ) {
                         
-						debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err.message }]`) : null
+                        debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err.message }]`) : null
+                        
 						return this.imapServer.destroyAll ( err )
                     }
                     if ( this.needLoginout ) {
@@ -569,7 +570,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 
     }
 
-    private openBox ( CallBack ) {
+    public openBox ( CallBack ) {
 		this.newSwitchRet = false
 		let UID = 0
         this.doCommandCallback = ( err ) => {
@@ -606,6 +607,45 @@ class ImapServerSwitchStream extends Stream.Transform {
         if ( this.writable )
             return this.push ( this.cmd + '\r\n')
         this.imapServer.destroyAll(null)
+    }
+
+    public openBoxV1 ( folder: string, CallBack ) {
+		this.newSwitchRet = false
+		let UID = 0
+        this.doCommandCallback = ( err ) => {
+            if ( err ) {
+                return CallBack ( err )
+            }
+            CallBack ( null, this.newSwitchRet, UID )
+        }
+
+        this.commandProcess = ( text: string, cmdArray: string[], next, _callback ) => {
+            switch ( cmdArray[0] ) {
+                case '*': {
+                    if ( /^EXISTS$|^UIDNEXT$|UNSEEN/i.test ( cmdArray [2])) {
+						const _num = text.split ('UNSEEN ')[1]
+						if ( _num ) {
+							
+							UID = parseInt ( _num.split (']')[0])
+						}
+                        this.newSwitchRet = true
+                        
+                    }
+                    return _callback ()
+                }
+                default:
+                return _callback ()
+            }
+        }
+
+        const conText = this.imapServer.condStoreSupport ? ' (CONDSTORE)' : ''
+        
+        this.Tag = `A${ this.imapServer.TagCount1() }`
+        this.cmd = `${ this.Tag } SELECT "${ folder }"${ conText }`
+        this.debug ? debugOut ( this.cmd, false, folder || this.imapServer.imapSerialID ) : null
+        if ( this.writable )
+            return this.push ( this.cmd + '\r\n')
+        this.imapServer.destroyAll ( new Error ( 'imapServer un-writeable' ))
     }
 
     public _logoutWithoutCheck ( CallBack ) {
@@ -850,13 +890,14 @@ class ImapServerSwitchStream extends Stream.Transform {
     public fetch ( fetchNum, callback ) {
 
         this.doCommandCallback = ( err ) => {
-            //console.log (`ImapServerSwitchStream doing doCommandCallback [${ newSwitchRet }]`)
+            console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }]`)
             return callback ( err, this.newSwitchRet )
         }
         
         this.newSwitchRet = false
 
         this.commandProcess = ( text1: string, cmdArray: string[], next, _callback ) => {
+            console.log (`fetch this.commandProces [${ text1 }]`)
             switch ( cmdArray[0] ) {
                 case '*': {
                     if ( /^FETCH$/i.test ( cmdArray [ 2 ] )) {
@@ -1051,7 +1092,7 @@ export class qtGateImap extends Event.EventEmitter {
     public fetchAddCom = ''
     public imapEnd = false
     
-    public imapSerialID = Crypto.createHash ( 'md5' ).update ( this.listenFolder + this.writeFolder ).digest ('hex').toUpperCase()
+    public imapSerialID = Crypto.createHash ( 'md5' ).update ( JSON.stringify( this.IMapConnect) ).digest ('hex').toUpperCase()
     
     
     private port: number = typeof this.IMapConnect.imapPortNumber === 'object' ? this.IMapConnect.imapPortNumber[0]: this.IMapConnect.imapPortNumber
@@ -1122,7 +1163,7 @@ export class qtGateImap extends Event.EventEmitter {
     }
 
     public logout ( CallBack = null ) {
-
+        console.log (`IMAP logout`)
 		const _end = () => {
 			if ( typeof CallBack === 'function' ) {
 				return CallBack ()
@@ -1130,9 +1171,11 @@ export class qtGateImap extends Event.EventEmitter {
 		}
 
         if ( this.imapEnd ) {
+            console.log (`this.imapEnd`)
             return _end ()
         }
         this.imapEnd = true
+        console.log (`this.imapStream.loginoutWithCheck`)
         return this.imapStream.loginoutWithCheck (() => {
             
             if ( this.socket && typeof this.socket.end === 'function' ) {
