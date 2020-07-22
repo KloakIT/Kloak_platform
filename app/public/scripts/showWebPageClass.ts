@@ -50,6 +50,9 @@ class buttonStatusClass {
 			if ( com.error ) {
 				return self.errorProcess ( com.error )
 			}
+
+			self.loading ( 4 )
+			
 			console.dir ( com.Args )
 		})
 		

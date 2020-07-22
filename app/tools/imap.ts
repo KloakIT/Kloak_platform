@@ -823,9 +823,15 @@ class ImapServerSwitchStream extends Stream.Transform {
                             newSwitchRet =  uu
                             moreNew = cmdArray.length > 3
                         }
-                    } 
+                        return _callback ()
+                    }
+                    if ( /^EXISTS$/i.test ( cmdArray [2])) {
+                        this.imapServer.emit ('SEARCH_HAVE_EXISTS')
+                    }
                     return _callback ()
                 }
+
+
                 default:
                 return _callback ()
             }

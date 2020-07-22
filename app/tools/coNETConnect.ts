@@ -110,7 +110,10 @@ export default class extends Imap.imapPeer {
 	 */
 
 	public getFile ( fileName: string, CallBack ) {
+		const idle_wait_timeout = 1000 * 10
 		let callback = false
+		let SEARCH_HAVE_EXISTS = false
+		let idle_wait_timeout_process = null
 		if ( !this.timeoutCount[ fileName ]) {
 			this.timeoutCount[ fileName ] = 1
 		}
@@ -125,7 +128,7 @@ export default class extends Imap.imapPeer {
 		}
 
 		let rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( imapClone, fileName, true, mail => {
-			
+			clearTimeout ( idle_wait_timeout_process )
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
 			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
@@ -160,6 +163,27 @@ export default class extends Imap.imapPeer {
 			}
 			
 			return saveLog (`getFile [${ fileName }] success!`)
+		})
+
+		rImap.once ('SEARCH_HAVE_EXISTS', () => {
+			SEARCH_HAVE_EXISTS = true
+		})
+
+		rImap.once ('ready', () => {
+			
+			if ( SEARCH_HAVE_EXISTS ) {
+				console.log (`rImap.once ('ready') SEARCH_HAVE_EXISTS = True It is server still uploading now, doing getFile again! `)
+				return rImap.logout (() => {
+					return this.getFile ( fileName, CallBack )
+				})
+				
+			}
+			console.log (`rImap.once ('ready') SEARCH_HAVE_EXISTS = false, Server side have not uploading now, waiting IDLE and setup timeout`)
+			idle_wait_timeout_process = setTimeout (() => {
+				return rImap.logout (() => {
+					return CallBack ( new Error ('idle_wait_timeout'))
+				})
+			}, idle_wait_timeout )
 		})
 
 	}
