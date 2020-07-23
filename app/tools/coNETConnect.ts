@@ -204,26 +204,28 @@ export default class extends Imap.imapPeer {
 				
 				next => rImap.imapStream.openBoxV1 ( fileName, next ),
 				next => rImap.imapStream.fetch ( 1, next )
+				
 			], err => {
 				
 				let doAgain = false
-				if ( err || !callback || !_mail) {
+				if ( err || !callback ) {
 					
 					if ( ++ this.timeoutCount[ "fileName" ] < 3 ) {
 						console.dir ( `getFileV1 [${ fileName }] this.timeoutCount[ "fileName" ] < 3, doing again`)
 						doAgain = true
+					} else {
+						console.dir (` ++ this.timeoutCount[ "fileName" ] [${ this.timeoutCount[ "fileName" ] }]> 3 `)
 					}
 					
-					
 				}
-				
+				console.log (`doAgain = 【${ doAgain }】 callback = 【${ callback } 】`)
 				return rImap.imapStream._logoutWithoutCheck (() => {
 					
 					if ( doAgain ) {
 						console.log (`getFileV1 [${ fileName }] doAgain` )
-						return this.getFile ( fileName, CallBack )
+						return this.getFileV1 ( fileName, CallBack )
 					}
-					console.log (`getFileV1【${ fileName }】success!\n${ _mail }`)
+					console.log (`getFileV1【${ fileName }】success!\n`)
 				})
 				
 			})
