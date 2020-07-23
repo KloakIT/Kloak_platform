@@ -1,16 +1,22 @@
 class fileStorage {
     constructor() {
+        this.checkedFiles = ko.observableArray([]);
         this.fileStorageData = ko.observableArray([]);
         this.allFileStorageData = ko.observableArray([]);
+        this.suggestedTags = ko.observableArray([]);
+        this.availableTags = [];
+        this.sortOption = ko.observableArray([null, null]);
         this.currentUploads = ko.observableArray([]);
-        this.showSuggestions = ko.observable(false);
+        this.showSearchInput = ko.observable(false);
+        this.showSuggestions = ko.observable(true);
+        this.showOverlay = ko.observable(false);
         this.searchSuggestions = ko.observableArray([]);
         this.searchKey = ko.observable();
         this.selectedFile = ko.observable();
         this.colorMenuSelection = ko.observable();
         this.showPaths = ko.observable(false);
         this.showLoader = ko.observable(null);
-        this.assemblyQueue = [];
+        this.assemblyQueue = ko.observableArray([]);
         this.assemblyRunning = false;
         this.mobileShowSearch = ko.observable(false);
         this.colorOptions = [
@@ -24,7 +30,7 @@ class fileStorage {
         this.getFileIndex = (uuid, callback) => {
             let req = window.indexedDB.open("kloak-index", 1);
             req.onsuccess = (e) => {
-                const db = e.target.result;
+                const db = e.target['result'];
                 db
                     .transaction("kloak-index", "readwrite")
                     .objectStore("kloak-index")
@@ -33,15 +39,26 @@ class fileStorage {
                 };
             };
         };
+        this.setTags = (fileStorageData) => {
+            const temp = new Set();
+            fileStorageData.map(file => {
+                file.tag.map(tag => {
+                    console.log(tag);
+                    temp.add(tag.toLowerCase());
+                });
+            });
+            this.availableTags = [...temp];
+        };
         this.getHistoryTable = () => {
             const fs = this.db.transaction("history", "readonly").objectStore("history");
             fs.get(0).onsuccess = (e) => {
-                if (e.target.result) {
-                    const temp = e.target.result.sort((a, b) => {
+                if (e.target['result']) {
+                    const temp = e.target['result'].sort((a, b) => {
                         return b.time_stamp.getTime() - a.time_stamp.getTime();
                     });
                     this.fileStorageData(temp);
                     this.allFileStorageData(temp);
+                    this.setTags(temp);
                     this.fileStorageData.valueHasMutated();
                 }
             };
@@ -65,11 +82,20 @@ class fileStorage {
                 }
             };
         };
+        //something not right here.
+        this.updateHistory = (uuid) => {
+            const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid);
+            this.fileStorageData(temp);
+            this.allFileStorageData(temp);
+            this.fileStorageData.valueHasMutated();
+            this.saveHistoryTable();
+            this.selectedFile(null);
+        };
         this.deleteFile = (uuid, callback) => {
             const deleteIndex = (uuid) => {
                 let req = window.indexedDB.open("kloak-index", 1);
                 req.onsuccess = (e) => {
-                    const db = e.target.result;
+                    const db = e.target['result'];
                     db
                         .transaction("kloak-index", "readwrite")
                         .objectStore("kloak-index")
@@ -81,7 +107,7 @@ class fileStorage {
             const removePieces = (uuids, callback) => {
                 let req = window.indexedDB.open("kloak-files", 1);
                 req.onsuccess = (e) => {
-                    const db = e.target.result;
+                    const db = e.target['result'];
                     const fs = db
                         .transaction("kloak-files", "readwrite")
                         .objectStore("kloak-files");
@@ -95,7 +121,7 @@ class fileStorage {
             };
             let req = window.indexedDB.open("kloak-index", 1);
             req.onsuccess = (e) => {
-                const db = e.target.result;
+                const db = e.target['result'];
                 db
                     .transaction("kloak-index", "readwrite")
                     .objectStore("kloak-index")
@@ -108,6 +134,59 @@ class fileStorage {
                     });
                 };
             };
+        };
+        this.sortHistory = (type, direction) => {
+            console.log(type, direction);
+            let temp = null;
+            const nameCompare = (a, b) => {
+                const stringA = a[type].toUpperCase();
+                const stringB = b[type].toUpperCase();
+                if (stringA > stringB) {
+                    return 1;
+                }
+                else if (stringA < stringB) {
+                    return -1;
+                }
+            };
+            const dateCompare = (a, b) => {
+                if (direction === 'up') {
+                    return a[type] - b[type];
+                }
+                return b[type] - a[type];
+            };
+            if (type === 'filename') {
+                temp = this.fileStorageData().sort(nameCompare);
+                if (direction === 'up') {
+                    temp = temp.reverse();
+                }
+                this.fileStorageData(temp);
+                return;
+            }
+            temp = this.fileStorageData().sort(dateCompare);
+            this.fileStorageData(temp);
+            return;
+        };
+        this.sortHandler = (type) => {
+            let current = this.sortOption()[0];
+            let sort = this.sortOption()[1];
+            if (current == type) {
+                sort == 'up' ? this.sortOption([current, 'down']) : this.sortOption([current, 'up']);
+            }
+            else {
+                this.sortOption([type, 'down']);
+            }
+            this.sortHistory(this.sortOption()[0], this.sortOption()[1]);
+        };
+        this.deleteMultiple = () => {
+            this.checkedFiles().forEach(uuid => {
+                this.deleteFile(uuid, () => {
+                    this.updateHistory(uuid);
+                    const temp = this.checkedFiles().filter(uuid => uuid !== uuid);
+                    this.checkedFiles(temp);
+                    this.checkedFiles.valueHasMutated();
+                });
+            });
+            this.getHistoryTable();
         };
         this.fileAction = (data, event, action) => {
             switch (action) {
@@ -124,30 +203,29 @@ class fileStorage {
                     break;
                 case "download":
                     this.assemblyQueue.push(data.uuid);
-                    const cb = (e) => {
-                        const hiddenAnchor = document.getElementById("hiddenAnchor");
-                        console.log(hiddenAnchor);
-                        hiddenAnchor.download = `${e.filename}.${e.extension}`;
-                        hiddenAnchor.href = e.url;
-                        hiddenAnchor.click();
-                        hiddenAnchor.download = "";
-                        hiddenAnchor.href = "";
-                        URL.revokeObjectURL(e.url);
-                        this.assemblyRunning = false;
-                    };
+                    this.assemblyQueue.valueHasMutated();
                     if (!this.assemblyRunning) {
                         this.assemblyRunning = true;
-                        new Assembler(data.uuid, cb, data.domain === "Local" ? true : false);
+                        new Assembler(data.uuid, document.getElementById("hiddenAnchor"), (err, data) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            this.assemblyRunning = false;
+                        });
                     }
                     break;
-                case "watch":
-                    const c = (e) => {
-                        const player = document.getElementById("kloak_Video");
-                        const overlay = document.getElementById("fileStorageOverlay");
-                        overlay.classList.add("showOverlay");
-                        player.src = e.url;
-                    };
-                    new Assembler(data.uuid, c, data.domain === "Local" ? true : false);
+                case "play":
+                    new Assembler(data.uuid, null, (err, data) => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        this.showOverlay(true);
+                        const videoPlayer = document.getElementById("fileStorageVideo");
+                        videoPlayer['src'] = data.url;
+                        videoPlayer.play();
+                    });
                     break;
                 default:
                     break;
@@ -179,53 +257,37 @@ class fileStorage {
             switch (type) {
                 case "date":
                     return `${monthString[month]} ${timestamp.getDate()}, ${timestamp.getFullYear()}`;
-                    break;
                 case "full":
                     return `${monthString[month]} ${timestamp.getDate()}, ${timestamp.getFullYear()} ${hours}:${minutes} ${AMPM}`;
-                    break;
                 default:
                     break;
             }
         };
-        this.displayFolders = (path, filename) => {
-            if (!path) {
-                return;
+        this.checkedFile = (data, event, checkAll) => {
+            const isChecked = event.target.checked;
+            if (checkAll) {
+                this.checkedFiles([]);
+                if (!isChecked) {
+                    return true;
+                }
+                const temp = [];
+                this.allFileStorageData().forEach(file => {
+                    temp.push(file.uuid);
+                });
+                this.checkedFiles(temp);
+                return true;
             }
-            const createElements = (folderName, isFile) => {
-                const item = document.createElement("div");
-                item.classList.add("item");
-                const icon = document.createElement("i");
-                icon.classList.add(isFile ? "file" : "folder", "icon");
-                const content = document.createElement("div");
-                content.classList.add("content");
-                const header = document.createElement("div");
-                header.classList.add("header");
-                // const text = document.createTextNode(folderName)
-                header.textContent = folderName;
-                content.appendChild(header);
-                item.appendChild(icon);
-                item.appendChild(content);
-                return item;
-            };
-            const pathArray = ("./" + path).split("/");
-            for (let i = 0; i < pathArray.length; i++) {
-                const folderPath = document.getElementById("folderPath" + this.selectedFile());
-                let item = null;
-                if (pathArray[i] === "") {
-                    item = createElements(filename, true);
-                }
-                else if (pathArray[i] === ".") {
-                    item = createElements(pathArray[i] + "/");
-                }
-                else {
-                    item = createElements(pathArray[i]);
-                }
-                item.style.marginLeft = `${15 * i}px`;
-                folderPath.appendChild(item);
+            if (!isChecked) {
+                this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== data.uuid));
+                return true;
             }
+            this.checkedFiles().push(data.uuid);
+            this.checkedFiles.valueHasMutated();
+            console.log(this.checkedFiles());
+            return true;
         };
-        this.showCurrentUpload = () => { };
-        this.showOptions = (index) => {
+        this.showFileOptions = (index) => {
+            console.log(index);
             if (index === this.selectedFile()) {
                 this.selectedFile(null);
                 return;
@@ -244,10 +306,10 @@ class fileStorage {
             const colorOptions = document.getElementsByClassName("colorMenuItem");
             for (let i = 0; i < colorOptions.length; i++) {
                 if (colorOptions[i].id === clr) {
-                    colorOptions[i].style.border = "3px solid black";
+                    colorOptions[i]['style'].border = "3px solid black";
                 }
                 else {
-                    colorOptions[i].style.border = "3px solid transparent";
+                    colorOptions[i]['style'].border = "3px solid transparent";
                 }
             }
             const val = event.target.value.split(" ");
@@ -410,11 +472,11 @@ class fileStorage {
         this.closeVideo = (e) => { };
         let req = window.indexedDB.open("kloak-history", 1);
         req.onupgradeneeded = (e) => {
-            this.db = e.target.result;
+            this.db = e.target['result'];
             this.db.createObjectStore("history");
         };
         req.onsuccess = (e) => {
-            this.db = e.target.result;
+            this.db = e.target['result'];
             this.getHistoryTable();
         };
         req.onerror = (e) => {
@@ -424,50 +486,52 @@ class fileStorage {
             console.log(val);
         });
         this.searchKey.subscribe((val) => {
-            if (val.trim() === "") {
-                this.showSuggestions(false);
-                this.searchSuggestions([]);
-                this.fileStorageData(this.allFileStorageData());
-                return;
-            }
-            this.showSuggestions(true);
-            let keyword = val;
-            let temp = null;
-            if (val[0] === "#") {
-                if (val.length < 2) {
-                    return;
-                }
-                if (keyword === "") {
-                    return;
-                }
-                keyword = val.slice(1);
-                temp = this.allFileStorageData().filter((file) => {
-                    if (file.tag.includes(keyword)) {
-                        return true;
+            val = val.trim().toLowerCase();
+            if (val.length > 0) {
+                if (val.startsWith('#')) {
+                    val = val.slice(1);
+                    if (!val) {
+                        this.suggestedTags(this.availableTags);
+                        return;
                     }
-                });
+                    this.suggestedTags(this.availableTags.filter(tag => tag.includes(val)));
+                    return;
+                }
+                else {
+                    const temp = this.allFileStorageData().filter((file) => {
+                        if (file.detail.toLowerCase().includes(val)) {
+                            return true;
+                        }
+                        if (file.domain.toLowerCase().includes(val)) {
+                            return true;
+                        }
+                        if (file.url.toLowerCase().includes(val)) {
+                            return true;
+                        }
+                        if (file.filename.toLowerCase().includes(val)) {
+                            return true;
+                        }
+                        if (file.path.toLowerCase().includes(val)) {
+                            return true;
+                        }
+                    });
+                    this.fileStorageData(temp);
+                }
             }
             else {
-                temp = this.allFileStorageData().filter((file) => {
-                    if (file.detail.includes(keyword)) {
-                        return true;
-                    }
-                    if (file.domain.includes(keyword)) {
-                        return true;
-                    }
-                    if (file.url.includes(keyword)) {
-                        return true;
-                    }
-                    if (file.urlShow.includes(keyword)) {
-                        return true;
-                    }
-                    if (file.path.includes(keyword)) {
-                        return true;
-                    }
-                });
+                this.fileStorageData(this.allFileStorageData());
+                this.suggestedTags([]);
             }
-            this.fileStorageData(temp);
-            this.searchSuggestions(temp);
+        });
+        this.showSearchInput.subscribe(visible => {
+            const input = document.getElementById('searchInput');
+            if (visible) {
+                input.focus();
+                return;
+            }
+            input['value'] = "";
+            this.suggestedTags([]);
+            return;
         });
     }
 }

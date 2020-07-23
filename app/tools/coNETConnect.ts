@@ -18,8 +18,6 @@ import * as Imap from './imap'
 import * as Tool from './initSystem'
 import * as Fs from 'fs'
 import * as Async from 'async'
-import { EIDRM } from 'constants'
-import { Console } from 'console'
 
 
 let logFileFlag = 'w'
@@ -113,10 +111,7 @@ export default class extends Imap.imapPeer {
 	 */
 
 	public getFile ( fileName: string, CallBack ) {
-		const idle_wait_timeout = 1000 * 10
 		let callback = false
-		let SEARCH_HAVE_EXISTS = false
-		let idle_wait_timeout_process = null
 		if ( !this.timeoutCount[ fileName ]) {
 			this.timeoutCount[ fileName ] = 1
 		}
@@ -131,7 +126,7 @@ export default class extends Imap.imapPeer {
 		}
 
 		let rImap: Imap.qtGateImapRead = new Imap.qtGateImapRead ( imapClone, fileName, true, mail => {
-			clearTimeout ( idle_wait_timeout_process )
+			
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
 			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
@@ -149,48 +144,30 @@ export default class extends Imap.imapPeer {
 
 		rImap.once( 'end', err => {
 			console.dir (`[${ fileName }]rImap.once END`)
-			
+			rImap.destroyAll ( null )
 			rImap.removeAllListeners ()
 			rImap = null
-			
-			if ( !callback ) {
-				if ( this.timeoutCount[ "fileName" ] ++ < 3 ) {
-					saveLog (`getFile got error [${ err }]\nDoing getFile again!\n`)
-					return this.getFile ( fileName, CallBack  )
+			if ( err ) {
+				if ( !callback ) {
+					if ( this.timeoutCount[ "fileName" ] ++ < 3 ) {
+						saveLog (`getFile got error [${ err }]\nDoing getFile again!\n`)
+						return this.getFile ( fileName, CallBack  )
+					}
+					callback = true
+
+					return CallBack ( err )
 				}
-				console.log (`getFile callback === false && timeoutCount =【${ this.timeoutCount[ "fileName" ] }】`)
-				callback = true
-				return CallBack ('GetFile got maximum tryed.' )
-			}
-
-			return saveLog (`getFile [${ fileName }] success!`)
-		})
-
-		rImap.once ('SEARCH_HAVE_EXISTS', () => {
-			SEARCH_HAVE_EXISTS = true
-		})
-
-		rImap.once ('ready', () => {
-			
-			if ( SEARCH_HAVE_EXISTS ) {
-				console.log (`rImap.once ('ready') SEARCH_HAVE_EXISTS = True It is server still uploading now, doing getFile again! `)
-				return rImap.logout (() => {
-					return this.getFile ( fileName, CallBack )
-				})
 				
 			}
-			console.log (`rImap.once ('ready') SEARCH_HAVE_EXISTS = false, Server side have not uploading now, waiting IDLE and setup timeout`)
-			idle_wait_timeout_process = setTimeout (() => {
-				return rImap.logout (() => {
-					return CallBack ( new Error ('idle_wait_timeout'))
-				})
-			}, idle_wait_timeout )
+			
+			return saveLog (`getFile [${ fileName }] success!`)
 		})
 
 	}
 
 	public getFileV1 ( fileName: string, CallBack ) {
-		let callback = false 
+		let callback = false
+		let _mail = null
 		let idle_wait_timeout_process = null
 		if ( !this.timeoutCount[ "fileName" ] ) {
 			this.timeoutCount[ "fileName" ] = 1
@@ -202,6 +179,10 @@ export default class extends Imap.imapPeer {
 
 		const rImap = new Imap.qtGateImap ( imapClone, null, false, null, true, mail => {
 			clearTimeout ( idle_wait_timeout_process )
+			if ( !mail || mail.length < 50 ) {
+				return console.log (`getFileV1 [${ fileName }] mail empty!`)
+			}
+			_mail = mail
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
 			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
@@ -226,7 +207,7 @@ export default class extends Imap.imapPeer {
 			], err => {
 				
 				let doAgain = false
-				if ( err ) {
+				if ( err || !callback || !_mail) {
 					
 					if ( ++ this.timeoutCount[ "fileName" ] < 3 ) {
 						console.dir ( `getFileV1 [${ fileName }] this.timeoutCount[ "fileName" ] < 3, doing again`)
@@ -242,7 +223,7 @@ export default class extends Imap.imapPeer {
 						console.log (`getFileV1 [${ fileName }] doAgain` )
 						return this.getFile ( fileName, CallBack )
 					}
-					console.log (`getFileV1【${ fileName }】success!`)
+					console.log (`getFileV1【${ fileName }】success!\n${ _mail }`)
 				})
 				
 			})
@@ -252,76 +233,3 @@ export default class extends Imap.imapPeer {
 	}
 
 }
-/**
- * 
- * 
- * 
- */
-/*
-const imap = {"email":"2B92E647A2EEBE3620CDFC7B0486D502A6EAD0E8","account":"2B92E647A2EEBE3620CDFC7B0486D502A6EAD0E8","smtpServer":"smtp.mail.me.com","smtpUserName":"qtgate_test20@icloud.com","smtpPortNumber":[465,587,994],"smtpSsl":true,"smtpIgnoreCertificate":false,"smtpUserPassword":"dgiq-slit-nift-ywgy","imapServer":"imap.mail.me.com","imapPortNumber":993,"imapSsl":true,"imapUserName":"qtgate_test20@icloud.com","imapIgnoreCertificate":false,"imapUserPassword":"dgiq-slit-nift-ywgy","timeZoneOffset":420,"language":"tw","imapTestResult":null,"clientFolder":"89a3e98b-8d55-4cfe-83f0-6237ece496bf","serverFolder":"fe9a88f7-916e-4100-846a-eab5086d3231","randomPassword":"df65fa74-52b1-44ec-b006-15a0a83a5618","uuid":"37ed5324-86b4-4f7f-be61-65843bd7ed65","confirmRisk":true,"clientIpAddress":null,"ciphers":null,"sendToQTGate":false}
-const getFileV1 = ( imapData: IinputData, fileName: string, CallBack ) => {
-	let callback = false 
-	let idle_wait_timeout_process = null
-	
-	
-	if ( /^imap\.mail\.me\.com/.test ( imapData.imapServer )) {
-		imapData.imapServer = 'p03-imap.mail.me.com'
-	}
-
-	const rImap = new Imap.qtGateImap ( imapData, null, false, null, true, mail => {
-		clearTimeout ( idle_wait_timeout_process )
-		const attr = Imap.getMailAttached ( mail )
-		const subject = Imap.getMailSubject ( mail )
-		console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
-		if ( !callback ) {
-			callback = true
-			CallBack ( null, attr, subject )
-		}
-	} )
-	
-	rImap.once ( 'error', err => {
-		rImap.destroyAll ( err )
-	})
-
-
-	rImap.once ( 'ready', () => {
-		console.log (`getFileV1 rImap.once ( 'ready' )`)
-		return Async.series ([
-			
-			next => rImap.imapStream.openBoxV1 ( fileName, next ),
-			next => rImap.imapStream.fetch ( 1, next )
-		], err => {
-			
-			let doAgain = false
-			if ( err ) {
-				console.log (`getFileV1 Async.series error`, err )
-				if ( ++ this.timeoutCount[ "fileName" ] < 3 ) {
-					console.dir ( `getFileV1 this.timeoutCount[ "fileName" ] < 3, doing again`)
-					doAgain = true
-				}
-				
-				
-			}
-			console.log (`Async.series success!`, err )
-			return rImap.imapStream._logoutWithoutCheck (() => {
-				console.log (`rImap.logout success!` )
-				if ( doAgain ) {
-					return this.getFile ( fileName, CallBack )
-				}
-				console.log (`getFileV1【${ fileName }】success!`)
-			})
-			
-		})
-	})
-
-	console.log (`new rImap success!`)
-}
-
-getFileV1 (imap, '83ae9b48-d6b6-4edb-94e9-22fbad88fd02', ( err, data, uuid ) => {
-	if ( err ) {
-		return console.log ( err)
-	}
-	console.log (`SUCCESS\n[${ data.length }] [${ uuid }]`)
-})
-
-/** */

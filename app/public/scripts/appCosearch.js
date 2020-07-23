@@ -80,79 +80,6 @@ const appScript = {
         self.videoItemsArray(null);
         self.imageSearchItemArray(null);
     },
-    assembleAndDownload: (requestUuid) => {
-        const callback = (e) => {
-            const hiddenAnchor = document.getElementById('hiddenAnchor');
-            hiddenAnchor.download = `${e.filename}.${e.extension}`;
-            hiddenAnchor.href = e.url;
-            hiddenAnchor.click();
-            hiddenAnchor.download = '';
-            hiddenAnchor.href = '';
-            URL.revokeObjectURL(e.url);
-        };
-        new Assembler(requestUuid, callback);
-    },
-    createFileHistory: (history, extraTags) => {
-        if (extraTags) {
-            history.tag = [...extraTags, ...history.tag];
-            history.tag = history.tag.filter(tag => tag !== null || undefined || "");
-        }
-        let req = window.indexedDB.open('kloak-history', 1);
-        req.onupgradeneeded = (e) => {
-            this.db = e.target.result;
-            this.db.createObjectStore('history');
-        };
-        req.onsuccess = (e) => {
-            const db = e.target.result;
-            const fs = db
-                .transaction('history', 'readonly')
-                .objectStore('history');
-            fs.get(0).onsuccess = (e) => {
-                let fileHistory = [];
-                if (e.target.result) {
-                    fileHistory = e.target.result;
-                }
-                fileHistory.push(history);
-                const fs = db
-                    .transaction('history', 'readwrite')
-                    .objectStore('history');
-                console.log(fs);
-                fs.put(fileHistory, 0).onsuccess = (e) => { };
-            };
-        };
-        req.onerror = (e) => {
-            console.log('Unable to open IndexedDB!');
-        };
-    },
-    downloaderCallback: async (e) => {
-        const command = e.cmd;
-        const payload = e.payload;
-        switch (command) {
-            case 'CREATE_FILE_HISTORY':
-                appScript.createFileHistory(payload);
-                break;
-            case 'FILE_DOWNLOAD_FINISHED':
-                const finishedItem = await appScript.currentDownloads()[payload.requestUuid];
-                await appScript.finishedDownloads().push(finishedItem);
-                const temp = appScript.currentDownloads();
-                if (delete temp[payload.requestUuid]) {
-                    appScript.currentDownloads(temp);
-                }
-                appScript.finishedDownloads.valueHasMutated();
-                break;
-            case 'UPDATE_PROGRESS':
-                console.log(appScript.currentDownloads());
-                console.log(payload);
-                appScript.currentDownloads()[payload.requestUuid].percent =
-                    payload.percent;
-                const completeBar = document.getElementById(payload.requestUuid);
-                appScript.currentDownloads.valueHasMutated();
-                if (completeBar) {
-                    completeBar.style.width = `${payload.percent}%`;
-                }
-                break;
-        }
-    },
     showResultItems: (self, items) => {
         self.searchItem(items);
         self.searchItemList(items.Result);
@@ -291,29 +218,20 @@ const appScript = {
             if (com.subCom === 'downloadFile') {
                 const args = com.Args[0];
                 self.showDownloadProcess(true);
-                if (self.currentDownloads()[com.requestSerial]) {
-                    const download = self.currentDownloads()[com.requestSerial];
-                    download.downloader.addToQueue({
-                        ...args,
-                        requestUuid: com.requestSerial,
-                    });
+                let downloader = _view.downloadMain.getDownloader(com.requestSerial);
+                if (downloader) {
+                    downloader.addToQueue(args);
                     return;
                 }
-                const newDownload = {
-                    requestSerial: com.requestSerial,
-                    filename: args.downloadFilename,
-                    percent: 0,
-                    downloader: new Downloader(appScript.downloaderCallback, com.requestSerial),
-                };
-                newDownload.downloader.addToQueue({
-                    ...args,
-                    requestUuid: com.requestSerial,
+                downloader = _view.downloadMain.newDownload(com.requestSerial, ['librarium', 'download'], (err, data) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    console.log(`${com.requestSerial} DOWNLOAD FINISHED`);
                 });
-                self.currentDownloads({
-                    ...self.currentDownloads(),
-                    [com.requestSerial]: newDownload,
-                });
-                newDownload.downloader.start();
+                downloader.addToQueue(args);
+                downloader.start();
                 return;
             }
             if (com.subCom === 'webSearch') {
@@ -622,7 +540,6 @@ const appScript = {
     // CHANGED ============================================
     // CHANGED ============================================
     getSnapshotClick: (self, index, isImage) => {
-        console.log(self);
         let currentItem = null;
         if (isImage) {
             currentItem = self.searchSimilarImagesList()[index];
@@ -678,51 +595,23 @@ const appScript = {
             catch (ex) {
                 console.dir(`have not multimediaObj`);
             }
-            self.showDownloadProcess(true);
-            const snapshotCallback = (e) => {
-                const command = e.cmd;
-                const payload = e.payload;
-                switch (command) {
-                    case 'CREATE_FILE_HISTORY':
-                        appScript.createFileHistory(payload, ['snapshot', 'librarium', 'html']);
-                        break;
-                    case 'FILE_DOWNLOAD_FINISHED':
-                        currentItem.showDownload(false);
-                        isImage
-                            ? currentItem.snapshotImageReady(true)
-                            : currentItem.snapshotReady(true);
-                        isImage
-                            ? currentItem.showImageLoading(false)
-                            : currentItem.showLoading(false);
-                        currentItem.loadingGetResponse(false);
-                        console.log("FILE FINISHED DOWNLOADING!");
-                        break;
-                }
-            };
-            const snapshotDownloader = new Downloader(snapshotCallback, com.requestSerial, {
-                hasProgress: false
-            });
             console.log(files);
-            files.forEach(file => {
-                console.log(file);
-                const downloadObj = {
-                    url: currentItem.url,
-                    downloadFilename: com.requestSerial,
-                    acceptRanges: null,
-                    fileExtension: 'zip',
-                    totalLength: null,
-                    contentType: 'application/zip',
-                    lastModified: new Date(),
-                    downloadUuid: file.fileName,
-                    offset: file.currentStartOffset,
-                    currentlength: file.currentLength,
-                    eof: file.eof,
-                    stopDownload: false,
-                    requestUuid: com.requestSerial
-                };
-                snapshotDownloader.addToQueue(downloadObj);
+            self.showDownloadProcess(true);
+            _view.downloadMain.newDownload(com.requestSerial, ['snapshot', 'librarium', 'html'], (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                currentItem.showDownload(false);
+                isImage
+                    ? currentItem.snapshotImageReady(true)
+                    : currentItem.snapshotReady(true);
+                isImage
+                    ? currentItem.showImageLoading(false)
+                    : currentItem.showLoading(false);
+                currentItem.loadingGetResponse(false);
             });
-            snapshotDownloader.start();
+            _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: currentItem.url, files });
         };
         const com = {
             command: 'CoSearch',
@@ -741,12 +630,16 @@ const appScript = {
         else {
             currentItem = self.searchItemList()[index];
         }
-        const callback = (e) => {
-            const hiddenAnchor = document.getElementById('hiddenAnchor');
-            fetch(e.url).then(res => {
+        const assembler = new Assembler(currentItem.snapshotUuid, null, (err, data) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            fetch(data.url).then(res => {
                 return res.arrayBuffer();
             }).then(buffer => {
-                URL.revokeObjectURL(e.url);
+                URL.revokeObjectURL(data.url);
+                assembler.terminate();
                 let y = null;
                 self.showMain(false);
                 self.showSnapshop(true);
@@ -756,8 +649,7 @@ const appScript = {
                     self.showSnapshop(false);
                 })));
             });
-        };
-        new Assembler(currentItem.snapshotUuid, callback);
+        });
     },
     // CHANGED ============================================
     // CHANGED ============================================

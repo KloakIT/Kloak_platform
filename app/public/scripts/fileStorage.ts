@@ -1,17 +1,23 @@
 class fileStorage {
-	public fileStorageData = ko.observableArray([])
-	public allFileStorageData = ko.observableArray([])
-	public currentUploads = ko.observableArray([])
-	public showSuggestions = ko.observable(false)
-	public searchSuggestions = ko.observableArray([])
-	public searchKey = ko.observable()
-	public selectedFile = ko.observable()
-	public colorMenuSelection = ko.observable()
-	public showPaths = ko.observable(false)
-	public showLoader = ko.observable(null)
-	public assemblyQueue: Array<string> = []
-	public assemblyRunning = false
-	public mobileShowSearch = ko.observable(false)
+	private checkedFiles = ko.observableArray([])
+	private fileStorageData = ko.observableArray([])
+	private allFileStorageData = ko.observableArray([])
+	private suggestedTags = ko.observableArray([])
+	private availableTags = []
+	private sortOption = ko.observableArray([null, null])
+	private currentUploads = ko.observableArray([])
+	private showSearchInput = ko.observable(false)
+	private showSuggestions = ko.observable(true)
+	private showOverlay = ko.observable(false)
+	private searchSuggestions = ko.observableArray([])
+	private searchKey = ko.observable()
+	private selectedFile = ko.observable()
+	private colorMenuSelection = ko.observable()
+	private showPaths = ko.observable(false)
+	private showLoader = ko.observable(null)
+	private assemblyQueue: KnockoutObservableArray<string> = ko.observableArray([])
+	private assemblyRunning = false
+	private mobileShowSearch = ko.observable(false)
 	private colorOptions = [
 		["maroon", "red", "olive", "yellow"],
 		["green", "lime", "teal", "aqua"],
@@ -22,12 +28,12 @@ class fileStorage {
 		let req = window.indexedDB.open("kloak-history", 1)
 
 		req.onupgradeneeded = (e) => {
-			this.db = e.target.result
+			this.db = e.target['result']
 			this.db.createObjectStore("history")
 		}
 
 		req.onsuccess = (e) => {
-			this.db = e.target.result
+			this.db = e.target['result']
 			this.getHistoryTable()
 		}
 
@@ -40,49 +46,52 @@ class fileStorage {
 		})
 
 		this.searchKey.subscribe((val: string) => {
-			if (val.trim() === "") {
-				this.showSuggestions(false)
-				this.searchSuggestions([])
+			val = val.trim().toLowerCase()
+			if (val.length > 0) {
+				if (val.startsWith('#')) {
+					val = val.slice(1)
+					if (!val) {
+						this.suggestedTags(this.availableTags)
+						return
+					}
+					this.suggestedTags(this.availableTags.filter(tag => tag.includes(val)))
+					return
+				} else {
+					const temp = this.allFileStorageData().filter((file: fileHistory) => {
+						if (file.detail.toLowerCase().includes(val)) {
+							return true
+						}
+						if (file.domain.toLowerCase().includes(val)) {
+							return true
+						}
+						if (file.url.toLowerCase().includes(val)) {
+							return true
+						}
+						if (file.filename.toLowerCase().includes(val)) {
+							return true
+						}
+						if (file.path.toLowerCase().includes(val)) {
+							return true
+						}
+					})
+					this.fileStorageData(temp)
+				}
+			} else {
 				this.fileStorageData(this.allFileStorageData())
+				this.suggestedTags([])
+			}
+
+		})
+
+		this.showSearchInput.subscribe(visible => {
+			const input = document.getElementById('searchInput')
+			if (visible) {
+				input.focus()
 				return
 			}
-			this.showSuggestions(true)
-			let keyword = val
-			let temp = null
-			if (val[0] === "#") {
-				if (val.length < 2) {
-					return
-				}
-				if (keyword === "") {
-					return
-				}
-				keyword = val.slice(1)
-				temp = this.allFileStorageData().filter((file: fileHistory) => {
-					if (file.tag.includes(keyword)) {
-						return true
-					}
-				})
-			} else {
-				temp = this.allFileStorageData().filter((file: fileHistory) => {
-					if (file.detail.includes(keyword)) {
-						return true
-					}
-					if (file.domain.includes(keyword)) {
-						return true
-					}
-					if (file.url.includes(keyword)) {
-						return true
-					}
-					if (file.urlShow.includes(keyword)) {
-						return true
-					}
-					if (file.path.includes(keyword)) {
-						return true
-					}
-				})
-			}
-			this.fileStorageData(temp)
-			this.searchSuggestions(temp)
+			input['value'] = ""
+			this.suggestedTags([])
+			return
 		})
 	}
 
@@ -94,7 +103,7 @@ class fileStorage {
 		let req = window.indexedDB.open("kloak-index", 1)
 
 		req.onsuccess = (e) => {
-			const db = e.target.result
+			const db = e.target['result']
 			db
 				.transaction("kloak-index", "readwrite")
 				.objectStore("kloak-index")
@@ -104,15 +113,27 @@ class fileStorage {
 		}
 	}
 
+	setTags = (fileStorageData: Array<fileHistory>) => {
+		const temp = new Set()
+		fileStorageData.map(file => {
+			file.tag.map(tag => {
+				console.log(tag)
+				temp.add(tag.toLowerCase())
+			})
+		})
+		this.availableTags = [...temp]
+	}
+
 	getHistoryTable = () => {
 		const fs = this.db.transaction("history", "readonly").objectStore("history")
 		fs.get(0).onsuccess = (e) => {
-			if (e.target.result) {
-				const temp = e.target.result.sort((a: fileHistory, b: fileHistory) => {
+			if (e.target['result']) {
+				const temp = e.target['result'].sort((a: fileHistory, b: fileHistory) => {
 					return b.time_stamp.getTime() - a.time_stamp.getTime()
 				})
 				this.fileStorageData(temp)
 				this.allFileStorageData(temp)
+				this.setTags(temp)
 				this.fileStorageData.valueHasMutated()
 			}
 		}
@@ -140,12 +161,23 @@ class fileStorage {
 		}
 	}
 
+	//something not right here.
+
+	updateHistory = (uuid) => {
+		const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid)
+		this.fileStorageData(temp)
+		this.allFileStorageData(temp)
+		this.fileStorageData.valueHasMutated()
+		this.saveHistoryTable()
+		this.selectedFile(null)
+	}
+
 	deleteFile = (uuid: string, callback: Function) => {
 		const deleteIndex = (uuid: string) => {
 			let req = window.indexedDB.open("kloak-index", 1)
 
 			req.onsuccess = (e) => {
-				const db = e.target.result
+				const db = e.target['result']
 				db
 					.transaction("kloak-index", "readwrite")
 					.objectStore("kloak-index")
@@ -158,7 +190,7 @@ class fileStorage {
 			let req = window.indexedDB.open("kloak-files", 1)
 
 			req.onsuccess = (e) => {
-				const db = e.target.result
+				const db = e.target['result']
 				const fs = db
 					.transaction("kloak-files", "readwrite")
 					.objectStore("kloak-files")
@@ -173,7 +205,7 @@ class fileStorage {
 		let req = window.indexedDB.open("kloak-index", 1)
 
 		req.onsuccess = (e) => {
-			const db = e.target.result
+			const db = e.target['result']
 			db
 				.transaction("kloak-index", "readwrite")
 				.objectStore("kloak-index")
@@ -186,6 +218,65 @@ class fileStorage {
 				})
 			}
 		}
+	}
+
+	sortHistory = (type: string, direction: string) => {
+		console.log(type, direction)
+		let temp = null;
+		const nameCompare = (a, b) => {
+			const stringA = a[type].toUpperCase()
+			const stringB = b[type].toUpperCase()
+			if (stringA > stringB) {
+				return 1
+			} else if (stringA < stringB) {
+				return -1
+			}
+		}
+
+		const dateCompare = (a, b) => {
+			if (direction === 'up') {
+				return a[type] - b[type]
+			}
+			return b[type] - a[type]
+		}
+		
+		if (type === 'filename') {
+			temp = this.fileStorageData().sort(nameCompare)
+			if (direction === 'up') {
+				temp = temp.reverse()
+			}
+			this.fileStorageData(temp)
+			return
+		}
+		
+		temp = this.fileStorageData().sort(dateCompare)
+			this.fileStorageData(temp)
+			return
+
+	}
+
+	sortHandler = (type: string) => {
+		let current = this.sortOption()[0]
+		let sort = this.sortOption()[1]
+		if (current == type) {
+			sort == 'up' ? this.sortOption([current, 'down']) : this.sortOption([current, 'up'])
+		} else {
+			this.sortOption([type, 'down'])
+		}
+		this.sortHistory(this.sortOption()[0], this.sortOption()[1])
+
+	}
+
+	deleteMultiple = () => {
+		this.checkedFiles().forEach(uuid => {
+			this.deleteFile(uuid, () => {
+				this.updateHistory(uuid)
+				const temp = this.checkedFiles().filter(uuid => uuid !== uuid)
+				this.checkedFiles(temp)
+				this.checkedFiles.valueHasMutated()
+			})
+		})
+		this.getHistoryTable()
 	}
 
 	fileAction = (data, event, action: string) => {
@@ -203,30 +294,29 @@ class fileStorage {
 				break
 			case "download":
 				this.assemblyQueue.push(data.uuid)
-				const cb = (e) => {
-					const hiddenAnchor = document.getElementById("hiddenAnchor")
-					console.log(hiddenAnchor)
-					hiddenAnchor.download = `${e.filename}.${e.extension}`
-					hiddenAnchor.href = e.url
-					hiddenAnchor.click()
-					hiddenAnchor.download = ""
-					hiddenAnchor.href = ""
-					URL.revokeObjectURL(e.url)
-					this.assemblyRunning = false
-				}
+				this.assemblyQueue.valueHasMutated()
 				if (!this.assemblyRunning) {
 					this.assemblyRunning = true
-					new Assembler(data.uuid, cb, data.domain === "Local" ? true : false)
+					new Assembler(data.uuid, document.getElementById("hiddenAnchor") as HTMLAnchorElement, (err, data) => {
+						if (err) {
+							console.error(err)
+							return
+						}
+						this.assemblyRunning = false
+					})
 				}
 				break
-			case "watch":
-				const c = (e) => {
-					const player = document.getElementById("kloak_Video")
-					const overlay = document.getElementById("fileStorageOverlay")
-					overlay.classList.add("showOverlay")
-					player.src = e.url
-				}
-				new Assembler(data.uuid, c, data.domain === "Local" ? true : false)
+			case "play":
+				new Assembler(data.uuid, null, (err, data) => {
+					if (err) {
+						console.error(err)
+						return
+					}
+					this.showOverlay(true)
+					const videoPlayer = document.getElementById("fileStorageVideo")
+					videoPlayer['src'] = data.url
+					videoPlayer.play()
+				})
 				break
 			default:
 				break
@@ -264,61 +354,41 @@ class fileStorage {
 				return `${
 					monthString[month]
 				} ${timestamp.getDate()}, ${timestamp.getFullYear()}`
-				break
 			case "full":
 				return `${
 					monthString[month]
 				} ${timestamp.getDate()}, ${timestamp.getFullYear()} ${hours}:${minutes} ${AMPM}`
-				break
 			default:
 				break
 		}
 	}
 
-	displayFolders = (path: string, filename: string) => {
-		if (!path) {
-			return
+	checkedFile = (data, event, checkAll?: boolean) => {
+		const isChecked = event.target.checked
+		if (checkAll) {
+			this.checkedFiles([])
+			if (!isChecked) {
+				return true;
+			} 
+			const temp = []
+			this.allFileStorageData().forEach(file => {
+				temp.push(file.uuid)
+			})
+			this.checkedFiles(temp)
+			return true;
 		}
-
-		const createElements = (folderName: string, isFile?: boolean) => {
-			const item = document.createElement("div")
-			item.classList.add("item")
-			const icon = document.createElement("i")
-			icon.classList.add(isFile ? "file" : "folder", "icon")
-			const content = document.createElement("div")
-			content.classList.add("content")
-			const header = document.createElement("div")
-			header.classList.add("header")
-			// const text = document.createTextNode(folderName)
-			header.textContent = folderName
-			content.appendChild(header)
-			item.appendChild(icon)
-			item.appendChild(content)
-			return item
+		if (!isChecked) {
+			this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== data.uuid))
+			return true;
 		}
-
-		const pathArray = ("./" + path).split("/")
-
-		for (let i = 0; i < pathArray.length; i++) {
-			const folderPath = document.getElementById(
-				"folderPath" + this.selectedFile()
-			)
-			let item = null
-			if (pathArray[i] === "") {
-				item = createElements(filename, true)
-			} else if (pathArray[i] === ".") {
-				item = createElements(pathArray[i] + "/")
-			} else {
-				item = createElements(pathArray[i])
-			}
-			item.style.marginLeft = `${15 * i}px`
-			folderPath.appendChild(item)
-		}
+		this.checkedFiles().push(data.uuid)
+		this.checkedFiles.valueHasMutated()
+		console.log(this.checkedFiles())
+		return true;
 	}
 
-	showCurrentUpload = () => {}
-
-	showOptions = (index: number) => {
+	showFileOptions = (index: number) => {
+		console.log(index)
 		if (index === this.selectedFile()) {
 			this.selectedFile(null)
 			return
@@ -339,9 +409,9 @@ class fileStorage {
 		const colorOptions = document.getElementsByClassName("colorMenuItem")
 		for (let i = 0; i < colorOptions.length; i++) {
 			if (colorOptions[i].id === clr) {
-				colorOptions[i].style.border = "3px solid black"
+				colorOptions[i]['style'].border = "3px solid black"
 			} else {
-				colorOptions[i].style.border = "3px solid transparent"
+				colorOptions[i]['style'].border = "3px solid transparent"
 			}
 		}
 		const val = event.target.value.split(" ")
@@ -415,7 +485,7 @@ class fileStorage {
 		reader.onloadend = (e) => {
 			console.log(e.target.result)
 			while (offset <= totalLength) {
-				const data = this.sliceArrayBuffer(e.target.result, offset, chunkSize)
+				const data = this.sliceArrayBuffer(e.target.result as ArrayBuffer, offset, chunkSize)
 				pieces[offset] = data[1]
 				files.push({ [data[1]]: data[0] })
 				offset += chunkSize

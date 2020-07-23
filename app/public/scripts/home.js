@@ -159,6 +159,7 @@ var view_layout;
             this.showFileStorage = ko.observable(false);
             this.showGeneralSpalding = ko.observable(false);
             this.muteHtml = ko.observable(false);
+            this.downloadMain = new DownloadMain();
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
             /*

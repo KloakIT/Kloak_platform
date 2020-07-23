@@ -55,17 +55,19 @@ class Uploader {
 	updateFileHistory = () => {
 		const history = <fileHistory>{
 			uuid: this.uuid,
+			filename: this.file.name,
 			time_stamp: new Date(),
 			path: this.path,
 			icon: null,
 			url: 'Local',
-			urlShow: this.file.name,
 			domain: 'Local',
 			detail: '',
-			tag: [this.file.type.split('/')[1], 'Local', 'Upload'],
+			tag: [this.file.name.split('.').pop(), 'Local', 'Upload'],
 			color: null,
 			fileIndex: null,
 		}
+
+		history.tag = history.tag.filter(tag => tag)
 
 		let req = window.indexedDB.open('kloak-history', 1)
 

@@ -1,14 +1,16 @@
 class Assembler {
 	private requestUuid: string
 	private downloadIndex: kloakIndex
+	private hiddenAnchor: HTMLAnchorElement
 	private fileOffsets = []
 	private fileUuids = []
 	private assembler: Worker
 	private databaseWorker: Worker
 	private callback: Function
-	constructor(requestUuid: string, callback: Function) {
-		this.callback = callback
+	constructor(requestUuid: string, hiddenAnchor: HTMLAnchorElement, callback: Function) {
 		this.requestUuid = requestUuid
+		this.hiddenAnchor = hiddenAnchor
+		this.callback = callback
 		this.assembler = new GenericWorker(this.assemblerWorkerFn).getWorker()
 		this.databaseWorker = new GenericWorker(this.databaseWorkerFn).getWorker()
 		this.databaseWorker.postMessage({
@@ -35,7 +37,6 @@ class Assembler {
 			case 'FILE_INDEX':
 				this.downloadIndex = payload
 				this.fileOffsets = await Object.keys(this.downloadIndex[this.requestUuid].pieces).sort()
-				console.log(this.fileOffsets)
 				await this.fileOffsets.forEach(offset => {
 					this.fileUuids.push(this.downloadIndex[this.requestUuid].pieces[offset])
 				})
@@ -56,7 +57,7 @@ class Assembler {
 				break;
 			case 'RETRIEVED_PIECE':
 				const pgpMessage = Buffer.from(payload.arrBuffer).toString()
-				//console.log(pgpMessage)
+				console.log(pgpMessage)
 				_view.sharedMainWorker.decryptStreamWithoutPublicKey(
 					pgpMessage,
 					(err, data) => {
@@ -79,33 +80,85 @@ class Assembler {
 				)
 				return
 			case 'ASSEMBLED_FILE':
-				this.callback({
-					filename: this.requestUuid,
-					extension: this.downloadIndex[this.requestUuid].fileExtension,
-					url: payload.fileUrl,
-				})
-				this.assembler.terminate()
+				const filename = this.downloadIndex[this.requestUuid].filename
+				const extension = payload.extension
+				if (this.hiddenAnchor instanceof HTMLAnchorElement) {
+					this.hiddenAnchor.download = `${filename}.${extension}`
+					this.hiddenAnchor.href = payload.fileUrl
+					this.hiddenAnchor.click()
+					this.hiddenAnchor.download = ''
+					this.hiddenAnchor.href = ''
+					URL.revokeObjectURL(payload.fileUrl)
+					this.assembler.terminate()
+					this.assembler = null
+					this.databaseWorker.terminate()
+					this.databaseWorker = null
+					this.callback(null, null)
+					return
+				}
+				this.callback(null, {filename, extension, url: payload.fileUrl})
 				this.databaseWorker.terminate()
+				this.databaseWorker = null
 				break
 			default:
 				break
 		}
 	}
 
+	terminate = () => {
+		if (this.databaseWorker) {
+			this.databaseWorker.terminate()
+			this.databaseWorker = null
+		}
+		if (this.assembler) {
+			this.assembler.terminate()
+			this.assembler = null
+		}
+	}
+
 	assemblerWorkerFn = () => {
+		importScripts(`${self.location.origin}/scripts/jimp.min.js`)
+		let magicNumber = null;
 		let requestUuid = null
 		let fileUint8Array: Uint8Array = null
 		let fileIndex: kloakIndex = null
 		let tempPieces = []
-		let offset = 0;
+		let offset = 0
+
+		const getFileType = (magicNumber: string) => {
+			const n = magicNumber.toLowerCase()
+			switch (true) {
+				case n.startsWith('504b0304'):
+				case n.startsWith('504b0506'):
+				case n.startsWith('504b0708'):
+					fileIndex[requestUuid]['contentType'] = 'application/zip'
+					fileIndex[requestUuid]['fileExtension'] = 'zip'
+					break;
+				case n.startsWith('0000001866747970'):
+				case n.startsWith("0000002066747970"):
+					fileIndex[requestUuid]['contentType'] = 'video/mp4'
+					fileIndex[requestUuid]['fileExtension'] = 'mp4'
+					break;
+				case n.startsWith('494433'):
+				case n.startsWith('fffb'):
+				case n.startsWith('fff3'):
+				case n.startsWith('fff2'):
+					fileIndex[requestUuid]['contentType'] = "audio/mpeg"
+					fileIndex[requestUuid]['fileExtension'] = 'mp3'
+					break;
+			}
+		}
 
 		const log = (message: string) => {
 			console.log(`<${new Date().toLocaleString()}> ${message}`)
 		}
 
-		const createBlob = () => {
+		const createBlob =  () => {
+			if (!fileIndex[requestUuid].contentType || !fileIndex[requestUuid].fileExtension) {
+				getFileType(magicNumber)
+			}
 			const blob = new Blob([fileUint8Array], {
-				type: fileIndex.contentType,
+				type: fileIndex[requestUuid].contentType,
 			})
 			console.log(blob.size)
 			const fileUrl = URL.createObjectURL(blob)
@@ -120,9 +173,9 @@ class Assembler {
 				case 'START':
 					log('Assembler: Assembly Worker started.')
 					requestUuid = Object.keys(payload)[0]
-					fileIndex = await payload[Object.keys(payload)[0]]
+					fileIndex = await payload
 					if (fileIndex.totalLength) {
-						fileUint8Array = new Uint8Array(fileIndex['totalLength'] as any)
+						fileUint8Array = new Uint8Array(fileIndex[requestUuid]['totalLength'])
 					}
 					postMessage({
 						cmd: 'NEXT_PIECE',
@@ -152,124 +205,12 @@ class Assembler {
 						})
 						return
 					}
+					magicNumber = Buffer.from(fileUint8Array.slice(0,10).buffer).toString('hex')
 					postMessage({
 						cmd: 'ASSEMBLED_FILE',
-						payload: { fileUrl: createBlob() },
+						payload: { fileUrl: createBlob(), extension: fileIndex[requestUuid].fileExtension },
 					})
-
-					// PROBLEM HERE
-					// if (!fileIndex.totalLength) {
-					// 	await tempPieces.push(payload)
-					// } else {
-					// 	if (!fileUint8Array) {
-					// 		fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
-					// 	}
-					// 	fileUint8Array.set(payload.arrBuffer, offset)
-					// 	console.log(payload.arrBuffer)
-					// 	offset += payload.arrBuffer.byteLength
-					// }
-					// const postMessage = self.postMessage as any
-					// if (payload.end) {
-					// 	const postMessage = self.postMessage as any
-					// 	postMessage({
-					// 		cmd: 'ASSEMBLED_FILE',
-					// 		payload: { fileUrl: createBlob() },
-					// 	})
-					// 	return
-					// }
-					// if (!payload.end) {
-					// 	postMessage({
-					// 		cmd: 'NEXT_PIECE',
-					// 		payload: {},
-					// 	})
-					// 	return
-					// }
-
-					// if(payload.end) {
-					// 	// if (fileUint8Array) {
-					// 	// 	const postMessage = self.postMessage as any
-					// 	// 	postMessage({
-					// 	// 		cmd: 'ASSEMBLED_FILE',
-					// 	// 		payload: { fileUrl: createBlob() },
-					// 	// 	})
-					// 	// 	return
-					// 	// }
-					// 	// let totalLength = 0
-					// 	// await tempPieces.map(piece => {
-					// 	// 	totalLength += piece.arrBuffer.byteLength
-					// 	// })
-
-					// 	// await tempPieces.map(async piece => {
-					// 	// 	fileUint8Array = await new Uint8Array(totalLength)
-					// 	// 	fileUint8Array.set(piece.arrBuffer, offset)
-					// 	// 	offset += piece.arrBuffer.byteLength
-					// 	// 	console.log(offset)
-					// 	// })
-
-					// 	// const postMessage = self.postMessage as any
-					// 	// 	postMessage({
-					// 	// 		cmd: 'ASSEMBLED_FILE',
-					// 	// 		payload: { fileUrl: createBlob() },
-					// 	// 	})
-					// }
-					// break;
-
-				// case 'RETRIEVED_PIECE':
-				// 	if (!fileIndex.totalLength) {
-				// 		console.log(payload)
-				// 		temp[payload.offset] = payload
-				// 		if (payload.end) {
-				// 			let totalLength = 0;
-				// 			let keys = Object.keys(fileIndex[requestUuid].pieces).sort()
-				// 			keys.forEach(key => {
-				// 				totalLength += temp[key].arrBuffer.byteLength
-				// 			})
-				// 			console.log(totalLength)
-				// 			// let chunksize = temp[]
-				// 			// console.log(temp)
-				// 			// temp.forEach(payload => {
-				// 			// 	totalLength += payload.arrBuffer.byteLength
-				// 			// })
-
-				// 			// fileUint8Array = new Uint8Array(totalLength)
-
-				// 			// temp.forEach(payload => {
-
-				// 			// 	fileUint8Array.set(new Uint8Array(payload.arrBuffer), parseInt(payload.offset))
-				// 			// })
-
-				// 			// const postMessage = self.postMessage as any
-				// 			// postMessage({
-				// 			// 	cmd: 'ASSEMBLED_FILE',
-				// 			// 	payload: { fileUrl: createBlob() },
-				// 			// })
-							
-				// 			// temp = null
-				// 		}
-				// 		return
-				// 	}
-				// 	if (!fileUint8Array) {
-				// 		fileUint8Array = new Uint8Array(fileIndex.totalLength as any)
-				// 		fileUint8Array.set(
-				// 			new Uint8Array(payload.arrBuffer),
-				// 			parseInt(payload.offset)
-				// 		)
-				// 		return
-				// 	}
-				// 	fileUint8Array.set(
-				// 		new Uint8Array(payload.arrBuffer),
-				// 		parseInt(payload.offset)
-				// 	)
-
-				// 	if (payload.end) {
-				// 		console.log('FINISHED')
-				// 		const postMessage = self.postMessage as any
-				// 		postMessage({
-				// 			cmd: 'ASSEMBLED_FILE',
-				// 			payload: { fileUrl: createBlob() },
-				// 		})
-				// 	}
-					break
+					break;
 				default:
 					break
 			}

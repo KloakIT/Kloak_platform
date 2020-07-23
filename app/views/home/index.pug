@@ -404,6 +404,10 @@ block jumbotron1
 					i( data-bind = " attr: { 'class': 'icon ' + iconName } ")
 				<!-- /ko -->
 
+				<!-- ko if: loading() === 4 -->
+					span( data-bind=" text: $root.downloadMain.getPercent(cmd.requestSerial)() + '%'")
+				<!-- /ko -->
+
 				<!-- ko if: loading() !== false && loading() < 5 -->
 					i.icon.notched.circle.loading( data-bind = "css: { 'yellow': loading() === 2, 'green': loading() === 3, 'blue': loading() === 4 }")
 				<!-- /ko -->

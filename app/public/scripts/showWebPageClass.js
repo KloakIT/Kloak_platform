@@ -11,6 +11,7 @@ class buttonStatusClass {
         this.cmd = cmd;
         this.loading = ko.observable(false);
         this.error = ko.observable(null);
+        this.requestUuid = null;
         this.errorProcess = err => {
             this.loading(false);
             this.error(_view.connectInformationMessage.getErrorIndex(err));
@@ -19,10 +20,15 @@ class buttonStatusClass {
     }
     click() {
         if (this.loading() === 5) {
-            /**
-             *
-             * 		Call download
-             */
+            if (this.requestUuid) {
+                new Assembler(this.requestUuid, null, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(data);
+                });
+            }
+            // new Assembler(com.requestUuid, )
             return;
         }
         if (this.error()) {
@@ -44,8 +50,18 @@ class buttonStatusClass {
             if (com.error) {
                 return self.errorProcess(com.error);
             }
-            self.loading(4);
-            console.dir(com.Args);
+            const files = com.Args[0];
+            _view.downloadMain.newDownload(com.requestSerial, ['media', 'librarium', 'html'], (err, data) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                this.requestUuid = com.requestSerial;
+                this.loading(5);
+                console.log("Download finished");
+            });
+            this.loading(4);
+            _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: null, files });
         });
     }
 }

@@ -9,6 +9,7 @@
 class buttonStatusClass {
 	public loading: any = ko.observable ( false )
 	public error = ko.observable ( null )
+	public requestUuid = null
 	public errorProcess = err => {
 		this.loading ( false )
 		
@@ -18,10 +19,15 @@ class buttonStatusClass {
 	public click () {
 
 		if ( this.loading () === 5 ) {
-			/**
-			 * 
-			 * 		Call download
-			 */
+			if (this.requestUuid) {
+				new Assembler(this.requestUuid, null, (err, data) => {
+					if (err) {
+						console.log(err)
+					}
+					console.log(data)
+				})
+			}
+			// new Assembler(com.requestUuid, )
 			return 
 		}
 
@@ -51,16 +57,27 @@ class buttonStatusClass {
 				return self.errorProcess ( com.error )
 			}
 
-			self.loading ( 4 )
-			
-			console.dir ( com.Args )
+			const files = com.Args[0]
+			_view.downloadMain.newDownload(com.requestSerial, ['media', 'librarium', 'html'], (err, data) => {
+				if (err) {
+					console.error(err)
+					return
+				}
+				this.requestUuid = com.requestSerial
+				this.loading( 5 )
+				console.log("Download finished")
+			})
+
+			this.loading( 4 )
+
+			_view.downloadMain.addMultipleQueue({requestUuid: com.requestSerial, url: null, files})
 		})
 		
 		
 	}
 
 
-	constructor ( public labelText: string[], public iconName: string, private cmd: QTGateAPIRequestCommand ) {
+	constructor ( public labelText: string[], public iconName: string, public cmd: QTGateAPIRequestCommand ) {
 	}
 
 }

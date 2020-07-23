@@ -1524,4 +1524,3 @@ export class imapPeer extends Event.EventEmitter {
 	}
 
 }
-

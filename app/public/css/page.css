@@ -1364,26 +1364,9 @@ ANDY - DOWNLOADER
 /* ====================================================================================================================
 ANDY - FILE STORAGE
 ======================================================================================================================= */
-
-.fileStorageWrapper {
-	width: 100vw;
+.fileStorage {
 	height: 100vh;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	background-color: white;
-	color: #0f0f0f;
-}
-
-.fileStorageContent {
-	width: 686px;
-	max-width: 686px;
-	min-height: 100%;
-	background-color: ghostwhite;
-	border-radius: 5px;
-	margin-top: 20px;
-	box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.1);
-	position: relative;
+	min-height: 100vh;
 }
 
 .fileDragOverlay {
@@ -1401,451 +1384,303 @@ ANDY - FILE STORAGE
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	z-index: 101;
+}
+
+.fileStorageWrapper {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: white;
+	color: #0f0f0f;
+	padding-bottom: 8rem;
+}
+
+.fileStorageWrapper p {
+	margin: 0 !important;
+}
+
+.fileStorageGlobalActions {
+	width: 686px;
+	display: flex;
+	align-items: center;
+	height: 3.5rem;
+	padding: 40px 0px 20px 21px;
+	border-bottom: .5px solid rgba(0,0,0,0.15)
+}
+
+.fileStorageSortOption {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	-webkit-user-select: none; /* Chrome/Safari */        
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+ */
+}
+
+.fileStorageSortOption p {
+	font-weight: 700;
+}
+
+.fileStorageDelete {
+	background-color: white;
+	border: 1px solid #ff4444;
+	color: #ff4444;
+	padding: 5px 10px;
+	border-radius: 5px;
+	transition: all 250ms ease-in-out;
+	cursor: pointer;
+}
+
+.fileStorageDelete:hover {
+	background-color: #ff4444;
+	color: ghostwhite;
+}
+
+.fileStorageDelete:focus {
+	outline: none;
+}
+
+.fileStorageContent {
+	width: 686px;
+	max-width: 686px;
+	content: "";
+	box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+	position: relative;
+	border: 0.5px solid rgba(0,0,0,0.05);
+	background-color: #fbfbfb;
 }
 
 .fileStorageHeader {
 	width: 100%;
-	height: 10rem;
-	background-color: ghostwhite;
+	height: 5rem;
+	background-color: whitesmoke;
 	padding: 15px 10px;
 	border-radius: 5px;
 	box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.1);
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	position: relative;
+}
+
+.fileStorageHeaderContent {
+	max-width: 686px;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	position: relative;
+}
+
+.fileStorageLogo {
+	height: 3.5rem;
+	width: auto;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 10;
+	transition: opacity 150ms ease-in-out;
+}
+
+.searchIconWrapper {
+	background-color: whitesmoke;
+	padding: 12px;
+	border-radius: 50%;
+	border: 1px solid rgba(0,0,0,0.15);
+	width: 3rem;
+	height: 3rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	position: relative;
+	z-index: 100;
+	transition: all 150ms ease-in-out
+}
+
+.searchIconWrapper:hover {
+	background-color: white;
+	box-shadow: 0px 2px 5px rgba(0,0,0,0.15)
+}
+
+.searchIcon {
+	margin: 0 0 2px 0 !important;
+	color: rgba(50, 50, 50, .75);
+	font-size: 16px !important;
 }
 
 .searchContainer {
 	width: 100%;
-	height: 2.5rem;
-	max-width: 686px;
-	display: flex;
-	align-items: center;
-	position: relative;
-}
-
-.searchBar {
-	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 99;
+	transition: all 150ms ease-in-out;
 }
 
 .searchInput {
-	height: 2.5rem;
 	width: 100%;
-	background-color: white;
-	color: rgb(50, 50, 50);
-	border: 1px solid rgb(200, 200, 200);
-	border-radius: 5px;
-	position: relative;
-	padding-left: 30px;
-}
-
-.mobileSearchIcon {
-	display: none;
-	width: 2.7rem;
-	height: 2.7rem;
-	border-radius: 50%;
-	background-color: white;
-	position: relative;
-	left: 1px;
-	z-index: 999;
-	padding-right: 5px;
-	cursor: pointer;
-}
-
-.mobileSearchWrapper {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.mobileSearchInput {
-	display: none;
+	height: 100%;
 	position: absolute;
-	border-radius: 25px;
-	height: 2.8rem;
-	border: 1px solid rgb(200, 200, 200);
-	padding-left: 3rem;
-	width: 100%;
-	transition: transform 200ms ease-in-out, opacity 300ms ease-in-out;
-	transform-origin: left;
-	opacity: 0;
-	/* display: none;
-	height: 2.5rem;
-	width: 100%;
+	border-radius: 50px;
 	background-color: white;
-	color: rgb(50, 50, 50);
-	border: 1px solid rgb(200, 200, 200);
-	border-radius: 5px;
-	position: relative;
-	padding-left: 30px; */
+	border: 1px solid rgba(0,0,0,0.15);
+	padding-left: 3.5rem;
 }
 
-.mobileSearchInput:focus {
+.searchInput:focus {
 	outline: none;
 }
 
-.mobileUploadButton {
-	width: 2.7rem;
-	height: 2.71rem;
-	border-radius: 50%;
-	background-color: white;
-	position: absolute;
-	right: 0;
-	display: none;
-	justify-content: center;
-	align-items: center;
-	cursor: pointer;
-	border: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.mobileUploadIcon {
-	transition: color 150ms ease-in-out;
-}
-
-.searchIcon {
-	position: absolute;
-	left: 10px;
-	top: 0.65rem;
-	color: grey;
-	font-weight: 300;
-	font-size: 1rem !important;
-}
-
 .searchSuggestions {
+	width: 100%;
+	max-width: 100%;
+	max-height: 10rem;
+	top: 1.5rem;
+	padding: 2rem 1rem 1rem 1rem;
 	position: absolute;
-	height: 16rem;
-	width: 100%;
-	overflow-y: auto;
-	background-color: ghostwhite;
-	z-index: 1000;
+	content: "";
+	background-color: whitesmoke;
+	box-shadow: 0px 5px 5px rgba(0,0,0,0.1);
 	border-radius: 5px;
-	box-shadow: 0 5px 5px rgba(0, 0, 0, 0.35);
-	margin-top: 10rem;
+	transition: all 100ms ease-in-out;
+	z-index: 98;
 }
 
-.searchSuggestionsBorder {
-	border: 1px solid rgba(0, 0, 0, 0.5);
-}
-
-.searchSuggestion {
-	width: 100%;
-	height: 4rem;
-	display: flex;
-	align-items: center;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-	padding: 20px 20px;
-	transition: background-color 150ms ease-in-out;
+.suggestedTag {
+	display: inline-block;
+	margin: 5px !important;
+	padding: 5px 10px;
+	border: 0.5px solid rgba(0,0,0,0.5);
 	cursor: pointer;
+	border-radius: 50px;
 }
 
-.searchSuggestion:hover {
-	background-color: rgba(115, 248, 255, 0.5);
+.suggestedTag:hover {
+	background-color: rgba(115, 248, 255, 0.5)
 }
 
 .fileStorageItem {
-	padding: 20px 20px;
-	transition: height 200ms ease-in-out;
-	transform-origin: top;
-	border: 1px solid transparent;
-}
-
-.fileStorageItemUpper {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	transition: background-color 100ms ease-in-out;
-}
-
-.fileStorageItemLower {
-	transform-origin: top;
-	transform: scaleY(0);
-	padding-top: 20px;
-}
-
-.fileStorageItemCheckbox {
-	margin-right: 2rem;
-	width: 15px;
-	height: 15px;
-	cursor: pointer;
-}
-
-.fileStorageLeft p {
-	margin: 0 0 0 0 !important;
-	font-size: 13px;
+	height: 3.5rem;
+	padding: 30px 20px;
+	border-bottom: 1px solid rgba(0,0,0,0.15)
 }
 
 .fileStorageItem:hover {
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	background-color: #f5f5ff;
-	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+	background-color: #FFF4E2
 }
 
 .fileStorageLeft {
+	flex: 3;
 	display: flex;
 	align-items: center;
 }
 
-.dateText {
-	font-weight: 400;
-	width: 18ch;
-}
-
-.filenameText {
-	width: 20ch;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.fileDomainText {
-	color: rgb(125, 125, 125);
-}
-
-.fileInnerWrapper {
+.fileStorageRight {
+	flex: 1;
 	display: flex;
 	align-items: center;
+	justify-content: flex-end;
+	position: relative
+}
+
+.fileStorageItemCheckbox {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+.fileStorageFilename {
+	font-size: 14px;
+}
+
+.fileStorageDate {
+	font-size: 11px;
+	color: grey;
+}
+
+.fileStorageOptionIcon {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 5px;
+	height: 1.75rem;
+	width: 1.75rem;
+	cursor: pointer;
+	border: 1px solid rgba(0,0,0,0.1);
+	position: relative;
+	z-index: 2;
+}
+
+.fileStorageOptionIcon::before {
+	transform: scaleY(0);
+	transition: transform 100ms ease-in-out;
+	transform-origin: bottom;
+	background-color: rgba(0,0,0,0.15);
+	content:"";
+	height: 1.75rem;
+	width: 1.75rem;
+	position: absolute;
+}
+
+.fileStorageOptionIcon:hover:before {
+	transform: scaleY(1);
 }
 
 .fileStorageOptions {
-	width: 30px;
-	height: 30px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 15px;
-	transition: background-color 100ms ease-in-out;
-	cursor: pointer;
-	margin-left: 10px;
-}
-
-.fileStorageOptions:hover {
-	background-color: rgb(225, 225, 225);
-}
-
-.colorOptions::before {
-	width: 5px;
-	height: 5px;
-	background-color: red;
-	content: '';
 	position: absolute;
-}
-
-.colorMenu {
-	position: absolute;
-	background-color: white;
-	box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-	padding: 10px;
-	border-radius: 5px;
-	border: 1px solid rgba(0, 0, 0, 0.15);
-	transform: scale(0);
-	transform-origin: top left;
-}
-
-.colorMenuRow {
-	display: flex;
-	align-items: center;
-}
-
-.colorMenuItem {
-	content: '';
-	width: 30px;
-	height: 30px;
-	margin: 3px;
-	border: 3px solid transparent;
-	transition: transform 150ms ease-in-out;
-	cursor: pointer;
-}
-
-.colorMenuItem:hover {
-	transform: scale(1.1);
-}
-
-.innerWrapper {
-	display: flex;
-}
-
-.folderPath {
-	display: flex;
-	flex-direction: column;
-	background-color: white;
-	margin: 0px !important;
-	flex-basis: 1;
-}
-
-.fileInnerUpper {
-	display: flex;
-	justify-content: space-between;
-	padding: 5px;
-}
-
-.fileInnerDetails {
-	flex: 1;
-	padding-right: 10px;
-}
-
-.fileStorageTags {
-	display: flex;
-	align-items: center;
-	margin-top: 5px;
-}
-
-.fileStorageTag {
+	margin-top: 8rem;
 	background-color: ghostwhite;
-	padding: 2px 10px;
-	border: 1px solid rgba(0, 0, 0, 0.15);
-	border-radius: 10px;
-	margin-right: 5px;
-	transition: background-color 150ms ease-in-out;
-	cursor: pointer;
+	border: 1px solid rgba(0,0,0,0.15);
+	box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+	z-index: -1000;
+	opacity: 0;
+	transition: opacity 150ms ease-in-out;
 }
 
-.fileStorageTag:hover {
-	background-color: rgba(51, 181, 229, 0.7);
+.fileOptionShow {
+	z-index: 100;
+	opacity: 1;
 }
 
-.fileStorageTag:hover * {
-	color: ghostwhite;
-}
-
-.fileStorageTagText {
-	font-size: 12px;
-}
-
-.fileDetailHeader {
-	font-size: 12px;
-	font-weight: 700;
-	margin: 0 !important;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-}
-
-.fileDetailText {
-	margin: 2.5px 0 !important;
-	font-size: 12px;
-	width: 40ch;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.fileInnerLower {
-	width: 100%;
-	display: flex;
-	justify-content: flex-end;
-	margin-top: 15px;
-}
-
-.fileActionButton {
-	background-color: transparent;
-	border: 1px solid rgba(0, 0, 0, 0.2);
-	padding: 8px 15px;
-	margin: 0 2.5px;
-	border-radius: 5px;
+.fileStorageOption {
 	display: flex;
 	align-items: center;
-}
-
-.downloadActionBtn,
-.deleteActionBtn {
-	transition: background-color 150ms ease-in-out;
+	padding: 5px 30px 5px 10px;
 	cursor: pointer;
 }
 
-.downloadActionBtn:hover *,
-.deleteActionBtn:hover *,
-.playActionBtn:hover * {
-	color: ghostwhite;
+.fileStorageOption:hover {
+	background-color: white;
 }
 
-.deleteActionBtn:hover {
-	background-color: rgba(255, 68, 68, 0.7);
-}
-
-.downloadActionBtn:hover {
-	background-color: rgba(0, 200, 81, 0.7);
-}
-
-.playActionBtn:hover {
-	background-color: rgba(51, 181, 229, 0.7);
+.fileStorageOption i {
+	height: 1.18em !important;
 }
 
 .fileStorageOverlay {
-	width: 100vw;
-	height: 100vh;
 	position: absolute;
-	background-color: rgba(0, 0, 0, 0.5);
+	width: 100%;
+	heighT: 100%;
+	background-color: rgba(0,0,0,0.75);
+	z-index: 200;
+	display: flex;
 	justify-content: center;
 	align-items: center;
-	display: none;
-	z-index: 9999;
 }
 
-.showOverlay {
-	display: flex;
-}
-
-.kloakVideo {
-	width: 50rem;
-	height: 30rem;
-	background-color: black;
-}
-
-@media screen and (max-width: 900px) {
-	.fileStorageContent {
-		width: 100%;
-		max-width: 90%;
-	}
-
-	.searchContainer {
-		width: 75%;
-	}
-}
-
-@media screen and (max-width: 700px) {
-	.fileInnerUpper {
-		flex-direction: column;
-	}
-
-	.filenameText {
-		width: 10ch;
-	}
-
-	.dateText {
-		width: auto;
-	}
-}
-
-@media screen and (max-width: 600px) {
-	.fileStorageContent {
-		width: 100%;
-		max-width: 90%;
-	}
-
-	.mobileUploadButton {
-		display: flex;
-	}
-
-	.searchContainer {
-		width: 85%;
-	}
-
-	.searchBar {
-		display: none;
-	}
-
-	.mobileSearchIcon {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.mobileSearchInput {
-		display: initial;
-	}
-
-	.fileStorageHeader {
-		justify-content: flex-start;
-		padding-left: 20px;
-	}
+.fileStorageVideo {
+	width: 75%;
+	height: 50%;
 }
 
 /* ====================================================================================================================

@@ -787,7 +787,6 @@ interface kloak_downloadObj {
 	downloadFilename: string
 	acceptRanges: string
 	fileExtension: string
-	totalLength: number
 	contentType: string
 	lastModified: Date
 	downloadUuid: string
@@ -795,6 +794,8 @@ interface kloak_downloadObj {
 	currentlength: number
 	eof: boolean
 	stopDownload: boolean
+	totalLength?: number
+	totalPieces?: number
 	requestUuid?: string
 	
 }
@@ -832,10 +833,24 @@ interface kloakIndex {
 	}
 }
 
+interface snapshotFiles {
+	fileName: string
+	currentLength: number
+	currentStartOffset: number
+	eof: boolean
+	sha1sum: string
+}
+
+interface kloak_multipleObj {
+	requestUuid: string
+	url:string
+	files: Array<snapshotFiles>
+}
+
 interface kloakDownloads {
 	requestSerial: string
 	filename: string
-	percent: 0
+	percent: KnockoutObservable<number>
 	downloader: Downloader
 }
 
@@ -851,11 +866,11 @@ interface finishedDownload {
 
 interface fileHistory {
 	uuid: string
+	filename: string
 	time_stamp: Date
 	path: string
 	icon: string
 	url: string
-	urlShow: string
 	domain: string
 	detail: string
 	tag: string[]
