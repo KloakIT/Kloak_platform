@@ -178,12 +178,12 @@ class default_1 extends Imap.imapPeer {
             ], err => {
                 let doAgain = false;
                 if (err || !callback) {
-                    if (++this.timeoutCount[fileName] < 10) {
-                        console.dir(`getFileV1 [${fileName}] this.timeoutCount[ ${fileName}  ] < 10, doing again`);
+                    if (++this.timeoutCount[fileName] < 20) {
+                        console.dir(`getFileV1 [${fileName}] this.timeoutCount[ ${fileName}  ] < 20, doing again`);
                         doAgain = true;
                     }
                     else {
-                        console.dir(` ++ this.timeoutCount[  ${fileName} ] [${this.timeoutCount[fileName]}] > 10 `);
+                        console.dir(` ++ this.timeoutCount[  ${fileName} ] [${this.timeoutCount[fileName]}] > 20 `);
                     }
                 }
                 console.log(`doAgain = 【${doAgain}】 callback = 【${callback} 】`);
@@ -199,7 +199,7 @@ class default_1 extends Imap.imapPeer {
                 return rImap.imapStream._logoutWithoutCheck(() => {
                     if (doAgain) {
                         console.log(`getFileV1 [${fileName}] doAgain`);
-                        return setTimeout(() => this.getFileV1(fileName, CallBack), 2000);
+                        return setTimeout(() => this.getFileV1(fileName, CallBack), 3000);
                     }
                     if (callback) {
                         return console.log(`getFileV1 callback already TRUE!!!`);
