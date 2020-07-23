@@ -143,10 +143,10 @@ class default_1 extends Imap.imapPeer {
     }
     getFileV1(fileName, CallBack) {
         let callback = false;
-        let _mail = null;
+        let _mail = false;
         let idle_wait_timeout_process = null;
-        if (!this.timeoutCount["fileName"]) {
-            this.timeoutCount["fileName"] = 1;
+        if (!this.timeoutCount[fileName]) {
+            this.timeoutCount[fileName] = 1;
         }
         const imapClone = JSON.parse(JSON.stringify(this.imapData));
         if (/^imap\.mail\.me\.com/.test(this.imapData.imapServer)) {
@@ -157,7 +157,7 @@ class default_1 extends Imap.imapPeer {
             if (!mail || mail.length < 50) {
                 return console.log(`getFileV1 [${fileName}] mail empty!`);
             }
-            _mail = mail;
+            _mail = true;
             const attr = Imap.getMailAttached(mail);
             const subject = Imap.getMailSubject(mail);
             console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
@@ -178,25 +178,36 @@ class default_1 extends Imap.imapPeer {
             ], err => {
                 let doAgain = false;
                 if (err || !callback) {
-                    if (++this.timeoutCount["fileName"] < 3) {
-                        console.dir(`getFileV1 [${fileName}] this.timeoutCount[ "fileName" ] < 3, doing again`);
+                    if (++this.timeoutCount[fileName] < 10) {
+                        console.dir(`getFileV1 [${fileName}] this.timeoutCount[ ${fileName}  ] < 10, doing again`);
                         doAgain = true;
                     }
                     else {
-                        console.dir(` ++ this.timeoutCount[ "fileName" ] [${this.timeoutCount["fileName"]}]> 3 `);
+                        console.dir(` ++ this.timeoutCount[  ${fileName} ] [${this.timeoutCount[fileName]}] > 10 `);
                     }
                 }
                 console.log(`doAgain = 【${doAgain}】 callback = 【${callback} 】`);
+                if (_mail) {
+                    return Async.series([
+                        next => rImap.imapStream.flagsDeleted('1', next),
+                        next => rImap.imapStream.expunge(next),
+                        next => rImap.imapStream._logoutWithoutCheck(next)
+                    ], err => {
+                        console.log(`new rImap success!`);
+                    });
+                }
                 return rImap.imapStream._logoutWithoutCheck(() => {
                     if (doAgain) {
                         console.log(`getFileV1 [${fileName}] doAgain`);
-                        return this.getFile(fileName, CallBack);
+                        return setTimeout(() => this.getFileV1(fileName, CallBack), 2000);
                     }
-                    console.log(`getFileV1【${fileName}】success!\n`);
+                    if (callback) {
+                        return console.log(`getFileV1 callback already TRUE!!!`);
+                    }
+                    return CallBack(new Error('timeout'));
                 });
             });
         });
-        console.log(`new rImap success!`);
     }
 }
 exports.default = default_1;
