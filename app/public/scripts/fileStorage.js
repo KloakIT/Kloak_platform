@@ -10,12 +10,9 @@ class fileStorage {
         this.showSearchInput = ko.observable(false);
         this.showSuggestions = ko.observable(true);
         this.showOverlay = ko.observable(false);
-        this.searchSuggestions = ko.observableArray([]);
         this.searchKey = ko.observable();
         this.selectedFile = ko.observable();
         this.colorMenuSelection = ko.observable();
-        this.showPaths = ko.observable(false);
-        this.showLoader = ko.observable(null);
         this.assemblyQueue = ko.observableArray([]);
         this.assemblyRunning = false;
         this.mobileShowSearch = ko.observable(false);
@@ -82,7 +79,6 @@ class fileStorage {
                 }
             };
         };
-        //something not right here.
         this.updateHistory = (uuid) => {
             const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid);
             this.fileStorageData(temp);
@@ -173,7 +169,7 @@ class fileStorage {
                 sort == 'up' ? this.sortOption([current, 'down']) : this.sortOption([current, 'up']);
             }
             else {
-                this.sortOption([type, 'down']);
+                this.sortOption([type, 'up']);
             }
             this.sortHistory(this.sortOption()[0], this.sortOption()[1]);
         };
@@ -188,8 +184,25 @@ class fileStorage {
             });
             this.getHistoryTable();
         };
+        this.closeAll = () => {
+            this.suggestedTags([]);
+            this.showSuggestions(false);
+            this.searchKey();
+            this.showSearchInput(false);
+            this.selectedFile(null);
+            this.showFileOptions(null);
+            return;
+        };
         this.fileAction = (data, event, action) => {
             switch (action) {
+                case 'close':
+                    const videoPlayer = document.getElementById('fileStorageVideo');
+                    const assembler = videoPlayer['assembler'];
+                    URL.revokeObjectURL(videoPlayer['src']);
+                    videoPlayer['src'] = null;
+                    this.showOverlay(false);
+                    assembler.terminate();
+                    break;
                 case "delete":
                     const callback = () => {
                         const temp = this.allFileStorageData().filter((file) => file !== data);
@@ -216,15 +229,16 @@ class fileStorage {
                     }
                     break;
                 case "play":
-                    new Assembler(data.uuid, null, (err, data) => {
+                    const n = new Assembler(data.uuid, null, (err, data) => {
                         if (err) {
                             console.error(err);
                             return;
                         }
                         this.showOverlay(true);
                         const videoPlayer = document.getElementById("fileStorageVideo");
+                        videoPlayer['assembler'] = n;
                         videoPlayer['src'] = data.url;
-                        videoPlayer.play();
+                        videoPlayer['play']();
                     });
                     break;
                 default:
@@ -287,7 +301,6 @@ class fileStorage {
             return true;
         };
         this.showFileOptions = (index) => {
-            console.log(index);
             if (index === this.selectedFile()) {
                 this.selectedFile(null);
                 return;

@@ -1,8 +1,9 @@
 class DownloadMain {
     constructor() {
         this.downloadPool = {};
-        this.newDownload = (requestUuid, extraHistoryTags, callback) => {
+        this.newDownload = (requestUuid, downloadTitle, extraHistoryTags, callback) => {
             if (this.downloadPool[requestUuid]) {
+                callback(`Download already exists!`, requestUuid);
                 console.log('Download already exists');
                 return;
             }
@@ -11,7 +12,7 @@ class DownloadMain {
                 requestSerial: requestUuid,
                 filename: requestUuid,
                 percent,
-                downloader: new Downloader(requestUuid, percent, extraHistoryTags, callback)
+                downloader: new Downloader(requestUuid, downloadTitle, percent, extraHistoryTags, callback)
             };
             return this.downloadPool[requestUuid].downloader;
         };

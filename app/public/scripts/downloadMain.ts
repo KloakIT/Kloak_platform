@@ -2,8 +2,9 @@ class DownloadMain {
 	private downloadPool: {[uuid: string]: kloakDownloads} = {}
 	constructor() {}
 
-	newDownload = (requestUuid: string, extraHistoryTags: Array<string>, callback: Function) => {
+	newDownload = (requestUuid: string, downloadTitle: string, extraHistoryTags: Array<string>, callback: Function) => {
 		if (this.downloadPool[requestUuid]) {
+			callback(`Download already exists!`, requestUuid)
 			console.log('Download already exists')
 			return
 		}
@@ -12,7 +13,7 @@ class DownloadMain {
 			requestSerial: requestUuid,
 			filename: requestUuid,
 			percent,
-			downloader: new Downloader(requestUuid, percent, extraHistoryTags, callback)
+			downloader: new Downloader(requestUuid, downloadTitle, percent, extraHistoryTags, callback)
 		}
 		return this.downloadPool[requestUuid].downloader
 	}

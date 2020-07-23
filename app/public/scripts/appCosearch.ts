@@ -660,6 +660,7 @@ const appScript = {
 			currentItem = self.searchItemList()[index]
 			currentItem.showLoading(true)
 		}
+		console.log(currentItem.title)
 		const url = isImage ? currentItem.clickUrl : currentItem.url
 		const width = $(window).width()
 		const height = $(window).height()
@@ -713,7 +714,7 @@ const appScript = {
 			
 
 			self.showDownloadProcess ( true )
-			_view.downloadMain.newDownload(com.requestSerial, ['snapshot', 'librarium', 'html'], (err, data) => {
+			_view.downloadMain.newDownload(com.requestSerial, currentItem.title, ['snapshot', 'librarium', 'html'], (err, data) => {
 				if (err) {
 					console.error(err)
 					return

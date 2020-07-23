@@ -9,12 +9,9 @@ class fileStorage {
 	private showSearchInput = ko.observable(false)
 	private showSuggestions = ko.observable(true)
 	private showOverlay = ko.observable(false)
-	private searchSuggestions = ko.observableArray([])
 	private searchKey = ko.observable()
 	private selectedFile = ko.observable()
 	private colorMenuSelection = ko.observable()
-	private showPaths = ko.observable(false)
-	private showLoader = ko.observable(null)
 	private assemblyQueue: KnockoutObservableArray<string> = ko.observableArray([])
 	private assemblyRunning = false
 	private mobileShowSearch = ko.observable(false)
@@ -161,8 +158,6 @@ class fileStorage {
 		}
 	}
 
-	//something not right here.
-
 	updateHistory = (uuid) => {
 		const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid)
 		this.fileStorageData(temp)
@@ -261,7 +256,7 @@ class fileStorage {
 		if (current == type) {
 			sort == 'up' ? this.sortOption([current, 'down']) : this.sortOption([current, 'up'])
 		} else {
-			this.sortOption([type, 'down'])
+			this.sortOption([type, 'up'])
 		}
 		this.sortHistory(this.sortOption()[0], this.sortOption()[1])
 
@@ -279,8 +274,26 @@ class fileStorage {
 		this.getHistoryTable()
 	}
 
+	closeAll = () => {
+		this.suggestedTags([])
+		this.showSuggestions(false)
+		this.searchKey()
+		this.showSearchInput(false)
+		this.selectedFile(null)
+		this.showFileOptions(null)
+		return
+	}
+
 	fileAction = (data, event, action: string) => {
 		switch (action) {
+			case 'close':
+				const videoPlayer = document.getElementById('fileStorageVideo')
+				const assembler = videoPlayer['assembler']
+				URL.revokeObjectURL(videoPlayer['src'])
+				videoPlayer['src'] = null;
+				this.showOverlay(false)
+				assembler.terminate()
+				break;
 			case "delete":
 				const callback = () => {
 					const temp = this.allFileStorageData().filter((file) => file !== data)
@@ -307,15 +320,16 @@ class fileStorage {
 				}
 				break
 			case "play":
-				new Assembler(data.uuid, null, (err, data) => {
+				const n = new Assembler(data.uuid, null, (err, data) => {
 					if (err) {
 						console.error(err)
 						return
 					}
 					this.showOverlay(true)
 					const videoPlayer = document.getElementById("fileStorageVideo")
+					videoPlayer['assembler'] = n
 					videoPlayer['src'] = data.url
-					videoPlayer.play()
+					videoPlayer['play']()
 				})
 				break
 			default:
@@ -388,7 +402,6 @@ class fileStorage {
 	}
 
 	showFileOptions = (index: number) => {
-		console.log(index)
 		if (index === this.selectedFile()) {
 			this.selectedFile(null)
 			return

@@ -9,25 +9,19 @@
 class buttonStatusClass {
 	public loading: any = ko.observable ( false )
 	public error = ko.observable ( null )
-	public requestUuid = null
 	public errorProcess = err => {
 		this.loading ( false )
 		
 		this.error ( _view.connectInformationMessage.getErrorIndex ( err ))
 		return 
 	}
-	public click () {
-
+	public click (self) {
+		console.log(self)
 		if ( this.loading () === 5 ) {
-			if (this.requestUuid) {
-				new Assembler(this.requestUuid, null, (err, data) => {
-					if (err) {
-						console.log(err)
-					}
-					console.log(data)
-				})
-			}
-			// new Assembler(com.requestUuid, )
+			console.log(this.obj)
+			_view.tempAppHtml(false)
+			_view.appClick(1)
+			_view.showFileStorage(true)
 			return 
 		}
 
@@ -36,36 +30,37 @@ class buttonStatusClass {
 		}
 
 		const command = this.cmd
-		const self = this
+		const _self = this
 		this.loading ( 1 )
 		
 		return _view.connectInformationMessage.emitRequest ( command, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
-				return self.errorProcess ( err )
+				return _self.errorProcess ( err )
 			}
 
 			if ( !com ) {
-				return self.loading ( 2 )
+				return _self.loading ( 2 )
 			}
 
 			if ( com.error === -1 ) {
 				
-				return self.loading ( 3 )
+				return _self.loading ( 3 )
 			}
 
 			if ( com.error ) {
-				return self.errorProcess ( com.error )
+				return _self.errorProcess ( com.error )
 			}
 
 			const files = com.Args[0]
-			_view.downloadMain.newDownload(com.requestSerial, ['media', 'librarium', 'html'], (err, data) => {
+			console.log(this.obj)
+			_view.downloadMain.newDownload(com.requestSerial, _self.obj.title, ['media', 'librarium', 'html'], (err, data) => {
 				if (err) {
 					console.error(err)
 					return
 				}
-				this.requestUuid = com.requestSerial
-				this.loading( 5 )
-				console.log("Download finished")
+				if (data) {
+					this.loading( 5 )
+				}
 			})
 
 			this.loading( 4 )
@@ -77,7 +72,7 @@ class buttonStatusClass {
 	}
 
 
-	constructor ( public labelText: string[], public iconName: string, public cmd: QTGateAPIRequestCommand ) {
+	constructor ( public labelText: string[], public iconName: string, public cmd: QTGateAPIRequestCommand, private obj: any ) {
 	}
 
 }
@@ -186,7 +181,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.audio = new buttonStatusClass (['','','',''], 'volume up', cmd )
+					return multimediaObj.audio = new buttonStatusClass (['','','',''], 'volume up', cmd, multimediaObj )
 				}
 				case 18:
 				case 43:
@@ -213,7 +208,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.video480 = new buttonStatusClass (['480','480','480','480'],'film', cmd )
+					return multimediaObj.video480 = new buttonStatusClass (['480','480','480','480'],'film', cmd, multimediaObj )
 				}
 				case 22:
 				case 136:
@@ -229,7 +224,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.video720 = new buttonStatusClass (['720','720','720','720'],'film', cmd )
+					return multimediaObj.video720 = new buttonStatusClass (['720','720','720','720'],'film', cmd, multimediaObj )
 				}
 				case 137:
 				case 248:
@@ -244,7 +239,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.video2k = new buttonStatusClass (['2k','2k','2k','2k'],'film', cmd )
+					return multimediaObj.video2k = new buttonStatusClass (['2k','2k','2k','2k'],'film', cmd, multimediaObj )
 				}
 
 				case 271:
@@ -262,7 +257,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.video4k = new buttonStatusClass (['','4k','4k','4k'],'film', cmd )
+					return multimediaObj.video4k = new buttonStatusClass (['','4k','4k','4k'],'film', cmd, multimediaObj )
 				}
 
 				case 272: {
@@ -273,7 +268,7 @@ class showWebPageClass {
 						subCom: 'getMediaData',
 						requestSerial: uuid_generate(),
 					}
-					return multimediaObj.video8k = new buttonStatusClass (['8k','8k','8k','8k'], 'film', cmd )
+					return multimediaObj.video8k = new buttonStatusClass (['8k','8k','8k','8k'], 'film', cmd, multimediaObj )
 				}
 
 				default: {

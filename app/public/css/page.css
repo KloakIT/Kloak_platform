@@ -1397,8 +1397,12 @@ ANDY - FILE STORAGE
 	padding-bottom: 8rem;
 }
 
-.fileStorageWrapper p {
-	margin: 0 !important;
+.fileStorageInner {
+	width: 100%;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .fileStorageGlobalActions {
@@ -1421,6 +1425,7 @@ ANDY - FILE STORAGE
 
 .fileStorageSortOption p {
 	font-weight: 700;
+	margin: 0 !important;
 }
 
 .fileStorageDelete {
@@ -1557,7 +1562,7 @@ ANDY - FILE STORAGE
 
 .suggestedTag {
 	display: inline-block;
-	margin: 5px !important;
+	margin: 4px 2px 0px 2px !important;
 	padding: 5px 10px;
 	border: 0.5px solid rgba(0,0,0,0.5);
 	cursor: pointer;
@@ -1601,6 +1606,7 @@ ANDY - FILE STORAGE
 
 .fileStorageFilename {
 	font-size: 14px;
+	margin: 0 !important;
 }
 
 .fileStorageDate {
@@ -1638,7 +1644,7 @@ ANDY - FILE STORAGE
 
 .fileStorageOptions {
 	position: absolute;
-	margin-top: 8rem;
+	margin-top: 10rem;
 	background-color: ghostwhite;
 	border: 1px solid rgba(0,0,0,0.15);
 	box-shadow: 0 5px 5px rgba(0,0,0,0.15);
@@ -1674,13 +1680,27 @@ ANDY - FILE STORAGE
 	background-color: rgba(0,0,0,0.75);
 	z-index: 200;
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 }
 
 .fileStorageVideo {
-	width: 75%;
-	height: 50%;
+	min-width: 25%;
+	max-width: 75%;
+	height: auto;
+}
+
+.fileStorageVideo:hover {
+	outline: none
+}
+
+.closeVideoButton {
+	margin-top: 20px;
+	font-size: 16px;
+	color: ghostwhite;
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 /* ====================================================================================================================

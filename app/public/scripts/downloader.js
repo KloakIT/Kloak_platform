@@ -1,6 +1,7 @@
 class Downloader {
-    constructor(requestUuid, progressIndicator, extraHistoryTags, callback) {
+    constructor(requestUuid, downloadTitle, progressIndicator, extraHistoryTags, callback) {
         this.requestUuid = null;
+        this.downloadTitle = null;
         this.downloadObject = null;
         this.extraHistoryTags = [];
         this.downloadIndex = null;
@@ -72,7 +73,7 @@ class Downloader {
         this.start = () => {
             this.downloadState = 'running';
             if (!this.isConsumeQueueRunning) {
-                this.consumeQueue();
+                this.consumeQueue(this.downloadQueue.shift());
             }
         };
         this.pause = () => {
@@ -150,7 +151,7 @@ class Downloader {
         this.createHistory = (obj) => {
             const history = {
                 uuid: this.requestUuid,
-                filename: obj.downloadFilename,
+                filename: this.downloadTitle || obj.downloadFilename,
                 time_stamp: new Date(),
                 path: '',
                 icon: null,
@@ -282,6 +283,7 @@ class Downloader {
             alert("Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser.");
         }
         this.requestUuid = requestUuid;
+        this.downloadTitle = downloadTitle;
         this.progressIndicator = progressIndicator;
         this.extraHistoryTags = extraHistoryTags;
         this.callback = callback;

@@ -5,60 +5,57 @@
  *
  */
 class buttonStatusClass {
-    constructor(labelText, iconName, cmd) {
+    constructor(labelText, iconName, cmd, obj) {
         this.labelText = labelText;
         this.iconName = iconName;
         this.cmd = cmd;
+        this.obj = obj;
         this.loading = ko.observable(false);
         this.error = ko.observable(null);
-        this.requestUuid = null;
         this.errorProcess = err => {
             this.loading(false);
             this.error(_view.connectInformationMessage.getErrorIndex(err));
             return;
         };
     }
-    click() {
+    click(self) {
+        console.log(self);
         if (this.loading() === 5) {
-            if (this.requestUuid) {
-                new Assembler(this.requestUuid, null, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    console.log(data);
-                });
-            }
-            // new Assembler(com.requestUuid, )
+            console.log(this.obj);
+            _view.tempAppHtml(false);
+            _view.appClick(1);
+            _view.showFileStorage(true);
             return;
         }
         if (this.error()) {
             return this.error(null);
         }
         const command = this.cmd;
-        const self = this;
+        const _self = this;
         this.loading(1);
         return _view.connectInformationMessage.emitRequest(command, (err, com) => {
             if (err) {
-                return self.errorProcess(err);
+                return _self.errorProcess(err);
             }
             if (!com) {
-                return self.loading(2);
+                return _self.loading(2);
             }
             if (com.error === -1) {
-                return self.loading(3);
+                return _self.loading(3);
             }
             if (com.error) {
-                return self.errorProcess(com.error);
+                return _self.errorProcess(com.error);
             }
             const files = com.Args[0];
-            _view.downloadMain.newDownload(com.requestSerial, ['media', 'librarium', 'html'], (err, data) => {
+            console.log(this.obj);
+            _view.downloadMain.newDownload(com.requestSerial, _self.obj.title, ['media', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
                     return;
                 }
-                this.requestUuid = com.requestSerial;
-                this.loading(5);
-                console.log("Download finished");
+                if (data) {
+                    this.loading(5);
+                }
             });
             this.loading(4);
             _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: null, files });
@@ -248,7 +245,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.audio = new buttonStatusClass(['', '', '', ''], 'volume up', cmd);
+                    return multimediaObj.audio = new buttonStatusClass(['', '', '', ''], 'volume up', cmd, multimediaObj);
                 }
                 case 18:
                 case 43:
@@ -275,7 +272,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.video480 = new buttonStatusClass(['480', '480', '480', '480'], 'film', cmd);
+                    return multimediaObj.video480 = new buttonStatusClass(['480', '480', '480', '480'], 'film', cmd, multimediaObj);
                 }
                 case 22:
                 case 136:
@@ -291,7 +288,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.video720 = new buttonStatusClass(['720', '720', '720', '720'], 'film', cmd);
+                    return multimediaObj.video720 = new buttonStatusClass(['720', '720', '720', '720'], 'film', cmd, multimediaObj);
                 }
                 case 137:
                 case 248:
@@ -306,7 +303,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.video2k = new buttonStatusClass(['2k', '2k', '2k', '2k'], 'film', cmd);
+                    return multimediaObj.video2k = new buttonStatusClass(['2k', '2k', '2k', '2k'], 'film', cmd, multimediaObj);
                 }
                 case 271:
                 case 308:
@@ -323,7 +320,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.video4k = new buttonStatusClass(['', '4k', '4k', '4k'], 'film', cmd);
+                    return multimediaObj.video4k = new buttonStatusClass(['', '4k', '4k', '4k'], 'film', cmd, multimediaObj);
                 }
                 case 272: {
                     const cmd = {
@@ -333,7 +330,7 @@ class showWebPageClass {
                         subCom: 'getMediaData',
                         requestSerial: uuid_generate(),
                     };
-                    return multimediaObj.video8k = new buttonStatusClass(['8k', '8k', '8k', '8k'], 'film', cmd);
+                    return multimediaObj.video8k = new buttonStatusClass(['8k', '8k', '8k', '8k'], 'film', cmd, multimediaObj);
                 }
                 default: {
                     return console.dir(`checkFormat know format: ${n.format_id} ${n.format}`);

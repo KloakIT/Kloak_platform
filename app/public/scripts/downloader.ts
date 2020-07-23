@@ -1,5 +1,6 @@
 class Downloader {
 	private requestUuid: string = null
+	private downloadTitle: string = null
 	private downloadObject: kloak_downloadObj = null
 	private extraHistoryTags: Array<string> = []
 	private downloadIndex: kloakIndex = null
@@ -11,13 +12,14 @@ class Downloader {
 	private progressIndicator
 	private createdHistory = false
 	private callback: Function
-	constructor(requestUuid: string, progressIndicator, extraHistoryTags: Array<string>, callback: Function) {
+	constructor(requestUuid: string, downloadTitle: string, progressIndicator, extraHistoryTags: Array<string>, callback: Function) {
 		if (!window.indexedDB) {
 			alert(
 				"Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser."
 			)
 		}
 		this.requestUuid = requestUuid
+		this.downloadTitle = downloadTitle
 		this.progressIndicator = progressIndicator
 		this.extraHistoryTags = extraHistoryTags
 		this.callback = callback
@@ -93,7 +95,7 @@ class Downloader {
 	start = () => {
 		this.downloadState = 'running'
 		if (!this.isConsumeQueueRunning) {
-			this.consumeQueue()
+			this.consumeQueue(this.downloadQueue.shift())
 		}
 	}
 
@@ -183,7 +185,7 @@ class Downloader {
 	createHistory = (obj: kloak_downloadObj) => {
 		const history: fileHistory = {
 			uuid: this.requestUuid,
-			filename: obj.downloadFilename,
+			filename: this.downloadTitle || obj.downloadFilename,
 			time_stamp: new Date(),
 			path: '',
 			icon: null,
