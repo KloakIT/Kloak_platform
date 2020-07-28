@@ -19,9 +19,7 @@ class buttonStatusClass {
         };
     }
     click(self) {
-        console.log(self);
         if (this.loading() === 5) {
-            console.log(this.obj);
             _view.tempAppHtml(false);
             _view.appClick(1);
             _view.showFileStorage(true);
@@ -29,6 +27,9 @@ class buttonStatusClass {
         }
         if (this.error()) {
             return this.error(null);
+        }
+        if (this.loading()) {
+            return;
         }
         const command = this.cmd;
         const _self = this;
@@ -47,7 +48,6 @@ class buttonStatusClass {
                 return _self.errorProcess(com.error);
             }
             const files = com.Args[0];
-            console.log(this.obj);
             _view.downloadMain.newDownload(com.requestSerial, _self.obj.title, ['media', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
@@ -213,9 +213,6 @@ class showWebPageClass {
     }
     checkFormat(multimediaObj) {
         const fomrmats = multimediaObj.formats;
-        if (!fomrmats || !fomrmats.length) {
-            return multimediaObj = null;
-        }
         multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false;
         multimediaObj['error'] = ko.observable(false);
         multimediaObj['longer'] = null;
@@ -228,8 +225,19 @@ class showWebPageClass {
         if (multimediaObj.duration) {
             const se1 = parseInt(multimediaObj.duration);
             const se2 = parseInt((se1 / 60).toString());
-            const se3 = se1 - se2 * 60;
+            let se3 = (se1 - se2 * 60).toString();
+            se3 = se3.length < 2 ? '0' + se3 : se3;
             multimediaObj.longer = `${se2}:${se3}`;
+        }
+        if (/audio only$/i.test(multimediaObj.format)) {
+            const cmd = {
+                command: 'CoSearch',
+                Args: [multimediaObj.webpage_url, 'audio'],
+                error: null,
+                subCom: 'getMediaData',
+                requestSerial: uuid_generate(),
+            };
+            return multimediaObj.audio = new buttonStatusClass(['', '', '', ''], 'volume up', cmd, multimediaObj);
         }
         fomrmats.forEach(n => {
             const h = parseInt(n.format_id);
@@ -333,6 +341,16 @@ class showWebPageClass {
                     return multimediaObj.video8k = new buttonStatusClass(['8k', '8k', '8k', '8k'], 'film', cmd, multimediaObj);
                 }
                 default: {
+                    if (/hls_opus_64|hls_mp3_128|http_mp3_128|download/i.test(n.format_id)) {
+                        const cmd = {
+                            command: 'CoSearch',
+                            Args: [multimediaObj.webpage_url, 'audio'],
+                            error: null,
+                            subCom: 'getMediaData',
+                            requestSerial: uuid_generate(),
+                        };
+                        return multimediaObj.audio = new buttonStatusClass(['', '', '', ''], 'volume up', cmd, multimediaObj);
+                    }
                     return console.dir(`checkFormat know format: ${n.format_id} ${n.format}`);
                 }
             }
@@ -354,6 +372,7 @@ class showWebPageClass {
         }
     }
     showMultimediaObj() {
+        this.multimediaObj.entriesObj = ko.observableArray([]);
         this.showMultimediaObjButton(true);
         if (!this.multimediaObj.entries) {
             this.multimediaObj['entries'] = false;
@@ -362,8 +381,19 @@ class showWebPageClass {
         if (!this.multimediaObj.thumbnails) {
             this.multimediaObj['thumbnails'] = false;
             this.multimediaObj.entries.forEach(n => {
+                if (/^playlist$/i.test(n._type)) {
+                    if (n.entries && n.entries.length) {
+                        n.entries.forEach(m => {
+                            this.checkFormat(m);
+                            this.multimediaObj.entriesObj.push(m);
+                        });
+                        return;
+                    }
+                }
                 this.checkFormat(n);
+                this.multimediaObj.entriesObj.push(n);
             });
+            //this.multimediaObj.entriesObj = ko.observableArray ( this.multimediaObj.entries )
         }
         this.MultimediaObjArray(this.multimediaObj);
         window.scrollToTop();

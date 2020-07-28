@@ -68,6 +68,8 @@ const appScript = {
     showDownloadProgress: ko.observable(false),
     currentDownloads: ko.observable({}),
     finishedDownloads: ko.observableArray([]),
+    showTwitterObjResult: ko.observable(false),
+    twitterObj: null,
     //	['originImage']
     initSearchData: (self) => {
         self.searchItem(null);
@@ -170,6 +172,15 @@ const appScript = {
         /**
          * 			web page address
          */
+        const showTwitter = (twitterObj, twitterHref, serialNumber, buffer, showAccount) => {
+            self.showInputLoading(false);
+            _view.CanadaBackground(false);
+            self.showMainSearchForm(false);
+            self.showMain(false);
+            self.showSnapshop(false);
+            self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount);
+            self.showTwitterObjResult(true);
+        };
         if (/^http[s]?:\/\//.test(search_text)) {
             com.Args = [search_text, width, height];
             com.subCom = 'getSnapshop';
@@ -244,35 +255,91 @@ const appScript = {
                 _view.CanadaBackground(false);
                 return self.showMainSearchForm(false);
             }
-            // const arg: string = com.Args[0]
-            // const uuid = arg.split(',')[0].split('.')[0]
-            // self.showDownload(true)
-            // return _view.connectInformationMessage.fetchFiles(
-            // 	arg,
-            // 	( err, buffer: [{ uuid: string, data: Buffer }] ) => {
-            // 		self.showDownload(false)
-            // 		if (err) {
-            // 			return errorProcess(err)
-            // 		}
-            // 		self.showInputLoading(false)
-            // 		_view.CanadaBackground(false)
-            // 		self.showMainSearchForm(false)
-            // 		self.showMain(false)
-            // 		self.showSnapshop(true)
-            // 		let y = null
-            // 		let u = ''
-            // 		u += buffer.map ( n => { return n.data })
-            // 		self.showWebPage(
-            // 			( y = new showWebPageClass(search_text, u, uuid, null,() => {
-            // 				self.showWebPage((y = null))
-            // 				self.showMain(true)
-            // 				self.showSnapshop(false)
-            // 				_view.CanadaBackground(true)
-            // 				self.showMainSearchForm(true)
-            // 			}))
-            // 		)
-            // 	}
-            // )
+            if (com.subCom === 'getSnapshop') {
+                const files = com.Args[0];
+                let multimediaObj = null;
+                try {
+                    multimediaObj = JSON.parse(com.Args[1]);
+                }
+                catch (ex) {
+                    console.dir(`have not multimediaObj`);
+                }
+                self.showDownload(true);
+                _view.downloadMain.newDownload(com.requestSerial, multimediaObj && multimediaObj.title, ['snapshot', 'librarium', 'html'], err => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    }
+                    self.showInputLoading(false);
+                    _view.CanadaBackground(false);
+                    self.showMainSearchForm(false);
+                    self.showMain(false);
+                    self.showSnapshop(true);
+                    let y = null;
+                    const assembler = new Assembler(com.requestSerial, null, (err, data) => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        fetch(data.url).then(res => {
+                            return res.arrayBuffer();
+                        }).then(buffer => {
+                            URL.revokeObjectURL(data.url);
+                            assembler.terminate();
+                            let y = null;
+                            self.showWebPage((y = new showWebPageClass(search_text, Buffer.from(buffer).toString('base64'), com.requestSerial, multimediaObj, () => {
+                                self.showWebPage(y = null);
+                                self.showMain(true);
+                                self.showSnapshop(false);
+                                self.showMainSearchForm(true);
+                                _view.CanadaBackground(true);
+                            })));
+                        });
+                    });
+                });
+                return _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: search_text, files });
+            }
+            if (com.subCom === 'twitter') {
+                const twObj = com.Args[0];
+                const twitterHref = com.Args[1];
+                const serialNumber = com.requestSerial;
+                const fileBuffer = null; //com.Args[2]
+                if (fileBuffer) {
+                    _view.downloadMain.newDownload(serialNumber, 'twitter', ['snapshot', 'librarium', 'html', 'twitter'], err => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        self.showInputLoading(false);
+                        _view.CanadaBackground(false);
+                        self.showMainSearchForm(false);
+                        self.showMain(false);
+                        self.showSnapshop(true);
+                        let y = null;
+                        const assembler = new Assembler(serialNumber, null, (err, data) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            fetch(data.url).then(res => {
+                                return res.arrayBuffer();
+                            }).then(buffer => {
+                                URL.revokeObjectURL(data.url);
+                                assembler.terminate();
+                                let y = null;
+                                //twitterObj, twitterHref, serialNumber, buffer
+                                return showTwitter(twObj, twitterHref, serialNumber, buffer);
+                            });
+                        });
+                    });
+                    return _view.downloadMain.addMultipleQueue(fileBuffer);
+                }
+                return showTwitter(twObj, twitterHref, serialNumber, null, true);
+                /**
+                 *
+                 * 			Twitter API
+                 */
+            }
         });
     },
     historyListClick: (self, event) => {

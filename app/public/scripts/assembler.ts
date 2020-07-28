@@ -7,7 +7,7 @@ class Assembler {
 	private assembler: Worker
 	private databaseWorker: Worker
 	private callback: Function
-	constructor(requestUuid: string, hiddenAnchor: HTMLAnchorElement, callback: Function) {
+	constructor ( requestUuid: string, hiddenAnchor: HTMLAnchorElement, callback: Function) {
 		this.requestUuid = requestUuid
 		this.hiddenAnchor = hiddenAnchor
 		this.callback = callback
@@ -25,7 +25,7 @@ class Assembler {
 		return this.assembler
 	}
 
-	log = (message: string) => {
+	log = ( message: string ) => {
 		console.log(`<${new Date().toLocaleString()}> ${message}`)
 	}
 

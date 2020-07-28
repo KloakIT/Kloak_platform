@@ -2,7 +2,7 @@
 
 #CoSearch
 	<!-- ko with: appScript -->
-	.backGroundSetup( data-bind = " style: { background: searchItem() || showHistory() ? 'white' : '#B4E4ED', height: $root.middleY() * 2 }" )
+	.backGroundSetup( data-bind = " style: { background: $root.CanadaBackground() ? '#B4E4ED': 'white', height: $root.middleY() * 2 }" )
 		<!-- ko if: showMain() -->
 		.main
 
@@ -478,11 +478,10 @@
 									
 								<!-- /ko -->
 							<!-- /ko -->
-							.space
-							.space
+
 
 							<!-- ko foreach: searchItemList -->
-							.item
+							.item( style=" margin-bottom: 2rem;")
 								<!-- ko if: imageInfo && imageInfo['img'] -->
 								.image.ui.top.aligned( data-bind = "style: { height: imageInfo['videoTime'] ? '90px' : 'auto' }" style = " width:150px ")
 									img( data-bind = "attr: { src: imageInfo.img }")
@@ -492,37 +491,35 @@
 
 								<!-- /ko -->
 								.content
-									.header
-										a( data-bind = "text: title, attr: { href: url } "  style="font-weight: normal;font-size: medium;" target = "_blank" )
-									<!-- ko ifnot: newsBrand -->
-									.meta( style="margin:unset;")
-										span
-											
-											<!-- ko if: !showLoading() && ! snapshotReady() && !showError() && ! showDownload() -->
+									.ui.header
+										<!-- ko if: !showLoading() && ! snapshotReady() && !showError() && ! showDownload() -->
 											i.icon.object.group.grey.link( data-bind = "click: function() { $parents[0].getSnapshotClick( $parents[0], $index ())}")
-											<!-- /ko -->
+										<!-- /ko -->
 
-											<!-- ko if: showLoading -->
+										<!-- ko if: showLoading -->
 											i.icon.notched.circle.loading( data-bind = "css: { 'loadingGetResponse': loadingGetResponse, 'conetResponse': conetResponse }")
-											<!-- /ko -->
+										<!-- /ko -->
 
-											<!-- ko if: showDownload -->
+										<!-- ko if: showDownload -->
 											spam( style = "position: relative; padding-right: 25px;")
 												img( src = "/images/downloads1.gif" style = "width: 20px; position: absolute;" )
-											<!-- /ko -->
+										<!-- /ko -->
 
-											<!-- ko if: snapshotReady -->
+										<!-- ko if: snapshotReady -->
 											i.icon.file.image.outline.olive.link( data-bind = "click: function() { $parents[0].showSnapshotClick( $parents[0], $index())}" )
-											<!-- /ko -->
+										<!-- /ko -->
 											
-											<!-- ko if: showError -->
+										<!-- ko if: showError -->
 											i.icon.info.circle.red.link( data-bind = "attr: { id: id, 'data-content': messageBoxDefine [ errorIndex()] [ $root.languageIndex() ]}")
-											<!-- /ko -->
+										<!-- /ko -->
 
-										span( data-bind="text: urlShow, style: { color: snapshotReady() ? 'orange' : ( showError() ? 'red' : 'green') } "
-											style="margin-top: 0.5em; margin-bottom: 0.5em; font-size: small;" )
-									<!-- /ko -->
-									.description( style = " color: grey; ")
+										<!-- ko ifnot: newsBrand -->
+											a.content( style="font-weight: normal;font-size: medium;" )
+												<!-- ko text: title --><!-- /ko -->
+												.sub.header( data-bind="text: urlShow, style: { color: snapshotReady() ? 'orange' : ( showError() ? 'red' : 'green') } "
+													style=" font-size: small;" )
+										<!-- /ko -->
+									.description( style = " color: grey; margin-top: 0px;")
 
 										<!-- ko if: newsBrand -->
 										p
@@ -585,8 +582,6 @@
 										<!-- /ko -->
 										span( data-bind = "text: description" style = "color: grey")
 
-							.space
-							.space
 							<!-- /ko -->
 
 							<!-- ko if: !nextButtonShowError() && searchItem().nextPage -->
@@ -597,8 +592,6 @@
 							button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: nextButtonErrorClick " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
 
 							<!-- /ko -->
-							.space
-							.space
 					
 			<!-- /ko -->
 			<!-- ko if: showHistory -->
@@ -738,8 +731,8 @@
 											<!-- /ko -->
 											
 							<!-- /ko -->
-							<!-- ko if: entries -->
-								<!-- ko foreach: entries -->
+							<!-- ko if: entriesObj -->
+								<!-- ko foreach: entriesObj -->
 									.item
 										.image
 											img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
@@ -838,7 +831,7 @@
 		<!-- /ko -->
 
 		<!-- ko if: Object.keys(currentDownloads()).length > 0 || Object.keys(finishedDownloads()).length > 0 -->
-			.downloadIndicator(data-bind="style: {'height': showDownloadProgress() ? 'auto' : '3rem'}")
+			.downloadIndicator( data-bind="style: {'height': showDownloadProgress() ? 'auto' : '3rem'}")
 				a#hiddenAnchor(style="position: absolute; visibility: none")
 				.downloadHeader(data-bind="click: () => {showDownloadProgress(!showDownloadProgress())}, style: {'opacity' : showDownloadProgress() ? '1' : '0.75'}")
 					p(data-bind="text: Object.keys(currentDownloads()).length > 0 ? 'Downloading ' + Object.keys(currentDownloads()).length + ' file(s)' : 'No active downloads'")
@@ -873,5 +866,8 @@
 					<!-- /ko -->
 		<!-- /ko -->
 		
+		<!-- ko if: showTwitterObjResult() -->
+			.twitterTimeObj( data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
+		<!-- /ko -->
 	
 	<!-- /ko -->

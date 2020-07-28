@@ -415,5 +415,111 @@ block jumbotron1
 			<!-- /ko -->
 			span( data-bind = "text: labelText [ $root.languageIndex() ] ")
 
+	
+	script#twitterQuotedItem( type = "text/html")
+		.item
+			img.ui.avatar.image( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
+			.content
+				.header( style = "font-size: small;")
+					h5
+						span( data-bind = "text: user.name " )
+						span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+						span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+				.description
+					textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.textareaHeight ( $index (), true );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+
+
+	script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
+		img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+
+	script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
+		.item
+			.ui.circular.image( style = "height: 47px!important;width: 47px!important;" )
+				img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
+				
+			.content
+				.header( style = "font-size: small;")
+					h5
+						span( data-bind = "text: user.name " )
+						<!-- ko if: user.verified -->
+							span( style="margin-left: 0.2rem;")
+								i.icons
+									i.icon.certificate.blue
+									i.icon.check.small.white
+						<!-- /ko -->
+						span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+						span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+				.description
+					
+					textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+					<!-- ko if: typeof quoted_status !== "undefined" -->
+						.ui.items( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;padding: 0.5rem;" )
+					<!-- /ko -->
+					<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+						.ui.items( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
+					<!-- /ko -->
+					
+				.extra( style = "height: 1rem;")
+					span
+						h5.ui.header
+							i.icon.retweet.blue
+							.content
+								.sub.header( data-bind = "text: retweet_count" )
+							i.icon.heart.outline.red( style = "padding-left: 5rem;" )
+							.content
+								.sub.header( data-bind = "text: favorite_count" )
+								
+
+
+
+	script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
+		.searchItems
+			<!-- ko if: showAccount -->
+				.accountHearer( data-bind = "with: twitterTimeArray()[0]")
+					<!-- ko if: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ].length > 200 -->
+						.item
+							img.ui.centered.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ]}")
+					<!-- /ko -->
+					.accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
+						img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
+					.extra
+						h2.ui.header
+							<!-- ko text: user.name --><!-- /ko -->
+							<!-- ko if: user.verified -->
+								span
+									i.icons
+										i.icon.certificate.blue
+										i.icon.check.white.small
+							<!-- /ko -->
+							.sub.header( data-bind = " text: '@' + user.screen_name ")
+
+						.description
+							textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+						.extra
+							span
+								i.icon.map.marker.alternate.grey
+							span( data-bind = " text: user.location ")
+							span( style = "margin-left: 1rem;")
+								i.icon.calendar.alternate.outline.grey
+							span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
+						.extra
+							h4
+								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
+								span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
+								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
+								span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
+			<!-- /ko -->
+			.ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
+				<!-- ko if: typeof retweeted_status !== "undefined" -->
+					.retweet( style = "color: grey")
+						i.icon.retweet.blue
+						span( data-bind = " text: user.name ")
+						span( data-bind = " text: $root.appScript().twitterObj.retweeted[$root.languageIndex()]" )
+					<!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
+				<!-- /ko -->
+
+				<!-- ko if: typeof retweeted_status === "undefined" -->
+					<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
+				<!-- /ko -->
 
 

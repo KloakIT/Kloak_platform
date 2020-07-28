@@ -136,6 +136,12 @@
 	display: none;
 }
 
+.twitter-account-show-name {
+	font-weight: lighter;
+    color: gray;
+    margin-left: 0.5rem;
+}
+
 .iconButton {
 	cursor: pointer;
 	-webkit-transition: opacity 0.2s ease-in-out;
