@@ -9,6 +9,7 @@
 class buttonStatusClass {
 	public loading: any = ko.observable ( false )
 	public error = ko.observable ( null )
+	public requestUuid = null
 	public errorProcess = err => {
 		this.loading ( false )
 		
@@ -18,10 +19,17 @@ class buttonStatusClass {
 	public click ( self ) {
 		
 		if ( this.loading () === 5 ) {
-			
-			_view.tempAppHtml ( false )
-			_view.appClick ( 1 )
-			_view.showFileStorage ( true )
+			if (self.redirect) {
+				_view.tempAppHtml ( false )
+				_view.appClick ( 1 )
+				_view.showFileStorage ( true )
+				return
+			}
+			new Assembler(this.requestUuid, null, (err, data) => {
+				_view.displayVideo(true)
+				const videoPlayer = document.getElementById("videoPlayer")
+				videoPlayer['src'] = data.url
+			})
 			return 
 		}
 
@@ -47,7 +55,6 @@ class buttonStatusClass {
 			}
 
 			if ( com.error === -1 ) {
-				
 				return _self.loading ( 3 )
 			}
 
@@ -57,13 +64,13 @@ class buttonStatusClass {
 
 			const files = com.Args[0]
 		
-
 			_view.downloadMain.newDownload ( com.requestSerial, _self.obj.title, ['media', 'librarium', 'html'], ( err, data ) => {
 				if ( err ) {
 					console.error(err)
 					return
 				}
 				if ( data ) {
+					this.requestUuid = com.requestSerial
 					this.loading( 5 )
 				}
 			})
@@ -77,7 +84,7 @@ class buttonStatusClass {
 	}
 
 
-	constructor ( public labelText: string[], public iconName: string, public cmd: QTGateAPIRequestCommand, private obj: any ) {
+	constructor ( public labelText: string[], public iconName: string, public cmd: QTGateAPIRequestCommand, private obj: any, public redirect = true ) {
 	}
 
 }

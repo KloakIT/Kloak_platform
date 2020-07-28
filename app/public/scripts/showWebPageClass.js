@@ -5,13 +5,15 @@
  *
  */
 class buttonStatusClass {
-    constructor(labelText, iconName, cmd, obj) {
+    constructor(labelText, iconName, cmd, obj, redirect = true) {
         this.labelText = labelText;
         this.iconName = iconName;
         this.cmd = cmd;
         this.obj = obj;
+        this.redirect = redirect;
         this.loading = ko.observable(false);
         this.error = ko.observable(null);
+        this.requestUuid = null;
         this.errorProcess = err => {
             this.loading(false);
             this.error(_view.connectInformationMessage.getErrorIndex(err));
@@ -20,9 +22,17 @@ class buttonStatusClass {
     }
     click(self) {
         if (this.loading() === 5) {
-            _view.tempAppHtml(false);
-            _view.appClick(1);
-            _view.showFileStorage(true);
+            if (self.redirect) {
+                _view.tempAppHtml(false);
+                _view.appClick(1);
+                _view.showFileStorage(true);
+                return;
+            }
+            new Assembler(this.requestUuid, null, (err, data) => {
+                _view.displayVideo(true);
+                const videoPlayer = document.getElementById("videoPlayer");
+                videoPlayer['src'] = data.url;
+            });
             return;
         }
         if (this.error()) {
@@ -54,6 +64,7 @@ class buttonStatusClass {
                     return;
                 }
                 if (data) {
+                    this.requestUuid = com.requestSerial;
                     this.loading(5);
                 }
             });

@@ -208,6 +208,7 @@ module view_layout {
 		public downloadMain = new DownloadMain()
 		public localServerConnected = ko.observable(false)
 		public showLocalServerDisconnect = ko.observable(false)
+		public displayVideo = ko.observable(false)
 		/*
         public worker = new workerManager ([
             'mHtml2Html'

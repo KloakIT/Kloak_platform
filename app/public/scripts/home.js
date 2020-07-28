@@ -162,6 +162,7 @@ var view_layout;
             this.downloadMain = new DownloadMain();
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
+            this.displayVideo = ko.observable(false);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
