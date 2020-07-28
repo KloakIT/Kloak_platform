@@ -107,7 +107,9 @@ const messageBoxDefine = {
 		'Node have not responding to requests, try again later.',
 		'節點無響應，可能正在忙碌中，請稍後再試'
 	],
-
+	copyClipboard: [
+		'网址已复制','URLがコピーされました','URL copied','網址已復制'
+	]
 
 
 }

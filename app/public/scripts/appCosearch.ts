@@ -135,11 +135,21 @@ const appScript = {
 	getLinkClick: ( self, index ) => {
 		const currentItem = self.searchItemList()[ index ]
 		const el = document.createElement ( 'textarea' )
+		
 		el.value = currentItem.url
+		el.setAttribute ('readonly', '')
+		el.style.position = 'absolute'
+		el.style.left = '-9999px'
 		document.body.appendChild ( el )
 		el.select()
 		document.execCommand ( 'copy' ) 
 		document.body.removeChild ( el )
+		const aTag = $(`#${ currentItem.id }-urlLink`)
+		
+		aTag.popup ('show')
+		setTimeout (() => {
+			aTag.popup ('hide')
+		}, 3000 )
 
 	},
 

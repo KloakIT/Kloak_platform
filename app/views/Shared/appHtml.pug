@@ -514,7 +514,7 @@
 										<!-- /ko -->
 
 										<!-- ko ifnot: newsBrand -->
-											a.content( data-bind = "click: function() { $parents[0].getLinkClick( $parents[0], $index ())}" style="font-weight: normal;font-size: medium;" )
+											a.content( data-bind = "click: function() { $parents[0].getLinkClick( $parents[0], $index ())}, attr: { 'id': id + '-urlLink', 'data-content': messageBoxDefine['copyClipboard'][ $root.languageIndex() ] }" style="font-weight: normal;font-size: medium;" )
 												<!-- ko text: title --><!-- /ko -->
 												.sub.header( data-bind="text: urlShow, style: { color: snapshotReady() ? 'orange' : ( showError() ? 'red' : 'green') } "
 													style=" font-size: small;" )

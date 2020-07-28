@@ -272,46 +272,45 @@ block jumbotron1
 
 	<!-- ko if: imapSetup -->
 		<!-- ko with: imapSetup -->
-			
-				.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
-					.card.centered.raised( style = " width: 100%;" )
-						<!-- ko if: showForm -->
-							
-							.content.imapSetupForm
-								<!-- ko if: checkImapError () > -1 -->
-									.ui.top.attached.segment.warning.message( style = "font-size: large;")
-										i.icon.exclamation.triangle.red
-										<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[ checkImapError() ] --><!-- /ko -->
-								<!-- /ko -->
-								.ui.segment.attached( data-bind = "css: { 'teal': checkImapError () < 0 }")
+			.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
+				.card.centered.raised( style = " width: 100%;" )
+					<!-- ko if: showForm -->
+						
+						.content.imapSetupForm
+							<!-- ko if: checkImapError () > -1 -->
+								.ui.top.attached.segment.warning.message( style = "font-size: large;")
+									i.icon.exclamation.triangle.red
+									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[ checkImapError() ] --><!-- /ko -->
+							<!-- /ko -->
+							.ui.segment.attached( data-bind = "css: { 'teal': checkImapError () < 0 }")
+								
+								p.kloak_color_PrimaryTeal( style = "font-size: large;" )
+									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.infomation --><!-- /ko -->
+									a.ui.label.teal.link.big( data-bind = " click: useCoNetTempAccount, text: infoDefine [ $root.languageIndex() ].imapInformation.coNetTempAccount ")
 									
-									p.kloak_color_PrimaryTeal( style = "font-size: large;" )
-										<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.infomation --><!-- /ko -->
-										a.ui.label.teal.link.big( data-bind = " click: useCoNetTempAccount, text: infoDefine [ $root.languageIndex() ].imapInformation.coNetTempAccount ")
-										
-								form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
-									.two.fields
-										.field( data-bind = " css: { error: emailAddressShowError ()}")
-											.ui.left.icon.input.huge
-												i.icon.outline.mail
-												input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
-										.field
-											.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
-												i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-												input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
-												button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
-													i.icon.angle.right
-						<!-- /ko -->
-						<!-- ko if: showCheckProcess -->
-							.content.loader
-								p.kloak_color_PrimaryTeal( data-bind = "text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[0] ")
-								.loaderCoNET
-									.loaderCoNET-div
-									.loaderCoNET-div
-									.loaderCoNET-div
-									.loaderCoNET-div
+							form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
+								.two.fields
+									.field( data-bind = " css: { error: emailAddressShowError ()}")
+										.ui.left.icon.input.huge
+											i.icon.outline.mail
+											input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
+									.field
+										.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
+											i.icon.privacy( data-bind = " visible: !password() || !password().length ")
+											input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
+											button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
+												i.icon.angle.right
+					<!-- /ko -->
+					<!-- ko if: showCheckProcess -->
+						.content.loader
+							p.kloak_color_PrimaryTeal( data-bind = "text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[0] ")
+							.loaderCoNET
+								.loaderCoNET-div
+								.loaderCoNET-div
+								.loaderCoNET-div
+								.loaderCoNET-div
 
-						<!-- /ko -->
+					<!-- /ko -->
 		<!-- /ko -->
 	<!-- /ko -->
 
