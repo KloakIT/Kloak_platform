@@ -106,6 +106,15 @@ const appScript = {
         self.showSearchError(false);
         self.errorMessageIndex(null);
     },
+    showTwitter: (self, twitterObj, twitterHref, serialNumber, buffer, showAccount) => {
+        self.showInputLoading(false);
+        _view.CanadaBackground(false);
+        self.showMainSearchForm(false);
+        self.showMain(false);
+        self.showSnapshop(false);
+        self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount);
+        self.showTwitterObjResult(true);
+    },
     returnSearchResultItemsInit: (items) => {
         let i = 0;
         const y = [];
@@ -334,7 +343,7 @@ const appScript = {
                     });
                     return _view.downloadMain.addMultipleQueue(fileBuffer);
                 }
-                return showTwitter(twObj, twitterHref, serialNumber, null, true);
+                return self.showTwitter(self, twObj, twitterHref, serialNumber, null, true);
                 /**
                  *
                  * 			Twitter API
@@ -653,10 +662,54 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
+            if (com.subCom === 'twitter') {
+                currentItem.showDownload(true);
+                currentItem.showLoading(false);
+                currentItem['twObj'] = com.Args[0];
+                currentItem['twitterHref'] = com.Args[1];
+                currentItem['serialNumber'] = com.requestSerial;
+                currentItem['fileBuffer'] = null; //com.Args[2]
+                if (currentItem['fileBuffer']) {
+                    _view.downloadMain.newDownload(com.requestSerial, 'twitter', ['snapshot', 'librarium', 'html', 'twitter'], err => {
+                        if (err) {
+                            console.error(err);
+                            return;
+                        }
+                        self.showInputLoading(false);
+                        _view.CanadaBackground(false);
+                        self.showMainSearchForm(false);
+                        self.showMain(false);
+                        self.showSnapshop(true);
+                        let y = null;
+                        const assembler = new Assembler(serialNumber, null, (err, data) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            fetch(data.url).then(res => {
+                                return res.arrayBuffer();
+                            }).then(buffer => {
+                                URL.revokeObjectURL(data.url);
+                                assembler.terminate();
+                                let y = null;
+                                //twitterObj, twitterHref, serialNumber, buffer
+                                return showTwitter(twObj, twitterHref, serialNumber, buffer);
+                            });
+                        });
+                    });
+                    return _view.downloadMain.addMultipleQueue(currentItem['fileBuffer']);
+                }
+                //return self.showTwitter ( self, twObj, twitterHref, serialNumber, null, true )
+                /**
+                 *
+                 * 			Twitter API
+                 */
+                currentItem.showDownload(false);
+                currentItem.snapshotReady(true);
+                return;
+            }
             const files = com.Args[0];
             currentItem.snapshotUuid = com.requestSerial;
-            currentItem.showDownload(true);
-            currentItem.showLoading(false);
             try {
                 currentItem['multimediaObj'] = JSON.parse(com.Args[1]);
             }
@@ -697,6 +750,13 @@ const appScript = {
         }
         else {
             currentItem = self.searchItemList()[index];
+        }
+        /**
+         *
+         * 		Twitter obj
+         */
+        if (currentItem['twObj']) {
+            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], null, true);
         }
         const assembler = new Assembler(currentItem.snapshotUuid, null, (err, data) => {
             if (err) {

@@ -418,26 +418,29 @@ block jumbotron1
 	
 	script#twitterQuotedItem( type = "text/html")
 		.item
-			img.ui.avatar.image( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
-			.content
-				.header( style = "font-size: small;")
+			img.ui.avatar.image( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;")
+			.content( style = "padding-left:0px;")
+				.header( style = "font-size: small;margin: 0.5rem;")
 					h5
 						span( data-bind = "text: user.name " )
 						span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
 						span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
-				.description
-					textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.textareaHeight ( $index (), true );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
-
+				.description( style = "margin-top: 0px;")
+					textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;padding-right: 0.5rem;" readOnly disabled )
+					<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+						img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ extended_entities.media [0].kloakMediaLink ]}" style = " border-bottom-right-radius: 1rem;")
+					<!-- /ko -->
 
 	script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
 		img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+		
 
 	script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
 		.item
 			.ui.circular.image( style = "height: 47px!important;width: 47px!important;" )
 				img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
 				
-			.content
+			.content( style = "padding-left: .5em;")
 				.header( style = "font-size: small;")
 					h5
 						span( data-bind = "text: user.name " )
@@ -449,11 +452,10 @@ block jumbotron1
 						<!-- /ko -->
 						span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
 						span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
-				.description
-					
+				.description( style = "margin-top: 0px;")
 					textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
 					<!-- ko if: typeof quoted_status !== "undefined" -->
-						.ui.items( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;padding: 0.5rem;" )
+						.ui.items( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
 					<!-- /ko -->
 					<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
 						.ui.items( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
