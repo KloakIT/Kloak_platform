@@ -132,6 +132,17 @@ const appScript = {
 		self.showTwitterObjResult ( true )
 	},
 
+	getLinkClick: ( self, index ) => {
+		const currentItem = self.searchItemList()[ index ]
+		const el = document.createElement ( 'textarea' )
+		el.value = currentItem.url
+		document.body.appendChild ( el )
+		el.select()
+		document.execCommand ( 'copy' ) 
+		document.body.removeChild ( el )
+
+	},
+
 	returnSearchResultItemsInit: (items) => {
 		let i = 0
 		const y = []
