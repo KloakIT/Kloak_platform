@@ -127,9 +127,9 @@ const appScript = {
         document.execCommand('copy');
         document.body.removeChild(el);
         const aTag = $(`#${currentItem.id}-urlLink`);
-        aTag.popup('show');
+        aTag.popup({ on: 'click' }).popup('show');
         setTimeout(() => {
-            aTag.popup('hide');
+            aTag.popup('remove');
         }, 3000);
     },
     returnSearchResultItemsInit: (items) => {
@@ -239,7 +239,6 @@ const appScript = {
             if (com.error) {
                 return errorProcess(com.error);
             }
-            self.showInputLoading(false);
             /**
              *
              * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
@@ -290,12 +289,12 @@ const appScript = {
                 catch (ex) {
                     console.dir(`have not multimediaObj`);
                 }
-                self.showDownload(true);
                 _view.downloadMain.newDownload(com.requestSerial, multimediaObj && multimediaObj.title, ['snapshot', 'librarium', 'html'], err => {
                     if (err) {
                         console.error(err);
                         return;
                     }
+                    self.showDownload(true);
                     self.showInputLoading(false);
                     _view.CanadaBackground(false);
                     self.showMainSearchForm(false);
