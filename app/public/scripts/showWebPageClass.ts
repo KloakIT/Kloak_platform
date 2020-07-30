@@ -363,13 +363,11 @@ class showWebPageClass {
 
 	constructor( public showUrl: string, private zipBase64Stream: string, private zipBase64StreamUuid: string, private multimediaObj, private exit: () => void ) {
 		const self = this
-		_view.sharedMainWorker.unzipHTML(
-			zipBase64StreamUuid,
-			zipBase64Stream,
-			(err, data) => {
+		if ( zipBase64Stream && zipBase64StreamUuid ) {
+			_view.sharedMainWorker.unzipHTML ( zipBase64StreamUuid, zipBase64Stream, (err, data) => {
 				//showHTMLComplete ( zipBase64StreamUuid, zipBase64Stream, ( err, data: { mhtml: string, img: string, html: string, folder: [ { filename: string, data: string }]} ) => {
-				if (err) {
-					console.log(err)
+				if ( err ) {
+					console.log ( err )
 					return self.showErrorMessageProcess()
 				}
 			/*
@@ -418,14 +416,14 @@ class showWebPageClass {
 										'g'
 									)
 									/*
-                                if ( /^ src/i.test( hrefTest )) {
-                                    
-                                    const data1 = `data:${ mime };base64,` + _data
-                                    html = html.replace ( regex, data1 ).replace ( regex, data1 )
-                                    return doCallBack ()
-                                    
-                                }
-                                */
+								if ( /^ src/i.test( hrefTest )) {
+									
+									const data1 = `data:${ mime };base64,` + _data
+									html = html.replace ( regex, data1 ).replace ( regex, data1 )
+									return doCallBack ()
+									
+								}
+								*/
 									const blob = new Blob(
 										[
 											/^image/.test(mime)
@@ -458,7 +456,8 @@ class showWebPageClass {
 						self.urlBlobList.push(_url)
 					})
 				}
-				if (data.mhtml) {
+				
+				if ( data.mhtml ) {
 					html = mhtml2html.convert ( data.mhtml )
 					self.mHtml ( html )
 				}
@@ -469,5 +468,11 @@ class showWebPageClass {
 					this.showMultimediaObj ()
 				}
 			})
+			return
+		}
+		this.showLoading ( false )
+		this.showImgPage ( false )
+		this.showMultimediaObj ()
+		this.showMultimedia ()
 	}
 }

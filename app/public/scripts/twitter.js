@@ -46,6 +46,11 @@ class twitter {
         this.hours = ['小时', '時間', 'h', '小時'];
         this.mouth = ['月', '月', '', '月'];
         this.month_eng = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        this.moreResultsButtomLoading = ko.observable(false);
+        this.nextButtonLoadingGetResponse = ko.observable(false);
+        this.nextButtonConetResponse = ko.observable(false);
+        this.nextButtonShowError = ko.observable(false);
+        this.nextButtonErrorIndex = ko.observable(-1);
     }
     getmonth(mon, leng) {
         if (leng === 2) {
@@ -129,5 +134,59 @@ class twitter {
     userCountFormat(cc) {
         const hh = cc.toString();
         return hh.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    searchNext() {
+        const self = this;
+        if (this.moreResultsButtomLoading()) {
+            return;
+        }
+        if (this.nextButtonShowError()) {
+            return this.nextButtonShowError(false);
+        }
+        const lastPost = this.twitterTimeArray().length - 1;
+        const post = this.twitterTimeArray()[lastPost];
+        const user = post.user;
+        this.moreResultsButtomLoading(true);
+        const com = {
+            command: 'CoSearch',
+            Args: [user.id_str, post.id],
+            error: null,
+            subCom: 'twitter_user',
+            requestSerial: uuid_generate(),
+        };
+        const showError = (err) => {
+            this.moreResultsButtomLoading(false);
+            this.nextButtonLoadingGetResponse(false);
+            this.nextButtonConetResponse(false);
+            this.nextButtonErrorIndex(_view.connectInformationMessage.getErrorIndex(err));
+            this.nextButtonShowError(true);
+        };
+        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
+            if (err) {
+                return showError(err);
+            }
+            if (!com) {
+                return self.nextButtonLoadingGetResponse(true);
+            }
+            if (com.error === -1) {
+                self.nextButtonLoadingGetResponse(false);
+                return self.nextButtonConetResponse(true);
+            }
+            if (com.error) {
+                return showError(com.error);
+            }
+            this.moreResultsButtomLoading(false);
+            const twObj = com.Args[0];
+            const twitterHref = com.Args[1];
+            for (let i of Object.keys(twitterHref)) {
+                if (self.twitterHref[i]) {
+                    return;
+                }
+                self.twitterHref[i] = twitterHref[i];
+            }
+            twObj.forEach(n => {
+                self.twitterTimeArray.push(n);
+            });
+        });
     }
 }

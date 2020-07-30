@@ -585,7 +585,7 @@
 							<!-- /ko -->
 
 							<!-- ko if: !nextButtonShowError() && searchItem().nextPage -->
-							button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading,  negative: nextButtonShowError, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse },text: info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+							button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse },text: info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
 							<!-- /ko -->
 
 							<!-- ko if: nextButtonShowError -->
@@ -626,7 +626,7 @@
 								i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
 								input( style = "color: rgba ( 0,0,0,0.5 );padding-right: 7rem!important;" readonly data-bind = "value: showUrl" )
 								<!-- ko if: ! showLoading() -->
-									<!-- ko if: !showImgPage() -->
+									<!-- ko if: !showImgPage() && png() -->
 										i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
 									<!-- /ko -->
 
@@ -634,7 +634,7 @@
 										i.icon.circular.red.youtube.link( data-bind = " click: showMultimedia" style = "right: 3.5rem; left: auto;")
 									<!-- /ko -->
 
-									<!-- ko if: !showHtmlCodePage()  -->
+									<!-- ko if: !showHtmlCodePage() && mHtml() -->
 									i.icon.link.code.circular( data-bind = " click: htmlClick, style: { right: showMultimediaPage () ? '3.5rem' : '.5em' } " style="left: auto ; color:#346b0b!important;" )
 									<!-- /ko -->
 								<!-- /ko -->

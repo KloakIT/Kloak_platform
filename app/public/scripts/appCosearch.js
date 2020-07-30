@@ -239,6 +239,29 @@ const appScript = {
             if (com.error) {
                 return errorProcess(com.error);
             }
+            /***
+             *
+             *
+             * 		youtube API
+             *
+             */
+            if (com.subCom === 'youtube') {
+                const multimediaObj = com.Args;
+                let y = null;
+                self.showDownload(true);
+                self.showInputLoading(false);
+                _view.CanadaBackground(false);
+                self.showMainSearchForm(false);
+                self.showMain(false);
+                self.showSnapshop(true);
+                return self.showWebPage(y = new showWebPageClass(search_text, null, null, multimediaObj, () => {
+                    self.showWebPage(y = null);
+                    self.showMain(true);
+                    self.showSnapshop(false);
+                    self.showMainSearchForm(true);
+                    _view.CanadaBackground(true);
+                }));
+            }
             /**
              *
              * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
@@ -678,9 +701,14 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
+            currentItem.showLoading(false);
+            if (com.subCom === 'youtube') {
+                currentItem.showDownload(false);
+                currentItem.snapshotReady(true);
+                return currentItem['multimediaObj'] = com.Args;
+            }
             if (com.subCom === 'twitter') {
                 currentItem.showDownload(true);
-                currentItem.showLoading(false);
                 currentItem['twObj'] = com.Args[0];
                 currentItem['twitterHref'] = com.Args[1];
                 currentItem['serialNumber'] = com.requestSerial;
@@ -773,6 +801,20 @@ const appScript = {
          */
         if (currentItem['twObj']) {
             return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], null, true);
+        }
+        /**
+         *
+         * 		youtube API
+         */
+        if (currentItem['multimediaObj']) {
+            let y = null;
+            self.showMain(false);
+            self.showSnapshop(true);
+            return self.showWebPage(y = new showWebPageClass(currentItem.url, null, currentItem.snapshotUuid, currentItem.multimediaObj, () => {
+                self.showWebPage((y = null));
+                self.showMain(true);
+                self.showSnapshop(false);
+            }));
         }
         const assembler = new Assembler(currentItem.snapshotUuid, null, (err, data) => {
             if (err) {
