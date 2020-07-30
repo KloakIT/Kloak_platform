@@ -82,6 +82,7 @@ const appScript = {
 	//	['originImage']
 
 	initSearchData: (self) => {
+
 		self.searchItem(null)
 		self.searchItemList([])
 		self.showInputLoading(true)
@@ -91,6 +92,8 @@ const appScript = {
 		self.showSearchesRelated(null)
 		self.videoItemsArray(null)
 		self.imageSearchItemArray(null)
+
+
 	},
 
 	showResultItems: (self, items) => {
@@ -99,7 +102,7 @@ const appScript = {
 		$('.selection.dropdown').dropdown()
 	},
 
-	searchSetupClick: (self, event) => {
+	searchSetupClick: ( self, event ) => {
 		self.showSearchSetupForm(true)
 		self.backGroundBlue(true)
 
@@ -128,7 +131,18 @@ const appScript = {
 		self.showMain( false )
 		self.showSnapshop ( false )
 		
-		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount )
+		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount, () => {
+			
+			self.twitterObj = null
+			self.showTwitterObjResult ( false )
+			self.showMain( true )
+			if ( self.searchItemsArray().length ) {
+				return 
+			}
+			self.showMainSearchForm ( true )
+			_view.CanadaBackground ( true )
+		})
+
 		self.showTwitterObjResult ( true )
 	},
 
@@ -234,7 +248,7 @@ const appScript = {
 		/**
 		 * 			web page address
 		 */
-
+		/*
 
 		const showTwitter = ( twitterObj, twitterHref, serialNumber, buffer, showAccount: boolean ) => {
 			self.showInputLoading ( false )
@@ -246,6 +260,7 @@ const appScript = {
 			self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount )
 			self.showTwitterObjResult ( true )
 		}
+		*/
 
 		if (/^http[s]?:\/\//.test( search_text )) {
 			com.Args = [ search_text, width, height ]
@@ -292,12 +307,12 @@ const appScript = {
 				 * 		youtube API
 				 * 
 				 */
-
+				self.showInputLoading (false )
 				if ( com.subCom === 'youtube' ) {
 					const multimediaObj = com.Args
 					let y = null
 					self.showDownload ( true )
-                    self.showInputLoading ( false )
+                    
                     _view.CanadaBackground ( false )
                     self.showMainSearchForm ( false )
                     self.showMain ( false )
@@ -349,17 +364,14 @@ const appScript = {
 
 				if ( com.subCom === 'webSearch' ) {
 					const args = com.Args
-					self.searchInputTextShow(search_text)
+					self.searchInputTextShow ( search_text )
 
-					self.returnSearchResultItemsInit(args)
-					args.totalResults = args.totalResults.replace(
-						/\B(?=(\d{3})+(?!\d))/g,
-						','
-					)
-					self.searchItemsArray(args)
-					self.showResultItems(self, args)
-					_view.CanadaBackground(false)
-					return self.showMainSearchForm(false)
+					self.returnSearchResultItemsInit ( args )
+					args.totalResults = args.totalResults.replace ( /\B(?=(\d{3})+(?!\d))/g, ',' )
+					self.searchItemsArray ( args )
+					self.showResultItems ( self, args )
+					_view.CanadaBackground ( false )
+					return self.showMainSearchForm ( false )
 				}
 
 				if ( com.subCom === 'getSnapshop') {
@@ -371,8 +383,6 @@ const appScript = {
 					} catch ( ex ) {
 						console.dir (`have not multimediaObj`)
 					}
-
-					
 
 					_view.downloadMain.newDownload ( com.requestSerial, multimediaObj && multimediaObj.title, [ 'snapshot', 'librarium', 'html' ], err => {
 						if ( err ) {
@@ -454,7 +464,7 @@ const appScript = {
 									let y = null
 	
 									//twitterObj, twitterHref, serialNumber, buffer
-									return showTwitter ( twObj, twitterHref, serialNumber, buffer )
+									return self.showTwitter ( self, twObj, twitterHref, serialNumber, buffer, true )
 								})
 							})
 						})
@@ -501,12 +511,12 @@ const appScript = {
 		}
 	},
 
-	startup: (self) => {
-		self.password.subscribe((_text: string) => {
-			self.passwordError(false)
+	startup: ( self ) => {
+		self.password.subscribe (( _text: string ) => {
+			self.passwordError ( false )
 		})
 
-		self.hasFocus.subscribe((_result: boolean) => {
+		self.hasFocus.subscribe(( _result: boolean ) => {
 			if (_result) {
 				self.hasFocusShowTool(true)
 				return self.backGroundBlue(true)
@@ -540,11 +550,11 @@ const appScript = {
 
 		self.SearchInputNextHasFocus.subscribe((hasFocus: boolean) => {
 			if (hasFocus) {
-				self.showSearchesRelated(true)
+				self.showSearchesRelated ( true )
 			}
 		})
 
-		_view.CanadaBackground(true)
+		_view.CanadaBackground ( true )
 	},
 
 	nextButtonErrorClick: (self) => {
@@ -642,7 +652,7 @@ const appScript = {
 		)
 	},
 
-	createNewsResult: (self, newsResult) => {
+	createNewsResult: ( self, newsResult ) => {
 		const newsItems = JSON.parse(JSON.stringify(self.searchItemsArray()))
 		newsItems.Result = newsResult.Result
 		newsItems.nextPage = newsResult.nextPage
@@ -650,7 +660,7 @@ const appScript = {
 		return newsItems
 	},
 
-	newsButtonClick: (self, event) => {
+	newsButtonClick: ( self, event ) => {
 		if (self.newsButtonShowLoading()) {
 			return
 		}
@@ -726,7 +736,7 @@ const appScript = {
 		return self.showResultItems(self, self.newsItemsArray())
 	},
 
-	imageButtonClick: (self, event) => {
+	imageButtonClick: ( self, event ) => {
 		if (self.imageButtonShowLoading()) {
 			return
 		}
@@ -897,7 +907,7 @@ const appScript = {
 								let y = null
 
 								//twitterObj, twitterHref, serialNumber, buffer
-								return showTwitter ( twObj, twitterHref, serialNumber, buffer )
+								return self.showTwitter ( self, twObj, twitterHref, serialNumber, buffer )
 							})
 						})
 					})
@@ -907,14 +917,16 @@ const appScript = {
 
 				//return self.showTwitter ( self, twObj, twitterHref, serialNumber, null, true )
 				
-			/**
-			 * 
-			 * 			Twitter API
-			 */
+				/**
+				 * 
+				 * 			Twitter API
+				 */
 			
-			currentItem.showDownload ( false )
-			currentItem.snapshotReady ( true )
-			return
+				currentItem.showDownload ( false )
+				currentItem.snapshotReady ( true )
+				
+				
+				return
 			
 			}
 
@@ -1510,6 +1522,27 @@ const appScript = {
 			_img.showImageLoading(true)
 		}
 	},
+
+	closeLibrarium: self => {
+		
+		
+		self.searchItem ( null )
+		self.searchItemList ( null )
+		self.showInputLoading( false )
+
+		self.newsItemsArray ( null )
+		self.imageItemsArray ( null )
+		self.showSearchesRelated ( null )
+		self.videoItemsArray ( null )
+		self.imageSearchItemArray ( null )
+		self.showMainSearchForm ( true )
+		self.searchInputText ('')
+		
+		_view.CanadaBackground ( false )
+		_view.appScript ( null )
+		_view.showMain ()
+		_view.bodyBlue ( true )
+	}
 
 	//*** */
 	/** */

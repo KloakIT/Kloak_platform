@@ -58,7 +58,7 @@ class twitter {
         return `${ mon + 1 }${ this.mouth [ leng ]}`
     }
 
-    constructor ( public twitterObj: any [], public twitterHref, public serialNumber, private buffer, public showAccount: boolean ) {
+    constructor ( public twitterObj: any [], public twitterHref, public serialNumber, private buffer, public showAccount: boolean, public _close: () => void = null ) {
 
     }
 
@@ -216,5 +216,12 @@ class twitter {
 
 
         })
+    }
+
+    public close () {
+        if ( this._close ) {
+            return this._close ()
+        }
+
     }
  }

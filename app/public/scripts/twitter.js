@@ -4,12 +4,13 @@ const OneDay = OneHour * 24;
 const limit = 4;
 const eachLine = 1;
 class twitter {
-    constructor(twitterObj, twitterHref, serialNumber, buffer, showAccount) {
+    constructor(twitterObj, twitterHref, serialNumber, buffer, showAccount, _close = null) {
         this.twitterObj = twitterObj;
         this.twitterHref = twitterHref;
         this.serialNumber = serialNumber;
         this.buffer = buffer;
         this.showAccount = showAccount;
+        this._close = _close;
         this.text_following = ['正在关注', 'フォロー中', 'Following', '個跟隨中'];
         this.text_follower = ['个关注者', 'フォロワー', 'Followers', '位跟隨者'];
         this.retweeted = ['转推了', 'さんがリツイート', 'Retweeted', '已轉推'];
@@ -188,5 +189,10 @@ class twitter {
                 self.twitterTimeArray.push(n);
             });
         });
+    }
+    close() {
+        if (this._close) {
+            return this._close();
+        }
     }
 }

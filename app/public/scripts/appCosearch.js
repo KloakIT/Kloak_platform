@@ -112,7 +112,16 @@ const appScript = {
         self.showMainSearchForm(false);
         self.showMain(false);
         self.showSnapshop(false);
-        self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount);
+        self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount, () => {
+            self.twitterObj = null;
+            self.showTwitterObjResult(false);
+            self.showMain(true);
+            if (self.searchItemsArray().length) {
+                return;
+            }
+            self.showMainSearchForm(true);
+            _view.CanadaBackground(true);
+        });
         self.showTwitterObjResult(true);
     },
     getLinkClick: (self, index) => {
@@ -198,15 +207,19 @@ const appScript = {
         /**
          * 			web page address
          */
-        const showTwitter = (twitterObj, twitterHref, serialNumber, buffer, showAccount) => {
-            self.showInputLoading(false);
-            _view.CanadaBackground(false);
-            self.showMainSearchForm(false);
-            self.showMain(false);
-            self.showSnapshop(false);
-            self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount);
-            self.showTwitterObjResult(true);
-        };
+        /*
+
+        const showTwitter = ( twitterObj, twitterHref, serialNumber, buffer, showAccount: boolean ) => {
+            self.showInputLoading ( false )
+            _view.CanadaBackground ( false )
+            self.showMainSearchForm ( false )
+            self.showMain( false )
+            self.showSnapshop ( false )
+            
+            self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount )
+            self.showTwitterObjResult ( true )
+        }
+        */
         if (/^http[s]?:\/\//.test(search_text)) {
             com.Args = [search_text, width, height];
             com.subCom = 'getSnapshop';
@@ -245,11 +258,11 @@ const appScript = {
              * 		youtube API
              *
              */
+            self.showInputLoading(false);
             if (com.subCom === 'youtube') {
                 const multimediaObj = com.Args;
                 let y = null;
                 self.showDownload(true);
-                self.showInputLoading(false);
                 _view.CanadaBackground(false);
                 self.showMainSearchForm(false);
                 self.showMain(false);
@@ -376,7 +389,7 @@ const appScript = {
                                 assembler.terminate();
                                 let y = null;
                                 //twitterObj, twitterHref, serialNumber, buffer
-                                return showTwitter(twObj, twitterHref, serialNumber, buffer);
+                                return self.showTwitter(self, twObj, twitterHref, serialNumber, buffer, true);
                             });
                         });
                     });
@@ -737,7 +750,7 @@ const appScript = {
                                 assembler.terminate();
                                 let y = null;
                                 //twitterObj, twitterHref, serialNumber, buffer
-                                return showTwitter(twObj, twitterHref, serialNumber, buffer);
+                                return self.showTwitter(self, twObj, twitterHref, serialNumber, buffer);
                             });
                         });
                     });
@@ -1203,4 +1216,22 @@ const appScript = {
             _img.showImageLoading(true);
         }
     },
+    closeLibrarium: self => {
+        self.searchItem(null);
+        self.searchItemList(null);
+        self.showInputLoading(false);
+        self.newsItemsArray(null);
+        self.imageItemsArray(null);
+        self.showSearchesRelated(null);
+        self.videoItemsArray(null);
+        self.imageSearchItemArray(null);
+        self.showMainSearchForm(true);
+        self.searchInputText('');
+        _view.CanadaBackground(false);
+        _view.appScript(null);
+        _view.showMain();
+        _view.bodyBlue(true);
+    }
+    //*** */
+    /** */
 };

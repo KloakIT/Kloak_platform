@@ -53,6 +53,12 @@
 	opacity: 0.2;
 }
 
+.twitterCloseButton {
+	position: fixed;
+	z-index: 999;
+	opacity: 0.5;
+}
+
 .languageItem {
 	cursor: pointer;
 	color: white !important;

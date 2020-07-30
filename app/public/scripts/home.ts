@@ -653,9 +653,9 @@ module view_layout {
 		}
 
 		public showMain() {
-			this.sectionWelcome(false)
-			this.showStartupVideo(false)
-			this.afterPasswordReady()
+			this.sectionWelcome ( false )
+			this.showStartupVideo ( false )
+			this.afterPasswordReady ()
 		}
 
 		public afterPasswordReady() {
@@ -735,18 +735,18 @@ module view_layout {
 
 		public appClick ( index ) {
 			const appScript1: any = mainMenuArray [ index ].click
-			const showSwitch = `_view.${mainMenuArray[index].htmlTemp}( true )`
+			const showSwitch = `_view.${mainMenuArray[index].htmlTemp }( true )`
 			if (!appScript1 || !showSwitch ) {
 				return
 			}
-			_view.showMainPage(false)
-			_view.bodyBlue(false)
-			_view.sectionLogin(false)
+			_view.showMainPage ( false )
+			_view.bodyBlue ( false )
+			_view.sectionLogin ( false )
 			if (
 				typeof appScript1 === 'object' &&
 				typeof appScript1.startup === 'function'
 			) {
-				appScript1.startup ( appScript1)
+				appScript1.startup ( appScript1 )
 				_view.appScript ( appScript1 )
 			} else {
 				_view.appScript( new appScript1())

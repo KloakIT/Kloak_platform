@@ -312,8 +312,9 @@
 							
 								.ui.search
 									.ui.input.icon.big( data-bind = "css : { 'error': showSearchError(), 'loading disabled': showInputLoading }")
+										i.icon.circular.close.link( data-bind = "click: closeLibrarium" style = "right: auto;left: 0.5rem;")
 
-										input( style="color:rgba(0,0,0,0.5);border-radius: 500rem!important;" type="text" 
+										input( style="color:rgba(0,0,0,0.5);border-radius: 500rem!important;padding-left: 3.5rem;" type="text" 
 											data-bind = " textInput: searchInputText, hasFocus: SearchInputNextHasFocus, attr: { placeholder: showSearchError() ? ( messageBoxDefine [ errorMessageIndex() ][ $root.languageIndex() ]): infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" )
 										
 										<!-- ko if: searchInputText().length -->

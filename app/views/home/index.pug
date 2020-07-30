@@ -477,57 +477,64 @@ block jumbotron1
 								.sub.header( data-bind = "text: favorite_count" )
 								
 	script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
+		<!-- ko if: _close -->
+			.top.fixed.twitterCloseButton
+				.item( style = "position: absolute;" )
+					i.circular.icon.close.large.link( data-bind = "click: close" style = "background-color: white;")
+		<!-- /ko -->
 		.searchItems
-			<!-- ko if: showAccount -->
-				.accountHearer( data-bind = "with: twitterTimeArray()[0]")
-					<!-- ko if: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ].length > 200 -->
-						.item
-							img.ui.centered.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ]}")
-					<!-- /ko -->
-					.accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
-						img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
-					.extra
-						h2.ui.header
-							<!-- ko text: user.name --><!-- /ko -->
-							<!-- ko if: user.verified -->
+
+			.twitterDetail
+				<!-- ko if: showAccount -->
+					.accountHearer( data-bind = "with: twitterTimeArray()[0]")
+						<!-- ko if: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ].length > 200 -->
+							.item
+								img.ui.centered.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ]}")
+						<!-- /ko -->
+						.accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
+							img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
+						.extra
+							h2.ui.header
+								<!-- ko text: user.name --><!-- /ko -->
+								<!-- ko if: user.verified -->
+									span
+										i.icons
+											i.icon.certificate.blue
+											i.icon.check.white.small
+								<!-- /ko -->
+								.sub.header( data-bind = " text: '@' + user.screen_name ")
+
+							.description
+								textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+							.extra
 								span
-									i.icons
-										i.icon.certificate.blue
-										i.icon.check.white.small
-							<!-- /ko -->
-							.sub.header( data-bind = " text: '@' + user.screen_name ")
-
-						.description
-							textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
-						.extra
-							span
-								i.icon.map.marker.alternate.grey
-							span( data-bind = " text: user.location ")
-							span( style = "margin-left: 1rem;")
-								i.icon.calendar.alternate.outline.grey
-							span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
-						.extra
-							h4
-								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
-								span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
-								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
-								span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
-			<!-- /ko -->
-			.ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
-				<!-- ko if: typeof retweeted_status !== "undefined" -->
-					.retweet( style = "color: grey")
-						i.icon.retweet.blue
-						span( data-bind = " text: user.name ")
-						span( data-bind = " text: $root.appScript().twitterObj.retweeted[$root.languageIndex()]" )
-					<!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
+									i.icon.map.marker.alternate.grey
+								span( data-bind = " text: user.location ")
+								span( style = "margin-left: 1rem;")
+									i.icon.calendar.alternate.outline.grey
+								span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
+							.extra
+								h4
+									span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
+									span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
+									span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
+									span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
 				<!-- /ko -->
+				.ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
+					<!-- ko if: typeof retweeted_status !== "undefined" -->
+						.retweet( style = "color: grey")
+							i.icon.retweet.blue
+							span( data-bind = " text: user.name ")
+							span( data-bind = " text: $root.appScript().twitterObj.retweeted[$root.languageIndex()]" )
+						<!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
+					<!-- /ko -->
 
-				<!-- ko if: typeof retweeted_status === "undefined" -->
-					<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
-				<!-- /ko -->
-			.extra
-				button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+					<!-- ko if: typeof retweeted_status === "undefined" -->
+						<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
+					<!-- /ko -->
+				.extra
+					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
 
-				<!-- ko if: nextButtonShowError -->
-					button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
-				<!-- /ko -->
+					<!-- ko if: nextButtonShowError -->
+						button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
+					<!-- /ko -->
