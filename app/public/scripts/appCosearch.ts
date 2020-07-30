@@ -136,7 +136,7 @@ const appScript = {
 			self.twitterObj = null
 			self.showTwitterObjResult ( false )
 			self.showMain( true )
-			if ( self.searchItemsArray().length ) {
+			if ( self.searchItemsArray() && self.searchItemsArray().length ) {
 				return 
 			}
 			self.showMainSearchForm ( true )
@@ -1537,7 +1537,7 @@ const appScript = {
 		self.imageSearchItemArray ( null )
 		self.showMainSearchForm ( true )
 		self.searchInputText ('')
-		
+
 		_view.CanadaBackground ( false )
 		_view.appScript ( null )
 		_view.showMain ()
