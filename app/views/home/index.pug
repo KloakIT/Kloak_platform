@@ -3,6 +3,12 @@ block jumbotron
 	include ../shared/CoNETConnectInfo
 block jumbotron1
 
+	<!-- ko if: _view.displayVideo -->
+		.playVideoOverlay
+			video.videoPlayer#videoPlayer(controls)
+			p.closeVideoOverlay(data-bind="click: () => {_view.displayVideo(false)}")="Close"
+	<!-- /ko -->
+
 	<!-- ko if: showLanguageSelect -->
 		.language( style="z-index: 999;top: 0.9rem;right: 2rem;position: fixed; width: 2rem;")
 			.ui.text.shape.languageText( data-bind = " click: selectItem, clickBubble: false " )

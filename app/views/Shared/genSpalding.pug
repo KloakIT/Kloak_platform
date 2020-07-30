@@ -1,10 +1,5 @@
 #genSpalding
 	<!-- ko with: appScript -->
-		<!-- ko if: _view.displayVideo -->
-		.spaldingOverlay
-			video.videoPlayer#videoPlayer(controls)
-			p.spaldingCloseOverlay(data-bind="click: () => {closeVideo()}")="Close"
-		<!-- /ko -->
 		.spaldingMobileHeader
 				.spaldingMobileUpper
 					.spaldingMobileMenu
@@ -15,11 +10,11 @@
 						img.spaldingMobileIcon(src="./images/spalding/menu.svg" data-bind="click: () => {mobileOpen(true)}")
 						<!-- /ko -->
 					img.spaldingLogo(src="./images/spalding/spalding_logo.png")
-		.spaldingMobileNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','READ'], style: {'transform': mobileOpen() ? 'scaleY(1)' : 'scaleY(0)'}")
+		.spaldingMobileNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','LISTEN','READ'], style: {'transform': mobileOpen() ? 'scaleY(1)' : 'scaleY(0)'}")
 			.spaldingMobileLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'}); $parent.mobileOpen(false)}, style: {'background-color': $parent.selectedPage() === $data ? 'rgb(15, 14, 23)' : 'ghostwhite', 'color': $parent.selectedPage() === $data ? 'ghostwhite' : 'rgb(15, 14, 23)'}")
 		.spaldingDesktopHeader
 			img.spaldingLogo(src="/images/spalding/spalding_logo.png")
-			.spaldingNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','READ']")
+			.spaldingNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','LISTEN','READ']")
 				.spaldingLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'})}, style: {'border': $parent.selectedPage() === $data ? '3px solid white' : '3px solid transparent'}")
 		section.spaldingHome#HOME
 			.spaldingHomeContent
@@ -38,7 +33,7 @@
 				.spaldingAboutRight
 					img.spaldingAsSeenOn(src="./images/spalding/spalding_asSeenOn.png")
 					<!-- ko if: showTwitterObjResult() -->
-					.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem")( data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
+					.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem" data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
 					<!-- /ko -->
 					//- .spaldingTwitter
 					//- 	.spaldingTwitterHeader

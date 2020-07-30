@@ -22,12 +22,6 @@ class buttonStatusClass {
     }
     click(self) {
         if (this.loading() === 5) {
-            if (self.redirect) {
-                _view.tempAppHtml(false);
-                _view.appClick(1);
-                _view.showFileStorage(true);
-                return;
-            }
             new Assembler(this.requestUuid, null, (err, data) => {
                 _view.displayVideo(true);
                 const videoPlayer = document.getElementById("videoPlayer");
@@ -58,7 +52,7 @@ class buttonStatusClass {
                 return _self.errorProcess(com.error);
             }
             const files = com.Args[0];
-            _view.downloadMain.newDownload(com.requestSerial, _self.obj.title, ['media', 'librarium', 'html'], (err, data) => {
+            _view.downloadMain.newDownload(com.requestSerial, `${_self.obj.title}.${self.labelText[0] === '' ? 'mp3' : 'mp4'}`, ['media', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
                     return;

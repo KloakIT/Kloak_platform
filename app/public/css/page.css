@@ -2100,7 +2100,7 @@ body {
 	border-radius: 50%;
 }
 
-.spaldingOverlay {
+.playVideoOverlay {
 	widtH: 100vw;
 	height: 100vh;
 	background-color: rgba(0,0,0,0.75);
@@ -2109,17 +2109,20 @@ body {
 	justify-content: center;
 	align-items: center;
 	position: fixed;
-	z-index: 103;
+	top: 0;
+	z-index: 999999;
 }
 
 .videoPlayer {
 	width: 75%;
 }
 
-.spaldingCloseOverlay {
+.closeVideoOverlay {
 	color: ghostwhite;
 	font-size: 16px;
 	text-decoration: underline;
+	margin-top: 15px;
+	cursor: pointer
 }
 
 @media screen and (max-width: 1200px) {

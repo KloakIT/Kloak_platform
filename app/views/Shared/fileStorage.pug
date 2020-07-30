@@ -73,7 +73,7 @@
 								.hypen(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
 								i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer; margin: 0 10px" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}")
 								.fileStorageText
-									p.fileStorageFilename(data-bind="text: file.filename")
+									p.fileStorageFilename(data-bind="text: $parent.formatFilename(file.filename)")
 									p.fileStorageDate(data-bind="text: 'Last modified: ' + $parent.getDate(file.time_stamp,'full')")
 							.fileStorageRight
 								i.ui.active.inline.loader.tiny(data-bind="style: { display: $parent.assemblyQueue().includes(file.filename) ? 'initial' : 'none' }")
