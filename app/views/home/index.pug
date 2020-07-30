@@ -5,7 +5,7 @@ block jumbotron1
 
 	<!-- ko if: _view.displayVideo -->
 		.playVideoOverlay
-			video.videoPlayer#videoPlayer(controls)
+			video.videoPlayer#videoPlayer( controls autoplay )
 			p.closeVideoOverlay(data-bind="click: () => {_view.displayVideo(false)}")="Close"
 	<!-- /ko -->
 
