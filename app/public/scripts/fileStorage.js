@@ -24,6 +24,12 @@ class fileStorage {
         this.init = () => {
             this.getHistoryTable();
         };
+        this.formatFilename = (filename) => {
+            if (filename.length <= 30) {
+                return filename;
+            }
+            return filename.slice(0, 13) + '...' + filename.slice(-13);
+        };
         this.getFileIndex = (uuid, callback) => {
             let req = window.indexedDB.open("kloak-index", 1);
             req.onsuccess = (e) => {
