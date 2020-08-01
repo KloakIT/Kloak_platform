@@ -6,7 +6,7 @@ block jumbotron1
 	<!-- ko if: _view.displayVideo -->
 		.playVideoOverlay
 			video.videoPlayer#videoPlayer( controls autoplay )
-			p.closeVideoOverlay(data-bind="click: () => {_view.displayVideo(false)}")="Close"
+			p.closeVideoOverlay( data-bind = "click: () => { displayVideo( false )}")="Close"
 	<!-- /ko -->
 
 	<!-- ko if: showLanguageSelect -->
@@ -423,7 +423,7 @@ block jumbotron1
 	
 	script#twitterQuotedItem( type = "text/html")
 		.item
-			img.ui.avatar.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;")
+			img.ui.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;width: 35px!important; height: 35px!important;")
 			.content( style = "padding-left:0px;")
 				.header( style = "font-size: small;margin: 0.5rem;")
 					h5
@@ -442,12 +442,19 @@ block jumbotron1
 
 	script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
 		.item
-			.ui.circular.image( style = "height: 47px!important;width: 47px!important;" )
+			.ui.circular.image( style = "height: 47px!important;width: 47px!important;margin-top: 1rem;" )
 				img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
 				
 			.content( style = "padding-left: .5em;")
-				.header( style = "font-size: small;")
-					h5
+				.header( style = " font-size: small; margin-top: 0.5rem;")
+					<!-- ko if: retweeted_statusUserName -->
+						h5.ui.header.retweet( style = "color: grey;margin-top: -1rem;margin-bottom: 0px;margin-left: -1.9rem;")
+							span
+								i.icon.retweet.blue
+							span( data-bind = " text: retweeted_statusUserName ")
+							span( data-bind = " text: $root.appScript().twitterObj.retweeted[ $root.languageIndex ()]" )
+					<!-- /ko -->
+					h5( style="margin-top: 0px;")
 						span( data-bind = "text: user.name " )
 						<!-- ko if: user.verified -->
 							span( style="margin-left: 0.2rem;")
@@ -460,10 +467,10 @@ block jumbotron1
 				.description( style = "margin-top: 0px;")
 					textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
 					<!-- ko if: typeof quoted_status !== "undefined" -->
-						.ui.items( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+						.ui.items.unstackable( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
 					<!-- /ko -->
 					<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
-						.ui.items( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
+						.ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
 					<!-- /ko -->
 					
 				.extra( style = "height: 1rem;")
@@ -487,10 +494,9 @@ block jumbotron1
 			.twitterDetail
 				<!-- ko if: showAccount -->
 					.accountHearer( data-bind = "with: twitterTimeArray()[0]")
-						<!-- ko if: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ].length > 200 -->
-							.item
-								img.ui.centered.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ]}")
-						<!-- /ko -->
+						.item
+							img.ui.centered.image( data-bind = " attr: { 'src': user.kloakMediaLinkBanner_url ? $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ] : $parents[0].blockBannerImg }")
+						
 						.accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
 							img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
 						.extra
@@ -507,11 +513,16 @@ block jumbotron1
 							.description
 								textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
 							.extra
+								<!-- ko if: user.location -->
 								span
 									i.icon.map.marker.alternate.grey
+								
 								span( data-bind = " text: user.location ")
+								<!-- /ko -->
+
 								span( style = "margin-left: 1rem;")
 									i.icon.calendar.alternate.outline.grey
+								span( data-bind = " $root.appScript().twitterObj.joinedText[ $root.languageIndex() ]")
 								span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
 							.extra
 								h4
@@ -521,15 +532,12 @@ block jumbotron1
 									span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
 				<!-- /ko -->
 				.ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
-					<!-- ko if: typeof retweeted_status !== "undefined" -->
-						.retweet( style = "color: grey")
-							i.icon.retweet.blue
-							span( data-bind = " text: user.name ")
-							span( data-bind = " text: $root.appScript().twitterObj.retweeted[$root.languageIndex()]" )
+
+					<!-- ko if: typeof retweeted_status && retweeted_status.retweeted_statusUserName -->
 						<!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
 					<!-- /ko -->
 
-					<!-- ko if: typeof retweeted_status === "undefined" -->
+					<!-- ko if: !retweeted_status -->
 						<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
 					<!-- /ko -->
 				.extra

@@ -424,7 +424,7 @@ interface twitter_post {
 	lang: string
 	full_text: string
 	full_text_split_line: string
-	retweeted_status: twitter_post
+	retweeted_status?: boolean | twitter_post
 	place: any
 	possibly_sensitive: boolean
 	possibly_sensitive_appealable: boolean

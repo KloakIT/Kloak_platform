@@ -4,11 +4,14 @@ const OneDay =  OneHour * 24
 const limit = 4
 const eachLine = 1
 
+
+const blockBannerImg = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAADICAYAAAA0n5+2AAADpUlEQVR4nO3WMQHAIBDAwKf+pTGzoaWYyHgnIVPWPvcfAAAyn5QAAC2DBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAAKWZeSmkBQ6wJmd6AAAAAElFTkSuQmCC`
 class twitter {
     public text_following = ['正在关注','フォロー中','Following','個跟隨中']
     public text_follower = ['个关注者','フォロワー','Followers','位跟隨者']
     public retweeted = ['转推了','さんがリツイート','Retweeted','已轉推']
-    public twitterTimeArray = ko.observableArray ( this.twitterObj )
+    public joinedText = ['','','Joined','']
+    public twitterTimeArray = null
     public showTimeData = [
         dataTimeString => {
             return this.getTime ( dataTimeString, 0 )
@@ -49,7 +52,7 @@ class twitter {
     public nextButtonConetResponse = ko.observable ( false )
     public nextButtonShowError = ko.observable ( false )
     public nextButtonErrorIndex = ko.observable ( -1 )
-
+    public blockBannerImg = blockBannerImg
 
     private getmonth ( mon, leng ) {
         if ( leng === 2 ) {
@@ -58,8 +61,18 @@ class twitter {
         return `${ mon + 1 }${ this.mouth [ leng ]}`
     }
 
-    constructor ( public twitterObj: any [], public twitterHref, public serialNumber, private buffer, public showAccount: boolean, public _close: () => void = null ) {
+    private retweeted_statusInit ( tweet ) {
+        if ( tweet.retweeted_status && typeof tweet.retweeted_status !== "undefined" ) {
+            tweet.retweeted_status['retweeted_statusUserName'] = tweet.user.name 
+        } else {
+            tweet.retweeted_status = false
+            tweet['retweeted_statusUserName'] = false
+        }
+    }
 
+    constructor ( public twitterObj: any [], public twitterHref, public serialNumber, private buffer, public showAccount: boolean, public _close: () => void = null ) {
+        twitterObj.forEach ( n => this.retweeted_statusInit( n ))
+        this.twitterTimeArray = ko.observableArray ( this.twitterObj )
     }
 
     public getTimeUser (  timeString, lang ) {
@@ -198,18 +211,22 @@ class twitter {
             if ( com.error ) {
                 return showError ( com.error )
             }
+
             this.moreResultsButtomLoading ( false )
+            this.nextButtonLoadingGetResponse ( false )
+            this.nextButtonConetResponse ( false )
 
             const twObj: any[] = com.Args [0]
             const twitterHref = com.Args[1]
             
             for ( let i of Object.keys( twitterHref )) {
-                if ( self.twitterHref[ i ] ) {
-                    return 
+                if ( !self.twitterHref[ i ] ) {
+                    self.twitterHref[ i ] = twitterHref[ i ]
                 }
-                self.twitterHref[ i ] = twitterHref[ i ]
+                
             }
             twObj.forEach ( n => {
+                self.retweeted_statusInit (n)
                 self.twitterTimeArray.push ( n )
             })
             
@@ -224,4 +241,4 @@ class twitter {
         }
 
     }
- }
+}
