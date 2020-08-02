@@ -174,7 +174,7 @@ class connectInformationMessage {
                     console.dir(`getServerPublicKey error!`, err);
                 }
                 _view.localServerConnected(true);
-                console.dir(`getServerPublicKey success!`);
+                //console.dir (`getServerPublicKey success!`)
                 if (_view.imapData) {
                     _view.connectToNode();
                 }
@@ -333,10 +333,7 @@ class connectInformationMessage {
             return this.showSystemError();
         }, 5000);
     }
-    fetchFiles(files, CallBack) {
-        const filesArray = files.split(',');
-        let data = [];
-        let currentFIle = filesArray.shift();
+    fetchFiles(filename, CallBack) {
         let repertTime = 0;
         const _callBack = (_err, _data, sha1sum) => {
             if (_err) {
@@ -345,19 +342,15 @@ class connectInformationMessage {
                 }
                 return fetchFIle(_callBack);
             }
-            data.push({
-                uuid: currentFIle,
+            const ret = {
+                uuid: filename,
                 data: _data,
                 sha1sum: sha1sum
-            });
-            if (filesArray.length) {
-                currentFIle = filesArray.shift();
-                return fetchFIle(_callBack);
-            }
-            return CallBack(null, data);
+            };
+            return CallBack(null, ret);
         };
         const fetchFIle = (_CallBack) => {
-            return this.emitLocalCommand('getFilesFromImap', currentFIle, _CallBack);
+            return this.emitLocalCommand('getFilesFromImap', filename, _CallBack);
         };
         return fetchFIle(_callBack);
     }

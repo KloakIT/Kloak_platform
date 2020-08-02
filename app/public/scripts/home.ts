@@ -166,7 +166,7 @@ const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
 
 module view_layout {
 	export class view {
-		public connectInformationMessage = null
+		public connectInformationMessage: connectInformationMessage = null
 		public sectionLogin = ko.observable(false)
 		public sectionAgreement = ko.observable(false)
 		public sectionWelcome = ko.observable(true)

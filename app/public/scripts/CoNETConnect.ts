@@ -233,7 +233,9 @@ class CoNETConnect {
 			//return this.test ()
 
 
-			this.listenFun = (  err, stage, message  ) => {
+			this.listenFun = ( err, stage, message  ) => {
+				console.dir (`on tryConnectCoNETStage`)
+				console.log ( err, stage, message )
 				return self.listingConnectStage ( err, stage, message )
 			}
 

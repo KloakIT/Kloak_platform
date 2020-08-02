@@ -814,7 +814,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             switch (cmdArray[0]) {
                 case '*': {
                     if (/^RECENT$|^EXPUNGE$|^EXISTS$/i.test(cmdArray[2]) && parseInt(cmdArray[1]) > 0) {
-                        console.log(`\n\nexpunge this.newSwitchRet = true\n\n`);
+                        //console.log (`\n\nexpunge this.newSwitchRet = true\n\n`)
                         this.newSwitchRet = true;
                     }
                     return _callback();

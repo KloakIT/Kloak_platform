@@ -188,6 +188,8 @@ class CoNETConnect {
             this.Loading(true);
             //return this.test ()
             this.listenFun = (err, stage, message) => {
+                console.dir(`on tryConnectCoNETStage`);
+                console.log(err, stage, message);
                 return self.listingConnectStage(err, stage, message);
             };
             _view.connectInformationMessage.socketIo.on('tryConnectCoNETStage', this.listenFun);

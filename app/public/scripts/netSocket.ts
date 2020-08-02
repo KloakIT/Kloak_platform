@@ -144,7 +144,7 @@ const checkPassword = async ( _keyPair: keypair, CallBack ) => {
 
 }
 
-let encryptoClassObj = null
+let encryptoClassObj: encryptoClass = null
 
 const doingCommand = ( message: string, ports ) => {
 

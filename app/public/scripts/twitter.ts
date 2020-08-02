@@ -53,6 +53,7 @@ class twitter {
     public nextButtonShowError = ko.observable ( false )
     public nextButtonErrorIndex = ko.observable ( -1 )
     public blockBannerImg = blockBannerImg
+    public videoHref = ko.observable ({})
 
     private getmonth ( mon, leng ) {
         if ( leng === 2 ) {
@@ -68,11 +69,66 @@ class twitter {
             tweet.retweeted_status = false
             tweet['retweeted_statusUserName'] = false
         }
+        if ( tweet.extended_entities ) {
+            const kk = tweet.extended_entities.media[0]
+            if ( kk && ! kk.video_info ) {
+                kk['video_info'] = false 
+            }
+
+        }
     }
 
-    constructor ( public twitterObj: any [], public twitterHref, public serialNumber, private buffer, public showAccount: boolean, public _close: () => void = null ) {
+    private getFilesFromFileArray ( fileArray: any []) {
+        const self = this
+        let buffer = null
+        const getdata = ( filenameObj ) => {
+            const filename = filenameObj.fileName
+            return _view.connectInformationMessage.fetchFiles ( filename, ( err, data ) => {
+                if ( err ) {
+                    console.log (`getFilesFromFileArray error, try again`, err )
+                    return getdata ( filename )
+                }
+
+                return _view.sharedMainWorker.decryptStreamWithAPKey ( data.data, ( err, _buffer: Buffer ) => {
+                    if ( err ) {
+                        console.log ( `getFilesFromFileArray _view.sharedMainWorker.decryptStreamWithAPKey error stop `, err )
+                        return
+                    }
+                    console.time ( ` Buffer.from ( _buffer ).toString('base64')`)
+                    buffer += Buffer.from ( _buffer ).toString('base64')
+                    console.timeEnd (` Buffer.from ( _buffer ).toString('base64')`)
+                    if ( fileArray.length ) {
+                        return getdata ( fileArray.shift () )
+                    }
+                    return _view.sharedMainWorker.unzipHTML ( self.uuid, buffer, ( err, data ) => {
+                        if ( err ) {
+                            return console.log ( `getFilesFromFileArray _view.sharedMainWorker.unzipHTML error`, err )
+                        }
+                        const datas: { data: string, filename: string } [] = data.folder
+                        const videoObj = self.videoHref()
+                        datas.forEach ( n => {
+                            if ( ! videoObj [ n.filename ] ) {
+                                const vv = new Blob ( [Buffer.from( n.data, 'base64')], { type: 'video/mp4'})
+                                videoObj [ n.filename ] = URL.createObjectURL ( vv )
+                            }
+                        })
+                        return self.videoHref( videoObj )
+                    })
+                })
+
+            })
+        }
+
+        return getdata ( fileArray.shift ())
+
+    }
+
+    constructor ( public twitterObj: any [], public twitterHref, public uuid, private fileArray: any [], public showAccount: boolean, public _close: () => void = null ) {
         twitterObj.forEach ( n => this.retweeted_statusInit( n ))
         this.twitterTimeArray = ko.observableArray ( this.twitterObj )
+        if ( fileArray ) {
+            this.getFilesFromFileArray ( fileArray )
+        }
     }
 
     public getTimeUser (  timeString, lang ) {

@@ -5,11 +5,11 @@ const limit = 4;
 const eachLine = 1;
 const blockBannerImg = `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAADICAYAAAA0n5+2AAADpUlEQVR4nO3WMQHAIBDAwKf+pTGzoaWYyHgnIVPWPvcfAAAyn5QAAC2DBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAADGDBQAQM1gAAKWZeSmkBQ6wJmd6AAAAAElFTkSuQmCC`;
 class twitter {
-    constructor(twitterObj, twitterHref, serialNumber, buffer, showAccount, _close = null) {
+    constructor(twitterObj, twitterHref, uuid, fileArray, showAccount, _close = null) {
         this.twitterObj = twitterObj;
         this.twitterHref = twitterHref;
-        this.serialNumber = serialNumber;
-        this.buffer = buffer;
+        this.uuid = uuid;
+        this.fileArray = fileArray;
         this.showAccount = showAccount;
         this._close = _close;
         this.text_following = ['正在关注', 'フォロー中', 'Following', '個跟隨中'];
@@ -55,8 +55,12 @@ class twitter {
         this.nextButtonShowError = ko.observable(false);
         this.nextButtonErrorIndex = ko.observable(-1);
         this.blockBannerImg = blockBannerImg;
+        this.videoHref = ko.observable({});
         twitterObj.forEach(n => this.retweeted_statusInit(n));
         this.twitterTimeArray = ko.observableArray(this.twitterObj);
+        if (fileArray) {
+            this.getFilesFromFileArray(fileArray);
+        }
     }
     getmonth(mon, leng) {
         if (leng === 2) {
@@ -72,6 +76,52 @@ class twitter {
             tweet.retweeted_status = false;
             tweet['retweeted_statusUserName'] = false;
         }
+        if (tweet.extended_entities) {
+            const kk = tweet.extended_entities.media[0];
+            if (kk && !kk.video_info) {
+                kk['video_info'] = false;
+            }
+        }
+    }
+    getFilesFromFileArray(fileArray) {
+        const self = this;
+        let buffer = null;
+        const getdata = (filenameObj) => {
+            const filename = filenameObj.fileName;
+            return _view.connectInformationMessage.fetchFiles(filename, (err, data) => {
+                if (err) {
+                    console.log(`getFilesFromFileArray error, try again`, err);
+                    return getdata(filename);
+                }
+                return _view.sharedMainWorker.decryptStreamWithAPKey(data.data, (err, _buffer) => {
+                    if (err) {
+                        console.log(`getFilesFromFileArray _view.sharedMainWorker.decryptStreamWithAPKey error stop `, err);
+                        return;
+                    }
+                    console.time(` Buffer.from ( _buffer ).toString('base64')`);
+                    buffer += Buffer.from(_buffer).toString('base64');
+                    console.timeEnd(` Buffer.from ( _buffer ).toString('base64')`);
+                    if (fileArray.length) {
+                        return getdata(fileArray.shift());
+                    }
+                    return _view.sharedMainWorker.unzipHTML(self.uuid, buffer, (err, data) => {
+                        if (err) {
+                            return console.log(`getFilesFromFileArray _view.sharedMainWorker.unzipHTML error`, err);
+                        }
+                        const datas = data.folder;
+                        const videoObj = self.videoHref();
+                        datas.forEach(n => {
+                            if (!videoObj[n.filename]) {
+                                const vv = new Blob([Buffer.from(n.data, 'base64')], { type: 'video/mp4' });
+                                videoObj[n.filename] = URL.createObjectURL(vv);
+                            }
+                        });
+                        return self.videoHref(videoObj);
+                    });
+                });
+            });
+        };
+        return getdata(fileArray.shift());
     }
     getTimeUser(timeString, lang) {
         const now = new Date();

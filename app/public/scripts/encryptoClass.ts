@@ -262,23 +262,23 @@ const showHTMLComplete = ( uuid: string, base64zipStream: string, CallBack ) => 
 				const processFile = () => {
 					
 					switch ( currentFileName ) {
-							case `${ uuid }.html`: {
-								return ret.html = Buffer.from ( content, 'base64').toString()
-								
-							}
-							case `${ uuid }.png`: {
-								return ret.img = Buffer.from ( content, 'base64').toString()
-							}
-
-							case `${ uuid }.mhtml`: {
-								return ret.mhtml = Buffer.from ( content, 'base64').toString()
-							}
+						case `${ uuid }.html`: {
+							return ret.html = Buffer.from ( content, 'base64').toString()
 							
-							default: {
-								return ret.folder.push ({ filename: currentFileName, data: content })
-							}
-			
 						}
+						case `${ uuid }.png`: {
+							return ret.img = Buffer.from ( content, 'base64').toString()
+						}
+
+						case `${ uuid }.mhtml`: {
+							return ret.mhtml = Buffer.from ( content, 'base64').toString()
+						}
+						
+						default: {
+							return ret.folder.push ({ filename: currentFileName, data: content })
+						}
+		
+					}
 				}
 	
 				processFile ()

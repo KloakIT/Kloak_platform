@@ -437,8 +437,19 @@ block jumbotron1
 					<!-- /ko -->
 
 	script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
-		img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
-		
+
+		<!-- ko if: media [0] && media [0].video_info -->
+			<!-- ko with: media [0] -->
+				<!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
+					video( style = "width: 100%;" controls autoplay )
+						source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
+				<!-- /ko -->
+			<!-- /ko -->
+		<!-- /ko -->
+
+		<!-- ko ifnot: media [0] && media [0].video_info -->
+			img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+		<!-- /ko -->
 
 	script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
 		.item
@@ -517,10 +528,10 @@ block jumbotron1
 								span
 									i.icon.map.marker.alternate.grey
 								
-								span( data-bind = " text: user.location ")
+								span( data-bind = " text: user.location " style = "margin-right: 1rem;")
 								<!-- /ko -->
 
-								span( style = "margin-left: 1rem;")
+								span
 									i.icon.calendar.alternate.outline.grey
 								span( data-bind = " $root.appScript().twitterObj.joinedText[ $root.languageIndex() ]")
 								span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
@@ -541,7 +552,9 @@ block jumbotron1
 						<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
 					<!-- /ko -->
 				.extra
-					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+					<!-- ko ifnot: nextButtonShowError -->
+						button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+					<!-- /ko -->
 
 					<!-- ko if: nextButtonShowError -->
 						button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")

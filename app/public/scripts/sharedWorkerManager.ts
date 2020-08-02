@@ -209,4 +209,6 @@ class sharedWorkerManager {
 		return this.emitCommand ( cmd, CallBack )
 	}
 
+	
+
  }

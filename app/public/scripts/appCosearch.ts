@@ -434,45 +434,9 @@ const appScript = {
 					const twObj = com.Args [0]
 					const twitterHref = com.Args[1]
 					const serialNumber = com.requestSerial
-					const fileBuffer = null//com.Args[2]
+					const fileBuffer = com.Args[2]
 
-					if ( fileBuffer ) {
-						_view.downloadMain.newDownload ( serialNumber, 'twitter', [ 'snapshot', 'librarium', 'html', 'twitter' ], err => {
-							if ( err ) {
-								console.error(err)
-								return
-							}
-							self.showInputLoading ( false )
-							_view.CanadaBackground ( false )
-							self.showMainSearchForm ( false )
-							self.showMain ( false )
-							self.showSnapshop ( true )
-							let y = null
-							
-							const assembler = new Assembler ( serialNumber, null, ( err, data ) => {
-								if ( err ) {
-									console.error(err)
-									return
-								}
-					
-								fetch ( data.url ).then ( res => {
-									return res.arrayBuffer ()
-									
-								}).then( buffer => {
-									URL.revokeObjectURL( data.url )
-									assembler.terminate()
-									let y = null
-	
-									//twitterObj, twitterHref, serialNumber, buffer
-									return self.showTwitter ( self, twObj, twitterHref, serialNumber, buffer, true )
-								})
-							})
-						})
-	
-						return _view.downloadMain.addMultipleQueue ( fileBuffer )
-					}
-
-					return self.showTwitter ( self, twObj, twitterHref, serialNumber, null, true )
+					return self.showTwitter ( self, twObj, twitterHref, serialNumber, fileBuffer, true )
 					
 				/**
 				 * 
