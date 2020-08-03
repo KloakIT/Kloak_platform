@@ -297,7 +297,7 @@ class Downloader {
 			this.isConsumeQueueRunning = false
 			return
 		}
-		if (obj) {
+		//if (obj) {
 			if (!this.createdHistory) {
 				this.createHistory(obj)
 			}
@@ -310,8 +310,8 @@ class Downloader {
 						this.callback(err, null)
 						return
 					}
-					const arrBuffer: ArrayBuffer = Buffer.from(buffer[0].data).buffer
-					this.updateIndex(obj)
+					const arrBuffer: ArrayBuffer = Buffer.from(buffer.data).buffer
+					this.updateIndex ( obj )
 					this.dataDBWorker.instance.postMessage(
 						{
 							cmd: 'SAVE_DATA',
@@ -326,6 +326,6 @@ class Downloader {
 					this.consumeQueue(this.downloadQueue.shift())
 				}
 			)
-		}	
+		//}	
 	}
 }

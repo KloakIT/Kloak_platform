@@ -254,30 +254,30 @@ class Downloader {
                 this.isConsumeQueueRunning = false;
                 return;
             }
-            if (obj) {
-                if (!this.createdHistory) {
-                    this.createHistory(obj);
-                }
-                this.createdHistory = true;
-                _view.connectInformationMessage.fetchFiles(obj.downloadUuid, (err, buffer) => {
-                    if (err) {
-                        console.log(err);
-                        this.callback(err, null);
-                        return;
-                    }
-                    const arrBuffer = Buffer.from(buffer[0].data).buffer;
-                    this.updateIndex(obj);
-                    this.dataDBWorker.instance.postMessage({
-                        cmd: 'SAVE_DATA',
-                        payload: {
-                            downloadUuid: obj.downloadUuid,
-                            arrayBuffer: arrBuffer,
-                        },
-                    }, [arrBuffer]);
-                    this.updateProgress(obj);
-                    this.consumeQueue(this.downloadQueue.shift());
-                });
+            //if (obj) {
+            if (!this.createdHistory) {
+                this.createHistory(obj);
             }
+            this.createdHistory = true;
+            _view.connectInformationMessage.fetchFiles(obj.downloadUuid, (err, buffer) => {
+                if (err) {
+                    console.log(err);
+                    this.callback(err, null);
+                    return;
+                }
+                const arrBuffer = Buffer.from(buffer.data).buffer;
+                this.updateIndex(obj);
+                this.dataDBWorker.instance.postMessage({
+                    cmd: 'SAVE_DATA',
+                    payload: {
+                        downloadUuid: obj.downloadUuid,
+                        arrayBuffer: arrBuffer,
+                    },
+                }, [arrBuffer]);
+                this.updateProgress(obj);
+                this.consumeQueue(this.downloadQueue.shift());
+            });
+            //}	
         };
         if (!window.indexedDB) {
             alert("Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser.");
