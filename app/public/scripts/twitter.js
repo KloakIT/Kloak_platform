@@ -245,6 +245,7 @@ class twitter {
             this.nextButtonConetResponse(false);
             const twObj = com.Args[0];
             const twitterHref = com.Args[1];
+            const fileArray = com.Args[2];
             for (let i of Object.keys(twitterHref)) {
                 if (!self.twitterHref[i]) {
                     self.twitterHref[i] = twitterHref[i];
@@ -254,6 +255,9 @@ class twitter {
                 self.retweeted_statusInit(n);
                 self.twitterTimeArray.push(n);
             });
+            if (fileArray) {
+                this.getFilesFromFileArray(fileArray);
+            }
         });
     }
     close() {
