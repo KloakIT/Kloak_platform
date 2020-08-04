@@ -290,20 +290,19 @@ const appScript = {
             if (com.subCom === 'downloadFile') {
                 const args = com.Args[0];
                 self.showDownloadProcess(true);
-                let downloader = _view.downloadMain.getDownloader(com.requestSerial);
+                let downloader = _view.storageHelper.getDownloader(com.requestSerial);
                 if (downloader) {
                     downloader.addToQueue(args);
                     return;
                 }
-                downloader = _view.downloadMain.newDownload(com.requestSerial, ['librarium', 'download'], (err, data) => {
+                downloader = _view.storageHelper.createDownload(com.requestSerial, [], args.downloadFilename, ['librarium', 'download'], (err, data) => {
                     if (err) {
                         console.error(err);
                         return;
                     }
                     console.log(`${com.requestSerial} DOWNLOAD FINISHED`);
                 });
-                downloader.addToQueue(args);
-                downloader.start();
+                downloader.addToQueue([args]);
                 return;
             }
             if (com.subCom === 'webSearch') {
@@ -325,30 +324,25 @@ const appScript = {
                 catch (ex) {
                     console.dir(`have not multimediaObj`);
                 }
-                _view.downloadMain.newDownload(com.requestSerial, multimediaObj && multimediaObj.title, ['snapshot', 'librarium', 'html'], err => {
+                _view.storageHelper.createDownload(com.requestSerial, files, multimediaObj && multimediaObj.title, ['snapshot', 'librarium', 'html'], (err, data) => {
                     if (err) {
                         console.error(err);
                         return;
                     }
-                    self.showDownload(true);
-                    self.showInputLoading(false);
-                    _view.CanadaBackground(false);
-                    self.showMainSearchForm(false);
-                    self.showMain(false);
-                    self.showSnapshop(true);
-                    let y = null;
-                    const assembler = new Assembler(com.requestSerial, null, (err, data) => {
-                        if (err) {
-                            console.error(err);
-                            return;
-                        }
-                        fetch(data.url).then(res => {
-                            return res.arrayBuffer();
-                        }).then(buffer => {
-                            URL.revokeObjectURL(data.url);
-                            assembler.terminate();
-                            let y = null;
-                            self.showWebPage((y = new showWebPageClass(search_text, Buffer.from(buffer).toString('base64'), com.requestSerial, multimediaObj, () => {
+                    if (data === com.requestSerial) {
+                        self.showDownload(true);
+                        self.showInputLoading(false);
+                        _view.CanadaBackground(false);
+                        self.showMainSearchForm(false);
+                        self.showMain(false);
+                        self.showSnapshop(true);
+                        let y = null;
+                        _view.storageHelper.createAssembler(com.requestSerial, (err, data) => {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            self.showWebPage((y = new showWebPageClass(search_text, Buffer.from(data.buffer).toString('base64'), com.requestSerial, multimediaObj, () => {
                                 self.showWebPage(y = null);
                                 self.showMain(true);
                                 self.showSnapshop(false);
@@ -356,9 +350,9 @@ const appScript = {
                                 _view.CanadaBackground(true);
                             })));
                         });
-                    });
+                    }
                 });
-                return _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: search_text, files });
+                return;
             }
             if (com.subCom === 'twitter') {
                 const twObj = com.Args[0];
@@ -697,7 +691,7 @@ const appScript = {
                 currentItem['serialNumber'] = com.requestSerial;
                 currentItem['fileBuffer'] = null; //com.Args[2]
                 if (currentItem['fileBuffer']) {
-                    _view.downloadMain.newDownload(com.requestSerial, 'twitter', ['snapshot', 'librarium', 'html', 'twitter'], err => {
+                    _view.storageHelper.createDownload(com.requestSerial, currentItem['fileBuffer'], currentItem['twitterHref'], ['snapshot', 'librarium', 'html', 'twitter'], (err, data) => {
                         if (err) {
                             console.error(err);
                             return;
@@ -708,23 +702,14 @@ const appScript = {
                         self.showMain(false);
                         self.showSnapshop(true);
                         let y = null;
-                        const assembler = new Assembler(serialNumber, null, (err, data) => {
+                        _view.storageHelper.createAssembler(com.requestSerial, (err, data) => {
                             if (err) {
                                 console.error(err);
                                 return;
                             }
-                            fetch(data.url).then(res => {
-                                return res.arrayBuffer();
-                            }).then(buffer => {
-                                URL.revokeObjectURL(data.url);
-                                assembler.terminate();
-                                let y = null;
-                                //twitterObj, twitterHref, serialNumber, buffer
-                                return self.showTwitter(self, twObj, twitterHref, serialNumber, buffer);
-                            });
+                            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], currentItem['fileBuffer']);
                         });
                     });
-                    return _view.downloadMain.addMultipleQueue(currentItem['fileBuffer']);
                 }
                 //return self.showTwitter ( self, twObj, twitterHref, serialNumber, null, true )
                 /**
@@ -745,21 +730,22 @@ const appScript = {
             }
             console.log(files);
             self.showDownloadProcess(true);
-            _view.downloadMain.newDownload(com.requestSerial, currentItem.title, ['snapshot', 'librarium', 'html'], (err, data) => {
+            _view.storageHelper.createDownload(com.requestSerial, files, currentItem.title, ['snapshot', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
                     return;
                 }
-                currentItem.showDownload(false);
-                isImage
-                    ? currentItem.snapshotImageReady(true)
-                    : currentItem.snapshotReady(true);
-                isImage
-                    ? currentItem.showImageLoading(false)
-                    : currentItem.showLoading(false);
-                currentItem.loadingGetResponse(false);
+                if (data === com.requestSerial) {
+                    currentItem.showDownload(false);
+                    isImage
+                        ? currentItem.snapshotImageReady(true)
+                        : currentItem.snapshotReady(true);
+                    isImage
+                        ? currentItem.showImageLoading(false)
+                        : currentItem.showLoading(false);
+                    currentItem.loadingGetResponse(false);
+                }
             });
-            _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: currentItem.url, files });
         };
         const com = {
             command: 'CoSearch',
@@ -799,25 +785,19 @@ const appScript = {
                 self.showSnapshop(false);
             }));
         }
-        const assembler = new Assembler(currentItem.snapshotUuid, null, (err, data) => {
+        _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
             if (err) {
-                console.error(err);
+                console.log(err);
                 return;
             }
-            fetch(data.url).then(res => {
-                return res.arrayBuffer();
-            }).then(buffer => {
-                URL.revokeObjectURL(data.url);
-                assembler.terminate();
-                let y = null;
-                self.showMain(false);
-                self.showSnapshop(true);
-                self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(buffer).toString('base64'), currentItem.snapshotUuid, currentItem.multimediaObj, () => {
-                    self.showWebPage((y = null));
-                    self.showMain(true);
-                    self.showSnapshop(false);
-                })));
-            });
+            let y = null;
+            self.showMain(false);
+            self.showSnapshop(true);
+            self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(data.buffer).toString('base64'), currentItem.snapshotUuid, currentItem.multimediaObj, () => {
+                self.showWebPage((y = null));
+                self.showMain(true);
+                self.showSnapshop(false);
+            })));
         });
     },
     // CHANGED ============================================

@@ -1,256 +1,154 @@
 class Assembler {
-    constructor(requestUuid, hiddenAnchor, callback) {
-        this.fileOffsets = [];
-        this.fileUuids = [];
-        this.getInstance = () => {
-            return this.assembler;
+    constructor(requestUuid, progressIndicator, callback) {
+        this.progressIndicator = null;
+        this.filePieces = [];
+        this.totalPieces = null;
+        this.getIndex = (uuid) => {
+            _view.storageHelper.getIndex(uuid, async (err, data) => {
+                if (err) {
+                    this.terminate();
+                    this.callback(err, null);
+                    return;
+                }
+                try {
+                    this.log(`File: ${this.requestUuid} got index.`);
+                    this.downloadIndex = await JSON.parse(Buffer.from(data).toString());
+                    this.filePieces = await this.downloadIndex.pieces;
+                    this.totalPieces = this.filePieces.length;
+                    this.updateProgress();
+                    this.retrieveData(this.filePieces.shift());
+                }
+                catch (err) {
+                    this.callback(err, null);
+                    this.terminate();
+                }
+            });
+        };
+        this.updateProgress = () => {
+            if (!this.progressIndicator) {
+                return;
+            }
+            const percent = Math.floor(((this.totalPieces - this.filePieces.length) / this.totalPieces) * 100);
+            if (ko.isObservable(this.progressIndicator)) {
+                this.progressIndicator(percent);
+                this.progressIndicator.valueHasMutated();
+                return;
+            }
+            this.progressIndicator(percent);
+        };
+        this.getWorker = (callback) => {
+            const url = URL.createObjectURL(new Blob([`(${this.workerFn.toString()})()`], { type: 'text/javascript' }));
+            const worker = new Worker(url);
+            worker.addEventListener('message', (e) => {
+                if (callback) {
+                    if (e.data.cmd === 'ERROR') {
+                        callback(new Error(e.data.payload), null);
+                        return;
+                    }
+                    callback(null, e.data.payload);
+                }
+            });
+            URL.revokeObjectURL(url);
+            return worker;
         };
         this.log = (message) => {
             console.log(`<${new Date().toLocaleString()}> ${message}`);
+        };
+        this.getFileType = (magicNumber) => {
+            const n = magicNumber.toLowerCase();
+            switch (true) {
+                case n.startsWith('1a45dfa3'):
+                    this.downloadIndex['contentType'] = 'video/webm';
+                    this.downloadIndex['fileExtension'] = 'webm';
+                    break;
+                case n.startsWith('504b0304'):
+                case n.startsWith('504b0506'):
+                case n.startsWith('504b0708'):
+                    this.downloadIndex['contentType'] = 'application/zip';
+                    this.downloadIndex['fileExtension'] = 'zip';
+                    break;
+                case n.startsWith('0000001866747970'):
+                case n.startsWith("0000002066747970"):
+                    this.downloadIndex['contentType'] = 'video/mp4';
+                    this.downloadIndex['fileExtension'] = 'mp4';
+                    break;
+                case n.startsWith('494433'):
+                case n.startsWith('fffb'):
+                case n.startsWith('fff3'):
+                case n.startsWith('fff2'):
+                    this.downloadIndex['contentType'] = "audio/mpeg";
+                    this.downloadIndex['fileExtension'] = 'mp3';
+                    break;
+            }
+        };
+        this.retrieveData = (uuid) => {
+            if (!uuid) {
+                return;
+            }
+            _view.storageHelper.decryptLoad(uuid, (err, data) => {
+                if (err) {
+                    this.callback(err, null);
+                    return;
+                }
+                this.assembler.postMessage({ cmd: 'DATA', payload: { uuid, buffer: data, eof: this.filePieces.length === 0 } }, [data]);
+            });
         };
         this.messageChannel = async (e) => {
             const command = e.data.cmd;
             const payload = e.data.payload;
             let uuid = null;
             switch (command) {
-                case 'FILE_INDEX':
-                    this.downloadIndex = payload;
-                    this.fileOffsets = await Object.keys(this.downloadIndex[this.requestUuid].pieces).sort();
-                    await this.fileOffsets.forEach(offset => {
-                        this.fileUuids.push(this.downloadIndex[this.requestUuid].pieces[offset]);
-                    });
-                    this.assembler.postMessage({
-                        cmd: 'START',
-                        payload: this.downloadIndex,
-                    });
-                    break;
                 case 'NEXT_PIECE':
-                    uuid = await this.fileUuids.shift();
-                    this.databaseWorker.postMessage({
-                        cmd: 'RETRIEVE_DATA',
-                        payload: { database: 'kloak-files', uuid },
-                    });
+                    uuid = await this.filePieces.shift();
+                    this.updateProgress();
+                    this.retrieveData(uuid);
                     break;
-                case 'RETRIEVED_PIECE':
-                    const pgpMessage = Buffer.from(payload.arrBuffer).toString();
-                    console.log(pgpMessage);
-                    _view.sharedMainWorker.decryptStreamWithoutPublicKey(pgpMessage, (err, data) => {
-                        if (err) {
-                            return console.log(err);
-                        }
-                        const arrBuffer = Buffer.from(data.data).buffer;
-                        this.assembler.postMessage({
-                            cmd: 'RETRIEVED_PIECE',
-                            payload: {
-                                end: this.fileUuids.length === 0,
-                                offset: parseInt(this.fileOffsets.shift()),
-                                arrBuffer: arrBuffer,
-                            },
-                        }, [arrBuffer]);
-                    });
-                    return;
                 case 'ASSEMBLED_FILE':
-                    const filename = this.downloadIndex[this.requestUuid].filename;
-                    const extension = payload.extension;
-                    if (this.hiddenAnchor instanceof HTMLAnchorElement) {
-                        this.hiddenAnchor.download = `${filename}.${extension}`;
-                        this.hiddenAnchor.href = payload.fileUrl;
-                        this.hiddenAnchor.click();
-                        this.hiddenAnchor.download = '';
-                        this.hiddenAnchor.href = '';
-                        URL.revokeObjectURL(payload.fileUrl);
-                        this.assembler.terminate();
-                        this.assembler = null;
-                        this.databaseWorker.terminate();
-                        this.databaseWorker = null;
-                        this.callback(null, null);
-                        return;
+                    this.terminate();
+                    const filename = this.downloadIndex.filename;
+                    let extension = this.downloadIndex.fileExtension;
+                    let contentType = this.downloadIndex.contentType;
+                    if (!extension || !contentType) {
+                        this.magicNumber = await Buffer.from(payload.buffer.slice(0, 10)).toString('hex');
+                        await this.getFileType(this.magicNumber);
+                        extension = this.downloadIndex.fileExtension;
+                        contentType = this.downloadIndex.contentType;
                     }
-                    this.callback(null, { filename, extension, url: payload.fileUrl });
-                    this.databaseWorker.terminate();
-                    this.databaseWorker = null;
+                    this.log(`File: ${this.requestUuid} assembly complete.`);
+                    this.callback(null, { filename, contentType, extension, buffer: payload.buffer });
                     break;
                 default:
                     break;
             }
         };
         this.terminate = () => {
-            if (this.databaseWorker) {
-                this.databaseWorker.terminate();
-                this.databaseWorker = null;
-            }
             if (this.assembler) {
                 this.assembler.terminate();
                 this.assembler = null;
             }
         };
-        this.assemblerWorkerFn = () => {
+        this.workerFn = () => {
             importScripts(`${self.location.origin}/scripts/jimp.min.js`);
-            let magicNumber = null;
-            let requestUuid = null;
             let fileUint8Array = null;
-            let fileIndex = null;
-            let tempPieces = [];
-            let offset = 0;
-            const getFileType = (magicNumber) => {
-                const n = magicNumber.toLowerCase();
-                switch (true) {
-                    case n.startsWith('504b0304'):
-                    case n.startsWith('504b0506'):
-                    case n.startsWith('504b0708'):
-                        fileIndex[requestUuid]['contentType'] = 'application/zip';
-                        fileIndex[requestUuid]['fileExtension'] = 'zip';
-                        break;
-                    case n.startsWith('0000001866747970'):
-                    case n.startsWith("0000002066747970"):
-                        fileIndex[requestUuid]['contentType'] = 'video/mp4';
-                        fileIndex[requestUuid]['fileExtension'] = 'mp4';
-                        break;
-                    case n.startsWith('494433'):
-                    case n.startsWith('fffb'):
-                    case n.startsWith('fff3'):
-                    case n.startsWith('fff2'):
-                        fileIndex[requestUuid]['contentType'] = "audio/mpeg";
-                        fileIndex[requestUuid]['fileExtension'] = 'mp3';
-                        break;
-                }
-            };
-            const log = (message) => {
-                console.log(`<${new Date().toLocaleString()}> ${message}`);
-            };
-            const createBlob = () => {
-                if (!fileIndex[requestUuid].contentType || !fileIndex[requestUuid].fileExtension) {
-                    getFileType(magicNumber);
-                }
-                const blob = new Blob([fileUint8Array], {
-                    type: fileIndex[requestUuid].contentType,
-                });
-                console.log(blob.size);
-                const fileUrl = URL.createObjectURL(blob);
-                return fileUrl;
-            };
             self.addEventListener('message', async (e) => {
                 const command = e.data.cmd;
                 const payload = e.data.payload;
                 const postMessage = self.postMessage;
                 switch (command) {
-                    case 'START':
-                        log('Assembler: Assembly Worker started.');
-                        requestUuid = Object.keys(payload)[0];
-                        fileIndex = await payload;
-                        if (fileIndex.totalLength) {
-                            fileUint8Array = new Uint8Array(fileIndex[requestUuid]['totalLength']);
-                        }
-                        postMessage({
-                            cmd: 'NEXT_PIECE',
-                            payload: {},
-                        });
-                        break;
-                    case 'RETRIEVED_PIECE':
+                    case 'DATA':
                         if (!fileUint8Array) {
-                            tempPieces.push(payload);
-                            if (payload.end) {
-                                let totalLength = 0;
-                                tempPieces.forEach(piece => {
-                                    totalLength += piece.arrBuffer.byteLength;
-                                });
-                                fileUint8Array = await new Uint8Array(totalLength);
-                                tempPieces.forEach(piece => {
-                                    fileUint8Array.set(new Uint8Array(piece.arrBuffer), piece.offset);
-                                });
-                            }
+                            fileUint8Array = await new Uint8Array(payload.buffer);
                         }
                         else {
-                            fileUint8Array.set(new Uint8Array(payload.arrBuffer), payload.offset);
+                            fileUint8Array = await new Uint8Array([...fileUint8Array, ...new Uint8Array(payload.buffer)]);
                         }
-                        if (!payload.end) {
-                            postMessage({
-                                cmd: 'NEXT_PIECE',
-                                payload: {},
-                            });
+                        if (!payload.eof) {
+                            postMessage({ cmd: 'NEXT_PIECE', payload: {} });
                             return;
                         }
-                        magicNumber = Buffer.from(fileUint8Array.slice(0, 10).buffer).toString('hex');
-                        postMessage({
-                            cmd: 'ASSEMBLED_FILE',
-                            payload: { fileUrl: createBlob(), extension: fileIndex[requestUuid].fileExtension },
-                        });
-                        break;
-                    default:
-                        break;
-                }
-            });
-        };
-        this.databaseWorkerFn = () => {
-            importScripts(`${self.location.origin}/scripts/jimp.min.js`);
-            let db = null;
-            let fs = null;
-            let currentDB = null;
-            const log = (message) => {
-                console.log(`<${new Date().toLocaleString()}> ${message}`);
-            };
-            const instanceInit = (database) => {
-                return new Promise((resolve, reject) => {
-                    const req = indexedDB.open(database, 1);
-                    req.onupgradeneeded = (e) => {
-                        db = e.target['result'];
-                    };
-                    req.onsuccess = (e) => {
-                        db = e.target['result'];
-                        if (e.target['readyState'] === 'done') {
-                            resolve();
+                        if (payload.eof) {
+                            postMessage({ cmd: 'ASSEMBLED_FILE', payload: { buffer: fileUint8Array.buffer } }, [fileUint8Array.buffer]);
                         }
-                    };
-                    req.onerror = (e) => {
-                        reject();
-                    };
-                });
-            };
-            const getFileIndex = (filename) => {
-                fs = db.transaction('kloak-index', 'readwrite').objectStore('kloak-index');
-                fs.get(filename).onsuccess = (e) => {
-                    const postMessage = self.postMessage;
-                    postMessage({ cmd: 'FILE_INDEX', payload: e.target['result'] });
-                };
-            };
-            const getFileData = (uuid) => {
-                const pgpStart = '-----BEGIN PGP MESSAGE-----\n\n';
-                const pgpEnd = '\n-----END PGP MESSAGE-----';
-                fs = db
-                    .transaction('kloak-files', 'readonly')
-                    .objectStore('kloak-files');
-                fs.get(uuid).onsuccess = async (e) => {
-                    const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd);
-                    const arrBuffer = Buffer.from(pgpMessage).buffer;
-                    const postMessage = self.postMessage;
-                    postMessage({
-                        cmd: 'RETRIEVED_PIECE',
-                        payload: {
-                            arrBuffer,
-                        },
-                    }, [arrBuffer]);
-                };
-            };
-            self.addEventListener('message', (e) => {
-                const command = e.data.cmd;
-                const payload = e.data.payload;
-                switch (command) {
-                    case 'START':
-                        log('Assembler: Database Worker started.');
-                        currentDB = payload.database;
-                        instanceInit(payload.database).then(() => {
-                            getFileIndex(payload.requestUuid);
-                        });
-                        break;
-                    case 'RETRIEVE_DATA':
-                        if (currentDB !== payload.database) {
-                            currentDB = payload.database;
-                            instanceInit(payload.database).then(() => {
-                                getFileData(payload.uuid);
-                            });
-                            return;
-                        }
-                        getFileData(payload.uuid);
                         break;
                     default:
                         break;
@@ -258,15 +156,10 @@ class Assembler {
             });
         };
         this.requestUuid = requestUuid;
-        this.hiddenAnchor = hiddenAnchor;
+        this.progressIndicator = progressIndicator;
         this.callback = callback;
-        this.assembler = new GenericWorker(this.assemblerWorkerFn).getWorker();
-        this.databaseWorker = new GenericWorker(this.databaseWorkerFn).getWorker();
-        this.databaseWorker.postMessage({
-            cmd: 'START',
-            payload: { database: 'kloak-index', requestUuid },
-        });
+        this.assembler = this.getWorker();
         this.assembler.addEventListener('message', this.messageChannel);
-        this.databaseWorker.addEventListener('message', this.messageChannel);
+        this.getIndex(requestUuid);
     }
 }

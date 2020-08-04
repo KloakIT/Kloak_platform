@@ -93,9 +93,9 @@ class twitter {
                         console.log ( `getFilesFromFileArray _view.sharedMainWorker.decryptStreamWithAPKey error stop `, err )
                         return
                     }
-                    console.time ( ` Buffer.from ( _buffer ).toString('base64')`)
+                    
                     buffer += Buffer.from ( _buffer ).toString('base64')
-                    console.timeEnd (` Buffer.from ( _buffer ).toString('base64')`)
+                   
                     if ( fileArray.length ) {
                         return getdata ( fileArray.shift () )
                     }

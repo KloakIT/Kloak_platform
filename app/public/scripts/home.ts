@@ -205,7 +205,7 @@ module view_layout {
 		public showFileStorage = ko.observable(false)
 		public showGeneralSpalding = ko.observable(false)
 		public muteHtml = ko.observable(false)
-		public downloadMain = new DownloadMain()
+		public storageHelper = new StorageHelper()
 		public localServerConnected = ko.observable(false)
 		public showLocalServerDisconnect = ko.observable(false)
 		public displayVideo = ko.observable(false)

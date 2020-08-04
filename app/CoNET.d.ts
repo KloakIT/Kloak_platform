@@ -800,37 +800,13 @@ interface kloak_downloadObj {
 	
 }
 
-interface downloaderOptions {
-	hasProgress: boolean
-}
-
-interface databaseWorkers {
-	indexRetriever: IndexRetriever
-	dataRetriever: DataRetriever
-}
-
-interface databaseWorker {
-	type: string
-	instance: Worker
-	state: 'NOT READY' | 'REQUESTED' | 'READY'
-}
-
-interface downloadWorkerInfo {
-	id: number
-	channel: MessagePort
-}
-
 interface kloakIndex {
-	[requestUuid: string]: {
-		filename: string
-		fileExtension: string
-		totalLength: number
-		contentType: string
-		pieces: {
-			[offset: number]: string
-		}
-		finished: boolean
-	}
+	filename: string
+	fileExtension: string
+	totalLength: number
+	contentType: string
+	pieces: Array<string>
+	finished: boolean
 }
 
 interface snapshotFiles {
@@ -847,15 +823,11 @@ interface kloak_multipleObj {
 	files: Array<snapshotFiles>
 }
 
-interface kloakDownloads {
+interface kloakFileInstance {
 	requestSerial: string
 	filename: string
-	percent: KnockoutObservable<number>
-	downloader: Downloader
-}
-
-interface currentDownloads {
-	[filename: string]: kloakDownloads
+	progress: KnockoutObservable<number> | Function
+	instance: Downloader | Assembler | Uploader
 }
 
 interface finishedDownload {
@@ -877,4 +849,6 @@ interface fileHistory {
 	color: number
 	fileIndex: kloakIndex
 }
+
+
 

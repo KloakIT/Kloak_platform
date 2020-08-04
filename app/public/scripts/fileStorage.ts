@@ -12,7 +12,7 @@ class fileStorage {
 	private searchKey = ko.observable()
 	private selectedFile = ko.observable()
 	private colorMenuSelection = ko.observable()
-	private assemblyQueue: KnockoutObservableArray<string> = ko.observableArray([])
+	private assemblyQueue = ko.observable()
 	private assemblyRunning = false
 	private mobileShowSearch = ko.observable(false)
 	private colorOptions = [
@@ -20,23 +20,8 @@ class fileStorage {
 		["green", "lime", "teal", "aqua"],
 		["navy", "blue", "purple", "fuchsia"],
 	]
-	private db: IDBDatabase
 	constructor() {
-		let req = window.indexedDB.open("kloak-history", 1)
-
-		req.onupgradeneeded = (e) => {
-			this.db = e.target['result']
-			this.db.createObjectStore("history")
-		}
-
-		req.onsuccess = (e) => {
-			this.db = e.target['result']
-			this.getHistoryTable()
-		}
-
-		req.onerror = (e) => {
-			console.log("Unable to open IndexedDB!")
-		}
+		this.getHistory()
 
 		this.mobileShowSearch.subscribe((val) => {
 			console.log(val)
@@ -92,10 +77,6 @@ class fileStorage {
 		})
 	}
 
-	init = () => {
-		this.getHistoryTable()
-	}
-
 	formatFilename = (filename: string) => {
 		if (filename.length <= 30) {
 			return filename
@@ -128,19 +109,14 @@ class fileStorage {
 		this.availableTags = [...temp]
 	}
 
-	getHistoryTable = () => {
-		const fs = this.db.transaction("history", "readonly").objectStore("history")
-		fs.get(0).onsuccess = (e) => {
-			if (e.target['result']) {
-				const temp = e.target['result'].sort((a: fileHistory, b: fileHistory) => {
-					return b.time_stamp.getTime() - a.time_stamp.getTime()
-				})
-				this.fileStorageData(temp)
-				this.allFileStorageData(temp)
-				this.setTags(temp)
-				this.fileStorageData.valueHasMutated()
+	getHistory = () => {
+		_view.storageHelper.decryptLoad('history', (err, data) => {
+			if (err) {
+				return
 			}
-		}
+			this.allFileStorageData(JSON.parse(Buffer.from(data).toString()).reverse())
+			this.fileStorageData(this.allFileStorageData())
+		})
 	}
 
 	fileTagClick = (tag: string) => {
@@ -153,73 +129,32 @@ class fileStorage {
 		this.fileStorageData(temp)
 	}
 
-	saveHistoryTable = (shouldGet: boolean = false) => {
-		const fs = this.db
-			.transaction("history", "readwrite")
-			.objectStore("history")
-		console.log(fs)
-		fs.put(this.allFileStorageData(), 0).onsuccess = (e) => {
-			if (shouldGet) {
-				this.getHistoryTable()
-			}
-		}
-	}
-
 	updateHistory = (uuid) => {
 		const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid)
 		this.fileStorageData(temp)
 		this.allFileStorageData(temp)
+		_view.storageHelper.replaceHistory(this.allFileStorageData(), null)
 		this.fileStorageData.valueHasMutated()
-		this.saveHistoryTable()
 		this.selectedFile(null)
 	}
 
 	deleteFile = (uuid: string, callback: Function) => {
-		const deleteIndex = (uuid: string) => {
-			let req = window.indexedDB.open("kloak-index", 1)
-
-			req.onsuccess = (e) => {
-				const db = e.target['result']
-				db
-					.transaction("kloak-index", "readwrite")
-					.objectStore("kloak-index")
-					.delete(uuid).onsuccess = (e) => {
-					callback()
-				}
-			}
-		}
-		const removePieces = (uuids: Array<string>, callback: Function) => {
-			let req = window.indexedDB.open("kloak-files", 1)
-
-			req.onsuccess = (e) => {
-				const db = e.target['result']
-				const fs = db
-					.transaction("kloak-files", "readwrite")
-					.objectStore("kloak-files")
-				while (uuids.length > 0) {
-					fs.delete(uuids.shift()).onsuccess = (e) => {
-						console.log("DELETED PIECE!")
+		let pieces = null
+		let count = 0
+		_view.storageHelper.getIndex(uuid, (err, data) => {
+			pieces = JSON.parse(Buffer.from(data).toString()).pieces
+			pieces.forEach(piece => {
+				_view.storageHelper.delete(piece, (err, data) => {
+					count++
+					console.log(count, pieces.length)
+					if (count === pieces.length) {
+						_view.storageHelper.delete(uuid, (err, data) => {
+							callback(err, data)
+						})
 					}
-				}
-				callback()
-			}
-		}
-		let req = window.indexedDB.open("kloak-index", 1)
-
-		req.onsuccess = (e) => {
-			const db = e.target['result']
-			db
-				.transaction("kloak-index", "readwrite")
-				.objectStore("kloak-index")
-				.get(uuid).onsuccess = (e) => {
-				const pieces = e.target.result[uuid].pieces
-				const uuids: Array<string> = Object.values(pieces)
-				removePieces(uuids, () => {
-					deleteIndex(uuid)
-					callback()
 				})
-			}
-		}
+			})
+		})
 	}
 
 	sortHistory = (type: string, direction: string) => {
@@ -237,9 +172,9 @@ class fileStorage {
 
 		const dateCompare = (a, b) => {
 			if (direction === 'up') {
-				return a[type] - b[type]
+				return Date.parse(a[type]) - Date.parse(b[type])
 			}
-			return b[type] - a[type]
+			return Date.parse(b[type]) - Date.parse(a[type])
 		}
 		
 		if (type === 'filename') {
@@ -270,15 +205,13 @@ class fileStorage {
 	}
 
 	deleteMultiple = () => {
-		this.checkedFiles().forEach(uuid => {
-			this.deleteFile(uuid, () => {
-				this.updateHistory(uuid)
-				const temp = this.checkedFiles().filter(uuid => uuid !== uuid)
-				this.checkedFiles(temp)
-				this.checkedFiles.valueHasMutated()
-			})
+		const uuid = this.checkedFiles.shift()
+		this.deleteFile(uuid, () => {
+			this.updateHistory(uuid)
+			if (this.checkedFiles().length > 0) {
+				this.deleteMultiple()
+			}
 		})
-		this.getHistoryTable()
 	}
 
 	closeAll = () => {
@@ -307,44 +240,65 @@ class fileStorage {
 					this.fileStorageData(temp)
 					this.allFileStorageData(temp)
 					this.fileStorageData.valueHasMutated()
-					this.saveHistoryTable()
 					this.selectedFile(null)
 				}
 				this.deleteFile(data.uuid, callback)
 				break
 			case "download":
-				this.assemblyQueue.push(data.uuid)
-				this.assemblyQueue.valueHasMutated()
-				if (!this.assemblyRunning) {
-					this.assemblyRunning = true
-					new Assembler(data.uuid, document.getElementById("hiddenAnchor") as HTMLAnchorElement, (err, data) => {
-						if (err) {
-							console.error(err)
-							return
-						}
-						this.assemblyRunning = false
-					})
-				}
-				break
-			case "play":
-				const n = new Assembler(data.uuid, null, (err, data) => {
+				return _view.storageHelper.createAssembler(data.uuid, (err, data) => {
 					if (err) {
-						console.error(err)
+						console.log(err)
 						return
 					}
-					this.showOverlay(true)
-					const videoPlayer = document.getElementById("fileStorageVideo")
-					videoPlayer['assembler'] = n
-					videoPlayer['src'] = data.url
-					videoPlayer['play']()
+					const a = document.getElementById("hiddenAnchor")
+					a['href'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+					a['download'] = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
+					a.click()
+				})
+			case "play":
+				_view.storageHelper.createAssembler(data.uuid, (err, data) => {
+					if (err) {
+						console.log(err)
+						return
+					}
+					_view.displayVideo(true)
+					const videoPlayer = document.getElementById("videoPlayer")
+					videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
 				})
 				break
+			case 'view':
+				// _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
+				// 	if (err) {
+				// 		console.log(err)
+				// 		return
+				// 	}
+				// 	let y = null
+				// 	self.showMain (false)
+				// 	self.showSnapshop (true)
+				// 	self.showWebPage(
+				// 		(y = new showWebPageClass(
+				// 			isImage ? currentItem.clickUrl : currentItem.url,
+				// 			Buffer.from( data.buffer ).toString('base64'),
+				// 			currentItem.snapshotUuid, 
+				// 			currentItem.multimediaObj,
+				// 			() => {
+				// 				self.showWebPage((y = null))
+				// 				self.showMain(true)
+				// 				self.showSnapshop(false)
+				// 			}
+				// 		))
+				// 	)
+				// })
+				break;
 			default:
 				break
 		}
 	}
 
-	getDate = (timestamp: Date, type: string) => {
+	getDate = (timestamp: Date | string, type: string) => {
+		if (typeof timestamp === 'string') {
+			timestamp = new Date(timestamp)
+		}
 		const month = timestamp.getMonth()
 		const monthString = [
 			"Jan",
@@ -416,136 +370,84 @@ class fileStorage {
 		this.selectedFile(index)
 	}
 
-	changeColor = (data, event) => {
-		const clr = data
-		const idx = parseInt(this.colorMenuSelection().split(" ")[1])
-		const t = this.fileStorageData()
-		t[idx].color = clr
-		this.fileStorageData(t)
-		this.saveHistoryTable()
+	// changeColor = (data, event) => {
+	// 	const clr = data
+	// 	const idx = parseInt(this.colorMenuSelection().split(" ")[1])
+	// 	const t = this.fileStorageData()
+	// 	t[idx].color = clr
+	// 	this.fileStorageData(t)
+	// 	this.saveHistoryTable()
 
-		const fileIcon = document.getElementById("icon " + idx)
-		fileIcon.style.color = clr
-		const colorOptions = document.getElementsByClassName("colorMenuItem")
-		for (let i = 0; i < colorOptions.length; i++) {
-			if (colorOptions[i].id === clr) {
-				colorOptions[i]['style'].border = "3px solid black"
-			} else {
-				colorOptions[i]['style'].border = "3px solid transparent"
-			}
-		}
-		const val = event.target.value.split(" ")
-		const index = parseInt(val[0])
-		const color = val[1]
-		const temp = this.fileStorageData()
-		temp[index].color = color
-		this.fileStorageData(temp)
-		this.saveHistoryTable()
-		const icon = document.getElementById("icon" + index)
-		icon.style.color = color
-	}
+	// 	const fileIcon = document.getElementById("icon " + idx)
+	// 	fileIcon.style.color = clr
+	// 	const colorOptions = document.getElementsByClassName("colorMenuItem")
+	// 	for (let i = 0; i < colorOptions.length; i++) {
+	// 		if (colorOptions[i].id === clr) {
+	// 			colorOptions[i]['style'].border = "3px solid black"
+	// 		} else {
+	// 			colorOptions[i]['style'].border = "3px solid transparent"
+	// 		}
+	// 	}
+	// 	const val = event.target.value.split(" ")
+	// 	const index = parseInt(val[0])
+	// 	const color = val[1]
+	// 	const temp = this.fileStorageData()
+	// 	temp[index].color = color
+	// 	this.fileStorageData(temp)
+	// 	this.saveHistoryTable()
+	// 	const icon = document.getElementById("icon" + index)
+	// 	icon.style.color = color
+	// }
 
-	hideColorOptions = (data, event) => {
-		if (event.stopPropagation) {
-			event.stopPropagation()
-		}
-		const colorMenu = document.getElementById("colorMenu")
-		colorMenu.style.transform = "scale(0)"
-		this.colorMenuSelection(null)
-	}
+	// hideColorOptions = (data, event) => {
+	// 	if (event.stopPropagation) {
+	// 		event.stopPropagation()
+	// 	}
+	// 	const colorMenu = document.getElementById("colorMenu")
+	// 	colorMenu.style.transform = "scale(0)"
+	// 	this.colorMenuSelection(null)
+	// }
 
-	showColorOptions = (data, event) => {
-		if (event.stopPropagation) {
-			event.stopPropagation()
-		}
-		const iconIndex = event.target.id.split(" ")[1]
-		console.log(iconIndex)
-		const { pageX, pageY } = event
-		colorMenu.style.left = `${pageX}px`
-		colorMenu.style.top = `${pageY + 8}px`
-		if (this.colorMenuSelection() === event.target.id) {
-			colorMenu.style.transform = "scale(0)"
-			this.colorMenuSelection(null)
-		} else {
-			this.colorMenuSelection(event.target.id)
-			colorMenu.style.transform = "scale(1)"
-		}
+	// showColorOptions = (data, event) => {
+	// 	if (event.stopPropagation) {
+	// 		event.stopPropagation()
+	// 	}
+	// 	const iconIndex = event.target.id.split(" ")[1]
+	// 	console.log(iconIndex)
+	// 	const { pageX, pageY } = event
+	// 	colorMenu.style.left = `${pageX}px`
+	// 	colorMenu.style.top = `${pageY + 8}px`
+	// 	if (this.colorMenuSelection() === event.target.id) {
+	// 		colorMenu.style.transform = "scale(0)"
+	// 		this.colorMenuSelection(null)
+	// 	} else {
+	// 		this.colorMenuSelection(event.target.id)
+	// 		colorMenu.style.transform = "scale(1)"
+	// 	}
 
-		const color = this.fileStorageData()[iconIndex].color
-		const colorOptions = document.getElementsByClassName("colorMenuItem")
-		for (let i = 0; i < colorOptions.length; i++) {
-			if (colorOptions[i].id === color) {
-				colorOptions[i].style.border = "3px solid black"
-			} else {
-				colorOptions[i].style.border = "3px solid transparent"
-			}
-		}
-		// colorOption.style.border = '2px solid black'
-	}
-
-	sliceArrayBuffer = (
-		arrayBuffer: ArrayBuffer,
-		start: number,
-		chunkSize: number
-	): [ArrayBuffer, string] => {
-		return [arrayBuffer.slice(start, start + chunkSize), uuid_generate()]
-	}
-
-	prepareData = (file: File, path = "") => {
-		let offset = 0
-		const chunkSize = 2097152
-		const filename = file.name
-		const fileExtension = file.name.split(".").slice(-1)[0]
-		const totalLength = file.size
-		const contentType = file.type
-		const pieces = {}
-		const files = []
-		const reader = new FileReader()
-		reader.readAsArrayBuffer(file)
-		reader.onloadend = (e) => {
-			console.log(e.target.result)
-			while (offset <= totalLength) {
-				const data = this.sliceArrayBuffer(e.target.result as ArrayBuffer, offset, chunkSize)
-				pieces[offset] = data[1]
-				files.push({ [data[1]]: data[0] })
-				offset += chunkSize
-			}
-		}
-
-		const index: kloakIndex = {
-			[uuid_generate()]: {
-				filename,
-				fileExtension,
-				totalLength,
-				contentType,
-				pieces,
-				finished: true,
-			},
-		}
-		return {
-			index,
-			files,
-		}
-	}
+	// 	const color = this.fileStorageData()[iconIndex].color
+	// 	const colorOptions = document.getElementsByClassName("colorMenuItem")
+	// 	for (let i = 0; i < colorOptions.length; i++) {
+	// 		if (colorOptions[i].id === color) {
+	// 			colorOptions[i].style.border = "3px solid black"
+	// 		} else {
+	// 			colorOptions[i].style.border = "3px solid transparent"
+	// 		}
+	// 	}
+	// 	// colorOption.style.border = '2px solid black'
+	// }
 
 	traverseFileTree = (item, path = "") => {
 		console.log(path)
 		if (item.isFile) {
 			item.file((file: File) => {
-				const upload = {
-					filename: file.name,
-					date: new Date(),
-				}
-				console.log(file)
-				const cb = () => {
-					const temp = this.currentUploads().filter(
-						(upload) => upload !== upload
-					)
-					this.currentUploads(temp)
-					this.getHistoryTable()
-				}
-				this.currentUploads.push(upload)
-				new Uploader(file, 2097152, path, cb)
+				_view.storageHelper.createUploader(uuid_generate(), file, path, (err, data) => {
+					if (err) {
+						console.log(err)
+						return
+					}
+					this.getHistory()
+				})
 			})
 		} else if (item.isDirectory) {
 			const dirReader = item.createReader()
@@ -597,10 +499,10 @@ class fileStorage {
 						(upload) => upload !== upload
 					)
 					this.currentUploads(temp)
-					this.getHistoryTable()
+					this.getHistory()
 				}
 				this.currentUploads.push(upload)
-				new Uploader(files[i], 2097152, "", cb)
+				new Uploader(files[i], "", cb)
 			}
 			hiddenInput.removeEventListener("change", fileHandler)
 		}
