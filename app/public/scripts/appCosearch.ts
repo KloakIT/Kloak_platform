@@ -815,7 +815,8 @@ const appScript = {
 			if ( com.error ) {
 				return showError ( com.error )
 			}
-			currentItem.showLoading ( false )
+			//currentItem.showLoading ( false )
+			
 			if ( com.subCom === 'youtube' ) {
 				currentItem.showDownload ( false )
 				currentItem.snapshotReady ( true )
@@ -885,7 +886,7 @@ const appScript = {
 			console.log( files )
 			
 
-			self.showDownloadProcess ( true )
+			
 
 			_view.storageHelper.createDownload ( com.requestSerial, files, currentItem.title, [ 'snapshot', 'librarium', 'html' ], ( err, data ) => {
 				if (err) {
@@ -940,7 +941,7 @@ const appScript = {
 
 		if ( currentItem ['multimediaObj']) {
 			let y = null
-			self.showMain (false)
+			self.showMain ( false )
 			self.showSnapshop (true)
 			return self.showWebPage(
 				y = new showWebPageClass ( currentItem.url, null, currentItem.snapshotUuid, currentItem.multimediaObj,
@@ -952,13 +953,14 @@ const appScript = {
 				)
 			)
 		}
-
+		currentItem.showDownload ( true )
 		_view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
 			if (err) {
 				console.log(err)
 				return
 			}
 			let y = null
+			currentItem.showDownload ( false )
 			self.showMain (false)
 			self.showSnapshop (true)
 			self.showWebPage(

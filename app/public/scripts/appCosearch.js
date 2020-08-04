@@ -678,7 +678,7 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
-            currentItem.showLoading(false);
+            //currentItem.showLoading ( false )
             if (com.subCom === 'youtube') {
                 currentItem.showDownload(false);
                 currentItem.snapshotReady(true);
@@ -729,7 +729,6 @@ const appScript = {
                 console.dir(`have not multimediaObj`);
             }
             console.log(files);
-            self.showDownloadProcess(true);
             _view.storageHelper.createDownload(com.requestSerial, files, currentItem.title, ['snapshot', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
@@ -785,12 +784,14 @@ const appScript = {
                 self.showSnapshop(false);
             }));
         }
+        currentItem.showDownload(true);
         _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
             if (err) {
                 console.log(err);
                 return;
             }
             let y = null;
+            currentItem.showDownload(false);
             self.showMain(false);
             self.showSnapshop(true);
             self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(data.buffer).toString('base64'), currentItem.snapshotUuid, currentItem.multimediaObj, () => {

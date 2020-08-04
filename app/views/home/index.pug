@@ -3,7 +3,7 @@ block jumbotron
 	include ../shared/CoNETConnectInfo
 block jumbotron1
 
-	<!-- ko if: _view.displayVideo -->
+	<!-- ko if: displayVideo -->
 		.playVideoOverlay
 			video.videoPlayer#videoPlayer( controls autoplay )
 			p.closeVideoOverlay( data-bind = "click: () => { displayVideo( false )}")="Close"
@@ -420,7 +420,6 @@ block jumbotron1
 			<!-- /ko -->
 			span( data-bind = "text: labelText [ $root.languageIndex() ] ")
 
-	
 	script#twitterQuotedItem( type = "text/html")
 		.item
 			img.ui.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;width: 35px!important; height: 35px!important;")
