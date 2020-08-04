@@ -317,7 +317,7 @@ const appScript = {
                     self.showMainSearchForm ( false )
                     self.showMain ( false )
                     self.showSnapshop ( true )
-					return self.showWebPage( y = new showWebPageClass( search_text , null, null, multimediaObj, () => {
+					return self.showWebPage( y = new showWebPageClass ( search_text , null, null, multimediaObj, () => {
 						self.showWebPage( y = null )
 						self.showMain ( true )
 						self.showSnapshop ( false )

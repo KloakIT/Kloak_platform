@@ -302,15 +302,13 @@ class Downloader {
 				this.createHistory(obj)
 			}
 			this.createdHistory = true
-			_view.connectInformationMessage.fetchFiles(
-				obj.downloadUuid,
-				(err, buffer) => {
+			_view.connectInformationMessage.fetchFiles( obj.downloadUuid, ( err, buffer ) => {
 					if (err) {
 						console.log(err)
 						this.callback(err, null)
 						return
 					}
-					const arrBuffer: ArrayBuffer = Buffer.from(buffer.data).buffer
+					const arrBuffer: ArrayBuffer = Buffer.from ( buffer.data ).buffer
 					this.updateIndex ( obj )
 					this.dataDBWorker.instance.postMessage(
 						{

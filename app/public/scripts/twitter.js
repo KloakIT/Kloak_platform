@@ -90,8 +90,7 @@ class twitter {
             const filename = filenameObj.fileName;
             return _view.connectInformationMessage.fetchFiles(filename, (err, data) => {
                 if (err) {
-                    console.log(`getFilesFromFileArray error, try again`, err);
-                    return getdata(filename);
+                    return console.log(`getFilesFromFileArray error, try again`, err);
                 }
                 return _view.sharedMainWorker.decryptStreamWithAPKey(data.data, (err, _buffer) => {
                     if (err) {
