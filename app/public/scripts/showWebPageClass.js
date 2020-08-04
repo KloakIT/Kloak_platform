@@ -227,7 +227,9 @@ class showWebPageClass {
         const fomrmats = multimediaObj.formats;
         multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false;
         multimediaObj['error'] = ko.observable(false);
-        multimediaObj['longer'] = null;
+        if (!multimediaObj['longer']) {
+            multimediaObj['longer'] = null;
+        }
         if (typeof multimediaObj['like_count'] === 'number' && multimediaObj['like_count'] > 0) {
             multimediaObj.like_count = multimediaObj.like_count.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
