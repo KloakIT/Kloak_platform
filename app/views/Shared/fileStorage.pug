@@ -83,7 +83,7 @@
 									.fileStorageOption
 										i.info.icon
 										p="Get info..."
-									<!-- ko if: file.tag.includes('audio') || file.tag.includes('video') -->
+									<!-- ko if: file.tag.includes('audio') || file.tag.includes('video') || file.tag.includes('media') -->
 									.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play')}")
 										i.play.icon
 										p="Play"
