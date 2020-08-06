@@ -22,10 +22,14 @@ class buttonStatusClass {
     }
     click(self) {
         if (this.loading() === 5) {
-            new Assembler(this.requestUuid, null, (err, data) => {
+            _view.storageHelper.createAssembler(this.requestUuid, (err, data) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
                 _view.displayVideo(true);
                 const videoPlayer = document.getElementById("videoPlayer");
-                videoPlayer['src'] = data.url;
+                videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType);
             });
             return;
         }
@@ -52,7 +56,7 @@ class buttonStatusClass {
                 return _self.errorProcess(com.error);
             }
             const files = com.Args[0];
-            _view.downloadMain.newDownload(com.requestSerial, `${_self.obj.title}.${self.labelText[0] === '' ? 'mp3' : 'mp4'}`, ['media', 'librarium', 'html'], (err, data) => {
+            _view.storageHelper.createDownload(com.requestSerial, files, `${_self.obj.title}.${self.labelText[0] === '' ? 'mp3' : 'mp4'}`, ['media', 'librarium', 'html'], (err, data) => {
                 if (err) {
                     console.error(err);
                     return;
@@ -63,7 +67,6 @@ class buttonStatusClass {
                 }
             });
             this.loading(4);
-            _view.downloadMain.addMultipleQueue({ requestUuid: com.requestSerial, url: null, files });
         });
     }
 }

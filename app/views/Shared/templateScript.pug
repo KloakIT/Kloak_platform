@@ -1,0 +1,173 @@
+//- Twitter shared template
+
+script#ajaxLableButton( type = "text/html" )
+    a.ui.label( data-bind = " css: { 'orange' : loading() === 5, 'red': error() },  click: click ")
+        <!-- ko if: error -->
+            i.icon.info.circle
+            span( data-bind = " text: messageBoxDefine [ error() ] [ $root.languageIndex() ]")
+        <!-- /ko -->
+
+        <!-- ko if: !error () -->
+            <!-- ko if: loading() === false || loading() === 5 -->
+                i( data-bind = " attr: { 'class': 'icon ' + iconName } ")
+            <!-- /ko -->
+
+            <!-- ko if: loading() === 4 -->
+                <!-- ko if: $root.storageHelper.downloadPool()[cmd.requestSerial] -->
+                    span( data-bind=" text: $root.storageHelper.downloadPool()[cmd.requestSerial].progress() + '%'")
+                <!-- /ko -->
+                <!-- ko if: $root.storageHelper.assemblyPool()[cmd.requestSerial] -->
+                    span( data-bind=" text: $root.storageHelper.assemblyPool()[cmd.requestSerial].progress() + '%'")
+                <!-- /ko -->
+            <!-- /ko -->
+
+            <!-- ko if: loading() !== false && loading() < 5 -->
+                i.icon.notched.circle.loading( data-bind = "css: { 'yellow': loading() === 2, 'green': loading() === 3, 'blue': loading() === 4 }")
+            <!-- /ko -->
+
+        <!-- /ko -->
+        span( data-bind = "text: labelText [ $root.languageIndex() ] ")
+
+script#twitterQuotedItem( type = "text/html")
+    .item
+        img.ui.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;width: 35px!important; height: 35px!important;")
+        .content( style = "padding-left:0px;")
+            .header( style = "font-size: small;margin: 0.5rem;")
+                h5
+                    span( data-bind = "text: user.name " )
+                    span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+                    span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+            .description( style = "margin-top: 0px;")
+                textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;padding-right: 0.5rem;" readOnly disabled )
+                <!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+                    img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ extended_entities.media [0].kloakMediaLink ]}" style = " border-bottom-right-radius: 1rem;")
+                <!-- /ko -->
+
+script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
+
+    <!-- ko if: media [0] && media [0].video_info -->
+        <!-- ko with: media [0] -->
+            <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
+                video( style = "width: 100%;" controls autoplay )
+                    source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
+            <!-- /ko -->
+        <!-- /ko -->
+    <!-- /ko -->
+
+    <!-- ko ifnot: media [0] && media [0].video_info -->
+        img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+    <!-- /ko -->
+
+script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
+    .item
+        .ui.circular.image( style = "height: 47px!important;width: 47px!important;margin-top: 1rem;" )
+            img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
+            
+        .content( style = "padding-left: .5em;")
+            .header( style = " font-size: small; margin-top: 0.5rem;")
+                <!-- ko if: retweeted_statusUserName -->
+                    h5.ui.header.retweet( style = "color: grey;margin-top: -1rem;margin-bottom: 0px;margin-left: -1.9rem;")
+                        span
+                            i.icon.retweet.blue
+                        span( data-bind = " text: retweeted_statusUserName ")
+                        span( data-bind = " text: $root.appScript().twitterObj.retweeted[ $root.languageIndex ()]" )
+                <!-- /ko -->
+                h5( style="margin-top: 0px;")
+                    span( data-bind = "text: user.name " )
+                    <!-- ko if: user.verified -->
+                        span( style="margin-left: 0.2rem;")
+                            i.icons
+                                i.icon.certificate.blue
+                                i.icon.check.small.white
+                    <!-- /ko -->
+                    span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+                    span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+            .description( style = "margin-top: 0px;")
+                textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+                <!-- ko if: typeof quoted_status !== "undefined" -->
+                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+                <!-- /ko -->
+                <!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
+                <!-- /ko -->
+                
+            .extra( style = "height: 1rem;")
+                span
+                    h5.ui.header
+                        i.icon.retweet.blue
+                        .content
+                            .sub.header( data-bind = "text: retweet_count" )
+                        i.icon.heart.outline.red( style = "padding-left: 5rem;" )
+                        .content
+                            .sub.header( data-bind = "text: favorite_count" )
+                            
+script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
+    <!-- ko if: _close -->
+        .top.fixed.twitterCloseButton
+            .item( style = "position: absolute;" )
+                i.circular.icon.close.large.link( data-bind = "click: close" style = "background-color: white;")
+    <!-- /ko -->
+    .searchItems
+
+        .twitterDetail
+            <!-- ko if: showAccount -->
+                .accountHearer( data-bind = "with: twitterTimeArray()[0]")
+                    .item
+                        img.ui.centered.image( data-bind = " attr: { 'src': user.kloakMediaLinkBanner_url ? $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ] : $parents[0].blockBannerImg }")
+                    
+                    .accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
+                        img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
+                    .extra
+                        h2.ui.header
+                            <!-- ko text: user.name --><!-- /ko -->
+                            <!-- ko if: user.verified -->
+                                span
+                                    i.icons
+                                        i.icon.certificate.blue
+                                        i.icon.check.white.small
+                            <!-- /ko -->
+                            .sub.header( data-bind = " text: '@' + user.screen_name ")
+
+                        .description
+                            textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+                        .extra
+                            <!-- ko if: user.location -->
+                            span
+                                i.icon.map.marker.alternate.grey
+                            
+                            span( data-bind = " text: user.location " style = "margin-right: 1rem;")
+                            <!-- /ko -->
+
+                            span
+                                i.icon.calendar.alternate.outline.grey
+                            span( data-bind = " $root.appScript().twitterObj.joinedText[ $root.languageIndex() ]")
+                            span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
+                        .extra
+                            h4
+                                span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
+                                span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
+                                span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
+                                span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
+            <!-- /ko -->
+            .ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
+
+                <!-- ko if: typeof retweeted_status && retweeted_status.retweeted_statusUserName -->
+                    <!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
+                <!-- /ko -->
+
+                <!-- ko if: !retweeted_status -->
+                    <!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
+                <!-- /ko -->
+            .extra
+                <!-- ko ifnot: nextButtonShowError -->
+                    button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+                <!-- /ko -->
+
+                <!-- ko if: nextButtonShowError -->
+                    button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
+                <!-- /ko -->
+//-     End of Twitter shared template
+
+//- Screenshot shared template
+
+//- End of Screenshot shared template
