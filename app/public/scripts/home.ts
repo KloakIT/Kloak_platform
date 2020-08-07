@@ -225,18 +225,11 @@ module view_layout {
 		public showLanguageSelect = ko.observable(true)
 		private demoTimeout = null
 		private demoMainElm
-		/*************************************
-		 *
-		 *          for New York Times
+		/**
+		 * 	showSnapshop
 		 */
-		public nytSection = ko.observable(false)
-		public nytloader = ko.observable(true)
-		public iframShow = ko.observable(false)
-		public nyt_news = ko.observable(false)
-		public nyt_detail = ko.observable(false)
-		public nyt_menu = ko.observable(false)
-		public TitleLine1 = null
-		public TitleLine2 = null
+		public showSnapshop = ko.observable ( null )
+		
 		public networkSetupHeader = [
 			'网络通讯线路设定',
 			'ネットワーク通信設定',
@@ -381,7 +374,7 @@ module view_layout {
 		}
 
 		//          change language
-		public selectItem(that?: any, site?: () => number) {
+		public selectItem ( that?: any, site?: () => number ) {
 			const tindex = lang[this.tLang()]
 			let index = tindex + 1
 			if (index > 3) {

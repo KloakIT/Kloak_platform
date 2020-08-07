@@ -177,18 +177,10 @@ var view_layout;
             this.newVersion = ko.observable(null);
             this.showLanguageSelect = ko.observable(true);
             this.demoTimeout = null;
-            /*************************************
-             *
-             *          for New York Times
+            /**
+             * 	showSnapshop
              */
-            this.nytSection = ko.observable(false);
-            this.nytloader = ko.observable(true);
-            this.iframShow = ko.observable(false);
-            this.nyt_news = ko.observable(false);
-            this.nyt_detail = ko.observable(false);
-            this.nyt_menu = ko.observable(false);
-            this.TitleLine1 = null;
-            this.TitleLine2 = null;
+            this.showSnapshop = ko.observable(null);
             this.networkSetupHeader = [
                 '网络通讯线路设定',
                 'ネットワーク通信設定',

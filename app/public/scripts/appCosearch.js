@@ -11,9 +11,7 @@ const appScript = {
         ],
     },
     showMain: ko.observable(true),
-    showWebPage: ko.observable(null),
     htmlIframe: ko.observable(false),
-    showSnapshop: ko.observable(false),
     searchItemsArray: ko.observable(),
     hasFocusShowTool: ko.observable(false),
     backGroundBlue: ko.observable(false),
@@ -111,7 +109,6 @@ const appScript = {
         _view.CanadaBackground(false);
         self.showMainSearchForm(false);
         self.showMain(false);
-        self.showSnapshop(false);
         self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount, () => {
             self.twitterObj = null;
             self.showTwitterObjResult(false);
@@ -214,7 +211,6 @@ const appScript = {
             _view.CanadaBackground ( false )
             self.showMainSearchForm ( false )
             self.showMain( false )
-            self.showSnapshop ( false )
             
             self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount )
             self.showTwitterObjResult ( true )
@@ -266,14 +262,11 @@ const appScript = {
                 _view.CanadaBackground(false);
                 self.showMainSearchForm(false);
                 self.showMain(false);
-                self.showSnapshop(true);
-                return self.showWebPage(y = new showWebPageClass(search_text, null, null, multimediaObj, () => {
-                    self.showWebPage(y = null);
+                return new showWebPageClass(search_text, null, multimediaObj, () => {
                     self.showMain(true);
-                    self.showSnapshop(false);
                     self.showMainSearchForm(true);
                     _view.CanadaBackground(true);
-                }));
+                });
             }
             /**
              *
@@ -335,20 +328,10 @@ const appScript = {
                         _view.CanadaBackground(false);
                         self.showMainSearchForm(false);
                         self.showMain(false);
-                        self.showSnapshop(true);
-                        let y = null;
-                        _view.storageHelper.createAssembler(com.requestSerial, (err, data) => {
-                            if (err) {
-                                console.log(err);
-                                return;
-                            }
-                            self.showWebPage((y = new showWebPageClass(search_text, Buffer.from(data.buffer).toString('base64'), com.requestSerial, multimediaObj, () => {
-                                self.showWebPage(y = null);
-                                self.showMain(true);
-                                self.showSnapshop(false);
-                                self.showMainSearchForm(true);
-                                _view.CanadaBackground(true);
-                            })));
+                        new showWebPageClass(search_text, com.requestSerial, multimediaObj, () => {
+                            self.showMain(true);
+                            self.showMainSearchForm(true);
+                            _view.CanadaBackground(true);
                         });
                     }
                 });
@@ -678,13 +661,14 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
-            //currentItem.showLoading ( false )
             if (com.subCom === 'youtube') {
                 currentItem.showDownload(false);
                 currentItem.snapshotReady(true);
+                currentItem.showLoading(false);
                 return currentItem['multimediaObj'] = com.Args;
             }
             if (com.subCom === 'twitter') {
+                currentItem.showLoading(false);
                 currentItem.showDownload(true);
                 currentItem['twObj'] = com.Args[0];
                 currentItem['twitterHref'] = com.Args[1];
@@ -700,7 +684,6 @@ const appScript = {
                         _view.CanadaBackground(false);
                         self.showMainSearchForm(false);
                         self.showMain(false);
-                        self.showSnapshop(true);
                         let y = null;
                         _view.storageHelper.createAssembler(com.requestSerial, (err, data) => {
                             if (err) {
@@ -774,31 +757,10 @@ const appScript = {
          *
          * 		youtube API
          */
-        if (currentItem['multimediaObj']) {
-            let y = null;
-            self.showMain(false);
-            self.showSnapshop(true);
-            return self.showWebPage(y = new showWebPageClass(currentItem.url, null, currentItem.snapshotUuid, currentItem.multimediaObj, () => {
-                self.showWebPage((y = null));
-                self.showMain(true);
-                self.showSnapshop(false);
-            }));
-        }
-        currentItem.showDownload(true);
-        _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            let y = null;
-            currentItem.showDownload(false);
-            self.showMain(false);
-            self.showSnapshop(true);
-            self.showWebPage((y = new showWebPageClass(isImage ? currentItem.clickUrl : currentItem.url, Buffer.from(data.buffer).toString('base64'), currentItem.snapshotUuid, currentItem.multimediaObj, () => {
-                self.showWebPage((y = null));
-                self.showMain(true);
-                self.showSnapshop(false);
-            })));
+        let y = null;
+        self.showMain(false);
+        return new showWebPageClass(currentItem.url, currentItem.snapshotUuid, currentItem.multimediaObj, () => {
+            self.showMain(true);
         });
     },
     // CHANGED ============================================
@@ -1010,15 +972,12 @@ const appScript = {
             const url = _img.webUrlHref;
             if (_img['snapshotData']) {
                 self.showMain(false);
-                self.showSnapshop(true);
                 self.showSearchSimilarImagesResult(false);
                 let y = null;
-                return self.showWebPage((y = new showWebPageClass(url, _img['snapshotData'], _img['snapshotUuid'], () => {
-                    self.showWebPage((y = null));
+                return new showWebPageClass(url, _img['snapshotData'], _img['snapshotUuid'], () => {
                     self.showMain(true);
-                    self.showSnapshop(false);
                     self.showSearchSimilarImagesResult(true);
-                })));
+                });
             }
             const errorProcess = (err) => {
                 _img.errorIndex(_view.connectInformationMessage.getErrorIndex(err));

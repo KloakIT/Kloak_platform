@@ -178,7 +178,7 @@ class sharedWorkerManager {
 		return this.emitCommand ( cmd, CallBack )
 	}
 
-	public unzipHTML ( uuid: string, base64:string, Callback ) {
+	public unzipHTML ( uuid: string, base64: string, Callback ) {
 		const cmd: sharedWorkerCommand = {
 			command: 'unzipHTML',
 			args: [ uuid, base64 ]

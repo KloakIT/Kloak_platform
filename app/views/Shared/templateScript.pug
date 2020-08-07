@@ -170,4 +170,184 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 
 //- Screenshot shared template
 
+<!-- ko if: showSnapshop () -->
+#subPage( data-bind = " with: showSnapshop " )
+    
+    .ui.top.fixed.menu.borderless
+        .item( style = "width: 90%; margin: 0 auto;" )
+            form.ui.form( style = "width: 100%;" data-bind = "css: { 'error': showErrorMessage }" )
+                .field( style = "width: 100%;" )
+                    .ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
+                        i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
+                        input( style = "color: rgba ( 0,0,0,0.5 );padding-right: 7rem!important;" readonly data-bind = "value: showUrl" )
+                        <!-- ko if: ! showLoading() -->
+                            <!-- ko if: !showImgPage() && png() -->
+                                i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
+                            <!-- /ko -->
+
+                            <!-- ko if: showMultimediaObjButton () && !showMultimediaPage () -->
+                                i.icon.circular.red.youtube.link( data-bind = " click: showMultimedia" style = "right: 3.5rem; left: auto;")
+                            <!-- /ko -->
+
+                            <!-- ko if: !showHtmlCodePage() && mHtml() -->
+                            i.icon.link.code.circular( data-bind = " click: htmlClick, style: { right: showMultimediaPage () ? '3.5rem' : '.5em' } " style="left: auto ; color:#346b0b!important;" )
+                            <!-- /ko -->
+                        <!-- /ko -->
+                
+                <!-- ko if: showLoading -->
+                    .field
+                        p( data-bind = " text: messageBoxDefine ['LoadingPage'][$root.languageIndex()]" style = "color: grey;")
+                    .field
+                        .loaderCoNET( style = " margin-top: 3em;")
+                            .loaderCoNET-div
+                            .loaderCoNET-div
+                            .loaderCoNET-div
+                            .loaderCoNET-div
+                <!-- /ko -->
+
+                <!-- ko if: showErrorMessage -->
+                    .ui.error.message
+                        span
+                            i.icon.exclamation.triangle.red.link
+                            span( data-bind=" text: messageBoxDefine ['pageLoadingError'][$root.languageIndex()]")
+                <!-- /ko -->
+    <!-- ko if: showHtmlCodePage -->
+        
+        iframe( style = "border: none;width: 100%; height: -webkit-fill-available;margin-top: 7em;" sandbox = "allow-top-navigation allow-top-navigation allow-same-origin allow-forms allow-popups" )
+    <!-- /ko -->
+
+    <!-- ko if: showImgPage -->
+        img( data-bind = " attr: { src: png }" style = "border: none;margin: 7em 1em 1em 1em;")
+    <!-- /ko -->
+
+    <!-- ko if: showMultimediaPage -->
+        <!-- ko with: MultimediaObjArray() -->
+            .CoContent( style = "margin: 1em; margin-top: 7rem;")
+                .ui.divided.items.searchItems
+                    <!-- ko if: thumbnails -->
+                        .item
+                            .image
+                                img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+                            .content
+                                .header( data-bind =" text: title" )
+                                .description
+                                    
+                                    p
+                                        <!-- ko if: longer -->
+                                            span.ui.label
+                                                i.icon.history
+                                                span( data-bind =" text: longer ")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: upload_date -->
+                                            span.ui.label
+                                                i.icon.calendar.alternate.outline
+                                                span( data-bind = " text: upload_date ")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: view_count -->
+                                            span.ui.label
+                                                i.icon.eye
+                                                span( data-bind = " text: view_count ")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: like_count -->
+                                            span.ui.label
+                                                i.icon.thumbs.up.outline
+                                                span( data-bind = " text: like_count ")
+                                        <!-- /ko -->
+
+
+                                    p( data-bind = " text: description ")
+                                .extra
+                                    <!-- ko if: audio -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+                                    <!-- /ko -->
+
+                                    <!-- ko if: video480 -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+                                    <!-- /ko -->
+
+                                    <!-- ko if: video720 -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+                                            
+                                    <!-- /ko -->
+
+                                    <!-- ko if: video2k -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+                                    <!-- /ko -->
+
+                                    <!-- ko if: video4k -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+                                    <!-- /ko -->
+
+                                    <!-- ko if: video8k -->
+                                        span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+                                    <!-- /ko -->
+                                    
+                    <!-- /ko -->
+                    <!-- ko if: entriesObj -->
+                        <!-- ko foreach: entriesObj -->
+                            .item
+                                .image
+                                    img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+                                .content
+                                    .header( data-bind =" text: title" )
+                                    .description
+                                        p
+                                            <!-- ko if: longer -->
+                                                span.ui.label
+                                                    i.icon.history
+                                                    span( data-bind =" text: longer ")
+                                            <!-- /ko -->
+
+                                            <!-- ko if: upload_date -->
+                                                span.ui.label
+                                                    i.icon.calendar.alternate.outline
+                                                    span( data-bind = " text: upload_date ")
+                                            <!-- /ko -->
+
+                                            <!-- ko if: view_count -->
+                                                span.ui.label
+                                                    i.icon.eye
+                                                    span( data-bind = " text: view_count ")
+                                            <!-- /ko -->
+
+                                            <!-- ko if: like_count -->
+                                                span.ui.label
+                                                    i.icon.thumbs.up.outline
+                                                    span( data-bind = " text: like_count ")
+                                            <!-- /ko -->
+                                        p( data-bind = " text: description ")
+                                    .extra
+                                        <!-- ko if: audio -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: video480 -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: video720 -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+                                                
+                                        <!-- /ko -->
+
+                                        <!-- ko if: video2k -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: video4k -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+                                        <!-- /ko -->
+
+                                        <!-- ko if: video8k -->
+                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+                                        <!-- /ko -->
+                        <!-- /ko -->
+                    <!-- /ko -->
+        <!-- /ko -->
+    <!-- /ko -->
+
+<!-- /ko -->
 //- End of Screenshot shared template
