@@ -105,6 +105,7 @@ export default class localServer {
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss > = new Map()
 	private destoryConnectTimePool: Map <string, any > = new Map ()
+
 	private catchCmd ( mail: string, uuid: string ) {
 		
 		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
@@ -129,9 +130,10 @@ export default class localServer {
 		socket.emit ( 'doingRequest', mail, uuid )
 	}
 	
-	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean, keyID ) {
+	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean, nameSpace: SocketIO.Namespace ) {
 		
 		//		have CoGate connect
+		const keyID = socket['keyID']
 		let ConnectCalss: CoNETConnectCalss = this.imapConnectPool.get ( keyID )
 		clearTimeout ( this.destoryConnectTimePool.get ( keyID ))
 		
@@ -181,10 +183,11 @@ export default class localServer {
 		}
 
 		const makeConnect = () => {
-			ConnectCalss = new CoNETConnectCalss ( imapData, this.socketServer, socket, ( mail, uuid ) => {
+			ConnectCalss = new CoNETConnectCalss ( imapData, this.socketServer, socket, nameSpace, ( mail, uuid ) => {
 				return this.catchCmd ( mail, uuid )
 			}, _exitFunction )
-			return this.imapConnectPool.set ( keyID, ConnectCalss )
+			
+			return this.imapConnectPool.set ( keyID, socket['userConnet'] = ConnectCalss )
 		}
 		
 		return makeConnect()
@@ -194,7 +197,10 @@ export default class localServer {
 	private listenAfterPassword ( socket: SocketIO.Socket ) {
 		let sendMail = false
 		const clientName = `[${ socket.id }][ ${ socket.conn.remoteAddress }]`
-		saveLog ( `socketServerConnected ${ clientName } connect ${ this.localConnected.size }`)
+		
+		const workspace = socket.nsp
+		
+		saveLog ( `socketServerConnected ${ clientName }:[${ workspace.name }] connect count ${ workspace.connected }`)
 		
 		const checkSocketKeypair = ( socket: SocketIO.Socket, CallBack ) => {
 		
@@ -208,6 +214,7 @@ export default class localServer {
 				saveLog ( `connect [${ clientName }] have no keyPair`)
 				return null
 			}
+
 			return uuid
 			
 		}
@@ -221,7 +228,7 @@ export default class localServer {
 			}
 			const keyPair: localServerKeyPair = socket ["keypair"]
 			
-			return Tool.decryptoMessage ( this.localKeyPair,keyPair.publicKey, imapConnectData, ( err, imapData ) => {
+			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, imapConnectData, ( err, imapData ) => {
 				if ( err ) {
 					return socket.emit ( uuid, 'localWebsiteDecryptError' )
 				}
@@ -237,6 +244,7 @@ export default class localServer {
 			if ( !uuid ) {
 				return 
 			}
+
 			const keyPair: localServerKeyPair = socket ["keypair"]
 			
 			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, imapData, ( err, data ) => {
@@ -249,7 +257,7 @@ export default class localServer {
 				} catch ( ex ) {
 					return socket.emit ( uuid, 'system' )
 				}
-				return this.tryConnectCoNET ( socket, data, sendMail, keyPair.publicID )
+				return this.tryConnectCoNET ( socket, data, sendMail, workspace )
 			})
 
 			
@@ -266,9 +274,9 @@ export default class localServer {
 			}
 
 			this.requestPool.set ( request_uuid, socket )
-			const keyPair: localServerKeyPair = socket ["keypair"]
+			const keyID = socket ["keyID"]
 
-			let userConnet: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
+			let userConnet: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
 			if ( ! userConnet ) {
 				saveLog ( `doingRequest on ${ uuid } but have not CoNETConnectCalss need restart! socket.emit ( 'systemErr' )`)
 				return socket.emit ( uuid, new Error ('have no connect to node'))
@@ -289,6 +297,7 @@ export default class localServer {
 			
 
 			const keyPair: localServerKeyPair = socket ["keypair"]
+			const keyID = socket ["keyID"]
 
 			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, files, ( err, data ) => {
 				if ( err ) {
@@ -300,7 +309,7 @@ export default class localServer {
 				console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
 				
 				
-				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
+				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
 
 				if ( !userConnect ) {
 					console.log ( `getFilesFromImap error:![ Have no userConnect ]` )
@@ -332,10 +341,11 @@ export default class localServer {
 				return 
 			}
 			const keyPair: localServerKeyPair = socket [ "keypair" ]
+			const keyID = socket ["keyID"]
 			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, message, ( err, data ) => {
 				console.dir ( data )
 				sendMail = true
-				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyPair.publicID )
+				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
 				if ( userConnect ) {
 					userConnect.Ping ( true )
 				}
@@ -354,8 +364,8 @@ export default class localServer {
 			const _callBack = ( ...data ) => {
 				socket.emit ( _uuid, ...data )
 			}
-			const keyPair: localServerKeyPair = socket [ "keypair" ]
-			const userConnect = this.imapConnectPool.get ( keyPair.publicID )
+			const keyID = socket ["keyID"]
+			const userConnect = this.imapConnectPool.get ( keyID )
 			
 			if ( !userConnect ) {
 				return socket.emit ( 'systemErr' )
@@ -392,19 +402,18 @@ export default class localServer {
 				}
 				
 				console.dir ( data.publicID )
-				const keyID = data.publicID.slice( 24 )
+				const keyID = data.publicID.slice( 24 ).toLocaleUpperCase()
 				socket [ "keypair" ] = data
+				socket [ "keyID" ] = keyID
 				
-				return socket.join ( keyID, () => {
-					console.dir (`client 【${ keyID }】 join room!\n\n\n`)
-					socket.emit ( _uuid, null, this.localKeyPair.publicKey )
-					return this.socketServer.of ( keyID ).clients( ( err, clients ) => {
-						if ( err ) {
-							return console.log ( err )
-						}
-						console.dir (`clients = [${ clients }]`)
-					})
-				})
+				
+				console.dir (`client 【${ keyID }】 join room!\n\n\n`)
+				socket.emit ( _uuid, null, this.localKeyPair.publicKey )
+				
+				if ( workspace.name.toLocaleUpperCase() !== `/${ keyID }`) {
+					console.log (`workspace.name.toLocaleUpperCase()[${  workspace.name.toLocaleUpperCase() }] !== /${ keyID }`)
+
+				}
 				
 			})
 			
@@ -510,9 +519,26 @@ export default class localServer {
             res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
 		})
 
+		const workspaces = this.socketServer.of(/^\/\w+$/)
+
+
+		workspaces.on ( 'connection', socket => {
+			
+			return this.listenAfterPassword ( socket )
+			
+		})
+
+		// this middleware will be assigned to each namespace
+		workspaces.use (( socket, next ) => {
+			// ensure the user has access to the workspace
+			next()
+		})
+
+		/*
 		this.socketServer.on ( 'connection', socker => {
 			return this.listenAfterPassword ( socker )
 		})
+		*/
 		
 		this.httpServer.once ( 'error', err => {
 			console.log (`httpServer error`, err )

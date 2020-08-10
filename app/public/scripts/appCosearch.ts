@@ -122,13 +122,14 @@ const appScript = {
 		self.errorMessageIndex(null)
 	},
 
-	showTwitter: ( self, twitterObj, twitterHref, serialNumber, buffer, showAccount: boolean ) => {
+	showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean ) => {
+		
 		self.showInputLoading ( false )
 		_view.CanadaBackground ( false )
 		self.showMainSearchForm ( false )
 		self.showMain( false )
 		
-		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount, () => {
+		self.twitterObj= new twitter ( twitterObj, twitterHref, serialNumber, showAccount, () => {
 			
 			self.twitterObj = null
 			self.showTwitterObjResult ( false )
@@ -141,6 +142,12 @@ const appScript = {
 		})
 
 		self.showTwitterObjResult ( true )
+
+		while ( self.twitterObjGetFilesFromFileArray && self.twitterObjGetFilesFromFileArray.length ) {
+			self.twitterObj.getFilesFromFileArray ( self.twitterObjGetFilesFromFileArray.shift() )
+		}
+			
+		
 	},
 
 	getLinkClick: ( self, index ) => {
@@ -280,151 +287,161 @@ const appScript = {
 		 */
 
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-				if ( err ) {
-					return errorProcess ( err )
-				}
+			if ( err ) {
+				return errorProcess ( err )
+			}
 
-				if ( !com ) {
-					return self.loadingGetResponse ( true )
-				}
+			if ( !com ) {
+				return self.loadingGetResponse ( true )
+			}
 
-				if ( com.error === -1 ) {
-					self.loadingGetResponse ( false )
-					return self.conetResponse ( true )
-				}
+			if ( com.error === -1 ) {
+				self.loadingGetResponse ( false )
+				return self.conetResponse ( true )
+			}
 
-				if ( com.error ) {
-					return errorProcess ( com.error )
-				}
+			if ( com.error ) {
+				return errorProcess ( com.error )
+			}
 
-				/***
-				 * 
-				 * 
-				 * 		youtube API
-				 * 
-				 */
-				self.showInputLoading (false )
-				if ( com.subCom === 'youtube' ) {
-					const multimediaObj = com.Args
-					let y = null
+			/***
+			 * 
+			 * 
+			 * 		youtube API
+			 * 
+			 */
+			self.showInputLoading (false )
+			if ( com.subCom === 'youtube' ) {
+				const multimediaObj = com.Args
+				let y = null
 
-					self.showDownload ( true )
-                    
-                    _view.CanadaBackground ( false )
-                    self.showMainSearchForm ( false )
-                    self.showMain ( false )
-                   
-					return new showWebPageClass ( search_text , null, multimediaObj, () => {
-						
-						self.showMain ( true )
-						
-						self.showMainSearchForm ( true )
-						_view.CanadaBackground ( true )
-					})
+				self.showDownload ( true )
+				
+				_view.CanadaBackground ( false )
+				self.showMainSearchForm ( false )
+				self.showMain ( false )
+				
+				return new showWebPageClass ( search_text , null, multimediaObj, () => {
 					
+					self.showMain ( true )
+					
+					self.showMainSearchForm ( true )
+					_view.CanadaBackground ( true )
+				})
+				
+			}
+			/**
+			 *
+			 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
+			 * 		{
+			 * 		 	Content-Type: string
+			 * 			fileExpansion: string
+			 * 			fileName: string
+			 * 			length: string ( If null server have not support breakpoint resume )
+			 * 			url: string
+			 *
+			 * 		}
+			 */
+
+			if ( com.subCom === 'downloadFile' ) {
+				const args: kloak_downloadObj = com.Args[0]
+				self.showDownloadProcess(true)
+
+				let downloader = _view.storageHelper.getDownloader ( com.requestSerial )
+
+				if ( downloader ) {
+					downloader.addToQueue(args)
+					return
 				}
-				/**
-				 *
-				 * 		getSnapshop will return com.subCom === "downloadFile" when except HTML format
-				 * 		{
-				 * 		 	Content-Type: string
-				 * 			fileExpansion: string
-				 * 			fileName: string
-				 * 			length: string ( If null server have not support breakpoint resume )
-				 * 			url: string
-				 *
-				 * 		}
-				 */
 
-				if ( com.subCom === 'downloadFile' ) {
-					const args: kloak_downloadObj = com.Args[0]
-					self.showDownloadProcess(true)
-
-					let downloader = _view.storageHelper.getDownloader ( com.requestSerial )
-
-					if ( downloader ) {
-						downloader.addToQueue(args)
+				downloader = _view.storageHelper.createDownload(com.requestSerial, [], args.downloadFilename, ['librarium', 'download'], (err, data) => {
+					if (err) {
+						console.error(err)
 						return
 					}
+					console.log(`${com.requestSerial} DOWNLOAD FINISHED`)
+				})
+				downloader.addToQueue([args])
+				return
+			}
 
-					downloader = _view.storageHelper.createDownload(com.requestSerial, [], args.downloadFilename, ['librarium', 'download'], (err, data) => {
-						if (err) {
-							console.error(err)
-							return
-						}
-						console.log(`${com.requestSerial} DOWNLOAD FINISHED`)
-					})
-					downloader.addToQueue([args])
-					return
+			if ( com.subCom === 'webSearch' ) {
+				const args = com.Args
+				self.searchInputTextShow ( search_text )
+
+				self.returnSearchResultItemsInit ( args )
+				args.totalResults = args.totalResults.replace ( /\B(?=(\d{3})+(?!\d))/g, ',' )
+				self.searchItemsArray ( args )
+				self.showResultItems ( self, args )
+				_view.CanadaBackground ( false )
+				return self.showMainSearchForm ( false )
+			}
+
+			if ( com.subCom === 'getSnapshop') {
+				const files = com.Args[0]
+				let multimediaObj = null
+
+				try {
+					multimediaObj = JSON.parse ( com.Args[1] )
+				} catch ( ex ) {
+					console.dir (`have not multimediaObj`)
 				}
 
-				if ( com.subCom === 'webSearch' ) {
-					const args = com.Args
-					self.searchInputTextShow ( search_text )
-
-					self.returnSearchResultItemsInit ( args )
-					args.totalResults = args.totalResults.replace ( /\B(?=(\d{3})+(?!\d))/g, ',' )
-					self.searchItemsArray ( args )
-					self.showResultItems ( self, args )
-					_view.CanadaBackground ( false )
-					return self.showMainSearchForm ( false )
-				}
-
-				if ( com.subCom === 'getSnapshop') {
-					const files = com.Args[0]
-					let multimediaObj = null
-
-					try {
-						multimediaObj = JSON.parse ( com.Args[1] )
-					} catch ( ex ) {
-						console.dir (`have not multimediaObj`)
+				_view.storageHelper.createDownload ( com.requestSerial, files, multimediaObj && multimediaObj.title, [ 'snapshot', 'librarium', 'html' ], ( err, data ) => {
+					if ( err ) {
+						console.error(err)
+						return
 					}
+					if ( data === com.requestSerial ) {
+						self.showDownload ( true )
+						self.showInputLoading ( false )
+						_view.CanadaBackground ( false )
+						self.showMainSearchForm ( false )
+						self.showMain ( false )
+						
+						
+						new showWebPageClass ( search_text , com.requestSerial, multimediaObj, () => {
+							
+							self.showMain ( true )
+							self.showMainSearchForm ( true )
+							_view.CanadaBackground ( true )
+						})
+						
+						
+					}
+				})
+				return
+			}
 
-					_view.storageHelper.createDownload ( com.requestSerial, files, multimediaObj && multimediaObj.title, [ 'snapshot', 'librarium', 'html' ], ( err, data ) => {
-						if ( err ) {
-							console.error(err)
-							return
-						}
-						if ( data === com.requestSerial ) {
-							self.showDownload ( true )
-							self.showInputLoading ( false )
-							_view.CanadaBackground ( false )
-							self.showMainSearchForm ( false )
-							self.showMain ( false )
-							
-							
-							new showWebPageClass ( search_text , com.requestSerial, multimediaObj, () => {
-								
-								self.showMain ( true )
-								self.showMainSearchForm ( true )
-								_view.CanadaBackground ( true )
-							})
-							
-							
-						}
-					})
-					return
+			if ( com.subCom === 'twitter' ) {
+				const twObj = com.Args [0]
+				const twitterHref = com.Args[1]
+				const serialNumber = com.requestSerial
+				const files = com.Args[2]
+				if ( twObj ) {
+					return self.showTwitter ( self, twObj, twitterHref, serialNumber, true )
+				}
+				console.dir ( files )
+				if ( self.twitterObj && self.twitterObj.getFilesFromFileArray ) {
+					return self.twitterObj.getFilesFromFileArray ( files )
+				}
+				if ( self.twitterObjGetFilesFromFileArray ) {
+					return self.twitterObjGetFilesFromFileArray.push ( files )
 				}
 
-				if ( com.subCom === 'twitter' ) {
-					const twObj = com.Args [0]
-					const twitterHref = com.Args[1]
-					const serialNumber = com.requestSerial
-					const fileBuffer = com.Args[2]
-
-					return self.showTwitter ( self, twObj, twitterHref, serialNumber, fileBuffer, true )
-					
-				/**
-				 * 
-				 * 			Twitter API
-				 */
+				self ["twitterObjGetFilesFromFileArray"] = [ files ]
 				
-				}
+			/**
+			 * 
+			 * 			Twitter API
+			 */
 			
-			})
+			}
+		
+		})
 	},
 
-	historyListClick: (self, event) => {
+	historyListClick: ( self, event ) => {
 		_view.CanadaBackground(false)
 		self.showMainSearchForm(false)
 		self.showMain(true)
@@ -836,8 +853,8 @@ const appScript = {
 								console.error(err)
 								return
 							}
-
-							return self.showTwitter ( self, currentItem ['twObj'], currentItem ['twitterHref'], currentItem ['serialNumber'], currentItem ['fileBuffer'] )
+							//showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean )
+							return self.showTwitter ( self, currentItem ['twObj'], currentItem ['twitterHref'], currentItem ['serialNumber'], true )
 						})
 					})
 				}
@@ -913,8 +930,9 @@ const appScript = {
 		 * 
 		 * 		Twitter obj
 		 */
+		//showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean )
 		if ( currentItem ['twObj'] ) {
-			return self.showTwitter ( self, currentItem ['twObj'], currentItem ['twitterHref'], currentItem ['serialNumber'], null, true )
+			return self.showTwitter ( self, currentItem ['twObj'], currentItem ['twitterHref'], currentItem ['serialNumber'], true )
 		}
 
 		/**

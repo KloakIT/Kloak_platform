@@ -47,10 +47,17 @@ script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
 
     <!-- ko if: media [0] && media [0].video_info -->
         <!-- ko with: media [0] -->
-            <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
+            .videoDiv( data-bind="css: { 'ui segment': typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' }" style="margin: 0;padding: 0;")
                 video( style = "width: 100%;" controls autoplay )
-                    source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
-            <!-- /ko -->
+                    <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
+                        source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
+                    <!-- /ko -->
+                <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' -->
+                    .ui.active.dimmer
+                        .ui.loader
+                <!-- /ko -->
+                
+
         <!-- /ko -->
     <!-- /ko -->
 

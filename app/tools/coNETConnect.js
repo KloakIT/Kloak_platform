@@ -34,7 +34,7 @@ const timeOutWhenSendConnectRequestMail = 1000 * 60;
 const commandRequestTimeOutTime = 1000 * 10;
 const requestTimeOut = 1000 * 60;
 class default_1 extends Imap.imapPeer {
-    constructor(imapData, server, socket, cmdResponse, _exit) {
+    constructor(imapData, server, socket, roomEmit, cmdResponse, _exit) {
         super(imapData, imapData.clientFolder, imapData.serverFolder, err => {
             console.debug(`imapPeer doing exit! err =`, err);
             this.roomEmit.emit('tryConnectCoNETStage', null, -2);
@@ -43,13 +43,13 @@ class default_1 extends Imap.imapPeer {
         this.imapData = imapData;
         this.server = server;
         this.socket = socket;
+        this.roomEmit = roomEmit;
         this.cmdResponse = cmdResponse;
         this._exit = _exit;
         this.CoNETConnectReady = false;
         this.connectStage = -1;
         this.alreadyExit = false;
         this.timeoutWaitAfterSentrequestMail = null;
-        this.roomEmit = this.server.to(this.socket.id);
         this.timeoutCount = {};
         saveLog(`=====================================  new CoNET connect()`, true);
         this.roomEmit.emit('tryConnectCoNETStage', null, 5);

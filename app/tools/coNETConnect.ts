@@ -41,7 +41,6 @@ export default class extends Imap.imapPeer {
 	public connectStage = -1
 	public alreadyExit = false
 	private timeoutWaitAfterSentrequestMail: NodeJS.Timeout = null
-	private roomEmit = this.server.to ( this.socket.id )
 	private timeoutCount = {}
 
 	public exit1 ( err ) {
@@ -61,7 +60,7 @@ export default class extends Imap.imapPeer {
 		}, requestTimeOut * 2 )
 	}
 
-	constructor ( public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket, 
+	constructor ( public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket, public roomEmit: SocketIO.Namespace,
 		private cmdResponse: ( mail: string, hashCode: string ) => void, public _exit: ( err ) => void ) {
 		super ( imapData, imapData.clientFolder, imapData.serverFolder, err => {
 			console.debug ( `imapPeer doing exit! err =`, err )

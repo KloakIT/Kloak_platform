@@ -1,3 +1,4 @@
+
 const OneMin = 1000 * 60
 const OneHour = OneMin * 60
 const OneDay =  OneHour * 24
@@ -55,6 +56,8 @@ class twitter {
     public blockBannerImg = blockBannerImg
     public videoHref = ko.observable ({})
 
+    public ObjectURL = []
+
     private getmonth ( mon, leng ) {
         if ( leng === 2 ) {
             return this.month_eng [ mon ]
@@ -78,41 +81,56 @@ class twitter {
         }
     }
 
-    private getFilesFromFileArray ( fileArray: any []) {
+    public getFilesFromFileArray ( fileArray: any []) {
         const self = this
         let buffer = null
+        const dataHash = fileArray[0].sha1sum
         const getdata = ( filenameObj ) => {
-            const filename = filenameObj.fileName
+            const filename = filenameObj.uuid
+            console.dir ( filename )
             return _view.connectInformationMessage.fetchFiles ( filename, ( err, data ) => {
                 if ( err ) {
                     return console.log (`getFilesFromFileArray error, try again`, err )
                 }
 
-                return _view.sharedMainWorker.decryptStreamWithAPKey ( data.data, ( err, _buffer: Buffer ) => {
+                return _view.sharedMainWorker.decryptStreamWithAPKey ( data.data, ( err, _buffer ) => {
                     if ( err ) {
                         console.log ( `getFilesFromFileArray _view.sharedMainWorker.decryptStreamWithAPKey error stop `, err )
                         return
                     }
                     
-                    buffer += Buffer.from ( _buffer ).toString('base64')
+                    if (!buffer) {
+                        buffer = new Uint8Array(Buffer.from(_buffer.data))
+                    } else {
+                        let nextUint8array = new Uint8Array(Buffer.from(_buffer.data))
+                        let tempUint8array = new Uint8Array(buffer.byteLength + nextUint8array.byteLength)
+                        tempUint8array.set(buffer, 0)
+                        tempUint8array.set(nextUint8array, buffer.byteLength)
+                        buffer = tempUint8array
+                        tempUint8array = null
+                        nextUint8array = null
+                    }
+                    
+                    
+                    // buffer += Buffer.from ( _buffer.data ).toString( 'base64' )
                    
                     if ( fileArray.length ) {
                         return getdata ( fileArray.shift () )
                     }
-                    return _view.sharedMainWorker.unzipHTML ( self.uuid, buffer, ( err, data ) => {
-                        if ( err ) {
-                            return console.log ( `getFilesFromFileArray _view.sharedMainWorker.unzipHTML error`, err )
-                        }
-                        const datas: { data: string, filename: string } [] = data.folder
-                        const videoObj = self.videoHref()
-                        datas.forEach ( n => {
-                            if ( ! videoObj [ n.filename ] ) {
-                                const vv = new Blob ( [Buffer.from( n.data, 'base64')], { type: 'video/mp4'})
-                                videoObj [ n.filename ] = URL.createObjectURL ( vv )
-                            }
-                        })
-                        return self.videoHref( videoObj )
-                    })
+                     
+                   
+                    
+                    const videoObj = self.videoHref()
+                    
+                    if ( ! videoObj [ dataHash ] ) {
+                        // const buff = Buffer.from ( buffer, 'base64').buffer
+                        const vv = new Blob ( [ buffer.buffer ], { type: 'video/mp4'})
+                        videoObj [ dataHash ] = URL.createObjectURL ( vv )
+                        
+                    }
+                    
+                    return self.videoHref( videoObj )
+                    
                 })
 
             })
@@ -122,12 +140,9 @@ class twitter {
 
     }
 
-    constructor ( public twitterObj: any [], public twitterHref, public uuid, private fileArray: any [], public showAccount: boolean, public _close: () => void = null ) {
+    constructor ( public twitterObj: any [], public twitterHref, public uuid, public showAccount: boolean, public _close: () => void = null ) {
         twitterObj.forEach ( n => this.retweeted_statusInit( n ))
         this.twitterTimeArray = ko.observableArray ( this.twitterObj )
-        if ( fileArray ) {
-            this.getFilesFromFileArray ( fileArray )
-        }
     }
 
     public getTimeUser (  timeString, lang ) {
@@ -275,16 +290,21 @@ class twitter {
             const twitterHref = com.Args[1]
             const fileArray = com.Args[2]
             
-            for ( let i of Object.keys( twitterHref )) {
-                if ( !self.twitterHref[ i ] ) {
-                    self.twitterHref[ i ] = twitterHref[ i ]
+            if ( twitterHref ) {
+                for ( let i of Object.keys( twitterHref )) {
+                    if ( !self.twitterHref[ i ] ) {
+                        self.twitterHref[ i ] = twitterHref[ i ]
+                    }
+                    
                 }
-                
             }
-            twObj.forEach ( n => {
-                self.retweeted_statusInit (n)
-                self.twitterTimeArray.push ( n )
-            })
+            if ( twObj ) {
+                twObj.forEach ( n => {
+                    self.retweeted_statusInit (n)
+                    self.twitterTimeArray.push ( n )
+                })
+            }
+            
             if ( fileArray ) {
                 this.getFilesFromFileArray ( fileArray )
             }
@@ -294,6 +314,9 @@ class twitter {
     }
 
     public close () {
+        this.ObjectURL.forEach ( n => {
+            URL.revokeObjectURL ( n )
+        })
         if ( this._close ) {
             return this._close ()
         }

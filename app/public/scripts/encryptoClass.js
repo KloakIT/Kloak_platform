@@ -230,12 +230,12 @@ const signPublicKey = (public_key, private_key) => {
     packetlist.push(signaturePacket);
     return new openpgp.key.Key(packetlist);
 };
-const showHTMLComplete = (uuid, base64zipStream, CallBack) => {
+const showHTMLComplete = (uuid, base64zipStream, base64, CallBack) => {
     const errCallBack = err => {
         console.log(err);
         CallBack(err);
     };
-    return JSZip.loadAsync(base64zipStream, { base64: true }).then(zip => {
+    return JSZip.loadAsync(base64zipStream, { base64: base64 }).then(zip => {
         const ret = {
             img: null,
             html: null,
@@ -758,11 +758,11 @@ class encryptoClass {
             if (err) {
                 return CallBack(err);
             }
-            showHTMLComplete(uuid, data, CallBack);
+            showHTMLComplete(uuid, data, true, CallBack);
         });
     }
     // ANDY CHANGED ======================
     unzipHTML(uuid, base64, CallBack) {
-        showHTMLComplete(uuid, base64, CallBack);
+        showHTMLComplete(uuid, base64, true, CallBack);
     }
 }

@@ -104,12 +104,12 @@ const appScript = {
         self.showSearchError(false);
         self.errorMessageIndex(null);
     },
-    showTwitter: (self, twitterObj, twitterHref, serialNumber, buffer, showAccount) => {
+    showTwitter: (self, twitterObj, twitterHref, serialNumber, showAccount) => {
         self.showInputLoading(false);
         _view.CanadaBackground(false);
         self.showMainSearchForm(false);
         self.showMain(false);
-        self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, buffer, showAccount, () => {
+        self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, showAccount, () => {
             self.twitterObj = null;
             self.showTwitterObjResult(false);
             self.showMain(true);
@@ -120,6 +120,9 @@ const appScript = {
             _view.CanadaBackground(true);
         });
         self.showTwitterObjResult(true);
+        while (self.twitterObjGetFilesFromFileArray && self.twitterObjGetFilesFromFileArray.length) {
+            self.twitterObj.getFilesFromFileArray(self.twitterObjGetFilesFromFileArray.shift());
+        }
     },
     getLinkClick: (self, index) => {
         const currentItem = self.searchItemList()[index];
@@ -341,8 +344,18 @@ const appScript = {
                 const twObj = com.Args[0];
                 const twitterHref = com.Args[1];
                 const serialNumber = com.requestSerial;
-                const fileBuffer = com.Args[2];
-                return self.showTwitter(self, twObj, twitterHref, serialNumber, fileBuffer, true);
+                const files = com.Args[2];
+                if (twObj) {
+                    return self.showTwitter(self, twObj, twitterHref, serialNumber, true);
+                }
+                console.dir(files);
+                if (self.twitterObj && self.twitterObj.getFilesFromFileArray) {
+                    return self.twitterObj.getFilesFromFileArray(files);
+                }
+                if (self.twitterObjGetFilesFromFileArray) {
+                    return self.twitterObjGetFilesFromFileArray.push(files);
+                }
+                self["twitterObjGetFilesFromFileArray"] = [files];
                 /**
                  *
                  * 			Twitter API
@@ -690,7 +703,8 @@ const appScript = {
                                 console.error(err);
                                 return;
                             }
-                            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], currentItem['fileBuffer']);
+                            //showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean )
+                            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], true);
                         });
                     });
                 }
@@ -750,8 +764,9 @@ const appScript = {
          *
          * 		Twitter obj
          */
+        //showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean )
         if (currentItem['twObj']) {
-            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], null, true);
+            return self.showTwitter(self, currentItem['twObj'], currentItem['twitterHref'], currentItem['serialNumber'], true);
         }
         /**
          *

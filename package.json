@@ -30,7 +30,7 @@
 		"@types/snapsvg": "^0.5.0",
 		"@types/socket.io": "^2.1.10",
 		"@types/socket.io-client": "^1.4.33",
-		"electron": "^9.1.2",
+		"electron": "^9.2.0",
 		"electron-builder-squirrel-windows": "^22.8.1",
 		"jimp": "0.14.0",
 		"jquery": "^3.5.1",
@@ -100,7 +100,7 @@
 		"nodemailer": "^6.4.11",
 		"openpgp": "^4.10.7",
 		"pug": "^3.0.0",
-		"snyk": "^1.369.2",
+		"snyk": "^1.372.0",
 		"socket.io": "^2.3.0"
 	},
 	"snyk": true,

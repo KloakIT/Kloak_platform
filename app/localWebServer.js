@@ -104,9 +104,20 @@ class localServer {
         this.expressServer.get(`${folderName}/browserNotSupport`, (req, res) => {
             res.render('home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false });
         });
-        this.socketServer.on('connection', socker => {
-            return this.listenAfterPassword(socker);
+        const workspaces = this.socketServer.of(/^\/\w+$/);
+        workspaces.on('connection', socket => {
+            return this.listenAfterPassword(socket);
         });
+        // this middleware will be assigned to each namespace
+        workspaces.use((socket, next) => {
+            // ensure the user has access to the workspace
+            next();
+        });
+        /*
+        this.socketServer.on ( 'connection', socker => {
+            return this.listenAfterPassword ( socker )
+        })
+        */
         this.httpServer.once('error', err => {
             console.log(`httpServer error`, err);
             saveServerStartupError(err);
@@ -140,8 +151,9 @@ class localServer {
         }
         socket.emit('doingRequest', mail, uuid);
     }
-    tryConnectCoNET(socket, imapData, sendMail, keyID) {
+    tryConnectCoNET(socket, imapData, sendMail, nameSpace) {
         //		have CoGate connect
+        const keyID = socket['keyID'];
         let ConnectCalss = this.imapConnectPool.get(keyID);
         clearTimeout(this.destoryConnectTimePool.get(keyID));
         if (ConnectCalss) {
@@ -170,17 +182,18 @@ class localServer {
             return console.log(`_exitFunction doing nathing!`);
         };
         const makeConnect = () => {
-            ConnectCalss = new coNETConnect_1.default(imapData, this.socketServer, socket, (mail, uuid) => {
+            ConnectCalss = new coNETConnect_1.default(imapData, this.socketServer, socket, nameSpace, (mail, uuid) => {
                 return this.catchCmd(mail, uuid);
             }, _exitFunction);
-            return this.imapConnectPool.set(keyID, ConnectCalss);
+            return this.imapConnectPool.set(keyID, socket['userConnet'] = ConnectCalss);
         };
         return makeConnect();
     }
     listenAfterPassword(socket) {
         let sendMail = false;
         const clientName = `[${socket.id}][ ${socket.conn.remoteAddress}]`;
-        saveLog(`socketServerConnected ${clientName} connect ${this.localConnected.size}`);
+        const workspace = socket.nsp;
+        saveLog(`socketServerConnected ${clientName}:[${workspace.name}] connect count ${workspace.connected}`);
         const checkSocketKeypair = (socket, CallBack) => {
             const uuid = Uuid.v4();
             CallBack(uuid);
@@ -223,7 +236,7 @@ class localServer {
                 catch (ex) {
                     return socket.emit(uuid, 'system');
                 }
-                return this.tryConnectCoNET(socket, data, sendMail, keyPair.publicID);
+                return this.tryConnectCoNET(socket, data, sendMail, workspace);
             });
         });
         socket.on('doingRequest', (request_uuid, request, CallBack1) => {
@@ -235,8 +248,8 @@ class localServer {
                 socket.emit(uuid, ...data);
             };
             this.requestPool.set(request_uuid, socket);
-            const keyPair = socket["keypair"];
-            let userConnet = socket["userConnet"] || this.imapConnectPool.get(keyPair.publicID);
+            const keyID = socket["keyID"];
+            let userConnet = socket["userConnet"] || this.imapConnectPool.get(keyID);
             if (!userConnet) {
                 saveLog(`doingRequest on ${uuid} but have not CoNETConnectCalss need restart! socket.emit ( 'systemErr' )`);
                 return socket.emit(uuid, new Error('have no connect to node'));
@@ -252,13 +265,14 @@ class localServer {
                 socket.emit(uuid, ...data);
             };
             const keyPair = socket["keypair"];
+            const keyID = socket["keyID"];
             return Tool.decryptoMessage(this.localKeyPair, keyPair.publicKey, files, (err, data) => {
                 if (err) {
                     return _callBack(err.message || err);
                 }
                 const _files = data;
                 console.log(`socket.on ('getFilesFromImap') _files = [${_files}] _files.length = [${_files.length}]`);
-                const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.publicID);
+                const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyID);
                 if (!userConnect) {
                     console.log(`getFilesFromImap error:![ Have no userConnect ]`);
                     return socket.emit('systemErr');
@@ -281,10 +295,11 @@ class localServer {
                 return;
             }
             const keyPair = socket["keypair"];
+            const keyID = socket["keyID"];
             return Tool.decryptoMessage(this.localKeyPair, keyPair.publicKey, message, (err, data) => {
                 console.dir(data);
                 sendMail = true;
-                const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyPair.publicID);
+                const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyID);
                 if (userConnect) {
                     userConnect.Ping(true);
                 }
@@ -298,8 +313,8 @@ class localServer {
             const _callBack = (...data) => {
                 socket.emit(_uuid, ...data);
             };
-            const keyPair = socket["keypair"];
-            const userConnect = this.imapConnectPool.get(keyPair.publicID);
+            const keyID = socket["keyID"];
+            const userConnect = this.imapConnectPool.get(keyID);
             if (!userConnect) {
                 return socket.emit('systemErr');
             }
@@ -329,18 +344,14 @@ class localServer {
                     return socket.emit(_uuid, err);
                 }
                 console.dir(data.publicID);
-                const keyID = data.publicID.slice(24);
+                const keyID = data.publicID.slice(24).toLocaleUpperCase();
                 socket["keypair"] = data;
-                return socket.join(keyID, () => {
-                    console.dir(`client 【${keyID}】 join room!\n\n\n`);
-                    socket.emit(_uuid, null, this.localKeyPair.publicKey);
-                    return this.socketServer.of(keyID).clients((err, clients) => {
-                        if (err) {
-                            return console.log(err);
-                        }
-                        console.dir(`clients = [${clients}]`);
-                    });
-                });
+                socket["keyID"] = keyID;
+                console.dir(`client 【${keyID}】 join room!\n\n\n`);
+                socket.emit(_uuid, null, this.localKeyPair.publicKey);
+                if (workspace.name.toLocaleUpperCase() !== `/${keyID}`) {
+                    console.log(`workspace.name.toLocaleUpperCase()[${workspace.name.toLocaleUpperCase()}] !== /${keyID}`);
+                }
             });
         });
         socket.once('disconnect', () => {

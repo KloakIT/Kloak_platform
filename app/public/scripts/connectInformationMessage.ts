@@ -150,6 +150,7 @@ class connectInformationMessage {
 
 	public socketListening ( url: string ) {
 		const self = this
+		const roomUrl = `${ url }/${ this.keyID }`
 
 		if ( this.socketIo ) {
 			if ( _view.connectedCoNET() ) {
@@ -165,8 +166,8 @@ class connectInformationMessage {
 				return _view.CoNETConnect().sendConnectMail()
 			}
 		}
-
-		this.socketIo =  io ( url, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
+		console.dir (` Connect to server: ${ roomUrl }`)
+		this.socketIo = io ( roomUrl, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
 		this.socketIo.on ( 'reconnect_failed', () => {
 			console.dir ( `reconnect_failed`)
 			//self.showErrorMessage ( 'systemError' )
