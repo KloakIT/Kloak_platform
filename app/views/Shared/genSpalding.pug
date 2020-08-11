@@ -1,21 +1,24 @@
 #genSpalding
 	<!-- ko with: appScript -->
+		i.chevron.left.icon.spaldingHomeButton(data-bind="click: () => {backToMain()}")
 		.spaldingMobileHeader
-				.spaldingMobileUpper
-					.spaldingMobileMenu
-						<!-- ko if: mobileOpen -->
-						img.spaldingMobileIcon(src="./images/spalding/close_menu.svg" data-bind="click: () => {mobileOpen(false)}")
-						<!-- /ko -->
-						<!-- ko ifnot: mobileOpen -->
-						img.spaldingMobileIcon(src="./images/spalding/menu.svg" data-bind="click: () => {mobileOpen(true)}")
-						<!-- /ko -->
-					img.spaldingLogo(src="./images/spalding/spalding_logo.png")
+			.spaldingMobileUpper
+				.spaldingMobileMenu
+					<!-- ko if: mobileOpen -->
+					img.spaldingMobileIcon(src="./images/spalding/close_menu.svg" data-bind="click: () => {mobileOpen(false)}")
+					<!-- /ko -->
+					<!-- ko ifnot: mobileOpen -->
+					img.spaldingMobileIcon(src="./images/spalding/menu.svg" data-bind="click: () => {mobileOpen(true)}")
+					<!-- /ko -->
+				img.spaldingLogo(src="./images/spalding/spalding_logo.png")
 		.spaldingMobileNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','LISTEN','READ'], style: {'transform': mobileOpen() ? 'scaleY(1)' : 'scaleY(0)'}")
 			.spaldingMobileLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'}); $parent.mobileOpen(false)}, style: {'background-color': $parent.selectedPage() === $data ? 'rgb(15, 14, 23)' : 'ghostwhite', 'color': $parent.selectedPage() === $data ? 'ghostwhite' : 'rgb(15, 14, 23)'}")
 		.spaldingDesktopHeader
 			img.spaldingLogo(src="/images/spalding/spalding_logo.png")
-			.spaldingNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','LISTEN','READ']")
+			.spaldingNavigation
+				<!-- ko foreach: ['HOME', 'ABOUT', 'WATCH', 'READ'] -->
 				.spaldingLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'})}, style: {'border': $parent.selectedPage() === $data ? '3px solid white' : '3px solid transparent'}")
+				<!-- /ko -->
 		section.spaldingHome#HOME
 			.spaldingHomeContent
 				img.spaldingBook(src="./images/spalding/stealth_war.jpg")

@@ -68,6 +68,15 @@ const appScript = {
     finishedDownloads: ko.observableArray([]),
     showTwitterObjResult: ko.observable(false),
     twitterObj: null,
+    backToMain: () => {
+        _view.tempAppHtml(false);
+        _view.showMainPage(true);
+        _view.bodyBlue(true);
+        _view.sectionLogin(true);
+        _view.appScript(null);
+        _view.CanadaBackground(false);
+        _view.showSnapshop(false);
+    },
     //	['originImage']
     initSearchData: (self) => {
         self.searchItem(null);

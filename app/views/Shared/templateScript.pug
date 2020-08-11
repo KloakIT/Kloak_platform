@@ -111,7 +111,7 @@ script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-to
 script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
     <!-- ko if: _close -->
         .top.fixed.twitterCloseButton
-            .item( style = "position: absolute;" )
+            .item( style = "position: absolute; left: 1rem" )
                 i.circular.icon.close.large.link( data-bind = "click: close" style = "background-color: white;")
     <!-- /ko -->
     .searchItems
@@ -181,7 +181,7 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 #subPage( data-bind = " with: showSnapshop " )
     
     .ui.top.fixed.menu.borderless
-        .item( style = "width: 90%; margin: 0 auto;" )
+        .item( style = "width: 90%; margin-left: 3.5rem !important" )
             form.ui.form( style = "width: 100%;" data-bind = "css: { 'error': showErrorMessage }" )
                 .field( style = "width: 100%;" )
                     .ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )

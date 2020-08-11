@@ -2,10 +2,10 @@
 
 #CoSearch
 	<!-- ko with: appScript -->
+	i.home.icon.coSearchHomeButton(data-bind="click: () => {backToMain()}")
 	.backGroundSetup( data-bind = " style: { background: $root.CanadaBackground() ? '#B4E4ED': 'white', height: $root.middleY() * 2 }" )
 		<!-- ko if: showMain() -->
 		.main
-
 			<!-- ko if: showMainSearchForm() -->
 			form#coSearchForm.ui.form( data-bind = " style: { 'margin-top': showSearchSetupForm() ? $root.middleY()/1.25 : $root.middleY()/1.25 }, event: { 'submit': search_form }, submitBubble: false" style = "100%;" )
 				<!-- ko if: !showSearchSetupForm() -->
@@ -306,7 +306,7 @@
 			<!-- ko if: searchItem() -->
 			.listItems( style = "margin:1em;" )
 				.ui.top.fixed.menu.borderless
-					.item( style = "width: 90%;" )
+					.item( style = "width: 90%; margin-left: 3.5rem" )
 						form.ui.form( data-bind = "event: { 'submit': search_form }" style = "width: 100%;" )
 							.field
 							

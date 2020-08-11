@@ -59,12 +59,14 @@ class Downloader {
 		}
 		if (eof) {
 			this.downloadIndex.finished = true
-			this.callback(null, this.requestUuid)
 		}
 		_view.storageHelper.encryptSave(this.requestUuid, JSON.stringify(this.downloadIndex), (err, data) => {
 			if (err) {
 				console.log(err)
 				return
+			}
+			if (eof) {
+				this.callback(null, this.requestUuid)
 			}
 			return data
 		})
@@ -113,9 +115,8 @@ class Downloader {
 			color: null,
 			fileIndex: null
 		}
-
 		history.tag = history.tag.filter(tag => tag !== null)
-		_view.storageHelper.saveHistory(history)
+		_view.storageHelper.saveHistory(history, null)
 	}
 
 	consumeQueue = () => {

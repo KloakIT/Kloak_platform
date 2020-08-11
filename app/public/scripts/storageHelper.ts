@@ -1,8 +1,10 @@
 class StorageHelper {
 	private downloadPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
-	private assemblyPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
+	public currentAssembly: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
+	private assemblyQueue: KnockoutObservableArray<{uuid: string, callback: Function}> = ko.observableArray([])
 	private uploadPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
 	private databaseWorker = new DatabaseWorker()
+	private hiddenAnchor = document.createElement('a')
 	constructor() {}
 
 	removeFromPool = (pool: KnockoutObservable<any>, uuid: string) => {
@@ -32,23 +34,30 @@ class StorageHelper {
 	}
 
 	createAssembler = (requestUuid: string, callback: Function) => {
-		if (this.assemblyPool[requestUuid]) {
+		if (this.currentAssembly[requestUuid]) {
 			callback(`Assembly already exists!`, requestUuid)
 			console.log('Assembly already exists')
 			return
 		}
-		const progress = ko.observable(0)
-		const assembler = {
-			requestSerial: requestUuid,
-			filename: requestUuid,
-			progress,
-			instance: new Assembler(requestUuid, progress, (err, data) => {
-				this.removeFromPool(this.assemblyPool, requestUuid)
-				callback(err, data)
-			})
+		if (Object.keys(this.currentAssembly()).length === 0) {
+			const progress = ko.observable(0)
+			const assembler = {
+				requestSerial: requestUuid,
+				filename: requestUuid,
+				progress,
+				instance: new Assembler(requestUuid, progress, (err, data) => {
+					this.currentAssembly({})
+					callback(err, data)
+					const nextRequest = this.assemblyQueue.shift()
+					nextRequest ? this.createAssembler(nextRequest.uuid, nextRequest.callback) : null
+				})
+			}
+			this.currentAssembly({[requestUuid]: assembler})
+			return this.currentAssembly()[requestUuid]
+		} else {
+			this.assemblyQueue.push({uuid: requestUuid, callback})
+			return requestUuid
 		}
-		this.assemblyPool({...this.assemblyPool(), [requestUuid]: assembler})
-		return this.assemblyPool()[requestUuid]
 	}
 
 	createUploader = (requestUuid: string, file: File, path: string, callback: Function) => {
@@ -63,7 +72,6 @@ class StorageHelper {
 			})
 		}
 		this.uploadPool({...this.uploadPool(), [requestUuid]: uploader})
-		console.log(this.uploadPool())
 		return this.uploadPool()[requestUuid]
 	}
 
@@ -91,6 +99,10 @@ class StorageHelper {
 		return this.databaseWorker.decryptLoad(uuid, callback)
 	}
 
+	public decryptLoad2 = (uuid: string | number, callback: Function) => {
+		return this.databaseWorker.decryptLoad2(uuid, callback)
+	}
+
 	public getIndex = (uuid: string, callback: Function) => {
 		return this.databaseWorker.decryptLoad(uuid, callback)
 	}
@@ -102,6 +114,24 @@ class StorageHelper {
 	public createBlob = (data: ArrayBuffer, contentType: string) => {
 		const blob = new Blob([data], {type: contentType})
 		return URL.createObjectURL(blob)
+	}
+
+	public downloadBlob = (url: string, filename: string) => {
+		this.hiddenAnchor['href'] = url
+		this.hiddenAnchor['download'] = filename
+		this.hiddenAnchor.click()
+		this.hiddenAnchor['href'] = null
+		this.hiddenAnchor['download'] = null
+		URL.revokeObjectURL(url)
+	}
+
+	public detectStorage = (callback: Function) => {
+		if ('storage' in navigator && 'estimate' in navigator.storage) {
+			return navigator.storage.estimate().then(({ usage, quota }) => {
+				callback(null, {usage, quota})
+			})
+		}
+		return callback(new Error('Unable to detect IndexedDB storage information.'), null)
 	}
 
 	// cancel = (requestUuid: string) => {

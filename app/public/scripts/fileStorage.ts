@@ -2,6 +2,7 @@ class fileStorage {
 	private checkedFiles = ko.observableArray([])
 	private fileStorageData = ko.observableArray([])
 	private allFileStorageData = ko.observableArray([])
+	private usageQuota = ko.observable(null)
 	private suggestedTags = ko.observableArray([])
 	private availableTags = []
 	private sortOption = ko.observableArray([null, null])
@@ -11,21 +12,15 @@ class fileStorage {
 	private showOverlay = ko.observable(false)
 	private searchKey = ko.observable()
 	private selectedFile = ko.observable()
-	private colorMenuSelection = ko.observable()
-	private assemblyQueue = ko.observable()
-	private assemblyRunning = false
-	private mobileShowSearch = ko.observable(false)
 	private colorOptions = [
 		["maroon", "red", "olive", "yellow"],
 		["green", "lime", "teal", "aqua"],
 		["navy", "blue", "purple", "fuchsia"],
 	]
 	constructor() {
+		this.detectStorageUsage()
+		
 		this.getHistory()
-
-		this.mobileShowSearch.subscribe((val) => {
-			console.log(val)
-		})
 
 		this.searchKey.subscribe((val: string) => {
 			val = val.trim().toLowerCase()
@@ -39,21 +34,26 @@ class fileStorage {
 					this.suggestedTags(this.availableTags.filter(tag => tag.includes(val)))
 					return
 				} else {
+					this.suggestedTags([])
 					const temp = this.allFileStorageData().filter((file: fileHistory) => {
-						if (file.detail.toLowerCase().includes(val)) {
-							return true
+						if (file['filename']) {
+							return file['filename'].toLowerCase().includes(val)
 						}
-						if (file.domain.toLowerCase().includes(val)) {
-							return true
+
+						if (file['url']) {
+							return file['url'].toLowerCase().includes(val)
 						}
-						if (file.url.toLowerCase().includes(val)) {
-							return true
+
+						if (file['domain']) {
+							return file['domain'].toLowerCase().includes(val)
 						}
-						if (file.filename.toLowerCase().includes(val)) {
-							return true
+
+						if (file['detail']) {
+							return file['domain'].toLowerCase().includes(val)
 						}
-						if (file.path.toLowerCase().includes(val)) {
-							return true
+
+						if (file['path']) {
+							return file['path'].toLowerCase().includes(val)
 						}
 					})
 					this.fileStorageData(temp)
@@ -77,11 +77,93 @@ class fileStorage {
 		})
 	}
 
-	formatFilename = (filename: string) => {
-		if (filename.length <= 30) {
-			return filename
+	backToMain = () => {
+		_view.showFileStorage(false)
+		_view.showMainPage ( true )
+		_view.bodyBlue ( true )
+		_view.sectionLogin ( true )
+		_view.appScript(null)
+	}
+
+	detectStorageUsage = () => {
+		_view.storageHelper.detectStorage((err, data) => {
+			if (err) {
+				this.usageQuota(null)
+				return
+			}
+			this.usageQuota(data)
+		})
+	}
+
+	numberWithCommas = (x) => {
+		return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+	}
+
+	formatUsageQuota = (usage: number, quota: number) => {
+		let sizes = ['TB', 'GB', 'MB', 'KB', 'Bytes']
+		let n = this.formatBytes(usage)
+		let m = this.formatBytes(quota)
+		while (m.length > n.length) {
+			let c = m.shift()
+			console.log(n.length, m.length)
+			m[0] = m[0] + (c * 1024)
 		}
-		return filename.slice(0,13) + '...' + filename.slice(-13)
+		sizes = sizes.slice(-n.length)
+		const usageText = n.map((size, index) => `${this.numberWithCommas(size)}`)
+		const quotaText = m.map((size, index) => `${this.numberWithCommas(size)}`)
+		console.log(usageText, quotaText)
+		return `${usageText[0]}.${usageText[1].split('').shift()} ${sizes[0]} / ${quotaText[0]} ${sizes[0]}`
+	}
+
+	formatBytes = (bytes: number) => {
+		let b = null
+		let kb = null
+		let mb = null
+		let gb = null
+		let tb = null
+		b = bytes
+		if (b > 1024) {
+			kb = Math.floor(b/1024)
+			b = b % 1024
+		}
+		if (kb > 1024) {
+			mb = Math.floor(kb/1024)
+			kb = kb % 1024
+		}
+		if (mb > 1024) {
+			gb = Math.floor(mb/1024)
+			mb  = mb % 1024
+		}
+		if (gb > 1024) {
+			tb = Math.floor(gb/1024)
+			gb  = gb % 1024
+		}
+
+		const result = [tb, gb, mb, kb, b].map(size => {
+			return size
+		})
+
+		return result.filter(res => res !== null)
+	}
+
+	formatFilename = (fileData) => {
+		if (fileData.filename.length <= 30) {
+			return fileData.filename
+		}
+		return fileData.tag.includes('snapshot') ? fileData.filename.slice(0,25) : fileData.filename.slice(0,10) + '...' + fileData.filename.slice(-10)
+	}
+
+	progressBarColor = (percent: number) => {
+		switch (true) {
+			case (percent > 0 && percent <= 33):
+				return "#FFF59D"
+			case (percent > 33 && percent <= 66):
+				return "#FFCC80"
+			case (percent > 66):
+				return "#69F0AE"
+			default:
+				break;
+		}
 	}
 
 	getFileIndex = (uuid: string, callback: Function) => {
@@ -96,6 +178,13 @@ class fileStorage {
 				callback()
 			}
 		}
+	}
+
+	filterFromTag = (tag: string) => {
+		this.searchKey(`#${tag}`)
+		this.showSuggestions( false )
+		this.fileStorageData(this.allFileStorageData().filter(file => file.tag.includes(tag)))
+		return
 	}
 
 	setTags = (fileStorageData: Array<fileHistory>) => {
@@ -116,11 +205,8 @@ class fileStorage {
 			}
 			this.allFileStorageData(JSON.parse(Buffer.from(data).toString()).reverse())
 			this.fileStorageData(this.allFileStorageData())
+			this.setTags(this.allFileStorageData())
 		})
-	}
-
-	fileTagClick = (tag: string) => {
-		this.searchKey(tag)
 	}
 
 	searchSuggestionClick = (data, event) => {
@@ -136,6 +222,7 @@ class fileStorage {
 		_view.storageHelper.replaceHistory(this.allFileStorageData(), null)
 		this.fileStorageData.valueHasMutated()
 		this.selectedFile(null)
+		this.detectStorageUsage()
 	}
 
 	deleteFile = (uuid: string, callback: Function) => {
@@ -187,8 +274,8 @@ class fileStorage {
 		}
 		
 		temp = this.fileStorageData().sort(dateCompare)
-			this.fileStorageData(temp)
-			return
+		this.fileStorageData(temp)
+		return
 
 	}
 
@@ -204,16 +291,6 @@ class fileStorage {
 
 	}
 
-	deleteMultiple = () => {
-		const uuid = this.checkedFiles.shift()
-		this.deleteFile(uuid, () => {
-			this.updateHistory(uuid)
-			if (this.checkedFiles().length > 0) {
-				this.deleteMultiple()
-			}
-		})
-	}
-
 	closeAll = () => {
 		this.suggestedTags([])
 		this.showSuggestions(false)
@@ -224,49 +301,121 @@ class fileStorage {
 		return
 	}
 
-	fileAction = (data, event, action: string) => {
+	fileAction = (fileData, event, action: string) => {
 		switch (action) {
 			case 'close':
-				const videoPlayer = document.getElementById('fileStorageVideo')
-				const assembler = videoPlayer['assembler']
+				_view.displayMedia(null)
+				const videoPlayer = document.getElementById("videoPlayer")
 				URL.revokeObjectURL(videoPlayer['src'])
 				videoPlayer['src'] = null;
-				this.showOverlay(false)
-				assembler.terminate()
 				break;
 			case "delete":
 				const callback = () => {
-					const temp = this.allFileStorageData().filter((file) => file !== data)
+					const temp = this.allFileStorageData().filter((file) => file !== fileData)
+					this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== fileData.uuid))
 					this.fileStorageData(temp)
 					this.allFileStorageData(temp)
+					_view.storageHelper.replaceHistory(temp, (err, data) => {
+						if (err) {
+							return
+						}
+					})
 					this.fileStorageData.valueHasMutated()
 					this.selectedFile(null)
 				}
-				this.deleteFile(data.uuid, callback)
-				break
+				this.deleteFile(fileData.uuid, callback)
 			case "download":
-				return _view.storageHelper.createAssembler(data.uuid, (err, data) => {
+				let t0 = performance.now()
+				console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
 					if (err) {
 						console.log(err)
 						return
 					}
-					const a = document.getElementById("hiddenAnchor")
-					a['href'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
-					a['download'] = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
-					a.click()
+					let t1 = performance.now()
+					console.log(`TOTAL DOWNLOAD TIME: ${(t1-t0).toFixed(2)}ms | ${((t1-t0)/1000).toFixed(2)} s`)
+					console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+					const url = _view.storageHelper.createBlob(data.buffer, data.contentType)
+					const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
+					_view.storageHelper.downloadBlob(url, filename)
 				})
 			case "play":
-				_view.storageHelper.createAssembler(data.uuid, (err, data) => {
+				console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
+					console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+					_view.displayMedia('player')
+					const videoPlayer = document.getElementById("videoPlayer")
+					videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+					videoPlayer['play']()
+				})
+				// let mediaSource = null
+				// let buffers = []
+				// _view.displayMedia('player')
+				// const vidPlayer = document.getElementById("videoPlayer")
+				// console.log(vidPlayer)
+				// function sourceOpen(e) {
+				// 	console.log(e)
+				// 	// URL.revokeObjectURL(vidPlayer['src']);
+				// 	var mime = 'video/mp4; codecs="avc1.4D401F"';
+				// 	console.log(MediaSource.isTypeSupported(mime))
+				// 	var mediaSource = e.target;
+				// 	var sourceBuffer = mediaSource.addSourceBuffer(mime);
+				// 	const nextSeg = (e) => {
+				// 		console.log(e)
+				// 		if (buffers.length === 0) {
+				// 			sourceBuffer.removeEventListener('update', nextSeg);
+				// 		}
+				// 		sourceBuffer.appendBuffer(new Uint8Array(buffers.shift()))
+				// 	}
+				// 	sourceBuffer.addEventListener('update', nextSeg);
+				// }
+				// return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
+				// 	if (err) {
+				// 		console.log(err)
+				// 		return
+				// 	}
+				// 	buffers.push(data)
+				// 	if (data === fileData.uuid) {
+
+				// 	if (mediaSource === null) {
+				// 		if (window.MediaSource) {
+				// 			mediaSource = new MediaSource();
+				// 			vidPlayer['src'] = URL.createObjectURL(mediaSource);
+				// 			mediaSource.addEventListener('sourceopen', sourceOpen);
+				// 		} else {
+				// 			console.log("The Media Source Extensions API is not supported.")
+				// 		}
+				// 	}
+				// 	}
+					
+				// })
+			case 'view':
+				if ( fileData.tag.includes('snapshot')) {
+					_view.showFileStorage(false)
+						new showWebPageClass ( fileData.filename , fileData.uuid , null, () => {
+							_view.showFileStorage(true)
+					})
+				}
+				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
 					if (err) {
 						console.log(err)
 						return
 					}
-					_view.displayVideo(true)
-					const videoPlayer = document.getElementById("videoPlayer")
-					videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+					console.log(data)
+					switch (true) {
+						case fileData.tag.includes('image'):
+							_view.displayMedia('image')
+							const imageViewer = document.getElementById('imageViewer')
+							imageViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+							break;
+						case fileData.tag.includes('pdf'):
+							_view.displayMedia('pdf')
+							const pdfViewer = document.getElementById('pdfViewer')
+							pdfViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+							break;
+					}
+					
 				})
-				break
-			case 'view':
 				// _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
 				// 	if (err) {
 				// 		console.log(err)
@@ -289,6 +438,29 @@ class fileStorage {
 				// 		))
 				// 	)
 				// })
+				break;
+			case 'deleteMultiple':
+				const uuid = this.checkedFiles.shift()
+				this.deleteFile(uuid, () => {
+					this.updateHistory(uuid)
+					if (this.checkedFiles().length > 0) {
+						this.fileAction(fileData, event, 'deleteMultiple')
+					}
+				})
+				break;
+			case 'downloadMultiple':
+				const files = this.checkedFiles()
+				files.forEach(uuid => {
+					_view.storageHelper.createAssembler(uuid, (err, data) => {
+						if (err) {
+							return console.log(err)
+						}
+						this.checkedFiles.shift()
+						const url = _view.storageHelper.createBlob(data.buffer, data.contentType)
+						const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
+						_view.storageHelper.downloadBlob(url, filename)
+					})
+				})
 				break;
 			default:
 				break
@@ -441,12 +613,24 @@ class fileStorage {
 		console.log(path)
 		if (item.isFile) {
 			item.file((file: File) => {
-				_view.storageHelper.createUploader(uuid_generate(), file, path, (err, data) => {
+				const uuid = uuid_generate()
+				_view.storageHelper.createUploader(uuid, file, path, (err, data) => {
 					if (err) {
 						console.log(err)
 						return
 					}
-					this.getHistory()
+					let c = 0;
+
+					if (c === 0) {
+						this.getHistory()
+						c++
+					}
+
+					this.detectStorageUsage()
+
+					if (data === uuid) {
+						this.getHistory()
+					}
 				})
 			})
 		} else if (item.isDirectory) {
@@ -489,21 +673,20 @@ class fileStorage {
 		const hiddenInput = document.getElementById("hiddenInput")
 		const fileHandler = (e) => {
 			const files = e.target.files
-			for (let i = 0; i < files.length; i++) {
-				const upload = {
-					filename: files[i].name,
-					date: new Date(),
+			_view.storageHelper.createUploader(uuid_generate(), files[0], "", (err, data) => {
+				if (err) {
+					console.log(err)
+					return
 				}
-				const cb = () => {
-					const temp = this.currentUploads().filter(
-						(upload) => upload !== upload
-					)
-					this.currentUploads(temp)
+				let c = 0;
+
+				if (c === 0) {
 					this.getHistory()
+					c++
 				}
-				this.currentUploads.push(upload)
-				new Uploader(files[i], "", cb)
-			}
+
+				this.detectStorageUsage()
+			} )
 			hiddenInput.removeEventListener("change", fileHandler)
 		}
 		hiddenInput.addEventListener("change", fileHandler)

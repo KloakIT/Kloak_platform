@@ -208,7 +208,7 @@ module view_layout {
 		public storageHelper = new StorageHelper()
 		public localServerConnected = ko.observable(false)
 		public showLocalServerDisconnect = ko.observable(false)
-		public displayVideo = ko.observable(false)
+		public displayMedia = ko.observable(null)
 		/*
         public worker = new workerManager ([
             'mHtml2Html'

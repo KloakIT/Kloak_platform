@@ -3,12 +3,14 @@ block jumbotron
 	include ../shared/CoNETConnectInfo
 block jumbotron1
 
-	<!-- ko if: displayVideo -->
-		.playVideoOverlay
-			video.videoPlayer#videoPlayer( controls autoplay )
-			p.closeVideoOverlay( data-bind = "click: () => { displayVideo( false )}")="Close"
+	<!-- ko if: displayMedia() -->
+		.displayMediaOverlay(data-bind="style: {'opacity': displayMedia() ? '1' : '0', 'display': displayMedia() ? 'flex' : 'none' }")
+			video.videoPlayer#videoPlayer( controls autoplay data-bind="style: {'display': displayMedia() === 'player' ? 'initial' : 'none'}")
+			img.imageViewer#imageViewer(data-bind="style: {'display': displayMedia() === 'image' ? 'initial' : 'none'}")
+			iframe#pdfViewer(data-bind="style: {'display': displayMedia() === 'pdf' ? 'initial' : 'none'}" width="90%" height="90%")
+			p.closeVideoOverlay( data-bind = "click: () => { displayMedia( null )}")="Close"
 	<!-- /ko -->
-
+	
 	<!-- ko if: showLanguageSelect -->
 		.language( style="z-index: 999;top: 0.9rem;right: 2rem;position: fixed; width: 2rem;")
 			.ui.text.shape.languageText( data-bind = " click: selectItem, clickBubble: false " )

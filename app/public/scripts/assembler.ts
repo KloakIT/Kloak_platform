@@ -17,6 +17,7 @@ class Assembler {
 	}
 
 	private getIndex = (uuid) => {
+		// console.time(`ASSEMBLER TOTAL TIME`)
 		_view.storageHelper.getIndex(uuid, async (err, data) => {
 			if (err) {
 				this.terminate()
@@ -109,6 +110,13 @@ class Assembler {
 				this.callback(err, null)
 				return
 			}
+			// console.log(data)
+			// this.callback(err, data)
+			// if (this.filePieces.length > 0) {
+			// 	this.retrieveData(this.filePieces.shift())
+			// 	return
+			// }
+			// this.callback(err, this.requestUuid)
 			this.assembler.postMessage({cmd: 'DATA', payload: {uuid, buffer: data, eof: this.filePieces.length === 0}}, [data])
 		})
 	}
@@ -151,7 +159,12 @@ class Assembler {
 
 	workerFn = () => {
 		importScripts(`${self.location.origin}/scripts/jimp.min.js`)
+		let data = []
+		let time = 0
+		let t0 = null
+		let t1 = null
 		let fileUint8Array: Uint8Array = null
+		let index = 0
 
 		self.addEventListener('message', async (e) => {
 			const command = e.data.cmd
@@ -159,18 +172,39 @@ class Assembler {
 			const postMessage = self.postMessage as any
 			switch (command) {
 				case 'DATA':
+					// console.timeEnd(`ASSEMBLER GOT NEXT PIECE`)
+					t0 = performance.now()
+					// if (!data.length) {
+					// 	data = Array.from(new Uint8Array(payload.buffer))
+					// } else {
+					// 	new Uint8Array(payload.buffer).forEach(val => {
+					// 		data.push(val)
+					// 	})
+					// }
 					if (!fileUint8Array) {
 						fileUint8Array = await new Uint8Array(payload.buffer)
 					} else {
-						fileUint8Array = await new Uint8Array([...fileUint8Array, ...new Uint8Array(payload.buffer)])
+						let nextUint8Array = new Uint8Array(payload.buffer)
+						let tempUint8Array = new Uint8Array(fileUint8Array.byteLength + nextUint8Array.byteLength)
+						tempUint8Array.set(fileUint8Array, 0)
+						tempUint8Array.set(nextUint8Array, fileUint8Array.byteLength)
+						fileUint8Array = tempUint8Array
+						tempUint8Array = null
+						nextUint8Array = null
+						// fileUint8Array = new Uint8Array([...fileUint8Array, ...new Uint8Array(payload.buffer)])
 					}
-
+					t1 = performance.now()
+					time += t1-t0
+					
 					if (!payload.eof) {
+						// console.time(`ASSEMBLER GOT NEXT PIECE`)
 						postMessage({cmd: 'NEXT_PIECE', payload: {}})
+						console.log(`TOTAL ASSEMBLY TIME: ${time.toFixed(2)}ms | ${(time/1000).toFixed(2)} s`)
 						return
 					}
 
 					if (payload.eof) {
+						console.log(data)
 						postMessage({cmd: 'ASSEMBLED_FILE', payload: {buffer: fileUint8Array.buffer}}, [fileUint8Array.buffer])
 					}
 					break;

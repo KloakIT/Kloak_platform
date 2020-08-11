@@ -162,7 +162,7 @@ var view_layout;
             this.storageHelper = new StorageHelper();
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
-            this.displayVideo = ko.observable(false);
+            this.displayMedia = ko.observable(null);
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
