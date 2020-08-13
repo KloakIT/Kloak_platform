@@ -114,52 +114,50 @@ ko.bindingHandlers.animationTextLineIn = {
 	},
 }
 
-const makeKeyPairData = (view: view_layout.view, keypair: keypair) => {
+const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 	const length = keypair.publicKeyID.length
 	keypair.publicKeyID = keypair.publicKeyID.substr(length - 16)
-	view.showKeyPair(true)
-	let keyPairPasswordClass = new keyPairPassword(
-		keypair,
-		(passwd: string, deleteKey: boolean) => {
-			view.showKeyPair(false)
-			keypair.keyPairPassword((keyPairPasswordClass = null))
+	view.showKeyPair ( true )
+	let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string, deleteKey: boolean ) => {
+		view.showKeyPair ( false )
+		keypair.keyPairPassword ( keyPairPasswordClass = null )
 
-			if (!passwd) {
-				if (deleteKey) {
-					_view.deleteKey()
-				}
-				return _view.initWelcomeView()
+		if ( ! passwd ) {
+			if ( deleteKey ) {
+				_view.deleteKey ()
 			}
-			//      password OK
-
-			keypair.passwordOK = true
-			view.password = passwd
-			keypair.showLoginPasswordField(false)
-
-			view.showMain()
+			return _view.initWelcomeView ()
 		}
-	)
+		//      password OK
 
-	keypair.keyPairPassword = ko.observable(keyPairPasswordClass)
-	keypair.showLoginPasswordField = ko.observable(false)
-	keypair.delete_btn_view = ko.observable(true)
-	keypair.showConform = ko.observable(false)
-	keypair['showDeleteKeyPairNoite'] = ko.observable(false)
-	keypair.delete_btn_click = function () {
-		keypair.delete_btn_view(false)
-		return keypair.showConform(true)
+		keypair.passwordOK = true
+		view.password = passwd
+		keypair.showLoginPasswordField ( false )
+
+		view.showMain ()
+	})
+
+	keypair.keyPairPassword = ko.observable ( keyPairPasswordClass )
+	keypair.showLoginPasswordField = ko.observable (false)
+	keypair.delete_btn_view = ko.observable ( true)
+	keypair.showConform = ko.observable ( false )
+	keypair['showDeleteKeyPairNoite'] = ko.observable ( false )
+	keypair.delete_btn_click = () => {
+		keypair.delete_btn_view ( false )
+		return keypair.showConform ( true )
 	}
 
-	keypair.deleteKeyPairNext = function () {
-		localStorage.setItem('config', JSON.stringify({}))
-		view.localServerConfig(null)
-		view.connectedCoNET(false)
-		view.connectToCoNET(false)
-		view.CoNETConnect((view.CoNETConnectClass = null))
-		view.imapSetup((view.imapFormClass = null))
-		keypair.showDeleteKeyPairNoite(false)
-		keypair.delete_btn_view(false)
-		localStorage.clear()
+	keypair.deleteKeyPairNext = () => {
+		localStorage.setItem ( 'config', JSON.stringify( {} ))
+		view.localServerConfig ( null )
+		view.connectedCoNET ( false )
+		view.connectToCoNET ( false )
+		view.CoNETConnect ( view.CoNETConnectClass = null )
+		view.imapSetup ( view.imapFormClass = null )
+		keypair.showDeleteKeyPairNoite ( false )
+		keypair.delete_btn_view ( false )
+		localStorage.clear ()
+
 		return view.reFreshLocalServer()
 	}
 }
@@ -441,7 +439,7 @@ module view_layout {
 		}
 
 		public deletedKeypairResetView() {
-			this.imapSetup(null)
+			this.imapSetup( null )
 		}
 
 		public agreeClick() {
@@ -473,22 +471,17 @@ module view_layout {
 		}
 
 		public showImapSetup() {
-			_view.hideMainPage()
-			_view.sectionLogin(true)
-			return _view.imapSetup(
-				(_view.imapFormClass = new imapForm(
-					_view.keyPair().publicKeyID,
-					_view.imapData(),
-					(imapData: IinputData) => {
-						_view.imapSetup((_view.imapFormClass = null))
-						_view.sectionLogin(false)
-						_view.imapData(imapData)
-						_view.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
-							return _view.showMain()
-						})
-					}
-				))
-			)
+			const self = this
+			this.hideMainPage ()
+			this.sectionLogin ( true )
+			return this.imapSetup( this.imapFormClass = new imapForm ( this.keyPair().publicKeyID, this.imapData (), ( imapData: IinputData ) => {
+				self.imapSetup( self.imapFormClass = null )
+				self.sectionLogin ( false )
+				self.imapData( imapData )
+				return self.sharedMainWorker.saveImapIInputData ( imapData, ( err, data ) => {
+					return self.showMain()
+				})
+			}))
 		}
 
 		public connectToNode() {
@@ -651,39 +644,27 @@ module view_layout {
 			this.afterPasswordReady ()
 		}
 
-		public afterPasswordReady() {
+		public afterPasswordReady () {
 			const self = this
-			if (!this.connectInformationMessage) {
-				this.connectInformationMessage = new connectInformationMessage(
-					this.keyPair().publicKeyID,
-					this
-				)
+			if ( ! this.connectInformationMessage ) {
+				this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
 			}
 
-			this.sharedMainWorker.getKeyPairInfo(
-				this.keyPair(),
-				(err, data: keypair) => {
-					if (err) {
-						return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`)
-					}
-
-					if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
-						self.connectInformationMessage.socketListening(this.LocalServerUrl)
-					}
-
-					if (data['imapData']) {
-						self.imapData(data['imapData'])
-					}
-
-					if (this.imapData()) {
-						return this.showMainPage(true)
-					}
-
-					self.connectInformationMessage.socketListening(this.LocalServerUrl)
-
-					return this.showImapSetup()
+			return this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), ( err, data: keypair ) => {
+				if ( err ) {
+					return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
 				}
-			)
+				if ( data['imapData']) {
+					self.imapData( data['imapData'] )
+				}
+				self.connectInformationMessage.socketListening ( this.LocalServerUrl )
+				
+				if ( this.imapData ()) {
+					return this.showMainPage ( true )
+				}
+
+				return this.showImapSetup ()
+			})
 		}
 
 		public connectToLocalServer() {
@@ -723,7 +704,7 @@ module view_layout {
 		}
 
 		public hideMainPage() {
-			_view.showMainPage(false)
+			_view.showMainPage( false )
 		}
 
 		public appClick ( index ) {
@@ -748,9 +729,9 @@ module view_layout {
 			eval(showSwitch)
 		}
 
-		public resizeMiddleZise() {
-			this.middleX(window.innerWidth / 2)
-			this.middleY(window.innerHeight / 2)
+		public resizeMiddleZise () {
+			this.middleX ( window.innerWidth / 2 )
+			this.middleY ( window.innerHeight / 2 )
 		}
 
 		public connectLocalServer() {
@@ -856,7 +837,7 @@ const mainMenuArray = [
 	},
 ]
 
-const _view = new view_layout.view()
+const _view = new view_layout.view ()
 
 ko.applyBindings(_view, document.getElementById('body'))
 
@@ -866,5 +847,9 @@ window[`${'indexedDB'}`] =
 	window['mozIndexedDB'] ||
 	window['webkitIndexedDB'] ||
 	window['msIndexedDB']
-gsap.registerPlugin(MorphSVGPlugin, SplitText)
+gsap.registerPlugin ( MorphSVGPlugin, SplitText )
+const $window = $(window)
+$window.resize ( () => { 
+    _view.resizeMiddleZise ()
+})
 const CoNET_version = '0.1.43'

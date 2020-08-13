@@ -51,6 +51,7 @@ class default_1 extends Imap.imapPeer {
         this.alreadyExit = false;
         this.timeoutWaitAfterSentrequestMail = null;
         this.timeoutCount = {};
+        this.socketPool = [];
         saveLog(`=====================================  new CoNET connect()`, true);
         this.roomEmit.emit('tryConnectCoNETStage', null, 5);
         this.newMail = (mail, hashCode) => {
@@ -73,6 +74,14 @@ class default_1 extends Imap.imapPeer {
         this.on('ping', () => {
             this.roomEmit.emit('tryConnectCoNETStage', null, 2);
             //this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
+        });
+        this.socketPool.push(socket);
+        socket.once('disconnect', () => {
+            const index = this.socketPool.findIndex(n => n.id === socket.id);
+            if (index < 0) {
+                return console.dir(`CoNetConnect class socket.on disconnect, socket id [${socket.id}] have not in socketPool 【${this.socketPool.map(n => n.id)}]】`);
+            }
+            console.dir(`CoNetConnect class socket.on disconnect socketPool =【${this.socketPool.map(n => n.id)}】`);
         });
     }
     exit1(err) {

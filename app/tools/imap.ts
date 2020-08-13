@@ -87,7 +87,8 @@ class ImapServerSwitchStream extends Stream.Transform {
 		
 		if ( this.writable ) {
 			
-			this.debug ? debugOut ( `DONE`, false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
+            this.debug ? debugOut ( `DONE`, false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
+            console.log('')
 			return this.push (`DONE\r\n`)
         }
         /**
@@ -897,7 +898,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.newSwitchRet = false
 
         this.commandProcess = ( text1: string, cmdArray: string[], next, _callback ) => {
-            console.log (`fetch this.commandProces [${ text1 }]`)
+            
             switch ( cmdArray[0] ) {
                 case '*': {
                     if ( /^FETCH$/i.test ( cmdArray [ 2 ] )) {
@@ -1309,7 +1310,7 @@ export const imapAccountTest = ( IMapConnect: imapConnect, CallBack ) => {
     })
 
     rImap.once ( 'ready', () => {
-        debug ? saveLog ( `rImap.once ( 'ready' ) do new qtGateImapwrite`): null 
+        
 		rImap.logout ()
 
     })

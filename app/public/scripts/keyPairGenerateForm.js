@@ -180,6 +180,7 @@ class keyPairGenerateForm {
             self.message_keyPairGenerateSuccess(true);
             console.dir(data);
             return _view.sharedMainWorker.getKeyPairInfo(data, (err, _data) => {
+                _data.publicKeyID = _data.publicKeyID.substr(24);
                 return self.exit(_data);
             });
         });

@@ -96,7 +96,7 @@ class fileStorage {
 	}
 
 	numberWithCommas = (x) => {
-		return x.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+		return x.toString().replace(/.(?=(?:.{3})+$)/g, '$&,')
 	}
 
 	formatUsageQuota = (usage: number, quota: number) => {

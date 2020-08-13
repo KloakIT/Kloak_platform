@@ -68,6 +68,10 @@ class twitter {
     retweeted_statusInit(tweet) {
         if (tweet.retweeted_status && typeof tweet.retweeted_status !== "undefined") {
             tweet.retweeted_status['retweeted_statusUserName'] = tweet.user.name;
+            tweet.retweeted_status.full_text = tweet.retweeted_status.full_text.replace(/https\:\/\/t\.co\/\w+/ig, '');
+            if (tweet.retweeted_status.quoted_status && typeof tweet.retweeted_status.quoted_status !== "undefined") {
+                tweet.retweeted_status.quoted_status.full_text = tweet.retweeted_status.quoted_status.full_text.replace(/https\:\/\/t\.co\/\w+/ig, '');
+            }
         }
         else {
             tweet.retweeted_status = false;

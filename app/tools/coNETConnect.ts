@@ -42,6 +42,7 @@ export default class extends Imap.imapPeer {
 	public alreadyExit = false
 	private timeoutWaitAfterSentrequestMail: NodeJS.Timeout = null
 	private timeoutCount = {}
+	private socketPool = []
 
 	public exit1 ( err ) {
 		console.trace (`imapPeer doing exit! this.sockerServer.emit ( 'tryConnectCoNETStage', null, -1 )`)
@@ -98,6 +99,17 @@ export default class extends Imap.imapPeer {
 		this.on ( 'ping', () => {
 			this.roomEmit.emit ( 'tryConnectCoNETStage', null, 2 )
 			//this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
+		})
+
+		this.socketPool.push ( socket )
+
+		socket.once ( 'disconnect', () => {
+			const index = this.socketPool.findIndex ( n => n.id === socket.id )
+			if ( index < 0 ) {
+				return console.dir (`CoNetConnect class socket.on disconnect, socket id [${ socket.id }] have not in socketPool 【${ this.socketPool.map ( n => n.id )}]】`)
+			}
+			console.dir (`CoNetConnect class socket.on disconnect socketPool =【${ this.socketPool.map ( n => n.id )}】`)
+			
 		})
 		
 	}
@@ -247,5 +259,7 @@ export default class extends Imap.imapPeer {
 	
 		
 	}
+
+	
 
 }

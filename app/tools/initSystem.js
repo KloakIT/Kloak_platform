@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendCoNETConnectRequestEmail = exports.decryptoMessage = exports.encryptMessage = exports.smtpVerify = exports.availableImapServer = exports.getImapSmtpHost = exports.newKeyPair = exports.saveConfig = exports.emitConfig = exports.createKeyPairObj = exports.getPublicKeyInfo = exports.getKeyPairInfo = exports.getEmailAddress = exports.getNickName = exports.getLocalInterface = exports.convertByte = exports.checkFolder = exports.twitterDataFileName = exports.QTGateSignKeyID = exports.configPath = exports.LocalServerPortNumber = exports.CoNET_Home = exports.imapDataFileName1 = exports.CoNETConnectLog = exports.ErrorLogFile = exports.QTGateVideo = exports.QTGateTemp = exports.QTGateLatest = exports.QTGateFolder = exports.checkUrl = void 0;
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
@@ -179,7 +180,6 @@ exports.getPublicKeyInfo = async (publicKey, CallBack) => {
         //KloakValid: getQTGateSign ( user ),
         //publicKeys: _key.keys
     };
-    console.log(`getPublicKeyInfo return localServerKeyPair!`, ret);
     return CallBack(null, ret);
 };
 exports.createKeyPairObj = () => {
@@ -404,11 +404,9 @@ const _smtpVerify = (imapData, CallBack) => {
         debug: true
     };
     const transporter = Nodemailer.createTransport(option);
-    console.dir(option);
     return transporter.verify(CallBack);
 };
 exports.smtpVerify = (imapData, CallBack) => {
-    console.log(`doing smtpVerify!`);
     let testArray = null;
     let err1 = null;
     if (typeof imapData.smtpPortNumber === 'object') {
@@ -444,12 +442,12 @@ exports.smtpVerify = (imapData, CallBack) => {
                 CallBack();
                 CallBack = null;
             }
-            return next();
+            return next(new Error('cancel'));
         });
     }, (err) => {
         if (err) {
-            console.log(`smtpVerify ERROR = [${err.message}]`);
-            return CallBack(err);
+            console.log(`smtpVerify exit = [${err.message}]`);
+            return;
         }
         if (typeof CallBack === 'function') {
             console.log(`smtpVerify success Async!`);
@@ -478,7 +476,6 @@ async function decryptoMessage(keyObject, publickey, message, CallBack) {
     };
     return OpenPgp.decrypt(option).then(async (data) => {
         let ret = data.data;
-        console.log(ret);
         try {
             ret = JSON.parse(ret);
         }

@@ -151,8 +151,6 @@ export default class localServer {
 				
 				console.log ( `tryConnectCoNET already have room; [${ keyID }]` )
 				
-				
-				
 				return ConnectCalss.Ping ( sendMail )
 			}
 
@@ -200,8 +198,6 @@ export default class localServer {
 		
 		const workspace = socket.nsp
 		
-		saveLog ( `socketServerConnected ${ clientName }:[${ workspace.name }] connect count ${ workspace.connected }`)
-		
 		const checkSocketKeypair = ( socket: SocketIO.Socket, CallBack ) => {
 		
 			const uuid = Uuid.v4()
@@ -221,7 +217,7 @@ export default class localServer {
 
 		socket.on ( 'checkImap', ( imapConnectData, CallBack1 ) => {
 			
-			console.log (`on checkImap typeof CallBack1 = [${ typeof CallBack1 }]`)
+			
 			const uuid = checkSocketKeypair ( socket, CallBack1 )
 			if ( !uuid ) {
 				return 
@@ -240,6 +236,8 @@ export default class localServer {
 		})
 
 		socket.on ( 'tryConnectCoNET', ( imapData: string, CallBack1 ) => {
+
+			console.dir ('【on tryConnectCoNET】')
 			const uuid = checkSocketKeypair ( socket, CallBack1 )
 			if ( !uuid ) {
 				return 
@@ -335,7 +333,7 @@ export default class localServer {
 		})
 
 		socket.on ( 'sendRequestMail', ( message: string, CallBack1 ) => {
-			
+			console.dir (`socket.on ( 'sendRequestMail')`)
 			const uuid = checkSocketKeypair ( socket, CallBack1 )
 			if ( !uuid ) {
 				return 
@@ -390,7 +388,7 @@ export default class localServer {
 		})
 
 		socket.on ( 'keypair', async ( publicKey, CallBack )=> {
-			console.log ( `socket.on ( 'keypair') \n`)
+			
 			const _uuid = Uuid.v4 ()
 			CallBack( _uuid )
 			
@@ -401,13 +399,11 @@ export default class localServer {
 					return socket.emit ( _uuid, err )
 				}
 				
-				console.dir ( data.publicID )
 				const keyID = data.publicID.slice( 24 ).toLocaleUpperCase()
 				socket [ "keypair" ] = data
 				socket [ "keyID" ] = keyID
-				
-				
-				console.dir (`client 【${ keyID }】 join room!\n\n\n`)
+
+				console.dir (`client join room 【${ keyID }】`)
 				socket.emit ( _uuid, null, this.localKeyPair.publicKey )
 				
 				if ( workspace.name.toLocaleUpperCase() !== `/${ keyID }`) {
@@ -423,18 +419,27 @@ export default class localServer {
 
 		socket.once ( 'disconnect', () => {
 
-			
 			const keypair: localServerKeyPair = socket[ 'keypair' ]
 
 			if ( !keypair ) {
 				return console.dir (`${ clientName } have no keypair on disconnect! `)
 			}
 			const keyID = keypair.publicID
-			const adminNamespace = this.socketServer.of ( keyID  )
+			const adminNamespace = this.socketServer.of ( `/${ keyID }` )
 			return adminNamespace.clients (( err, clients ) => {
-				
 				if ( err ) {
-					return console.log ( `socketServer.of ( ${ keyID } ).clients get error, `, err )
+					return console.log ( err )
+				}
+				const client = clients.length
+				console.dir (`socket.once ( 'disconnect') total clients of room [/${ keyID }] = [${ clients.length }]`)
+				if ( !client) {
+					const connect = this.imapConnectPool.get ( keyID )
+					this.imapConnectPool.delete ( keyID )
+					if ( connect ) {
+
+						connect.destroy ( null )
+						console.dir (`CoNet connect [${ keyID }] destroy`)
+					}
 				}
 				
 			})
@@ -462,7 +467,7 @@ export default class localServer {
 				if ( err ) {
 					return next ( err )
 				}
-				console.log (`imapAccountTest success!`, typeof next )
+				
 				socket.emit ( 'imapTest' )
 				return next ()
 			}),

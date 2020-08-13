@@ -208,7 +208,7 @@ export const getPublicKeyInfo = async ( publicKey: string, CallBack: ( err?: Err
 		//KloakValid: getQTGateSign ( user ),
 		//publicKeys: _key.keys
 	}
-	console.log (`getPublicKeyInfo return localServerKeyPair!`, ret )
+	
 	return CallBack ( null, ret )
 	
 }
@@ -463,14 +463,15 @@ const _smtpVerify = ( imapData: IinputData, CallBack: ( err?: Error, success?: a
 	}
 	
 	const transporter = Nodemailer.createTransport ( option )
-	console.dir ( option )
+	
 	return transporter.verify ( CallBack )
 }
 
 export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) => {
-	console.log (`doing smtpVerify!`)
+	
 	let testArray: IinputData[] = null
 	let err1 = null
+
 	if ( typeof imapData.smtpPortNumber === 'object' ) {
 		testArray = imapData.smtpPortNumber.map ( n => { 
 			const ret: IinputData = JSON.parse ( JSON.stringify ( imapData ))
@@ -482,6 +483,7 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 	} else {
 		testArray = [ imapData ]
 	}
+	
 	testArray = testArray.concat ( testArray.map ( n => {
 		const ret: IinputData = JSON.parse ( JSON.stringify ( n ))
 		ret.ciphers = 'SSLv3'
@@ -507,12 +509,12 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 				CallBack ()
 				CallBack = null
 			}
-			return next ()
+			return next (new Error('cancel'))
 		})
 	}, ( err: Error ) => {
 		if ( err ) {
-			console.log ( `smtpVerify ERROR = [${ err.message }]`)
-			return CallBack ( err )
+			console.log ( `smtpVerify exit = [${ err.message }]`)
+			return 
 		}
 
 		if ( typeof CallBack === 'function' ) {
@@ -548,7 +550,7 @@ export async function decryptoMessage ( keyObject: localServerKeyPair, publickey
 
 	return OpenPgp.decrypt ( option ).then ( async data => {
 		let ret = data.data
-		console.log ( ret )
+		
 		try {
 			ret = JSON.parse ( ret )
 		} catch ( ex ) {

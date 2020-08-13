@@ -122,7 +122,7 @@ class connectInformationMessage {
 	public showGreen = ko.observable ( false )
 	public messageArray = ko.observable ( null )
 	public socketIoOnline = false
-	public socketIo = null
+	public socketIo: SocketIOClient.Socket = null
 	
 	public localServerPublicKey = ""
 
@@ -136,16 +136,15 @@ class connectInformationMessage {
 			if ( this.first ) {
 				return
 			}
-			const div =  $('#offlineInfo')
+			const div = $('#offlineInfo')
 			if ( vv ) {
 				return div.transition('fly down')
 			}
-			div.transition('fly down')
+			div.transition ('fly down')
 		})
 
 		this.first = false
-		
-		
+
 	}
 
 	public socketListening ( url: string ) {
@@ -166,11 +165,18 @@ class connectInformationMessage {
 				return _view.CoNETConnect().sendConnectMail()
 			}
 		}
+
 		console.dir (` Connect to server: ${ roomUrl }`)
+
 		this.socketIo = io ( roomUrl, { reconnectionAttempts: 5, timeout: 500, autoConnect: true })
+		
 		this.socketIo.on ( 'reconnect_failed', () => {
-			console.dir ( `reconnect_failed`)
-			//self.showErrorMessage ( 'systemError' )
+			console.dir ( `reconnect_failed` )
+			this.socketIo.removeAllListeners ()
+			this.socketIo = null
+
+			self.showErrorMessage ( 'systemError' )
+			console.log ( `socketIo.on ( 'reconnect_failed' )` )
 		})
 		
 		this.socketIo.on ( 'connect', () => {
@@ -241,8 +247,8 @@ class connectInformationMessage {
 				return this.socketIo.connect()
 			}
 			console.log ( `socketIo.on ( 'disconnect' )`, reason )
-		})
 
+		})
 
 	}
 

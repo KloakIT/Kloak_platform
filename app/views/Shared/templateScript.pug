@@ -95,7 +95,7 @@ script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-to
                     .ui.items.unstackable( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
                 <!-- /ko -->
                 <!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
-                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" )
+                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" style = "margin: 0px;" )
                 <!-- /ko -->
                 
             .extra( style = "height: 1rem;")

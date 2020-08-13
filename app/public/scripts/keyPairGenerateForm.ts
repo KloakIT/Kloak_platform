@@ -200,9 +200,7 @@ class keyPairGenerateForm {
 			}, timeSet )
 		}
 
-
-		
-		 _view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
+		_view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
 			self.stopDoingProcessBar ()
 			self.keyPairGenerateFormMessage ( true )
 			if ( err ) {
@@ -214,6 +212,7 @@ class keyPairGenerateForm {
 			console.dir ( data )
 			return _view.sharedMainWorker.getKeyPairInfo ( data, ( err, _data ) => {
 				
+				_data.publicKeyID = _data.publicKeyID.substr (24)
 				return self.exit ( _data )
 			})
 			

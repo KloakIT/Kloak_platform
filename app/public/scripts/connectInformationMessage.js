@@ -167,7 +167,10 @@ class connectInformationMessage {
         this.socketIo = io(roomUrl, { reconnectionAttempts: 5, timeout: 500, autoConnect: true });
         this.socketIo.on('reconnect_failed', () => {
             console.dir(`reconnect_failed`);
-            //self.showErrorMessage ( 'systemError' )
+            this.socketIo.removeAllListeners();
+            this.socketIo = null;
+            self.showErrorMessage('systemError');
+            console.log(`socketIo.on ( 'reconnect_failed' )`);
         });
         this.socketIo.on('connect', () => {
             console.dir(`on connect`);

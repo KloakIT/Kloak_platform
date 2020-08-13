@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.imapPeer = exports.imapGetMediaFile = exports.imapAccountTest = exports.getMailAttachedBase64 = exports.getMailSubject = exports.getMailAttached = exports.qtGateImapRead = exports.seneMessageToFolder = exports.qtGateImap = exports.saveLog = void 0;
 /// 
 const Net = require("net");
 const Tls = require("tls");
@@ -78,6 +79,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         timers_1.clearTimeout(this.idleNextStop);
         if (this.writable) {
             this.debug ? debugOut(`DONE`, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
+            console.log('');
             return this.push(`DONE\r\n`);
         }
         /**
@@ -713,7 +715,6 @@ class ImapServerSwitchStream extends Stream.Transform {
         };
         this.newSwitchRet = false;
         this.commandProcess = (text1, cmdArray, next, _callback) => {
-            console.log(`fetch this.commandProces [${text1}]`);
             switch (cmdArray[0]) {
                 case '*': {
                     if (/^FETCH$/i.test(cmdArray[2])) {
@@ -1043,7 +1044,6 @@ exports.imapAccountTest = (IMapConnect, CallBack) => {
         rImap.logout();
     });
     rImap.once('ready', () => {
-        debug ? exports.saveLog(`rImap.once ( 'ready' ) do new qtGateImapwrite`) : null;
         rImap.logout();
     });
     rImap.once('end', err => {

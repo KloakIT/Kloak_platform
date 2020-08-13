@@ -67,7 +67,12 @@ class twitter {
 
     private retweeted_statusInit ( tweet ) {
         if ( tweet.retweeted_status && typeof tweet.retweeted_status !== "undefined" ) {
-            tweet.retweeted_status['retweeted_statusUserName'] = tweet.user.name 
+
+            tweet.retweeted_status['retweeted_statusUserName'] = tweet.user.name
+            tweet.retweeted_status.full_text = tweet.retweeted_status.full_text.replace(/https\:\/\/t\.co\/\w+/ig,'')
+            if ( tweet.retweeted_status.quoted_status && typeof tweet.retweeted_status.quoted_status !== "undefined"  ) {
+                tweet.retweeted_status.quoted_status.full_text = tweet.retweeted_status.quoted_status.full_text.replace(/https\:\/\/t\.co\/\w+/ig,'')
+            }
         } else {
             tweet.retweeted_status = false
             tweet['retweeted_statusUserName'] = false
@@ -186,7 +191,7 @@ class twitter {
     public textareaHeight ( index, Quoted = false ) {
         const twitterObj: any = this.twitterTimeArray()[ index ]
         const id = twitterObj.id
-        const d = document.getElementById( id )
+        const d = document.getElementById ( id )
         const lines = twitterObj.full_text.split ('\n')
         /*
         if ( lines < 2 ) {
@@ -289,7 +294,6 @@ class twitter {
             const twObj: any[] = com.Args [0]
             const twitterHref = com.Args[1]
             const fileArray = com.Args[2]
-            
             if ( twitterHref ) {
                 for ( let i of Object.keys( twitterHref )) {
                     if ( !self.twitterHref[ i ] ) {
@@ -300,7 +304,8 @@ class twitter {
             }
             if ( twObj ) {
                 twObj.forEach ( n => {
-                    self.retweeted_statusInit (n)
+                    
+                    self.retweeted_statusInit ( n )
                     self.twitterTimeArray.push ( n )
                 })
             }

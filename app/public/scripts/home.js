@@ -83,7 +83,7 @@ const makeKeyPairData = (view, keypair) => {
     view.showKeyPair(true);
     let keyPairPasswordClass = new keyPairPassword(keypair, (passwd, deleteKey) => {
         view.showKeyPair(false);
-        keypair.keyPairPassword((keyPairPasswordClass = null));
+        keypair.keyPairPassword(keyPairPasswordClass = null);
         if (!passwd) {
             if (deleteKey) {
                 _view.deleteKey();
@@ -101,17 +101,17 @@ const makeKeyPairData = (view, keypair) => {
     keypair.delete_btn_view = ko.observable(true);
     keypair.showConform = ko.observable(false);
     keypair['showDeleteKeyPairNoite'] = ko.observable(false);
-    keypair.delete_btn_click = function () {
+    keypair.delete_btn_click = () => {
         keypair.delete_btn_view(false);
         return keypair.showConform(true);
     };
-    keypair.deleteKeyPairNext = function () {
+    keypair.deleteKeyPairNext = () => {
         localStorage.setItem('config', JSON.stringify({}));
         view.localServerConfig(null);
         view.connectedCoNET(false);
         view.connectToCoNET(false);
-        view.CoNETConnect((view.CoNETConnectClass = null));
-        view.imapSetup((view.imapFormClass = null));
+        view.CoNETConnect(view.CoNETConnectClass = null);
+        view.imapSetup(view.imapFormClass = null);
         keypair.showDeleteKeyPairNoite(false);
         keypair.delete_btn_view(false);
         localStorage.clear();
@@ -387,16 +387,17 @@ var view_layout;
             //this.showImapSetup ()
         }
         showImapSetup() {
-            _view.hideMainPage();
-            _view.sectionLogin(true);
-            return _view.imapSetup((_view.imapFormClass = new imapForm(_view.keyPair().publicKeyID, _view.imapData(), (imapData) => {
-                _view.imapSetup((_view.imapFormClass = null));
-                _view.sectionLogin(false);
-                _view.imapData(imapData);
-                _view.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
-                    return _view.showMain();
+            const self = this;
+            this.hideMainPage();
+            this.sectionLogin(true);
+            return this.imapSetup(this.imapFormClass = new imapForm(this.keyPair().publicKeyID, this.imapData(), (imapData) => {
+                self.imapSetup(self.imapFormClass = null);
+                self.sectionLogin(false);
+                self.imapData(imapData);
+                return self.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
+                    return self.showMain();
                 });
-            })));
+            }));
         }
         connectToNode() {
             const self = this;
@@ -527,20 +528,17 @@ var view_layout;
             if (!this.connectInformationMessage) {
                 this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
             }
-            this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
+            return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
                 if (err) {
                     return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
-                }
-                if (/localhost|127\.0\.0\.1/i.test(this.LocalServerUrl)) {
-                    self.connectInformationMessage.socketListening(this.LocalServerUrl);
                 }
                 if (data['imapData']) {
                     self.imapData(data['imapData']);
                 }
+                self.connectInformationMessage.socketListening(this.LocalServerUrl);
                 if (this.imapData()) {
                     return this.showMainPage(true);
                 }
-                self.connectInformationMessage.socketListening(this.LocalServerUrl);
                 return this.showImapSetup();
             });
         }
@@ -708,4 +706,8 @@ window[`${'indexedDB'}`] =
         window['webkitIndexedDB'] ||
         window['msIndexedDB'];
 gsap.registerPlugin(MorphSVGPlugin, SplitText);
+const $window = $(window);
+$window.resize(() => {
+    _view.resizeMiddleZise();
+});
 const CoNET_version = '0.1.43';
