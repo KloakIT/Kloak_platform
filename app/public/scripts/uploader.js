@@ -39,19 +39,20 @@ class Uploader {
             };
         };
         this.createHistory = () => {
+            const date = new Date();
             const history = {
                 uuid: this.uuid,
                 filename: this.file.name,
-                time_stamp: new Date(),
+                time_stamp: date,
+                last_viewed: date,
                 path: this.path,
-                icon: null,
                 url: 'Upload',
                 domain: 'Upload',
-                detail: '',
                 tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], 'upload', 'local'],
                 color: null,
-                fileIndex: null
+                size: this.fileSize
             };
+            history.tag = history.tag.filter(tag => tag !== null);
             _view.storageHelper.saveHistory(history, this.callback);
         };
         this.createIndex = () => {

@@ -9,6 +9,7 @@ class Downloader {
         this.downloadQueue = [];
         this.createdHistory = false;
         this.totalPieces = null;
+        this.stopDownload = false;
         this.log = (message) => {
             console.log(`<${new Date().toLocaleString()}> ${message}`);
         };
@@ -22,6 +23,9 @@ class Downloader {
                 });
             }
             return new Error('Unable to detect IndexedDB storage information.');
+        };
+        this.stop = () => {
+            this.stopDownload = true;
         };
         this.updateIndex = (uuid, eof) => {
             if (!uuid) {
@@ -77,23 +81,26 @@ class Downloader {
             this.progressIndicator(percent);
         };
         this.updateHistory = () => {
+            const date = new Date();
             const history = {
                 uuid: this.requestUuid,
                 filename: this.downloadIndex.filename,
-                time_stamp: new Date(),
+                time_stamp: date,
+                last_viewed: date,
                 path: '',
-                icon: null,
                 url: null,
                 domain: null,
-                detail: null,
                 tag: [...this.extraHistoryTags, this.downloadIndex.fileExtension, 'download'],
-                color: null,
-                fileIndex: null
+                color: null
             };
             history.tag = history.tag.filter(tag => tag !== null);
             _view.storageHelper.saveHistory(history, null);
         };
         this.consumeQueue = () => {
+            if (this.stopDownload) {
+                this.isConsumeQueueRunning = false;
+                return;
+            }
             this.isConsumeQueueRunning = true;
             const obj = this.downloadQueue.shift();
             let uuid = obj['downloadUuid'] || obj['fileName'];

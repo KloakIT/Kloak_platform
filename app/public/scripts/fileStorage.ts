@@ -1,17 +1,18 @@
 class fileStorage {
 	private checkedFiles = ko.observableArray([])
-	private fileStorageData = ko.observableArray([])
-	private allFileStorageData = ko.observableArray([])
+	private fileStorageData: KnockoutObservableArray<fileHistory> = ko.observableArray([])
+	private allFileStorageData: KnockoutObservableArray<fileHistory> = ko.observableArray([])
 	private usageQuota = ko.observable(null)
 	private suggestedTags = ko.observableArray([])
 	private availableTags = []
 	private sortOption = ko.observableArray([null, null])
-	private currentUploads = ko.observableArray([])
 	private showSearchInput = ko.observable(false)
 	private showSuggestions = ko.observable(true)
-	private showOverlay = ko.observable(false)
+	private showDownloads = ko.observable(false)
 	private searchKey = ko.observable()
 	private selectedFile = ko.observable()
+	private addTagInput = ko.observable("")
+	private selectedInfoFile = ko.observable()
 	private colorOptions = [
 		["maroon", "red", "olive", "yellow"],
 		["green", "lime", "teal", "aqua"],
@@ -21,6 +22,10 @@ class fileStorage {
 		this.detectStorageUsage()
 		
 		this.getHistory()
+
+		_view.storageHelper.downloadPool.subscribe(val => {
+			this.getHistory()
+		})
 
 		this.searchKey.subscribe((val: string) => {
 			val = val.trim().toLowerCase()
@@ -35,9 +40,9 @@ class fileStorage {
 					return
 				} else {
 					this.suggestedTags([])
-					const temp = this.allFileStorageData().filter((file: fileHistory) => {
+					const temp = this.allFileStorageData().filter((file: any) => {
 						if (file['filename']) {
-							return file['filename'].toLowerCase().includes(val)
+							return file['filename']().toLowerCase().includes(val)
 						}
 
 						if (file['url']) {
@@ -65,16 +70,16 @@ class fileStorage {
 
 		})
 
-		this.showSearchInput.subscribe(visible => {
-			const input = document.getElementById('searchInput')
-			if (visible) {
-				input.focus()
-				return
-			}
-			input['value'] = ""
-			this.suggestedTags([])
-			return
-		})
+		// this.showSearchInput.subscribe(visible => {
+		// 	const input = document.getElementById('searchInput')
+		// 	if (visible) {
+		// 		input.focus()
+		// 		return
+		// 	}
+		// 	input['value'] = ""
+		// 	this.suggestedTags([])
+		// 	return
+		// })
 	}
 
 	backToMain = () => {
@@ -105,7 +110,7 @@ class fileStorage {
 		let m = this.formatBytes(quota)
 		while (m.length > n.length) {
 			let c = m.shift()
-			console.log(n.length, m.length)
+			// console.log(n.length, m.length)
 			m[0] = m[0] + (c * 1024)
 		}
 		sizes = sizes.slice(-n.length)
@@ -147,6 +152,9 @@ class fileStorage {
 	}
 
 	formatFilename = (fileData) => {
+		if (typeof fileData === 'string') {
+			return fileData.length <= 30 ? fileData : fileData.slice(0,10) + '...' + fileData.slice(-10)
+		}
 		if (fileData.filename.length <= 30) {
 			return fileData.filename
 		}
@@ -183,16 +191,21 @@ class fileStorage {
 	filterFromTag = (tag: string) => {
 		this.searchKey(`#${tag}`)
 		this.showSuggestions( false )
-		this.fileStorageData(this.allFileStorageData().filter(file => file.tag.includes(tag)))
+		this.fileStorageData(this.allFileStorageData().filter((file: any) => file['tag']().includes(tag)))
 		return
 	}
 
-	setTags = (fileStorageData: Array<fileHistory>) => {
+	setTags = (fileStorageData: any) => {
 		const temp = new Set()
+		if (fileStorageData.length === 0 ) {
+			this.availableTags = []
+			return
+		}
 		fileStorageData.map(file => {
-			file.tag.map(tag => {
-				console.log(tag)
-				temp.add(tag.toLowerCase())
+			file.tag().map(tag => {
+				if (tag) {
+					temp.add(tag.toLowerCase())
+				}
 			})
 		})
 		this.availableTags = [...temp]
@@ -203,8 +216,20 @@ class fileStorage {
 			if (err) {
 				return
 			}
-			this.allFileStorageData(JSON.parse(Buffer.from(data).toString()).reverse())
-			this.fileStorageData(this.allFileStorageData())
+			let temp = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
+
+			temp = temp.map((history: any) => {
+				history['filename'] = ko.observable(history['filename'])
+				history['time_stamp'] = ko.observable(history['time_stamp'])
+				history['last_viewed'] = ko.observable(history['last_viewed'])
+				history['color'] = ko.observable(history['color'])
+				history['tag'] = ko.observableArray(history['tag'])
+				return history
+			})
+			this.allFileStorageData(temp)
+			this.fileStorageData(temp.sort((a, b) => {
+				return Date.parse(b['last_viewed']()) - Date.parse(a['last_viewed']())
+			}))
 			this.setTags(this.allFileStorageData())
 		})
 	}
@@ -233,7 +258,6 @@ class fileStorage {
 			pieces.forEach(piece => {
 				_view.storageHelper.delete(piece, (err, data) => {
 					count++
-					console.log(count, pieces.length)
 					if (count === pieces.length) {
 						_view.storageHelper.delete(uuid, (err, data) => {
 							callback(err, data)
@@ -245,11 +269,10 @@ class fileStorage {
 	}
 
 	sortHistory = (type: string, direction: string) => {
-		console.log(type, direction)
 		let temp = null;
 		const nameCompare = (a, b) => {
-			const stringA = a[type].toUpperCase()
-			const stringB = b[type].toUpperCase()
+			const stringA = a[type]().toUpperCase()
+			const stringB = b[type]().toUpperCase()
 			if (stringA > stringB) {
 				return 1
 			} else if (stringA < stringB) {
@@ -259,9 +282,9 @@ class fileStorage {
 
 		const dateCompare = (a, b) => {
 			if (direction === 'up') {
-				return Date.parse(a[type]) - Date.parse(b[type])
+				return Date.parse(a[type]()) - Date.parse(b[type]())
 			}
-			return Date.parse(b[type]) - Date.parse(a[type])
+			return Date.parse(b[type]()) - Date.parse(a[type]())
 		}
 		
 		if (type === 'filename') {
@@ -288,7 +311,6 @@ class fileStorage {
 			this.sortOption([type, 'up'])
 		}
 		this.sortHistory(this.sortOption()[0], this.sortOption()[1])
-
 	}
 
 	closeAll = () => {
@@ -297,11 +319,42 @@ class fileStorage {
 		this.searchKey()
 		this.showSearchInput(false)
 		this.selectedFile(null)
+		this.selectedInfoFile(null)
 		this.showFileOptions(null)
 		return
 	}
 
 	fileAction = (fileData, event, action: string) => {
+		const replaceHistory = () => {
+			const temp = this.allFileStorageData().map((history: any) => {
+				const n = {}
+				n['uuid'] = history['uuid']
+				n['filename'] = history['filename']()
+				n['time_stamp'] = history['time_stamp']()
+				n['last_viewed'] = history['last_viewed']()
+				n['path'] = history['path']
+				n['url'] = history['url']
+				n['domain'] = history['domain']
+				n['tag'] = history['tag']()
+				n['color'] = history['color']()
+				n['size'] = history['size'] ? history['size'] : null
+				return n
+			})
+			_view.storageHelper.replaceHistory((temp.reverse() as Array<fileHistory>), (err, data) => {
+			})
+		}
+		const updateLastViewed = () => {
+			let currentTime = new Date()
+			fileData.last_viewed(currentTime)
+			
+			const sorted = this.fileStorageData().sort((a, b) => {
+				return Date.parse(b['last_viewed']()) - Date.parse(a['last_viewed']())
+			})
+
+			this.fileStorageData(sorted)
+			replaceHistory()
+		}
+		
 		switch (action) {
 			case 'close':
 				_view.displayMedia(null)
@@ -310,8 +363,9 @@ class fileStorage {
 				videoPlayer['src'] = null;
 				break;
 			case "delete":
+				this.closeAll()
 				const callback = () => {
-					const temp = this.allFileStorageData().filter((file) => file !== fileData)
+					const temp = this.allFileStorageData().filter((file) => file['uuid'] !== fileData['uuid'])
 					this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== fileData.uuid))
 					this.fileStorageData(temp)
 					this.allFileStorageData(temp)
@@ -321,32 +375,37 @@ class fileStorage {
 						}
 					})
 					this.fileStorageData.valueHasMutated()
+					this.setTags(this.allFileStorageData())
 					this.selectedFile(null)
 				}
 				this.deleteFile(fileData.uuid, callback)
+				break;
 			case "download":
-				let t0 = performance.now()
-				console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				// let t0 = performance.now()
+				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
 				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
 					if (err) {
 						console.log(err)
 						return
 					}
-					let t1 = performance.now()
-					console.log(`TOTAL DOWNLOAD TIME: ${(t1-t0).toFixed(2)}ms | ${((t1-t0)/1000).toFixed(2)} s`)
-					console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+					// let t1 = performance.now()
+					// console.log(`TOTAL DOWNLOAD TIME: ${(t1-t0).toFixed(2)}ms | ${((t1-t0)/1000).toFixed(2)} s`)
+					// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
 					const url = _view.storageHelper.createBlob(data.buffer, data.contentType)
 					const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
 					_view.storageHelper.downloadBlob(url, filename)
+					updateLastViewed()
 				})
+				break;
 			case "play":
-				console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
 				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-					console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+					// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
 					_view.displayMedia('player')
 					const videoPlayer = document.getElementById("videoPlayer")
 					videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
 					videoPlayer['play']()
+					updateLastViewed()
 				})
 				// let mediaSource = null
 				// let buffers = []
@@ -390,31 +449,33 @@ class fileStorage {
 					
 				// })
 			case 'view':
-				if ( fileData.tag.includes('snapshot')) {
+				if ( fileData.tag().includes('snapshot')) {
 					_view.showFileStorage(false)
 						new showWebPageClass ( fileData.filename , fileData.uuid , null, () => {
 							_view.showFileStorage(true)
 					})
+					updateLastViewed()
+					return
 				}
 				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
 					if (err) {
 						console.log(err)
 						return
 					}
-					console.log(data)
+					// console.log(data)
 					switch (true) {
-						case fileData.tag.includes('image'):
+						case fileData.tag().includes('image'):
 							_view.displayMedia('image')
 							const imageViewer = document.getElementById('imageViewer')
 							imageViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
 							break;
-						case fileData.tag.includes('pdf'):
+						case fileData.tag().includes('pdf'):
 							_view.displayMedia('pdf')
 							const pdfViewer = document.getElementById('pdfViewer')
 							pdfViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
 							break;
 					}
-					
+					updateLastViewed()
 				})
 				// _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
 				// 	if (err) {
@@ -448,19 +509,70 @@ class fileStorage {
 					}
 				})
 				break;
+			case 'stopDownload':
+				if (confirm("Stop and remove download?")) {
+					this.getHistory()
+					_view.storageHelper.downloadPool()[fileData].instance['stop']()
+					_view.storageHelper.removeFromPool(_view.storageHelper.downloadPool, fileData)
+					this.fileAction({uuid: fileData}, null, 'delete')
+				}
+				break;
 			case 'downloadMultiple':
-				const files = this.checkedFiles()
-				files.forEach(uuid => {
-					_view.storageHelper.createAssembler(uuid, (err, data) => {
-						if (err) {
-							return console.log(err)
-						}
-						this.checkedFiles.shift()
-						const url = _view.storageHelper.createBlob(data.buffer, data.contentType)
-						const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
-						_view.storageHelper.downloadBlob(url, filename)
-					})
-				})
+				// const files = []
+				// this.fileStorageData().map(history => {
+				// 	if (this.checkedFiles().includes(history['uuid'])) {
+				// 		files.push(history)
+				// 	}
+				// })
+
+				// const getNext = () => {
+				// 	this.checkedFiles().shift()
+				// 	if (files.length === 0) {
+				// 		return
+				// 	}
+				// 	if (files.length) {
+				// 		this.fileAction(files.shift(), null, 'download', getNext)
+				// 	}
+				// }
+
+				// this.checkedFiles.shift()
+				// this.fileAction(files.shift(), null, 'download', getNext)
+				// let fileUuid = this.checkedFiles.shift()
+				// let data = this.fileStorageData().filter(history => history['uuid'] === fileUuid)
+				// console.log(data)
+				// const cb = () => {
+				// 	if (this.checkedFiles.length === 0) {
+				// 		return
+				// 	}
+				// 	if (this.checkedFiles.length > 0) {
+				// 		fileUuid = this.checkedFiles.shift()
+				// 		fileData = this.fileStorageData().filter(history => history['uuid'] === fileUuid)
+				// 		console.log(fileData)
+				// 		this.fileAction(fileData, null, 'download', cb)
+				// 	}
+				// }
+
+				// this.fileAction(data, null, 'download', cb)
+				// files.forEach(uuid => {
+				// 	_view.storageHelper.createAssembler(uuid, (err, data) => {
+				// 		if (err) {
+				// 			return console.log(err)
+				// 		}
+				// 		this.checkedFiles.shift()
+				// 		const url = _view.storageHelper.createBlob(data.buffer, data.contentType)
+				// 		const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`
+				// 		_view.storageHelper.downloadBlob(url, filename)
+				// 	})
+				// })
+				break;
+			case 'addTag':
+				if (!this.addTagInput().trim()) {
+					return
+				}
+				fileData['tag'].push(this.addTagInput().trim())
+				this.addTagInput("")
+				this.setTags(this.allFileStorageData())
+				replaceHistory()
 				break;
 			default:
 				break
@@ -530,7 +642,7 @@ class fileStorage {
 		}
 		this.checkedFiles().push(data.uuid)
 		this.checkedFiles.valueHasMutated()
-		console.log(this.checkedFiles())
+		// console.log(this.checkedFiles())
 		return true;
 	}
 
@@ -610,7 +722,7 @@ class fileStorage {
 	// }
 
 	traverseFileTree = (item, path = "") => {
-		console.log(path)
+		// console.log(path)
 		if (item.isFile) {
 			item.file((file: File) => {
 				const uuid = uuid_generate()
@@ -647,6 +759,7 @@ class fileStorage {
 		const fileDragOverlay = document.getElementById("fileDragOverlay")
 		fileDragOverlay.style.visibility = "hidden"
 		this.selectedFile(null)
+		this.closeAll()
 		const items = e.originalEvent.dataTransfer.items
 		const length = e.originalEvent.dataTransfer.items.length
 		for (let i = 0; i < length; i++) {

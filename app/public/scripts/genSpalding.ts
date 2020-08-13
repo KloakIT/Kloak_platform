@@ -91,7 +91,9 @@ class genSpalding {
 	}
 
 	showTwitter = ( self, twitterObj, twitterHref, serialNumber, buffer, showAccount: boolean ) => {
-		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, buffer, showAccount )
+		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, showAccount, () => {
+			
+		} )
 		self.showTwitterObjResult ( true )
 	}
 

@@ -16,8 +16,8 @@ script#ajaxLableButton( type = "text/html" )
                 <!-- ko if: $root.storageHelper.downloadPool()[cmd.requestSerial] -->
                     span( data-bind=" text: $root.storageHelper.downloadPool()[cmd.requestSerial].progress() + '%'")
                 <!-- /ko -->
-                <!-- ko if: $root.storageHelper.assemblyPool()[cmd.requestSerial] -->
-                    span( data-bind=" text: $root.storageHelper.assemblyPool()[cmd.requestSerial].progress() + '%'")
+                <!-- ko if: $root.storageHelper.currentAssembly()[cmd.requestSerial] -->
+                    span( data-bind=" text: $root.storageHelper.currentAssembly()[cmd.requestSerial].progress() + '%'")
                 <!-- /ko -->
             <!-- /ko -->
 
@@ -167,7 +167,7 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
                 <!-- /ko -->
             .extra
                 <!-- ko ifnot: nextButtonShowError -->
-                    button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: $root.appScript().info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+                    button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: infoDefine[$root.languageIndex() ].coSearch.moreResults, click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
                 <!-- /ko -->
 
                 <!-- ko if: nextButtonShowError -->

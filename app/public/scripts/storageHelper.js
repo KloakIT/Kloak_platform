@@ -20,7 +20,7 @@ class StorageHelper {
             const progress = ko.observable(0);
             const download = {
                 requestSerial: requestUuid,
-                filename: requestUuid,
+                filename: downloadTitle,
                 progress,
                 instance: new Downloader(requestUuid, files, downloadTitle, progress, extraHistoryTags, (err, data) => {
                     this.removeFromPool(this.downloadPool, requestUuid);

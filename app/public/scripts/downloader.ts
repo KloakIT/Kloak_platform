@@ -9,6 +9,7 @@ class Downloader {
 	private progressIndicator
 	private createdHistory = false
 	private totalPieces: number = null
+	private stopDownload = false
 	private callback: Function
 	constructor(requestUuid: string, files: Array<string> = null, downloadTitle: string, progressIndicator: KnockoutObservable<number> | Function, extraHistoryTags: Array<string>, callback: Function) {
 		if (!window.indexedDB) {
@@ -43,6 +44,10 @@ class Downloader {
 			})
 		}
 		return new Error('Unable to detect IndexedDB storage information.')
+	}
+
+	stop = () => {
+		this.stopDownload = true
 	}
 
 	updateIndex = (uuid, eof) => {
@@ -102,24 +107,27 @@ class Downloader {
 	}
 
 	updateHistory = () => {
+		const date = new Date()
 		const history: fileHistory = {
 			uuid: this.requestUuid,
 			filename: this.downloadIndex.filename,
-			time_stamp: new Date(),
+			time_stamp: date,
+			last_viewed: date,
 			path: '',
-			icon: null,
 			url: null,
 			domain: null,
-			detail: null,
 			tag: [...this.extraHistoryTags, this.downloadIndex.fileExtension, 'download'],
-			color: null,
-			fileIndex: null
+			color: null
 		}
 		history.tag = history.tag.filter(tag => tag !== null)
 		_view.storageHelper.saveHistory(history, null)
 	}
 
 	consumeQueue = () => {
+		if (this.stopDownload) {
+			this.isConsumeQueueRunning = false
+			return
+		}
 		this.isConsumeQueueRunning = true
 		const obj = this.downloadQueue.shift()
 		let uuid = obj['downloadUuid'] || obj['fileName']

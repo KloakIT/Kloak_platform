@@ -69,6 +69,16 @@ const appScript = {
     showTwitterObjResult: ko.observable(false),
     twitterObj: null,
     backToMain: () => {
+        appScript.searchItem(null);
+        appScript.searchItemList([]);
+        appScript.showInputLoading(false);
+        appScript.showSearchesRelated(false);
+        appScript.newsItemsArray(null);
+        appScript.imageItemsArray(null);
+        appScript.showSearchesRelated(null);
+        appScript.videoItemsArray(null);
+        appScript.imageSearchItemArray(null);
+        appScript.searchInputText('');
         _view.tempAppHtml(false);
         _view.showMainPage(true);
         _view.bodyBlue(true);

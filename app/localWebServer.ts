@@ -424,7 +424,7 @@ export default class localServer {
 			if ( !keypair ) {
 				return console.dir (`${ clientName } have no keypair on disconnect! `)
 			}
-			const keyID = keypair.publicID
+			const keyID = socket ["keyID"]
 			const adminNamespace = this.socketServer.of ( `/${ keyID }` )
 			return adminNamespace.clients (( err, clients ) => {
 				if ( err ) {
@@ -437,8 +437,10 @@ export default class localServer {
 					this.imapConnectPool.delete ( keyID )
 					if ( connect ) {
 
-						connect.destroy ( null )
-						console.dir (`CoNet connect [${ keyID }] destroy`)
+						return connect.rImap.logout (() => {
+							console.dir (`CoNet connect [${ keyID }] destroy`)
+						})
+						
 					}
 				}
 				

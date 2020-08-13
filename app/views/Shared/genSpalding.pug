@@ -36,7 +36,13 @@
 				.spaldingAboutRight
 					img.spaldingAsSeenOn(src="./images/spalding/spalding_asSeenOn.png")
 					<!-- ko if: showTwitterObjResult() -->
-					.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem" data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
+					.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem; width: 100%; margin-top: 1rem" data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
+					<!-- /ko -->
+					<!-- ko if: !showTwitterObjResult() -->
+					.ui.segment(style="height: 30rem !important; width: 100% !important; margin-top: 1rem !important;")
+						.ui.active.dimmer
+							.ui.text.loader='Fetching Twitter...'
+						p
 					<!-- /ko -->
 					//- .spaldingTwitter
 					//- 	.spaldingTwitterHeader

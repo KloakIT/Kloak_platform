@@ -1,5 +1,5 @@
 class StorageHelper {
-	private downloadPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
+	public downloadPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
 	public currentAssembly: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
 	private assemblyQueue: KnockoutObservableArray<{uuid: string, callback: Function}> = ko.observableArray([])
 	private uploadPool: KnockoutObservable<{[uuid: string]: kloakFileInstance}> = ko.observable({})
@@ -22,7 +22,7 @@ class StorageHelper {
 		const progress = ko.observable(0)
 		const download = {
 			requestSerial: requestUuid,
-			filename: requestUuid,
+			filename: downloadTitle,
 			progress,
 			instance: new Downloader(requestUuid, files, downloadTitle, progress, extraHistoryTags, (err, data) => {
 				this.removeFromPool(this.downloadPool, requestUuid)

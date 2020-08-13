@@ -1,10 +1,5 @@
 #fileStorage
 	<!-- ko with: appScript -->
-		<!-- ko if: showOverlay() -->
-		.fileStorageOverlay
-			video#fileStorageVideo.fileStorageVideo(controls)
-			p.closeVideoButton(data-bind="click: (data, event) => {fileAction(data, event, 'close')}")="Close"
-		<!-- /ko -->
 		.fileStorage(data-bind="event: {drop: (data,e) => {ondrop(e,data)}, dragover: (data, e) => {dragover(e)}, dragleave: (data, e) => {dragleave(e)}}")
 			input#hiddenInput(type="file" style="display: none")
 			.fileDragOverlay#fileDragOverlay
@@ -15,8 +10,9 @@
 					.fileStorageHeaderInner
 						.fileStorageHeaderIcons(data-bind="click: () => {backToMain()}")
 								i.home.icon.fileStorageHeaderIcon
-						.fileStorageHeaderContent
-							.fileStorageHeaderIcons(data-bind="click: () => { showSearchInput(!showSearchInput()) }, clickBubble: false")
+						<!-- ko if: !showDownloads() -->
+						.fileStorageHeaderContent(data-bind="click: () => {}, clickBubble: false")
+							.fileStorageHeaderIcons(data-bind="click: () => { showSearchInput(!showSearchInput()); }, clickBubble: false")
 								i.search.icon.fileStorageHeaderIcon
 							.fileStorageHeaderIcons(data-bind="click: () => { uploadFileClick() }, clickBubble: false" style="z-index: 99")
 								i.plus.icon.fileStorageHeaderIcon
@@ -29,24 +25,13 @@
 								p.suggestedTag(data-bind="text: $data, click: () => { $parent.filterFromTag($data) }" )
 								<!-- /ko -->
 							<!-- /ko -->
-						//- .fileStorageHeaderIcons(data-bind="click: () => {}, clickBubble: false" style="z-index: 98")
-						//- 	i.info.circle.icon.fileStorageHeaderIcon
-				//- 		.mobileSearchIcon(data-bind="click: () => {mobileShowSearch(!mobileShowSearch())}, style: {'border': mobileShowSearch() ? '1px solid rgba(0, 0, 0, 0)' : '1px solid rgba(0, 0, 0, 0.15)'}")
-				//- 			i.search.icon.searchIcon(style="margin: 0px !important")
-				//- 		input.mobileSearchInput#mobileSearchInput(placeholder="Search file storage" data-bind="textInput: searchKey, hasFocus: showSuggestions(true), style: {'transform': mobileShowSearch() ? 'scaleX(1)' : 'scaleX(0)', 'opacity': mobileShowSearch() ? '1' : '0'}" )
-				//- 		.mobileUploadButton(data-bind="click: () => {uploadFileClick()}")
-				//- 			i.plus.icon.mobileUploadIcon(style="margin: 0px 0px 2.5px 0px !important; color: rgba(0,0,0,0.7)")
-				//- 		<!-- ko if: showSuggestions-->
-				//- 		.searchSuggestions#searchSuggestions(data-bind="foreach: searchSuggestions, style: {'height': searchSuggestions().length > 0 ? '16rem' : '0px'}")
-				//- 			.searchSuggestion(data-bind="click: $parent.searchSuggestionClick, css: {'searchSuggestionsBorder' : $parent.searchSuggestions.length > 0}")
-				//- 				i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}")
-				//- 				.hypen(style="height: 1px; width: 1rem; content:''; background-color: rgba(100,100,100,0.5); margin: 0 10px")
-				//- 				p(data-bind="text: $data.urlShow")
-				//- 		<!-- /ko -->
-				//- 		//- .uploadIconWrapper(data-bind="click: () => {uploadFileClick()}")
-				//- 		//- 	i.plus.icon.uploadIcon(style="margin: 0 !important; height: 1.18em")
+						<!-- /ko -->
 				.fileStorageInner(data-bind="click: () => { closeAll() }, clickBubble: false")
 					.fileStorageGlobalActions
+						<!-- ko if: showDownloads() -->
+						h3="Downloads"
+						<!-- /ko -->
+						<!-- ko if: !showDownloads() -->
 						.fileStorageLeft
 							input.fileStorageItemCheckbox(type="checkbox" data-bind="click: (data, event) => {checkedFile(data, event, true); return true}, checked: checkedFiles().length > 0 && checkedFiles().length === allFileStorageData().length, clickBubble: false")
 							.fileStorageSpacer(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
@@ -59,68 +44,129 @@
 								i.caret.icon(data-bind="css: {up: sortOption()[1] === 'up', down: sortOption()[1] === 'down'}")
 								<!-- /ko -->
 							.fileStorageSpacer(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
-							.fileStorageSortOption(data-bind="click: () => {sortHandler('time_stamp')}, clickBubble: false")
+							.fileStorageSortOption(data-bind="click: () => {sortHandler('last_viewed')}, clickBubble: false")
 								p.fileStorageSortText="Date"
-								<!-- ko ifnot: sortOption()[0] === 'time_stamp' -->
+								<!-- ko ifnot: sortOption()[0] === 'last_viewed' -->
 								i.sort.icon
 								<!-- /ko -->
-								<!-- ko if: sortOption()[0] === 'time_stamp' -->
+								<!-- ko if: sortOption()[0] === 'last_viewed' -->
 								i.caret.icon(data-bind="css: {up: sortOption()[1] === 'up', down: sortOption()[1] === 'down'}")
 								<!-- /ko -->
 						.fileStorageRight
 							<!-- ko if: checkedFiles().length > 0 -->
-							button.fileStorageGlobalButton.fileStorageDownloadMultiple(data-bind="click: (data, event) => confirm('Download all selected files?') ?fileAction(data, event, 'downloadMultiple') : null")
-								i.download.icon(style="margin: 0px !important")
 							button.fileStorageGlobalButton.fileStorageDelete(data-bind="click: (data, event) => {fileAction(data, event, 'deleteMultiple')}")
 								i.trash.alternate.icon(style="margin: 0px !important")
 							<!-- /ko -->
-					<!-- ko if: fileStorageData().length > 0 -->
+						<!-- /ko -->
+					<!-- ko if: showDownloads() -->
+						<!-- ko if: Object.keys($root.storageHelper.downloadPool()).length > 0 -->
+						.fileStorageContent
+							<!-- ko foreach: Object.keys($root.storageHelper.downloadPool()) --> 
+							.fileStorageItem(data-bind="click: (data, event) => {$parent.selectedFile(null); return true;}")
+								.fileStorageUpper
+									.fileStorageLeft
+										input.fileStorageItemCheckbox(type="checkbox" disabled)
+										.fileStorageSpacer(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
+										i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer; margin: 0 10px")
+										.fileStorageText
+											p.fileStorageFilename(data-bind="text: $root.storageHelper.downloadPool()[$data].filename")
+											//- p.fileStorageFilename(data-bind="text: 'test'")
+									.fileStorageRight
+										i.stop.circle.outline.icon.fileStorageStopDownload(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'stopDownload')}")
+								<!-- ko if: $root.storageHelper.downloadPool()[$data] -->
+								.fileStorageProgressBar
+									.fsProgressBarUncomplete
+									.fsProgressBarComplete(data-bind="style: {'width': `${$root.storageHelper.downloadPool()[$data].progress()}%`, 'background-color': $parent.progressBarColor($root.storageHelper.downloadPool()[$data].progress())}")
+									p.fsProgressBarText(data-bind="text: `${$root.storageHelper.downloadPool()[$data].progress()}%`")
+								<!-- /ko -->
+							<!-- /ko -->
+						<!-- /ko -->
+					<!-- /ko -->
+					<!-- ko if: !showDownloads() && fileStorageData().length > 0 -->
 					.fileStorageContent(data-bind="foreach: { data: fileStorageData, as: 'file' }")
 						.fileStorageItem(data-bind="click: (data, event) => {$parent.selectedFile(null); return true;}")
-							.fileStorageLeft
-								input.fileStorageItemCheckbox(type="checkbox" data-bind="attr: {'disabled': $root.storageHelper.uploadPool()[file.uuid] ? true : false}, click: (data, event) => {$parent.checkedFile(data,event); return true}, checked: $parent.checkedFiles().includes($data.uuid), clickBubble: false")
-								.fileStorageSpacer(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
-								i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer; margin: 0 10px" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}")
-								.fileStorageText
-									p.fileStorageFilename(data-bind="text: $parent.formatFilename(file)")
-									p.fileStorageDate(data-bind="text: 'Last modified: ' + $parent.getDate(file.time_stamp,'full')")
-							.fileStorageRight
-								.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'info')}")
-									i.info.icon(style="margin: 0 !important")
-								<!-- ko if: file.tag.includes('audio') || file.tag.includes('video') || file.tag.includes('media') -->
-								.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play')}")
-									i.play.icon(style="margin: 0 !important")
-								<!-- /ko -->
-								<!-- ko if: file.tag.includes('pdf') || file.tag.includes('image') || file.tag.includes('snapshot') && file.tag.includes('librarium') -->
-								.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view')}")
-									i.eye.icon(style="margin: 0 !important")
-								<!-- /ko -->
-								.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download')}")
-									i.download.icon(style="margin: 0 !important")
-								.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
-									i.trash.alternate.outline.icon(style="margin: 0 !important")
-								.fileStorageOptionIcon(data-bind="style: {'visibility': $root.storageHelper.uploadPool()[file.uuid] ? 'hidden' : 'visible'}, click: () => {$parent.showFileOptions($index())}, clickBubble: false")
-									i.ellipsis.horizontal.icon(style="margin: 0 !important; height: 1.18em; color: rgba(0,0,0,0.65); position: relative; z-index: 999")
-								.fileStorageOptions(data-bind="css: { fileOptionShow : $parent.selectedFile() === $index() }")
-									.fileStorageOption
+							.fileStorageUpper
+								.fileStorageLeft
+									input.fileStorageItemCheckbox(type="checkbox" data-bind="attr: {'disabled': $root.storageHelper.uploadPool()[file.uuid] ? true : false}, click: (data, event) => {$parent.checkedFile(data,event); return true}, checked: $parent.checkedFiles().includes($data.uuid), clickBubble: false")
+									.fileStorageSpacer(style="height: 1px; width: 3rem; content:''; background-color: rgba(100,100,100,0.2); margin-left: 20px")
+									i.file.icon(style="font-size: 18px; opacity: 0.6; cursor: pointer; margin: 0 10px" data-bind="style: {'color': color ? color : 'black'}, attr: {'id': 'icon ' + $index()}")
+									.fileStorageText
+										p.fileStorageFilename(data-bind="text: $parent.formatFilename(file)")
+										p.fileStorageDate(data-bind="text: 'Last viewed: ' + $parent.getDate(file.last_viewed(),'full')")
+								.fileStorageRight(data-bind="style: {'display': $root.storageHelper.uploadPool()[file.uuid] ? 'none' : 'flex' }")
+									.fileStorageActionButton(data-bind="click: () => {$parent.selectedInfoFile() === $index() ? $parent.selectedInfoFile(null) : $parent.selectedInfoFile($index())}, clickBubble: false")
 										i.info.icon(style="margin: 0 !important")
-										p(style="margin-left: 5px;")="Get info..."
-									<!-- ko if: file.tag.includes('audio') || file.tag.includes('video') || file.tag.includes('media') -->
-									.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play')}")
+									<!-- ko if: file.tag().includes('audio') || file.tag().includes('video') || file.tag().includes('media') -->
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
 										i.play.icon(style="margin: 0 !important")
-										p(style="margin-left: 5px;")="Play"
 									<!-- /ko -->
-									<!-- ko if: file.tag.includes('pdf') || file.tag.includes('image') || file.tag.includes('snapshot') && file.tag.includes('librarium') -->
-									.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view')}")
+									<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
 										i.eye.icon(style="margin: 0 !important")
-										p(style="margin-left: 5px;")="View"
 									<!-- /ko -->
-									.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download')}")
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
 										i.download.icon(style="margin: 0 !important")
-										p(style="margin-left: 5px;")="Download"
-									.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
 										i.trash.alternate.outline.icon(style="margin: 0 !important")
-										p(style="margin-left: 5px;")="Delete"
+									.fileStorageOptionIcon(data-bind="style: {'visibility': $root.storageHelper.uploadPool()[file.uuid] ? 'hidden' : 'visible'}, click: () => {$parent.showFileOptions($index())}, clickBubble: false")
+										i.ellipsis.horizontal.icon(style="margin: 0 !important; height: 1.18em; color: rgba(0,0,0,0.65); position: relative; z-index: 999")
+									.fileStorageOptions(data-bind="css: { fileOptionShow : $parent.selectedFile() === $index() }")
+										.fileStorageOption
+											i.info.icon(style="margin: 0 !important")
+											p(style="margin-left: 5px;")="Get info..."
+										<!-- ko if: file.tag().includes('audio') || file.tag().includes('video') || file.tag().includes('media') -->
+										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
+											i.play.icon(style="margin: 0 !important")
+											p(style="margin-left: 5px;")="Play"
+										<!-- /ko -->
+										<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
+										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
+											i.eye.icon(style="margin: 0 !important")
+											p(style="margin-left: 5px;")="View"
+										<!-- /ko -->
+										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
+											i.download.icon(style="margin: 0 !important")
+											p(style="margin-left: 5px;")="Download"
+										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
+											i.trash.alternate.outline.icon(style="margin: 0 !important")
+											p(style="margin-left: 5px;")="Delete"
+							.fileStorageDetails(data-bind="style: {height: $parent.selectedInfoFile() == $index() ? 'auto' : '0rem', 'border-top': $parent.selectedInfoFile() === $index() ? '1px solid rgba(125,125,125,0.2)' : 'none', padding: $parent.selectedInfoFile() === $index() ? '20px 0' : '0px'}, click: () => {}, clickBubble: false")
+								//- .fsDetailHeader
+								//- 	.fsDetailIcon
+								//- 	p.fsDetailHeaderText.fsDetailFilename(data-bind="text: file['filename']")
+								.fsDetailInformations
+									.fsDetailLeft
+										.fsDetailInformation
+											p.fsDetailLabel="Filename"
+											p.fsDetailText.fsDetailFilename(data-bind="text: $parent.formatFilename(file['filename']())" style="max-width: 30ch")
+											//- .fsDetailEditInformation
+											//- 	p.fsDetailText.fsDetailPath(data-bind="text: file['filename']()")
+											//- 	i.edit.icon.fsEditIcon(data-bind="click: (data, event) => {data['editFilename'] = true}")
+											//- 	input.fsFilenameEditInput(data-bind="value: file['filename']()")
+										.fsDetailInformation
+											p.fsDetailLabel="Type:"
+											p.fsDetailText.fsDetailType(data-bind="text: file['type'] ? file['type'] : file['tag']().includes('snapshot') ? 'zip' : file['filename']().split('.').pop()")
+										.fsDetailInformation
+											p.fsDetailLabel="Path:"
+											p.fsDetailText.fsDetailPath(data-bind="text: './' + file['path']")
+									.fsDetailRight
+										.fsDetailInformation
+											p.fsDetailLabel="Size:"
+											p.fsDetailText.fsDetailSize(data-bind="text: file['size'] ? `${$parent.numberWithCommas(file['size'])} bytes` : '-----'")
+										.fsDetailInformation
+											p.fsDetailLabel="Created on:"
+											p.fsDetailText.fsDetailCreated(data-bind="text: $parent.getDate(file['time_stamp'](), 'full')")
+										.fsDetailInformation
+											p.fsDetailLabel="Last viewed:"
+											p.fsDetailText.fsDetailLastViewed(data-bind="text: file['last_viewed'] ? $parent.getDate(file['last_viewed'](), 'full') : $parent.getDate(file['time_stamp'](), 'full')")
+								.fsDetailTagContainer
+									.fsDetailTagHeader
+										p.fsDetailLabel="Tags:"
+									.fsDetailTags(data-bind="foreach: file.tag")
+										p.fsDetailTag(data-bind="text: $data, click: () => {$parentContext.$parent.searchKey(`#${$data}`); $parentContext.$parent.showSearchInput(true); $parentContext.$parent.filterFromTag($data)}" style="margin: 0 5px 0 0 !important")
+								.fsAddTag()
+									input.fsAddTagInput(placeholder="Add tag(s)..." data-bind="textInput: $parent.addTagInput, click: () => {}, clickBubble: false")
+									i.check.circle.icon.fsAddTagSubmit(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'addTag')}, clickBubble: false")
 							<!-- ko if: $root.storageHelper.currentAssembly()[file.uuid] -->
 							.fileStorageProgressBar
 								.fsProgressBarUncomplete
@@ -134,14 +180,27 @@
 								.fsProgressBarComplete(data-bind="style: {'width': `${$root.storageHelper.uploadPool()[file.uuid].progress()}%`, 'background-color': $parent.progressBarColor($root.storageHelper.uploadPool()[file.uuid].progress())}")
 								p.fsProgressBarText(data-bind="text: `${$root.storageHelper.uploadPool()[file.uuid].progress()}%`")
 							<!-- /ko -->
+
+							//- <!-- ko if: $root.storageHelper.downloadPool()[file.uuid] -->
+							//- .fileStorageProgressBar
+							//- 	.fsProgressBarUncomplete
+							//- 	.fsProgressBarComplete(data-bind="style: {'width': `${$root.storageHelper.downloadPool()[file.uuid].progress()}%`, 'background-color': $parent.progressBarColor($root.storageHelper.downloadPool()[file.uuid].progress())}")
+							//- 	p.fsProgressBarText(data-bind="text: `${$root.storageHelper.downloadPool()[file.uuid].progress()}%`")
+							//- <!-- /ko -->
 					<!-- /ko -->
-			.fileStorageQuota(data-bind="click: (data, event) => {selectedFile(null); return true;}")
-				.fileStorageQuotaInner(data-bind="")
-					.fileStorageQuotaBar
-						.fileStorageUsageBar(data-bind="style: {'width': usageQuota() ? `${Math.floor((usageQuota()['usage'] / usageQuota()['quota']) * 100)}%` : '0%'} ")
-				.fileStorageQuotaTexts
-					p.fileStorageQuotaText="Storage usage:"
-					p.fileStorageQuotaText(data-bind="text: usageQuota() ? `${formatUsageQuota(usageQuota()['usage'], usageQuota()['quota'])} - ${((usageQuota()['usage'] / usageQuota()['quota']) * 100).toFixed(2)}% used` : 'Unable to detect usage quota'")
+			.fileStorageFooter
+				.fileStorageQuota(data-bind="click: (data, event) => {selectedFile(null); return true;}")
+					.fileStorageQuotaInner(data-bind="")
+						.fileStorageQuotaBar
+							.fileStorageUsageBar(data-bind="style: {'width': usageQuota() ? `${Math.floor((usageQuota()['usage'] / usageQuota()['quota']) * 100)}%` : '0%'} ")
+					.fileStorageQuotaTexts
+						p.fileStorageQuotaText="Storage usage:"
+						p.fileStorageQuotaText(data-bind="text: usageQuota() ? `${formatUsageQuota(usageQuota()['usage'], usageQuota()['quota'])} - ${((usageQuota()['usage'] / usageQuota()['quota']) * 100).toFixed(2)}% used` : 'Unable to detect usage quota'")
+				.fileStorageDownloadView(data-bind="click: () => {showDownloads(!showDownloads())}, style: {'border': showDownloads() ? '2px solid rgba(0, 94, 255, 0.7)' : '2px solid rgba(150,150,150,0.75)', 'color': showDownloads() ? 'rgba(0, 94, 255, 0.7)' : 'rgba(150,150,150,0.75)'}")
+					i.download.icon.downloadViewIcon
+					<!-- ko if: Object.keys($root.storageHelper.downloadPool()).length > 0 -->
+					p.fileStorageDownloadNotif(data-bind="text: Object.keys($root.storageHelper.downloadPool()).length")
+					<!-- /ko -->
 				//- 			.fileStorageItemLower(data-bind="style: {'transform': $parent.selectedFile() == $index() ? 'scaleY(1)' : 'scaleY(0)'}")
 				//- 				//- .hypen(style="height: 1px; width: 100%; content:''; background-color: rgba(100,100,100,0.2)")
 				//- 				.fileDetails

@@ -1609,15 +1609,24 @@ ANDY - FILE STORAGE
 
 .fileStorageItem {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	justify-content: center;
 	position: relative;
-	height: 6rem;
 	padding: 0 20px;
-	border-bottom: 1px solid rgba(0,0,0,0.15)
+	border-bottom: 1px solid rgba(0,0,0,0.15);
+	overflow: hidden;
+	min-height: 6rem;
 }
 
 .fileStorageItem:hover {
 	background-color: rgba(227, 242, 253, 0.7)
+}
+
+.fileStorageUpper {
+	display: flex;
+	justify-content: center;
+	height: 6rem;
+	
 }
 
 .fileStorageLeft {
@@ -1632,6 +1641,145 @@ ANDY - FILE STORAGE
 	align-items: center;
 	justify-content: flex-end;
 	position: relative
+}
+
+.fileStorageDetails {
+	border-top: 1px solid rgba(125,125,125,0.2);
+}
+
+.fsDetailInformations {
+	display: flex;
+	align-items: flex-start;
+}
+
+.fsDetailEditInformation {
+	display: flex;
+	align-items: center;
+	position: relative;
+}
+
+.fsDetailLeft, .fsDetailRight {
+	flex: 1;
+}
+
+.fsDetailRight {
+	margin-left: 1rem;
+}
+
+.fsDetailInformation {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 2px 0;
+}
+
+.fsDetailLabel {
+	font-weight: bold;
+	margin: 0 !important;
+	color: rgba(0, 0, 0, 0.8);
+	font-size: 13px;
+}
+
+.fsDetailText {
+	color: #353839;
+	max-width: 30ch;
+	font-size: 13px;
+	margin: 0 !important;
+}
+
+.fsEditIcon {
+	margin: 0 0 0 5px !important;
+	cursor: pointer;
+	color: rgba(0,0,0,0.6);
+	position: relative;
+	z-index: 50;
+	height: auto !important;
+}
+
+.fsEditIcon:hover {
+	color: rgba(0,0,0,1);
+}
+
+.fsFilenameEditInput {
+	width: 100%;
+	position: absolute;
+	z-index: 49;
+	left: 0;
+	border-radius: 15px;
+	border: 1px solid rgba(0,0,0,0.15);
+	padding: 2px 10px;
+}
+
+.fsFilenameEditInput:focus {
+	outline: none;
+	border: 1px solid black;
+}
+
+.fsDetailTagContainer {
+	width: 100%;
+	display: flex;
+	align-items: center;
+}
+
+.fsDetailTagHeader {
+	display: flex;
+	align-items: center;
+	margin-right: 5px;
+}
+
+.fsDetailTags {
+	display: flex;
+	align-items: center;
+}
+
+.fsDetailTag {
+	color: rgba(0, 94, 255, 0.7);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.fsDetailTag:hover {
+	color: rgba(0, 94, 255, 0.9)
+}
+
+.fsAddTag {
+	display: flex;
+	align-items: center;
+	padding: 3px;
+	position: relative;
+	width: 15rem;
+	height: 2rem;
+	margin-top: 10px;
+}
+
+.fsAddTagInput {
+	border-radius: 15px;
+	z-index: 9;
+	height: 2rem;
+	border: 1px solid rgba(0,0,0,0.15);
+	padding: 5px 10px;
+	width: 100%;
+}
+
+.fsAddTagInput:focus {
+	outline: none;
+	position: relative;
+}
+
+.fsAddTagSubmit {
+	position: absolute;
+	z-index: 10;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	font-size: 1.5rem !important;
+	margin: auto 5px !important;
+	cursor: pointer;
+	transition: color 150ms ease-in-out;
+}
+
+.fsAddTagSubmit:hover {
+	color: #33e46d;
 }
 
 .fileStorageItemCheckbox {
@@ -1794,7 +1942,7 @@ ANDY - FILE STORAGE
 	align-items: center;
 }
 
-.fileStorageQuota {
+.fileStorageFooter {
 	position: fixed;
 	height: 5rem;
 	width: 100%;
@@ -1804,9 +1952,13 @@ ANDY - FILE STORAGE
 	bottom: 0;
 	z-index: 99;
 	display: flex;
-	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+}
+
+.fileStorageQuota {
+	width: 100%;
+	max-width: 686px;
 }
 
 .fileStorageQuotaInner {
@@ -1851,6 +2003,65 @@ ANDY - FILE STORAGE
 	margin: 0 !important;
 	color: rgba(0,0,0,0.75)
 }
+
+.fileStorageDownloadView {
+	height: 3rem;
+	width: 3rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	border-radius: 10px;
+	color: rgba(150,150,150,0.75);
+	margin-left: 10px;
+	transition: all 150ms ease-in-out;
+	cursor: pointer;
+	position: relative;
+}
+
+.fileStorageDownloadView:hover {
+	color: rgba(0, 94, 255, 0.7);
+	border: 2px solid rgba(0, 94, 255, 0.7);
+}
+
+.downloadViewIcon {
+	font-size: 1.5rem !important;
+	margin: 0 !important;
+}
+
+.fileStorageDownloadNotif {
+	padding: 5px;
+	height: 1.25rem;
+	width: 1.25rem;
+	position: absolute;
+	top: -7.5px;
+	right: -7.5px;
+	background-color: red;
+	color: white;
+	font-weight: 700;
+	font-size: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 5px;
+}
+
+.fileStorageStopDownload {
+	font-size: 2rem !important;
+    height: 2rem !important;
+    width: 2rem !important;
+    display: flex !important;
+    align-items: center;
+	justify-content: center;
+	color: rgba(150,150,150,0.9);
+	transition: color 250ms ease-in-out;
+	cursor: pointer;
+}
+
+.fileStorageStopDownload:hover {
+	color: red;
+}
+
 
 @media screen and (max-width: 700px) {
 	.fileStorageGlobalActions, .fileStorageContent {

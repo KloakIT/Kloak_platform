@@ -22,16 +22,18 @@ class buttonStatusClass {
     }
     click(self) {
         if (this.loading() === 5) {
-            _view.storageHelper.createAssembler(this.requestUuid, (err, data) => {
+            this.loading(4);
+            return _view.storageHelper.createAssembler(this.requestUuid, (err, data) => {
                 if (err) {
                     console.log(err);
                     return;
                 }
-                _view.displayVideo(true);
+                _view.displayMedia('player');
                 const videoPlayer = document.getElementById("videoPlayer");
                 videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType);
+                videoPlayer['play']();
+                this.loading(5);
             });
-            return;
         }
         if (this.error()) {
             return this.error(null);

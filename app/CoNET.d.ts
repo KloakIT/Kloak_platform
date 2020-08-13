@@ -836,19 +836,17 @@ interface finishedDownload {
 	url: string
 }
 
+
+
 interface fileHistory {
 	uuid: string
 	filename: string
 	time_stamp: Date
+	last_viewed: any
 	path: string
-	icon: string
 	url: string
 	domain: string
-	detail: string
 	tag: string[]
 	color: number
-	fileIndex: kloakIndex
+	size?: number
 }
-
-
-
