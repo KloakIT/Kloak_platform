@@ -2,8 +2,8 @@
 
 #CoSearch
 	<!-- ko with: appScript -->
-	i.home.icon.coSearchHomeButton(data-bind="click: (data, event) => {backToMain()}")
-	.backGroundSetup( data-bind = " style: { background: $root.CanadaBackground() ? '#B4E4ED': 'white', height: $root.middleY() * 2 }" )
+	i.home.icon.coSearchHomeButton( data-bind = "click: ( data, event ) => { backToMain ()}")
+	.backGroundSetup( data-bind = " style: { background: $root.CanadaBackground() ? '#B4E4ED': 'white', height: showMain() ? $root.middleY() * 2 : '0px'}" )
 		<!-- ko if: showMain() -->
 		.main
 			<!-- ko if: showMainSearchForm() -->
