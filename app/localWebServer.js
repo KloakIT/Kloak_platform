@@ -289,7 +289,7 @@ class localServer {
             });
         });
         socket.on('sendRequestMail', (message, CallBack1) => {
-            console.dir(`socket.on ( 'sendRequestMail')`);
+            console.dir(`socket.on 【( 'sendRequestMail')】`);
             const uuid = checkSocketKeypair(socket, CallBack1);
             if (!uuid) {
                 return;
@@ -297,7 +297,6 @@ class localServer {
             const keyPair = socket["keypair"];
             const keyID = socket["keyID"];
             return Tool.decryptoMessage(this.localKeyPair, keyPair.publicKey, message, (err, data) => {
-                console.dir(data);
                 sendMail = true;
                 const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyID);
                 if (userConnect) {

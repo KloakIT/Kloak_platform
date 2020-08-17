@@ -333,7 +333,7 @@ export default class localServer {
 		})
 
 		socket.on ( 'sendRequestMail', ( message: string, CallBack1 ) => {
-			console.dir (`socket.on ( 'sendRequestMail')`)
+			console.dir (`socket.on 【( 'sendRequestMail')】`)
 			const uuid = checkSocketKeypair ( socket, CallBack1 )
 			if ( !uuid ) {
 				return 
@@ -341,7 +341,7 @@ export default class localServer {
 			const keyPair: localServerKeyPair = socket [ "keypair" ]
 			const keyID = socket ["keyID"]
 			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, message, ( err, data ) => {
-				console.dir ( data )
+				
 				sendMail = true
 				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
 				if ( userConnect ) {

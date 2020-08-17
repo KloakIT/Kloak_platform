@@ -251,9 +251,7 @@ class CoNETConnect {
 			
 			return _view.sharedMainWorker.saveImapIInputData ( this.imapData, err => {
 				connect ()
-				return this.sendConnectMail ()
 			})
-			
 			
 		}
 		connect ()

@@ -1,7 +1,7 @@
 
 class sharedWorkerManager {
 	
-	private sharedWorker = typeof SharedWorker === 'function' ? true: false 
+	private sharedWorker = false// typeof SharedWorker === 'function' ? true: false 
 	private worker = this.makeWorker ()
 	public sharedMainWorkerWaitingPool: Map< string, ( err?: Error, cmd? ) => void > = new Map ()
 

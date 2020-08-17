@@ -634,6 +634,36 @@ const mainMenuArray = [
         online: false,
     },
     {
+        name: 'Kloak_youtube',
+        img: '/images/k_youtube.svg',
+        header: ['Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube'],
+        description: [
+            'Youtube客户端',
+            'Youtubeクライアント',
+            'Client for Youtube',
+            'Youtube客戶端',
+        ],
+        extra: null,
+        click: forTwitter,
+        online: false,
+        htmlTemp: 'muteHtml'
+    },
+    {
+        name: 'tw',
+        img: '/images/k_twitter.svg',
+        header: ['Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter'],
+        description: [
+            '推特客户端',
+            'Twitterクライアント',
+            'Client for Twitter',
+            '推特客戶端',
+        ],
+        extra: null,
+        click: forTwitter,
+        online: false,
+        htmlTemp: 'muteHtml'
+    },
+    {
         name: 'mute',
         img: '/images/encrypted.svg',
         header: ['哑语', 'ミュート', 'Mute', '啞語'],
@@ -707,7 +737,7 @@ window[`${'indexedDB'}`] =
         window['msIndexedDB'];
 gsap.registerPlugin(MorphSVGPlugin, SplitText);
 const $window = $(window);
-$window.resize(() => {
+$window.on('resize', () => {
     _view.resizeMiddleZise();
 });
 const CoNET_version = '0.1.43';

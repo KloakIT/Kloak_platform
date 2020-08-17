@@ -162,8 +162,11 @@ class connectInformationMessage {
 			}
 			
 			if ( _view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
-				return _view.CoNETConnect().sendConnectMail()
+
+				_view.CoNETConnect().sendConnectMail()
+				return _view.connectToNode ()
 			}
+			return console.dir (`socketListening this.socketIo already have error!`)
 		}
 
 		console.dir (` Connect to server: ${ roomUrl }`)

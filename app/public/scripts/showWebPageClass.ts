@@ -330,8 +330,11 @@ class showWebPageClass {
 	}
 
 	public showMultimediaObj () {
+
 		this.multimediaObj.entriesObj = ko.observableArray ([])
+
 		this.showMultimediaObjButton ( true )
+		
 		if ( !this.multimediaObj.entries ) {
 			this.multimediaObj[ 'entries' ] = false
 			this.checkFormat ( this.multimediaObj )

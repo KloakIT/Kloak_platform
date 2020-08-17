@@ -1,7 +1,7 @@
 class sharedWorkerManager {
     constructor(sharedPath) {
         this.sharedPath = sharedPath;
-        this.sharedWorker = typeof SharedWorker === 'function' ? true : false;
+        this.sharedWorker = false; // typeof SharedWorker === 'function' ? true: false 
         this.worker = this.makeWorker();
         this.sharedMainWorkerWaitingPool = new Map();
         if (this.sharedWorker) {
