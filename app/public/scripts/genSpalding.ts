@@ -90,11 +90,14 @@ class genSpalding {
 		_view.appScript(null)
 	}
 
-	showTwitter = ( self, twitterObj, twitterHref, serialNumber, buffer, showAccount: boolean ) => {
+	showTwitter = ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean ) => {
 		self.twitterObj = new twitter ( twitterObj, twitterHref, serialNumber, showAccount, () => {
 			
-		} )
+		})
 		self.showTwitterObjResult ( true )
+		if ( self['fileBuffer'] ) {
+			self.twitterObj.getFilesFromFileArray ( self['fileBuffer'] )
+		}
 	}
 
 	getTwitter = () => {
@@ -131,9 +134,17 @@ class genSpalding {
 				const twObj = com.Args [0]
 				const twitterHref = com.Args[1]
 				const serialNumber = com.requestSerial
-				const fileBuffer = null//com.Args[2]
+				const fileBuffer = com.Args[2]
 
-				return this.showTwitter ( this, twObj, twitterHref, serialNumber, null, false)
+				
+				if ( fileBuffer ) {
+					if ( this.twitterObj ) {
+						return this.twitterObj.getFilesFromFileArray ( fileBuffer )
+					}
+					return this['fileBuffer'] = fileBuffer
+				}
+
+				return this.showTwitter ( this, twObj, twitterHref, serialNumber, false )
 			}
 		})
 	}

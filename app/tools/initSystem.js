@@ -442,7 +442,7 @@ exports.smtpVerify = (imapData, CallBack) => {
                 CallBack();
                 CallBack = null;
             }
-            return next(new Error('cancel'));
+            return next(false);
         });
     }, (err) => {
         if (err) {

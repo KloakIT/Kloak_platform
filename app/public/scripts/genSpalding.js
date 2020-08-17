@@ -14,10 +14,13 @@ class genSpalding {
             _view.sectionLogin(true);
             _view.appScript(null);
         };
-        this.showTwitter = (self, twitterObj, twitterHref, serialNumber, buffer, showAccount) => {
+        this.showTwitter = (self, twitterObj, twitterHref, serialNumber, showAccount) => {
             self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, showAccount, () => {
             });
             self.showTwitterObjResult(true);
+            if (self['fileBuffer']) {
+                self.twitterObj.getFilesFromFileArray(self['fileBuffer']);
+            }
         };
         this.getTwitter = () => {
             const com = {
@@ -47,8 +50,14 @@ class genSpalding {
                     const twObj = com.Args[0];
                     const twitterHref = com.Args[1];
                     const serialNumber = com.requestSerial;
-                    const fileBuffer = null; //com.Args[2]
-                    return this.showTwitter(this, twObj, twitterHref, serialNumber, null, false);
+                    const fileBuffer = com.Args[2];
+                    if (fileBuffer) {
+                        if (this.twitterObj) {
+                            return this.twitterObj.getFilesFromFileArray(fileBuffer);
+                        }
+                        return this['fileBuffer'] = fileBuffer;
+                    }
+                    return this.showTwitter(this, twObj, twitterHref, serialNumber, false);
                 }
             });
         };

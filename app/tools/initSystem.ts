@@ -509,7 +509,7 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 				CallBack ()
 				CallBack = null
 			}
-			return next (new Error('cancel'))
+			return next ( false )
 		})
 	}, ( err: Error ) => {
 		if ( err ) {
