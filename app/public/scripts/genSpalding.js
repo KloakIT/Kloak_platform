@@ -1,5 +1,8 @@
 class genSpalding {
     constructor() {
+        // window.addEventListener("scroll", (e) => {
+        // 	const viewportWidth =
+        // 		window.innerWidth || document.documentElement.clientWidth
         this.isScrolling = false;
         this.mobileOpen = ko.observable(false);
         this.selectedPage = ko.observable("HOME");
@@ -33,7 +36,6 @@ class genSpalding {
             com.Args = ["https://twitter.com/robert_spalding", 0, 0];
             com.subCom = 'getSnapshop';
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
-                console.log(com);
                 if (err) {
                     return;
                 }
@@ -46,6 +48,7 @@ class genSpalding {
                 if (com.error) {
                     return;
                 }
+                console.log(com);
                 if (com.subCom === 'twitter') {
                     const twObj = com.Args[0];
                     const twitterHref = com.Args[1];
@@ -93,28 +96,28 @@ class genSpalding {
                 }
             }
         };
-        window.addEventListener("scroll", (e) => {
-            const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-            const homeSection = document.getElementById("HOME");
-            const rect = homeSection.getBoundingClientRect();
-            const isInViewport = rect.top >= 0 &&
-                rect.left >= 0 &&
-                rect.bottom <=
-                    (window.innerHeight || document.documentElement.clientHeight) &&
-                rect.right <=
-                    (window.innerWidth || document.documentElement.clientWidth);
-            if (isInViewport) {
-                this.selectedPage("HOME");
-            }
-            // console.log(
-            // 	window.scrollY + document.getElementById("WATCH").offsetHeight / 2
-            // )
-            // console.log(
-            // 	document.getElementById("WATCH").offsetTop +
-            // 		document.getElementById("WATCH").offsetHeight / 2
-            // )
-        });
+        // 	const viewportHeight =
+        // 		window.innerHeight || document.documentElement.clientHeight
+        // 	const homeSection = document.getElementById("HOME")
+        // 	const rect = homeSection.getBoundingClientRect()
+        // 	const isInViewport =
+        // 		rect.top >= 0 &&
+        // 		rect.left >= 0 &&
+        // 		rect.bottom <=
+        // 			(window.innerHeight || document.documentElement.clientHeight) &&
+        // 		rect.right <=
+        // 			(window.innerWidth || document.documentElement.clientWidth)
+        // 	if (isInViewport) {
+        // 		this.selectedPage("HOME")
+        // 	}
+        // 	// console.log(
+        // 	// 	window.scrollY + document.getElementById("WATCH").offsetHeight / 2
+        // 	// )
+        // 	// console.log(
+        // 	// 	document.getElementById("WATCH").offsetTop +
+        // 	// 		document.getElementById("WATCH").offsetHeight / 2
+        // 	// )
+        // })
         const temp = [];
         this.videoList().forEach(video => {
             ['audio', '480', '720'].forEach(type => {

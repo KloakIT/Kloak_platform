@@ -8,35 +8,35 @@ class genSpalding {
 	private twitterObj = null
 	
 	constructor() {
-		window.addEventListener("scroll", (e) => {
-			const viewportWidth =
-				window.innerWidth || document.documentElement.clientWidth
+		// window.addEventListener("scroll", (e) => {
+		// 	const viewportWidth =
+		// 		window.innerWidth || document.documentElement.clientWidth
 
-			const viewportHeight =
-				window.innerHeight || document.documentElement.clientHeight
+		// 	const viewportHeight =
+		// 		window.innerHeight || document.documentElement.clientHeight
 
-			const homeSection = document.getElementById("HOME")
-			const rect = homeSection.getBoundingClientRect()
+		// 	const homeSection = document.getElementById("HOME")
+		// 	const rect = homeSection.getBoundingClientRect()
 
-			const isInViewport =
-				rect.top >= 0 &&
-				rect.left >= 0 &&
-				rect.bottom <=
-					(window.innerHeight || document.documentElement.clientHeight) &&
-				rect.right <=
-					(window.innerWidth || document.documentElement.clientWidth)
+		// 	const isInViewport =
+		// 		rect.top >= 0 &&
+		// 		rect.left >= 0 &&
+		// 		rect.bottom <=
+		// 			(window.innerHeight || document.documentElement.clientHeight) &&
+		// 		rect.right <=
+		// 			(window.innerWidth || document.documentElement.clientWidth)
 
-			if (isInViewport) {
-				this.selectedPage("HOME")
-			}
-			// console.log(
-			// 	window.scrollY + document.getElementById("WATCH").offsetHeight / 2
-			// )
-			// console.log(
-			// 	document.getElementById("WATCH").offsetTop +
-			// 		document.getElementById("WATCH").offsetHeight / 2
-			// )
-		})
+		// 	if (isInViewport) {
+		// 		this.selectedPage("HOME")
+		// 	}
+		// 	// console.log(
+		// 	// 	window.scrollY + document.getElementById("WATCH").offsetHeight / 2
+		// 	// )
+		// 	// console.log(
+		// 	// 	document.getElementById("WATCH").offsetTop +
+		// 	// 		document.getElementById("WATCH").offsetHeight / 2
+		// 	// )
+		// })
 
 		const temp = []
 
@@ -113,7 +113,7 @@ class genSpalding {
 		com.subCom = 'getSnapshop'
 
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
-			console.log(com)
+			
 			if ( err ) {
 				return 
 			}
@@ -129,7 +129,7 @@ class genSpalding {
 			if ( com.error ) {
 				return
 			}
-
+			console.log(com)
 			if ( com.subCom === 'twitter' ) {
 				const twObj = com.Args [0]
 				const twitterHref = com.Args[1]

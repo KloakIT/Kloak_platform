@@ -436,12 +436,16 @@ export default class localServer {
 					const connect = this.imapConnectPool.get ( keyID )
 					this.imapConnectPool.delete ( keyID )
 					if ( connect ) {
-
-						return connect.rImap.logout (() => {
-							console.dir (`CoNet connect [${ keyID }] destroy`)
-						})
+						if ( connect.rImap && typeof connect.rImap.logout === 'function') {
+							return connect.rImap.logout (() => {
+								console.dir (`CoNet connect [${ keyID }] destroy`)
+							})
+						}
 						
 					}
+					console.log (`ERROR!\n\n`)
+					console.dir ( `socket.once ( 'disconnect') keyID = [${ keyID }] connect = ${ connect } `)
+
 				}
 				
 			})
