@@ -1116,6 +1116,7 @@ class imapPeer extends Event.EventEmitter {
         return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, CallBack);
     }
     setTimeOutOfPing(sendMail) {
+        console.trace(`setTimeOutOfPing`);
         timers_1.clearTimeout(this.waitingReplyTimeOut);
         timers_1.clearTimeout(this.needPingTimeOut);
         debug ? exports.saveLog(`Make Time Out for a Ping, ping ID = [${this.pingUuid}]`, true) : null;

@@ -1061,6 +1061,10 @@ play-btn {
 .kloak_color_DarkBlue {
 	color: #0f2850 !important;
 }
+
+.kloak_item_ready {
+	color: #cf915e !important;
+}
 .daggrInputTextarea {
 	resize: none;
 	border-color: #eceef7;
@@ -1072,6 +1076,13 @@ play-btn {
 .daggrInputTextarea::focus {
 	border: none;
 	outline: none !important;
+}
+
+.icon-background-response-local-server:after {
+	border-color: #cf915e transparent transparent!important;;
+}
+.icon-background-response-Kloak-server:after {
+	border-color: #4ea00e transparent transparent!important;;
 }
 /* ====================================================================================================================
 ANDY - MASONARY IMAGES

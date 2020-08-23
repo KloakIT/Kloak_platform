@@ -348,7 +348,10 @@ export default class localServer {
 					userConnect.Ping ( true )
 				}
 				return Tool.sendCoNETConnectRequestEmail ( data.imapData, data.toMail, data.message, err => {
-					
+					if ( err ) {
+						console.log ( err )
+					}
+					console.log (`Tool.sendCoNETConnectRequestEmail success!`)
 				})
 			})
 			
@@ -432,7 +435,7 @@ export default class localServer {
 				}
 				const client = clients.length
 				console.dir (`socket.once ( 'disconnect') total clients of room [/${ keyID }] = [${ clients.length }]`)
-				if ( !client) {
+				if ( !client ) {
 					const connect = this.imapConnectPool.get ( keyID )
 					this.imapConnectPool.delete ( keyID )
 					if ( connect ) {

@@ -303,6 +303,10 @@ class localServer {
                     userConnect.Ping(true);
                 }
                 return Tool.sendCoNETConnectRequestEmail(data.imapData, data.toMail, data.message, err => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(`Tool.sendCoNETConnectRequestEmail success!`);
                 });
             });
         });

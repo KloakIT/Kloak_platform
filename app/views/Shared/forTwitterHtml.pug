@@ -1,0 +1,10 @@
+#forTwitter
+	<!-- ko with: appScript -->
+		.ui.top.fixed.menu.borderless
+			.input.ui.grid(  data-bind = "style: { 'padding-right': $root.middleX() > 237 ? '4rem' : '0rem' }" style = " padding-left: 2rem; padding-right: 5rem; padding-top: 1rem; padding-bottom: 1rem; width: 100%;" )
+				.fifteen.wide.column
+					.ui.right.fluid.icon.input.big( style = "margin-left: 1rem;width: 100%;")
+						
+						input( type = "text" data-bind = "value: searchInputText" style = "color: rgba ( 0,0,0,0.5 );" )
+						
+	<!-- /ko  -->

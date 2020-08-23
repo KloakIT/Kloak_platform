@@ -1406,7 +1406,7 @@ export class imapPeer extends Event.EventEmitter {
     }
 
     private setTimeOutOfPing ( sendMail: boolean ) {
-
+        console.trace (`setTimeOutOfPing`)
         clearTimeout ( this.waitingReplyTimeOut )
         clearTimeout ( this.needPingTimeOut )
 		debug ? saveLog ( `Make Time Out for a Ping, ping ID = [${ this.pingUuid }]`, true ): null

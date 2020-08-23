@@ -535,6 +535,7 @@ exports.sendCoNETConnectRequestEmail = (imapData, toEmail, message, CallBack) =>
                         content: message
                     }]
             };
+            console.log(`transporter.sendMail`);
             return transporter.sendMail(mailOptions, next);
         }
     ], CallBack);

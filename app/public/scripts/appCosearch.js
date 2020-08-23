@@ -256,6 +256,7 @@ const appScript = {
          *
          * 		test Unit
          */
+        com['startTime'] = new Date().getTime();
         return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
                 return errorProcess(err);
@@ -270,6 +271,7 @@ const appScript = {
             if (com.error) {
                 return errorProcess(com.error);
             }
+            console.log(`totla time [${(new Date().getTime() - com['startTime']) / 1000}] seconds`);
             /***
              *
              *
@@ -499,6 +501,7 @@ const appScript = {
             }
         }
         /** */
+        com['startTime'] = new Date().getTime();
         return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
                 return showError(err);
@@ -513,6 +516,7 @@ const appScript = {
             if (com.error) {
                 return showError(com.error);
             }
+            console.log(`totla time [${(new Date().getTime() - com['startTime']) / 1000}] seconds`);
             self.moreResultsButtomLoading(false);
             self.nextButtonLoadingGetResponse(false);
             self.nextButtonConetResponse(false);
@@ -817,7 +821,7 @@ const appScript = {
             self.videoButtonShowError(false);
             return self.imageButtonErrorIndex(null);
         }
-        const errorProcess = (err) => {
+        const errorProcess = err => {
             self.videoButtonShowLoading(false);
             self.videoLoadingGetResponse(false);
             self.videoConetResponse(false);
@@ -825,8 +829,7 @@ const appScript = {
             return self.videoButtonShowError(true);
         };
         if (!self.videoItemsArray()) {
-            if (!self.searchItemsArray().action ||
-                !self.searchItemsArray().action.video) {
+            if (!self.searchItemsArray().action || !self.searchItemsArray().action.video) {
                 return errorProcess('invalidRequest');
             }
             const com = {
@@ -834,8 +837,10 @@ const appScript = {
                 Args: ['google', self.searchItemsArray().action.video],
                 error: null,
                 subCom: 'videoNext',
+                requestSerial: uuid_generate()
             };
             self.videoButtonShowLoading(true);
+            com['startTime'] = new Date().getTime();
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
                     return errorProcess(err);
@@ -851,11 +856,12 @@ const appScript = {
                 if (com.error) {
                     return errorProcess(com.error);
                 }
+                console.log(`subCom: 'videoNext' totla time [${(new Date().getTime() - com['startTime']) / 1000}] seconds`);
                 self.videoButtonShowLoading(false);
                 self.videoLoadingGetResponse(false);
                 self.videoConetResponse(false);
                 const args = com.Args;
-                self.videoItemsArray(self.createNewsResult(self, args.param));
+                self.videoItemsArray(self.createNewsResult(self, args));
                 self.returnSearchResultItemsInit(self.videoItemsArray());
             });
             /** */

@@ -71,6 +71,7 @@ export default class extends Imap.imapPeer {
 
 		saveLog (`=====================================  new CoNET connect()`, true )
 		this.roomEmit.emit ( 'tryConnectCoNETStage', null, 5 )
+		
 		this.newMail = ( mail: string, hashCode: string ) => {
 			return this.cmdResponse ( mail, hashCode )
 		}

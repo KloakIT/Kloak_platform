@@ -572,7 +572,7 @@ const testSmtpAndSendMail = ( imapData: IinputData, CallBack ) => {
 	return smtpVerify ( imapData, err => {
 		if ( err ) {
 			if ( first ) {
-				imapData.imapPortNumber = [25,465,587,994,2525]
+				imapData.imapPortNumber = [ 25,465,587,994,2525 ]
 				return smtpVerify ( imapData, CallBack )
 			}
 			return CallBack ( err )
@@ -602,17 +602,18 @@ export const sendCoNETConnectRequestEmail = ( imapData: IinputData, toEmail: str
 				} : null,
 				debug: true
 			}
+
 			const transporter = Nodemailer.createTransport ( option )
 			//console.log ( Util.inspect ( option ))
 			const mailOptions = {
 				from: imapData.smtpUserName,
 				to: toEmail,
-				subject:'node',
+				subject: 'node',
 				attachments: [{
 					content: message
 				}]
 			}
-			
+			console.log (`transporter.sendMail`)
 			return transporter.sendMail ( mailOptions, next )
 		}
 	], CallBack )

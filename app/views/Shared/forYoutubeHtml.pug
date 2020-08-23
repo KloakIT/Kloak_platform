@@ -1,0 +1,85 @@
+#forYoutube
+	<!-- ko with: appScript -->
+		<!-- ko if : topMenu -->
+		.ui.top.fixed.menu.borderless
+			<!-- ko if : showTopMenuHomeButton -->
+				.item
+					button.ui.circular.icon.button( data-bind = "click: _exit ")
+						i.icon.home
+			<!-- /ko  -->
+			<!-- ko if : showTopMenuInputField -->
+				.item.input( style="width: 100%;padding-left: 0;" )
+					form.ui.form( data-bind="event: { 'submit': search_form } " style = "width: 100%; padding-right: 10rem;" )
+						.field.ui.fluid.input.big( data-bind = "css: { 'action': !searchInputText_searching(), 'loading icon disabled': searchInputText_searching(), error: searchInputTextError }" style = "width: 100%;" )
+							input( type = "text" data-bind = "value: searchInputText, attr: { placeholder: infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" style = "color: rgba ( 0,0,0,0.5 );" )
+							<!-- ko ifnot : searchInputText_searching() -->
+								button.ui.youtube.button( type="submit" )
+									i.icon.search.large
+							<!-- /ko  -->
+							<!-- ko if : searchInputText_searching() -->
+								i.icon.search( data-bind = "css: {'icon-background-response-local-server': searchInputText_searching() === 2, 'icon-background-response-Kloak-server': searchInputText_searching() === 3 }")
+							<!-- /ko  -->
+						<!-- ko if : searchInputTextError -->
+							.field
+								.ui.red.segment
+									p( data-bind="text: messageBoxDefine [ errorMessageIndex() ][ $root.languageIndex() ]")
+									.ui.button( data-bind = " text: infoDefine[$root.languageIndex()].twitter.close, click: () => { searchInputTextError (false )}")
+						<!-- /ko  -->
+			<!-- /ko  -->
+		<!-- /ko  -->
+
+		<!-- ko if: showSearchItemResult -->
+			.searchItems.CoContent.content( style = "top: 6rem;")
+				.ui.items.searchItems
+					.totalResults.ui.grey.header
+						.sub.header
+							span.totalResults1( data-bind = " text: info.totalResults[ $root.languageIndex() ]" )
+							span.totalResults2( data-bind = " text: totalSearchItems()" style="margin: 0.5em;" )
+							span.totalResults3( data-bind = " text: info.totalResults1[ $root.languageIndex() ]" )
+				.ui.items( style = "margin-top: 1rem;" )
+					<!-- ko foreach: searchItemsArray -->
+						.item( style=" margin-bottom: 2rem;" )
+							
+							.image.ui.top.aligned( data-bind = "click:  function() { $parents[0].getLinkClick( $index ())}, style: { height: imageInfo['videoTime'] ? '90px' : 'auto', 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width:150px " )
+								img( data-bind = "attr: { src: imageInfo.img }" )
+								<!-- ko if: imageInfo['videoTime'] -->
+									.ui.bottom.right.attached.label.tiny( data-bind = "text: imageInfo['videoTime'] " style = " background-color: #3130307a!important;; color: rgba(255, 252, 252, 0.77)!important;;")
+								<!-- /ko -->
+								<!-- ko if: showLoading () > 0 && showLoading() !== 5 -->
+									.ui.active.dimmer( style = "background-color: rgba(0,0,0,.45);")
+										<!-- ko if: showError() -->
+											i.icon.exclamation.big.triangle.red
+										<!-- /ko -->
+										.ui.loader( data-bind = "css: {'icon-background-response-local-server': showLoading () === 2, 'icon-background-response-Kloak-server': showLoading () === 3 }")
+										
+								<!-- /ko -->
+
+							
+							.content
+								.ui.header( data-bind = "style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }, css: { 'kloak_color_DarkBlue': !showLoading(), 'kloak_color_PrimaryTeal': showLoading() > 0, 'kloak_item_ready': showLoading() === 5, 'red': showError() }, click: function() { $parents[0].getLinkClick( $index ())}, attr: { 'id': id + '-urlLink', 'data-content': messageBoxDefine['copyClipboard'][ $root.languageIndex() ] }" style = "font-size: medium;")
+									<!-- ko text: title --><!-- /ko -->
+								
+								.description( style = " color: grey; margin-top: 0px;" )
+
+									
+									<!-- ko if: beforeTime -->
+										<!-- ko with: beforeTime -->
+
+											<!-- ko if: timeNumber -->
+												span( data-bind = "text: timeNumber + ' ' + infoDefine[ $root.languageIndex() ].coSearch.timeUnit[ timeUnit ] + ' - '" style = "font-weight: bolder; color: #906363db;" )
+											<!-- /ko -->
+
+											<!-- ko if: time -->
+												span( data-bind = "text: infoDefine[ $root.languageIndex() ].coSearch.TimeTolocalTime ( time ) + ' - '" style = "font-weight: bolder; color: #906363db;" )
+											<!-- /ko -->
+
+										<!-- /ko -->
+									<!-- /ko -->
+									
+									span( data-bind = "text: description" style = "color: grey" )
+					<!-- /ko  -->
+				<!-- ko if: !nextButtonShowError() && moreButton_link_url () -->
+					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading() === 1 , 'loadingGetResponse': moreResultsButtomLoading() === 2, 'conetResponse': moreResultsButtomLoading() === 3 }, text: info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+				<!-- /ko -->
+		<!-- /ko  -->
+	<!-- /ko  -->

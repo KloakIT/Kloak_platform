@@ -159,6 +159,8 @@ var view_layout;
             this.showFileStorage = ko.observable(false);
             this.showGeneralSpalding = ko.observable(false);
             this.muteHtml = ko.observable(false);
+            this.forTwitterHtml = ko.observable(false);
+            this.forYoutubeHtml = ko.observable(false);
             this.storageHelper = new StorageHelper();
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
@@ -587,7 +589,12 @@ var view_layout;
                 _view.appScript(appScript1);
             }
             else {
-                _view.appScript(new appScript1());
+                _view.appScript(new appScript1(() => {
+                    _view.appScript(null);
+                    _view.showMainPage(true);
+                    _view.bodyBlue(true);
+                    eval(`_view.${mainMenuArray[index].htmlTemp}( false )`);
+                }));
             }
             eval(showSwitch);
         }
@@ -599,14 +606,32 @@ var view_layout;
             _view.showLocalServerDisconnect(false);
             _view.connectInformationMessage.socketListening(this.LocalServerUrl);
         }
+        userTextareaHeight(id) {
+            const d = document.getElementById(id);
+            /*
+            if ( lines < 2 ) {
+                const totalText = twitterObj.full_text.length
+                if ( totalText > 119 ) {
+                    return '3rem'
+                }
+                if ( totalText > 119 ) {
+                    return '3rem'
+                }
+            }
+            */
+            //const high = limit + lines.length * eachLine 
+            //return high + 'rem'
+            const high = d.scrollTop + d.scrollHeight;
+            return high + 'px';
+        }
     }
     view_layout.view = view;
 })(view_layout || (view_layout = {}));
 const mainMenuArray = [
     {
         name: 'librarium',
-        img: '/images/kloakSearchIcon.svg',
-        header: ['图书馆', '図書館', 'The Librarium', '圖書館'],
+        img: kloakSearchIcon_svg,
+        header: ['图书馆', '図書館', 'Librarium', '圖書館'],
         description: [
             '流行检索引擎关键字及图像检索，获得指定网页快照，文件和流媒体代理下载',
             'サイト及画像のサーチ、サイドのスクリーンショットを取得、ファイルやマルチディアをゲイトウェイを通じてダウンロード',
@@ -620,7 +645,7 @@ const mainMenuArray = [
     },
     {
         name: 'fortress',
-        img: '/images/fileStorage.svg',
+        img: KloakFortress,
         header: ['堡垒', '堡塁', 'Fortress', '堡壘'],
         description: [
             '强安全私密无痕离线浏览器存储。文件打碎并加密保存在浏览器内部，整体系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
@@ -635,8 +660,8 @@ const mainMenuArray = [
     },
     {
         name: 'Kloak_youtube',
-        img: '/images/k_youtube.svg',
-        header: ['Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube'],
+        img: Kloak_youtube,
+        header: ['油管客户端', 'Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube'],
         description: [
             'Youtube客户端',
             'Youtubeクライアント',
@@ -644,14 +669,14 @@ const mainMenuArray = [
             'Youtube客戶端',
         ],
         extra: null,
-        click: forTwitter,
-        online: false,
-        htmlTemp: 'muteHtml'
+        click: forYoutube,
+        online: true,
+        htmlTemp: 'forYoutubeHtml'
     },
     {
         name: 'tw',
-        img: '/images/k_twitter.svg',
-        header: ['Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter'],
+        img: Kloak_twitter,
+        header: ['推特客户端', 'Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter'],
         description: [
             '推特客户端',
             'Twitterクライアント',
@@ -660,12 +685,13 @@ const mainMenuArray = [
         ],
         extra: null,
         click: forTwitter,
-        online: false,
-        htmlTemp: 'muteHtml'
+        online: true,
+        htmlTemp: 'forTwitterHtml'
     },
+    /*
     {
         name: 'mute',
-        img: '/images/encrypted.svg',
+        img: Kloak_encrypted,
         header: ['哑语', 'ミュート', 'Mute', '啞語'],
         description: [
             '加密解密工具',
@@ -694,8 +720,8 @@ const mainMenuArray = [
         online: true,
     }*/
     {
-        img: '/images/message.svg',
-        header: ['', '', 'Daggr', ''],
+        img: Kloak_Daggr,
+        header: ['大哥', 'ダク', 'Daggr', '大哥'],
         description: [
             '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
             'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
@@ -708,7 +734,7 @@ const mainMenuArray = [
         online: false,
     },
     {
-        img: '/images/generalspalding.svg',
+        img: Kloak_generalspalding,
         header: [
             '史帕丁将军',
             'Robert Spalding将軍',

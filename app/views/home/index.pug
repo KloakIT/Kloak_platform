@@ -101,18 +101,20 @@ block jumbotron1
 							<!-- /ko -->
 						<!-- /ko -->
 					.ui.divider
-					.ui.items.unstackable.divided
-
+					//-.ui.items.unstackable.divided
+					.ui.four.cards
 						<!-- ko foreach: mainManuItems -->
-						.ui.middle.aligned.item
-							a.image( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
-								img( data-bind = "attr: { src: img }, style: { opacity: ( online && $root.networkConnect() === true || !online ) ? 1 : 0.5 } ")
-								
-							.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
+						//-.ui.middle.aligned.item
+						.card( style = "background-color: rgba(0,0,0,0);box-shadow: none;")
+							a( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
+								.svg( data-bind = "html: img ")
+							.content( style="border-top: none;padding-top: 0;")
+								.header( data-bind = "text: header[ $root.languageIndex() ]" style="color:white;")
+							//-.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
 								a.header( href = "#" data-bind=" text: header [ $root.languageIndex() ], click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" style = " color: white;")
 								.meta
 									span
-								.description( style = "color: white")
+								//-.description( style = "color: white")
 									p( data-bind = "text: description [ $root.languageIndex() ]")
 								<!-- ko if: extra -->
 								.extra
@@ -136,73 +138,32 @@ block jumbotron1
 				<!-- ko if: $root.showKeyPair() -->
 				
 				.card.centered.raised( style = " width: 100%;" )
-					//-.content
-						.header
-							
-							<!-- ko if: email -->
-							i.icon.privacy.teal
-							span( data-bind = "text: email " style=" color:#00b5ad!important;")
-							<!-- /ko -->
-
-							<!-- ko if: !email -->
-							i.icon.spy.red
-							<!-- /ko -->
-							.ui.top.right.attached.label.background-clolr-white
-								a( data-bind = "if: delete_btn_view() && !showConform (), click: function () { showConform ( true )}")
-									i.trash.alternate.outline.icon.large.red
-						<!-- ko if: nikeName -->
-						.meta
-							i.icon.user
-							span( data-bind = " text: nikeName " )
-						<!-- /ko -->
-						
-						.description
-							p( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.creatDate + createDate" )
-							p
-								span( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.keyID" )
-								span( data-bind="text: publicKeyID.substr ( 0, 4 )")
-								span( data-bind="text: publicKeyID.substr ( 4, 4 )" style = "padding-left: 0.2rem;" )
-								span( data-bind="text: publicKeyID.substr ( 8, 4 )" style = "padding-left: 0.2rem;" )
-								span( data-bind="text: publicKeyID.substr ( 12, 4 )" style = "padding-left: 0.2rem;" )
-								a.activating.element.inline( href="#" data-bind = " attr: { 'data-content': verified ? infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailVerified : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.emailNotVerifi }")
-									i.huge.icons( style = " margin-left: 10px; font-size: 2em; margin-top: 5px;" )
-										i.icon.small.certificate( data-bind = " css: { grey: ! verified, orange: verified }")
-										i.icon.tiny.warning( data-bind = " visible: ! verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
-										i.icon.tiny.checkmark( data-bind = " visible: verified " style = " color: white; margin-top: -4px;margin-left: -1px;")
-							
-					//-.extra.content( data-bind = "if: showDeleteKeyPairNoite(), visible: showDeleteKeyPairNoite()")
-						p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairHaveLogin " style="color: brown;")
-					//-.extra.content( data-bind = "if: showConform() && delete_btn_view(), visible: showConform() && delete_btn_view()")
-						p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
-						.ui.buttons
-							.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
-							.or
-							.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeyPairNext ")
+					
 					<!-- ko with: keyPairPassword -->
-					//-.extra.content( data-bind = "visible: !$parents[0].showConform()" )
-					form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
-						<!-- ko if: !showConform () -->
-						.field( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
-							//-p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
-							.ui.left.icon.input.big( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking()}" )
-								<!-- ko if: systemSetup_systemPassword().length < 5 -->
-								i.icon.close.link.circular( data-bind = "click: reFresh" style = " color: #4285f4!important; " )
-								<!-- /ko -->
-								input.backgroundTransparent( data-bind = "attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.locked, 'data-content': showPasswordErrorMessage () ? infoDefine[ $root.languageIndex() ].error_message.SystemPasswordError : null }, css: { 'activating element inline': showPasswordErrorMessage() }, textInput: systemSetup_systemPassword, hasFocus: inputFocus", type="password" value="" tabindex = "0" data-variation="very wide")
-								<!-- ko if: systemSetup_systemPassword().length < 5 -->
-								i.icon.trash.alternate.link.circular.red( data-bind = "click: function () { showConform ( true )}" style = "left: auto; right: 1rem;")
-								<!-- /ko -->
-								button.ui.icon.button.positive( data-bind = "visible: systemSetup_systemPassword().length > 4 && ! passwordChecking ()" type="submit" )
-									i.icon.angle.right
-						<!-- /ko -->
-						<!-- ko if: showConform -->
-						.field( style = "padding: 1rem;")
-							p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
-							.ui.buttons
-								.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
-								.or
-								.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeypair ")
-						<!-- /ko -->
+					
+						form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
+							<!-- ko if: !showConform () -->
+							.field( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
+								//-p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
+								.ui.left.icon.input.big( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking()}" )
+									<!-- ko if: systemSetup_systemPassword().length < 5 -->
+									i.icon.close.link.circular( data-bind = "click: reFresh" style = " color: #4285f4!important; " )
+									<!-- /ko -->
+									input.backgroundTransparent( data-bind = "attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.locked, 'data-content': showPasswordErrorMessage () ? infoDefine[ $root.languageIndex() ].error_message.SystemPasswordError : null }, css: { 'activating element inline': showPasswordErrorMessage() }, textInput: systemSetup_systemPassword, hasFocus: inputFocus", type="password" value="" tabindex = "0" data-variation="very wide")
+									<!-- ko if: systemSetup_systemPassword().length < 5 -->
+									i.icon.trash.alternate.link.circular.red( data-bind = "click: function () { showConform ( true )}" style = "left: auto; right: 1rem;")
+									<!-- /ko -->
+									button.ui.icon.button.positive( data-bind = "visible: systemSetup_systemPassword().length > 4 && ! passwordChecking ()" type="submit" )
+										i.icon.angle.right
+							<!-- /ko -->
+							<!-- ko if: showConform -->
+							.field( style = "padding: 1rem;")
+								p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
+								.ui.buttons
+									.ui.button( data-bind = " text: infoDefine[ $root.languageIndex() ].home_index_view.cancel, click: function () { return showConform ( false );}")
+									.or
+									.ui.negative.button( data-bind = " text: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.delete, click: deleteKeypair ")
+							<!-- /ko -->
 								
 					<!-- /ko -->
 				<!-- /ko -->
@@ -364,10 +325,30 @@ block jumbotron1
 
 	<!-- ko if: muteHtml -->
 
-	section#muteHtml
+		section#muteHtml
+			<!----------- start tempAppHtml DEBUG -------------->
+			
+			include ../shared/muteHtml
+
+			<!----------- end tempAppHtml DEBUG ----------------->
+	<!-- /ko -->
+
+	<!-- ko if: forTwitterHtml -->
+
+		section#forTwitterHtml
+			<!----------- start tempAppHtml DEBUG -------------->
+			
+			include ../shared/forTwitterHtml
+
+			<!----------- end tempAppHtml DEBUG ----------------->
+	<!-- /ko -->
+
+	<!-- ko if: forYoutubeHtml -->
+
+	section#forYoutubeHtml
 		<!----------- start tempAppHtml DEBUG -------------->
 		
-		include ../shared/muteHtml
+		include ../shared/forYoutubeHtml
 
 		<!----------- end tempAppHtml DEBUG ----------------->
 	<!-- /ko -->

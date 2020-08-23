@@ -305,7 +305,8 @@ const appScript = {
 		 *
 		 * 		test Unit
 		 */
-
+		com['startTime'] = new Date().getTime()
+			
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
 				return errorProcess ( err )
@@ -323,7 +324,7 @@ const appScript = {
 			if ( com.error ) {
 				return errorProcess ( com.error )
 			}
-
+			console.log (`totla time [${ (new Date().getTime () - com['startTime']) /1000 }] seconds`)
 			/***
 			 * 
 			 * 
@@ -544,7 +545,7 @@ const appScript = {
 		self.showResultItems(self, self.searchItemsArray())
 	},
 
-	searchNext: (self, event) => {
+	searchNext: ( self, event ) => {
 		const nextLink = self.searchItem().nextPage
 		if (self.moreResultsButtomLoading() || !nextLink) {
 			return
@@ -569,7 +570,7 @@ const appScript = {
 			requestSerial: uuid_generate(),
 		}
 
-		switch (self.currentlyShowItems()) {
+		switch ( self.currentlyShowItems ()) {
 			//      google search
 			case 0: {
 				com.subCom = 'searchNext'
@@ -597,36 +598,36 @@ const appScript = {
 		}
 
 		/** */
-
-		return _view.connectInformationMessage.emitRequest(
-			com,
-			(err, com: QTGateAPIRequestCommand) => {
-				if (err) {
-					return showError(err)
-				}
-
-				if (!com) {
-					return self.nextButtonLoadingGetResponse(true)
-				}
-
-				if (com.error === -1) {
-					self.nextButtonLoadingGetResponse(false)
-					return self.nextButtonConetResponse(true)
-				}
-
-				if (com.error) {
-					return showError(com.error)
-				}
-				self.moreResultsButtomLoading(false)
-				self.nextButtonLoadingGetResponse(false)
-				self.nextButtonConetResponse(false)
-				const args = com.Args
-				self.returnSearchResultItemsInit(args)
-				currentArray.Result.push(...args.Result)
-				currentArray.nextPage = args.nextPage
-				return self.showResultItems(self, currentArray)
+		com['startTime'] = new Date().getTime()
+		return _view.connectInformationMessage.emitRequest( com, ( err, com: QTGateAPIRequestCommand ) => {
+			if (err) {
+				return showError(err)
 			}
-		)
+
+			if (!com) {
+				return self.nextButtonLoadingGetResponse(true)
+			}
+
+			if (com.error === -1) {
+				self.nextButtonLoadingGetResponse(false)
+				return self.nextButtonConetResponse(true)
+			}
+
+			if (com.error) {
+				return showError(com.error)
+			}
+			
+			console.log (`totla time [${ (new Date().getTime () - com['startTime']) /1000 }] seconds`)
+
+			self.moreResultsButtomLoading(false)
+			self.nextButtonLoadingGetResponse(false)
+			self.nextButtonConetResponse(false)
+			const args = com.Args
+			self.returnSearchResultItemsInit(args)
+			currentArray.Result.push(...args.Result)
+			currentArray.nextPage = args.nextPage
+			return self.showResultItems(self, currentArray)
+		})
 	},
 
 	createNewsResult: ( self, newsResult ) => {
@@ -987,17 +988,17 @@ const appScript = {
 		self.showSearchSimilarImagesResult(false)
 	},
 
-	videoButtonClick: (self) => {
-		if (self.videoButtonShowLoading()) {
+	videoButtonClick: ( self ) => {
+		if ( self.videoButtonShowLoading ()) {
 			return
 		}
 
-		if (self.videoButtonShowError()) {
-			self.videoButtonShowError(false)
-			return self.imageButtonErrorIndex(null)
+		if ( self.videoButtonShowError ()) {
+			self.videoButtonShowError ( false )
+			return self.imageButtonErrorIndex ( null )
 		}
 
-		const errorProcess = (err) => {
+		const errorProcess = err => {
 			self.videoButtonShowLoading(false)
 			self.videoLoadingGetResponse(false)
 			self.videoConetResponse(false)
@@ -1007,26 +1008,23 @@ const appScript = {
 			return self.videoButtonShowError(true)
 		}
 
-		if (!self.videoItemsArray()) {
-			if (
-				!self.searchItemsArray().action ||
-				!self.searchItemsArray().action.video
-			) {
+		if ( !self.videoItemsArray ()) {
+			if ( !self.searchItemsArray ().action || !self.searchItemsArray().action.video ) {
 				return errorProcess('invalidRequest')
 			}
 
 			const com: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: ['google', self.searchItemsArray().action.video],
+				Args: [ 'google', self.searchItemsArray ().action.video ],
 				error: null,
 				subCom: 'videoNext',
+				requestSerial: uuid_generate()
 			}
 
-			self.videoButtonShowLoading(true)
-
-			return _view.connectInformationMessage.emitRequest(
-				com,
-				(err, com: QTGateAPIRequestCommand) => {
+			self.videoButtonShowLoading ( true )
+			com ['startTime'] = new Date().getTime()
+			
+			return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 					if (err) {
 						return errorProcess(err)
 					}
@@ -1041,24 +1039,27 @@ const appScript = {
 						return self.videoConetResponse(true)
 					}
 
-					if (com.error) {
+					if ( com.error ) {
 						return errorProcess(com.error)
 					}
 
-					self.videoButtonShowLoading(false)
-					self.videoLoadingGetResponse(false)
-					self.videoConetResponse(false)
+
+					console.log (`subCom: 'videoNext' totla time [${ (new Date().getTime () - com['startTime']) /1000 }] seconds`)
+
+					self.videoButtonShowLoading ( false )
+					self.videoLoadingGetResponse ( false )
+					self.videoConetResponse ( false )
 
 					const args = com.Args
-					self.videoItemsArray(self.createNewsResult(self, args.param))
-					self.returnSearchResultItemsInit(self.videoItemsArray())
+					self.videoItemsArray(self.createNewsResult ( self, args ))
+					self.returnSearchResultItemsInit( self.videoItemsArray ())
 				}
 			)
 			/** */
 		}
-		self.currentlyShowItems(3)
+		self.currentlyShowItems ( 3 )
 
-		return self.showResultItems(self, self.videoItemsArray())
+		return self.showResultItems ( self, self.videoItemsArray ())
 	},
 
 	getPictureBase64MaxSize_mediaData: (
