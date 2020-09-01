@@ -278,8 +278,7 @@ class showWebPageClass {
 
 	private checkFormat ( multimediaObj ) {
 
-		console.log(multimediaObj)
-		const fomrmats: any[] = multimediaObj.formats || multimediaObj.streamingData
+		const fomrmats: any[] = multimediaObj.formats || multimediaObj.streamingData.adaptiveFormats
 	
 		multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false
 		

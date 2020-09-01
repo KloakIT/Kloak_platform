@@ -355,8 +355,7 @@ class showWebPageClass {
         window.scrollToTop();
     }
     checkFormat(multimediaObj) {
-        console.log(multimediaObj);
-        const fomrmats = multimediaObj.formats || multimediaObj.streamingData;
+        const fomrmats = multimediaObj.formats || multimediaObj.streamingData.adaptiveFormats;
         multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false;
         multimediaObj['error'] = ko.observable(false);
         if (!multimediaObj['longer']) {
