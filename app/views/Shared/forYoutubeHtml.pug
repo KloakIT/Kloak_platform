@@ -40,13 +40,19 @@
 					<!-- ko foreach: searchItemsArray -->
 						.item( style=" margin-bottom: 2rem;" )
 							
-							.image.ui.top.aligned( data-bind = "click:  function() { $parents[0].getLinkClick( $index ())}, style: { height: imageInfo['videoTime'] ? '90px' : 'auto', 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width:150px " )
-								img( data-bind = "attr: { src: imageInfo.img }" )
+							.image.ui.top.aligned( data-bind = "click:  function() { $parents[0].getLinkClick( $index ())}, css: { 'circular': channel || user, 'bordered': user }, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width:150px " )
+								img( data-bind = "attr: { src: imageInfo.img }, style: { 'border-radius': playlist ? '0.5rem' : 'unset' }" )
+								<!-- ko if: user -->
+									.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
+										i.icon.user.huge( style = "color: rgba(0,0,0,0.4);")
+								<!-- /ko -->
 								<!-- ko if: imageInfo['videoTime'] -->
-									.ui.bottom.right.attached.label.tiny( data-bind = "text: imageInfo['videoTime'] " style = " background-color: #3130307a!important;; color: rgba(255, 252, 252, 0.77)!important;;")
+									.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
+										i.icon.youtube.big.red
+									.ui.bottom.right.attached.label.tiny( data-bind = "text: imageInfo['videoTime'] " style = " background-color: #313030ff!important; color: white!important;font-weight: bolder;border-radius:unset!important;font-family: system-ui;font-style: italic;")
 								<!-- /ko -->
 								<!-- ko if: showLoading () > 0 && showLoading() !== 5 -->
-									.ui.active.dimmer( style = "background-color: rgba(0,0,0,.45);")
+									.ui.active.dimmer( style = "background-color: rgba(0,0,0,.45);z-index: 10;")
 										<!-- ko if: showError() -->
 											i.icon.exclamation.big.triangle.red
 										<!-- /ko -->
@@ -78,8 +84,11 @@
 									
 									span( data-bind = "text: description" style = "color: grey" )
 					<!-- /ko  -->
-				<!-- ko if: !nextButtonShowError() && moreButton_link_url () -->
-					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading() === 1 , 'loadingGetResponse': moreResultsButtomLoading() === 2, 'conetResponse': moreResultsButtomLoading() === 3 }, text: info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+				<!-- ko if: nextButtonShowError() === false && moreButton_link_url () -->
+					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading() > 0 , 'loadingGetResponse': moreResultsButtomLoading() === 2, 'conetResponse': moreResultsButtomLoading() === 3 }, text: info.moreResults[ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+				<!-- /ko -->
+				<!-- ko if: nextButtonShowError() -->
+					button.ui.large.button.negative( data-bind = " text: messageBoxDefine [ nextButtonShowError()][ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
 				<!-- /ko -->
 		<!-- /ko  -->
 	<!-- /ko  -->

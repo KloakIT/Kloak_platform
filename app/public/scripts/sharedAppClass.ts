@@ -7,7 +7,7 @@ class sharedAppClass {
 	}
 
     public searchInputText = ko.observable ('')
-    public searchInputText_searching = ko.observable ( 0 )
+    public searchInputText_searching: KnockoutObservable < boolean | number > = ko.observable ( false )
 	public errorMessageIndex = ko.observable (-1)
 	public searchInputTextError = ko.observable ( false )
     public topMenu = ko.observable ( true )
@@ -21,28 +21,32 @@ class sharedAppClass {
 	public nextButtonShowError = ko.observable ( false )
 	public moreResultsButtomLoading = ko.observable (0)
 
+	public currentItem = -1
 
 	/**
-	 * 		for search form use 
+	 * 		for search form use const
 	 * 
 	 */
 	public search_form_request: QTGateAPIRequestCommand
-
 	public search_form_item_request: QTGateAPIRequestCommand
-
-    constructor ( public exit: () => void ) {
-
-	}
+	public search_form_next_request: QTGateAPIRequestCommand
 
 	/**
 	 * 		
-	 * 
+	 * 		function
 	 */
 
-	public search_form_response: ( data: QTGateAPIRequestCommand ) => void
+	public search_form_response ( data: QTGateAPIRequestCommand ) {}
+
+	public item_request_get_response ( currentItem, data: QTGateAPIRequestCommand ) { return true }
+
+	constructor ( public exit: () => void ) {}
+	
+
+
 	
 	public showInputTextAreaError ( err ) {
-		this.searchInputText_searching ( 0 )
+		this.searchInputText_searching ( false )
 		this.errorMessageIndex ( _view.connectInformationMessage.getErrorIndex ( err ))
 		this.searchInputTextError ( true )
 	}
@@ -114,8 +118,14 @@ class sharedAppClass {
 			this.totalSearchItems ( args.totalResults )
 			this.showSearchItemResult ( true )
 			this.showTopMenuInputField ( true )
+		} else {
+			this.searchItemsArray( this.searchItemsArray().concat( args.Result ))
 		}
-		return this.search_form_response ( com )
+
+		if ( typeof this.search_form_response === 'function' ) {
+			return this.search_form_response ( com )
+		}
+		
 	}
 
 	public search_form () {
@@ -124,12 +134,12 @@ class sharedAppClass {
 		} catch ( ex ) {
 			return console.log ( ex )
 		}
-		
+		this.search_form_request.requestSerial = uuid_generate()
 		this.search_form_request ['startTime'] = new Date().getTime()
 		const youtube_search_response = ( err, com: QTGateAPIRequestCommand ) => {
 
             if ( err ) {
-				this.searchInputText_searching ( 0 )
+				this.searchInputText_searching ( false )
                 return this.showInputTextAreaError ( err )
             }
 
@@ -140,7 +150,7 @@ class sharedAppClass {
             if ( com.error === -1 ) {
                 return this.searchInputText_searching ( 3 )
 			}
-			this.searchInputText_searching ( 0 )
+			this.searchInputText_searching ( false )
 			const totoalTime = new Date().getTime() - com['startTime']
 			console.log (`total time [${ totoalTime/1000 }]`)
 
@@ -156,7 +166,45 @@ class sharedAppClass {
 	}
 
 	public searchNext () {
+		if ( this.nextButtonShowError()) {
+			return this.nextButtonShowError ( false )
+		}
+		if ( this.moreResultsButtomLoading ()) {
+			return
+		}
+		this.moreResultsButtomLoading (1)
+		this.search_form_next_request.Args = [ this.moreButton_link_url ()]
+		this.search_form_next_request ['startTime'] = new Date().getTime()
+		this.search_form_next_request.requestSerial = uuid_generate ()
+		const error = err => {
+			this.nextButtonShowError ( _view.connectInformationMessage.getErrorIndex ( err ))
+			this.moreResultsButtomLoading ( 0 )
+			
+		}
+		
+		const youtube_Next_response = ( err, com: QTGateAPIRequestCommand ) => {
+			if ( err ) {
+				return error ( err )
+            }
 
+            if ( !com ) {
+                return this.moreResultsButtomLoading ( 2 )
+            }
+
+            if ( com.error === -1 ) {
+                return this.moreResultsButtomLoading ( 3 )
+			}
+			const totoalTime = new Date().getTime() - com['startTime']
+			console.log (`total time [${ totoalTime/1000 }]`)
+			
+			if ( com.error ) {
+                return error ( com.error )
+			}
+			this.moreResultsButtomLoading ( 0 )
+			return this.searchItemList_build ( com, false )
+		}
+
+		return _view.connectInformationMessage.emitRequest ( this.search_form_next_request, youtube_Next_response )
 	}
 
     public _exit () {
@@ -179,9 +227,11 @@ class sharedAppClass {
 		if ( currentItem ['showLoading']() === 5 ) {
 			this.showSearchItemResult ( false )
 			this.showTopMenuHomeButton ( false )
+			this.currentItem = index
 			return this.getItemResponse ( url, currentItem[ 'multimediaObj' ], () => {
 				this.showSearchItemResult ( true )
 				this.showTopMenuHomeButton ( true )
+				this.currentItem = -1
 			})
 		}
 
@@ -193,7 +243,7 @@ class sharedAppClass {
 		
 		this.search_form_item_request.Args = [ url ]
 		
-
+		this.search_form_item_request.requestSerial = uuid_generate()
 		this.search_form_item_request ['startTime'] = new Date().getTime()
 
 		const error = err => {
@@ -201,6 +251,8 @@ class sharedAppClass {
 			currentItem ['errorIndex'] ( _view.connectInformationMessage.getErrorIndex ( err ) )
 			return currentItem ['showError'] ( true )
 		}
+
+		currentItem['multimediaObj'] = []
 
 		const youtube_item_response = ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
@@ -223,8 +275,15 @@ class sharedAppClass {
             if ( com.error ) {
                 return error ( com.error )
 			}
-			currentItem['showLoading']( 5 )
-			currentItem['multimediaObj'] = com.Args
+			currentItem ['multimediaObj'].push ( com )
+
+			if ( typeof this.item_request_get_response === 'function' ) {
+				return this.item_request_get_response ( currentItem, com ) ? currentItem ['showLoading'] (5) : null
+			}
+
+			currentItem ['showLoading']( 5 )
+			
+
 		}
 		
 		currentItem ['showLoading'](1)

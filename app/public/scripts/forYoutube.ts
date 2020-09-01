@@ -12,7 +12,7 @@ class forYoutube extends sharedAppClass {
         Args: [],
         error: null,
         subCom: 'youtube_search',
-        requestSerial: uuid_generate()
+        requestSerial: null
     }
 
     public search_form_item_request = {
@@ -20,11 +20,19 @@ class forYoutube extends sharedAppClass {
         Args: [],
         error: null,
         subCom: 'getSnapshop',
-        requestSerial: uuid_generate()
+        requestSerial: null
     }
 
-    public search_form_response = ( com: QTGateAPIRequestCommand ) => {
-        console.log ( com.Args )
+    public search_form_next_request = {
+        command: 'CoSearch',
+        Args: [],
+        error: null,
+        subCom: 'youtube_search_next',
+        requestSerial: null
+    }
+
+    public search_form_response ( com: QTGateAPIRequestCommand ) {
+        
     }
 
     public converterWatchObj ( multimediaObj ) {
@@ -33,18 +41,21 @@ class forYoutube extends sharedAppClass {
         multimediaObj ['title'] = multimediaObj.videoDetails.title
         multimediaObj ['upload_date'] = multimediaObj.microformat.playerMicroformatRenderer.uploadDate
         multimediaObj ['averageRating'] = multimediaObj['videoDetails'].averageRating
-        multimediaObj ['description'] = multimediaObj.microformat.playerMicroformatRenderer.description.simpleText
+        multimediaObj ['description'] = multimediaObj.microformat.playerMicroformatRenderer.description ? multimediaObj.microformat.playerMicroformatRenderer.description.simpleText : ''
         multimediaObj ['like_count'] = null
         multimediaObj ['id'] = uuid_generate ()
         return multimediaObj
     }
 
-    public getItemResponse ( url: string, multimediaObj, exit ) {
+    public getItemResponse ( url: string, multimediaObjArray: QTGateAPIRequestCommand[], exit ) {
+        const multimediaObj = multimediaObjArray[0].Args
+
         if ( !multimediaObj['title'] ) {
             this.converterWatchObj ( multimediaObj )
         }
-        const view = new showWebPageClass ( url, null, multimediaObj, () => {
+        let view = new showWebPageClass ( url, null, multimediaObj, () => {
             exit ()
+            view = null
         }, item => {
             const uu = item
         })

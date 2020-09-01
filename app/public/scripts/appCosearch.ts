@@ -348,6 +348,8 @@ const appScript = {
 					
 					self.showMainSearchForm ( true )
 					_view.CanadaBackground ( true )
+				}, () => {
+
 				})
 				
 			}
@@ -426,6 +428,8 @@ const appScript = {
 							self.showMain ( true )
 							self.showMainSearchForm ( true )
 							_view.CanadaBackground ( true )
+						}, () => {
+
 						})
 						
 						
@@ -967,6 +971,8 @@ const appScript = {
 		return new showWebPageClass ( currentItem.url, currentItem.snapshotUuid, currentItem.multimediaObj, () => {
 			
 			self.showMain ( true )
+		}, () => {
+
 		})
 			
 		
@@ -1261,6 +1267,8 @@ const appScript = {
 							
 							self.showMain  (true)
 							self.showSearchSimilarImagesResult(true)
+						}, () => {
+							
 						})
 				
 			}

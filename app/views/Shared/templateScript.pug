@@ -234,8 +234,9 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
                     <!-- ko if: thumbnails -->
                         a.ui.fluid.image( data-bind ="click: () => { $parent.ClickPlay() }" href ="#" )
                             img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
-                            .ui.active.dimmer( style = "background-color: rgba(0,0,0,.01);")
-                                i.icon.big.play.white
+                            .ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
+                                button.ui.icon.youtube.button.huge.circular
+                                    i.icon.large.youtube
                         .content( style = "margin-top: 1rem;")
                             .extra( style = "margin-top: 1rem;")
                                 <!-- ko if: audio -->

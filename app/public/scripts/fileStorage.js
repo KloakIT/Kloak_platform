@@ -362,6 +362,7 @@ class fileStorage {
                         _view.showFileStorage(false);
                         new showWebPageClass(fileData.filename, fileData.uuid, null, () => {
                             _view.showFileStorage(true);
+                        }, () => {
                         });
                         updateLastViewed();
                         return;

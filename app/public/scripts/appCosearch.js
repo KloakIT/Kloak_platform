@@ -290,6 +290,7 @@ const appScript = {
                     self.showMain(true);
                     self.showMainSearchForm(true);
                     _view.CanadaBackground(true);
+                }, () => {
                 });
             }
             /**
@@ -356,6 +357,7 @@ const appScript = {
                             self.showMain(true);
                             self.showMainSearchForm(true);
                             _view.CanadaBackground(true);
+                        }, () => {
                         });
                     }
                 });
@@ -799,6 +801,7 @@ const appScript = {
         self.showMain(false);
         return new showWebPageClass(currentItem.url, currentItem.snapshotUuid, currentItem.multimediaObj, () => {
             self.showMain(true);
+        }, () => {
         });
     },
     // CHANGED ============================================
@@ -1017,6 +1020,7 @@ const appScript = {
                 return new showWebPageClass(url, _img['snapshotData'], _img['snapshotUuid'], () => {
                     self.showMain(true);
                     self.showSearchSimilarImagesResult(true);
+                }, () => {
                 });
             }
             const errorProcess = (err) => {
