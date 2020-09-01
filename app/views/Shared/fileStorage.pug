@@ -1,5 +1,6 @@
 #fileStorage
 	<!-- ko with: appScript -->
+		.fileStorageOverlay(data-bind="style: {opacity: selectedFile() !== null ? '1' : '0', 'z-index': selectedFile() !== null ? '200' : '-100'}, click: () => {closeAll()}")
 		.fileStorage(data-bind="event: {drop: (data,e) => {ondrop(e,data)}, dragover: (data, e) => {dragover(e)}, dragleave: (data, e) => {dragleave(e)}}")
 			input#hiddenInput(type="file" style="display: none")
 			.fileDragOverlay#fileDragOverlay
@@ -109,27 +110,27 @@
 									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
 										i.trash.alternate.outline.icon(style="margin: 0 !important")
 									.fileStorageOptionIcon(data-bind="style: {'visibility': $root.storageHelper.uploadPool()[file.uuid] ? 'hidden' : 'visible'}, click: () => {$parent.showFileOptions($index())}, clickBubble: false")
-										i.ellipsis.horizontal.icon(style="margin: 0 !important; height: 1.18em; color: rgba(0,0,0,0.65); position: relative; z-index: 999")
-									.fileStorageOptions(data-bind="css: { fileOptionShow : $parent.selectedFile() === $index() }")
-										.fileStorageOption
-											i.info.icon(style="margin: 0 !important")
-											p(style="margin-left: 5px;")="Get info..."
-										<!-- ko if: file.tag().includes('audio') || file.tag().includes('video') || file.tag().includes('media') -->
-										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
-											i.play.icon(style="margin: 0 !important")
-											p(style="margin-left: 5px;")="Play"
-										<!-- /ko -->
-										<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
-										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
-											i.eye.icon(style="margin: 0 !important")
-											p(style="margin-left: 5px;")="View"
-										<!-- /ko -->
-										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
-											i.download.icon(style="margin: 0 !important")
-											p(style="margin-left: 5px;")="Download"
-										.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
-											i.trash.alternate.outline.icon(style="margin: 0 !important")
-											p(style="margin-left: 5px;")="Delete"
+										i.ellipsis.horizontal.icon(style="margin: 0 !important; height: 1.18em; color: rgba(0,0,0,0.65); position: relative;")
+									//- .fileStorageOptions(data-bind="css: { fileOptionShow : $parent.selectedFile() === $index() }")
+									//- 	.fileStorageOption
+									//- 		i.info.icon(style="margin: 0 !important")
+									//- 		p(style="margin-left: 5px;")="Get info..."
+									//- 	<!-- ko if: file.tag().includes('audio') || file.tag().includes('video') || file.tag().includes('media') -->
+									//- 	.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
+									//- 		i.play.icon(style="margin: 0 !important")
+									//- 		p(style="margin-left: 5px;")="Play"
+									//- 	<!-- /ko -->
+									//- 	<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
+									//- 	.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
+									//- 		i.eye.icon(style="margin: 0 !important")
+									//- 		p(style="margin-left: 5px;")="View"
+									//- 	<!-- /ko -->
+									//- 	.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
+									//- 		i.download.icon(style="margin: 0 !important")
+									//- 		p(style="margin-left: 5px;")="Download"
+									//- 	.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
+									//- 		i.trash.alternate.outline.icon(style="margin: 0 !important")
+									//- 		p(style="margin-left: 5px;")="Delete"
 							.fileStorageDetails(data-bind="style: {height: $parent.selectedInfoFile() == $index() ? 'auto' : '0rem', 'border-top': $parent.selectedInfoFile() === $index() ? '1px solid rgba(125,125,125,0.2)' : 'none', padding: $parent.selectedInfoFile() === $index() ? '20px 0' : '0px'}, click: () => {}, clickBubble: false")
 								//- .fsDetailHeader
 								//- 	.fsDetailIcon
@@ -193,7 +194,7 @@
 					.fileStorageQuotaInner(data-bind="")
 						.fileStorageQuotaBar
 							.fileStorageUsageBar(data-bind="style: {'width': usageQuota() ? `${Math.floor((usageQuota()['usage'] / usageQuota()['quota']) * 100)}%` : '0%'} ")
-					.fileStorageQuotaTexts
+					.fileStorageQuotaTexts(data-bind="style: {'visibility': usageQuota() ? 'visible' : 'hidden'}")
 						p.fileStorageQuotaText="Storage usage:"
 						p.fileStorageQuotaText(data-bind="text: usageQuota() ? `${formatUsageQuota(usageQuota()['usage'], usageQuota()['quota'])} - ${((usageQuota()['usage'] / usageQuota()['quota']) * 100).toFixed(2)}% used` : 'Unable to detect usage quota'")
 				.fileStorageDownloadView(data-bind="click: () => {showDownloads(!showDownloads())}, style: {'border': showDownloads() ? '2px solid rgba(0, 94, 255, 0.7)' : '2px solid rgba(150,150,150,0.75)', 'color': showDownloads() ? 'rgba(0, 94, 255, 0.7)' : 'rgba(150,150,150,0.75)'}")
@@ -201,6 +202,32 @@
 					<!-- ko if: Object.keys($root.storageHelper.downloadPool()).length > 0 -->
 					p.fileStorageDownloadNotif(data-bind="text: Object.keys($root.storageHelper.downloadPool()).length")
 					<!-- /ko -->
+			
+			.fileStorageMobileOptions(data-bind="style: {transform: selectedFile() !== null ? 'translateY(0%)' : 'translateY(100%)'}")
+				.mobileOptionHeader
+					i.close.icon.mobileOptionIcon(data-bind="click: () => {closeAll()}")
+					p.mobileOptionTitle(data-bind="text: selectedFile() !== null ? fileStorageData()[selectedFile()].filename() : 'No selected file'")
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'info')}, clickBubble: false")
+					i.info.icon.mobileOptionIcon(style="margin: 0 !important")
+					p.mobileOptionText="Get information"
+				<!-- ko if: selectedFile() !== null -->
+				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('audio') || fileStorageData()[selectedFile()].tag().includes('video') || fileStorageData()[selectedFile()].tag().includes('media') -->
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'play')}")
+					i.play.icon.mobileOptionIcon(style="margin: 0 !important")
+					p.mobileOptionText="Play"
+				<!-- /ko -->
+				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('pdf') || fileStorageData()[selectedFile()].tag().includes('image') || fileStorageData()[selectedFile()].tag().includes('snapshot') && fileStorageData()[selectedFile()].tag().includes('librarium') -->
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'view')}")
+					i.eye.icon.mobileOptionIcon(style="margin: 0 !important")
+					p.mobileOptionText="View"
+				<!-- /ko -->
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'download')}")
+					i.download.icon.mobileOptionIcon(style="margin: 0 !important")
+					p.mobileOptionText="Download"
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'delete')}")
+					i.trash.alternate.outline.icon.mobileOptionIcon(style="margin: 0 !important")
+					p.mobileOptionText="Delete"
+				<!-- /ko -->
 				//- 			.fileStorageItemLower(data-bind="style: {'transform': $parent.selectedFile() == $index() ? 'scaleY(1)' : 'scaleY(0)'}")
 				//- 				//- .hypen(style="height: 1px; width: 100%; content:''; background-color: rgba(100,100,100,0.2)")
 				//- 				.fileDetails

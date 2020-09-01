@@ -218,6 +218,9 @@ class showWebPageClass {
 	public MultimediaObjArray = ko.observable ()
 	public showImgPage = ko.observable ( true )
 	public showMultimediaPage = ko.observable ( false )
+	public multimediaLoading = ko.observable ( false )
+	public videoCanStart = ko.observable ( false )
+	public videoUnablePlay = ko.observable( false )
 
 	public showErrorMessageProcess() {
 		this.showLoading ( false )
@@ -275,7 +278,8 @@ class showWebPageClass {
 
 	private checkFormat ( multimediaObj ) {
 
-		const fomrmats: any[] = multimediaObj.formats || multimediaObj.streamingData.adaptiveFormats
+		console.log(multimediaObj)
+		const fomrmats: any[] = multimediaObj.formats || multimediaObj.streamingData
 	
 		multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false
 		
@@ -287,6 +291,7 @@ class showWebPageClass {
 		if ( typeof multimediaObj['like_count'] === 'number' && multimediaObj['like_count'] > 0 ) {
 			multimediaObj.like_count = multimediaObj.like_count.toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' )
 		}
+
 		if ( typeof multimediaObj['view_count'] === 'number' && multimediaObj['view_count'] > 0 ) {
 			multimediaObj.view_count = multimediaObj.view_count.toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' )
 		}
@@ -499,6 +504,7 @@ class showWebPageClass {
 	}
 
 	public ClickPlay () {
+		this.multimediaLoading(true)
 		return this.playClick ( this.multimediaObj )
 	}
 

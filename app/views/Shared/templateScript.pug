@@ -1,363 +1,375 @@
 //- Twitter shared template
 
 script#ajaxLableButton( type = "text/html" )
-    a.ui.label( data-bind = " css: { 'orange' : loading() === 5, 'red': error() },  click: click ")
-        <!-- ko if: error -->
-            i.icon.info.circle
-            span( data-bind = " text: messageBoxDefine [ error() ] [ $root.languageIndex() ]")
-        <!-- /ko -->
+	a.ui.label( data-bind = " css: { 'orange' : loading() === 5, 'red': error() },  click: click ")
+		<!-- ko if: error -->
+			i.icon.info.circle
+			span( data-bind = " text: messageBoxDefine [ error() ] [ $root.languageIndex() ]")
+		<!-- /ko -->
 
-        <!-- ko if: !error () -->
-            <!-- ko if: loading() === false || loading() === 5 -->
-                i( data-bind = " attr: { 'class': 'icon ' + iconName } ")
-            <!-- /ko -->
+		<!-- ko if: !error () -->
+			<!-- ko if: loading() === false || loading() === 5 -->
+				i( data-bind = " attr: { 'class': 'icon ' + iconName } ")
+			<!-- /ko -->
 
-            <!-- ko if: loading() === 4 -->
-                <!-- ko if: $root.storageHelper.downloadPool()[cmd.requestSerial] -->
-                    span( data-bind=" text: $root.storageHelper.downloadPool()[cmd.requestSerial].progress() + '%'")
-                <!-- /ko -->
-                <!-- ko if: $root.storageHelper.currentAssembly()[cmd.requestSerial] -->
-                    span( data-bind=" text: $root.storageHelper.currentAssembly()[cmd.requestSerial].progress() + '%'")
-                <!-- /ko -->
-            <!-- /ko -->
+			<!-- ko if: loading() === 4 -->
+				<!-- ko if: $root.storageHelper.downloadPool()[cmd.requestSerial] -->
+					span( data-bind=" text: $root.storageHelper.downloadPool()[cmd.requestSerial].progress() + '%'")
+				<!-- /ko -->
+				<!-- ko if: $root.storageHelper.currentAssembly()[cmd.requestSerial] -->
+					span( data-bind=" text: $root.storageHelper.currentAssembly()[cmd.requestSerial].progress() + '%'")
+				<!-- /ko -->
+			<!-- /ko -->
 
-            <!-- ko if: loading() !== false && loading() < 5 -->
-                i.icon.notched.circle.loading( data-bind = "css: { 'yellow': loading() === 2, 'green': loading() === 3, 'blue': loading() === 4 }")
-            <!-- /ko -->
+			<!-- ko if: loading() !== false && loading() < 5 -->
+				i.icon.notched.circle.loading( data-bind = "css: { 'yellow': loading() === 2, 'green': loading() === 3, 'blue': loading() === 4 }")
+			<!-- /ko -->
 
-        <!-- /ko -->
-        span( data-bind = "text: labelText [ $root.languageIndex() ] ")
+		<!-- /ko -->
+		span( data-bind = "text: labelText [ $root.languageIndex() ] ")
 
 script#twitterQuotedItem( type = "text/html")
-    .item
-        img.ui.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;width: 35px!important; height: 35px!important;")
-        .content( style = "padding-left:0px;")
-            .header( style = "font-size: small;margin: 0.5rem;")
-                h5
-                    span( data-bind = "text: user.name " )
-                    span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
-                    span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
-            .description( style = "margin-top: 0px;")
-                textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;padding-right: 0.5rem;" readOnly disabled )
-                <!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
-                    img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ extended_entities.media [0].kloakMediaLink ]}" style = " border-bottom-right-radius: 1rem;")
-                <!-- /ko -->
+	.item
+		img.ui.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style = "margin: 0.5rem;width: 35px!important; height: 35px!important;")
+		.content( style = "padding-left:0px;")
+			.header( style = "font-size: small;margin: 0.5rem;")
+				h5
+					span( data-bind = "text: user.name " )
+					span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+					span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+			.description( style = "margin-top: 0px;")
+				textarea.kloak_color_DarkBlue( data-bind = "text: full_text , attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;padding-right: 0.5rem;" readOnly disabled )
+				<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+					img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ extended_entities.media [0].kloakMediaLink ]}" style = " border-bottom-right-radius: 1rem;")
+				<!-- /ko -->
 
 script#twitterPictureItems( type = "text/html" style = "width:100%; margin:0;")
 
-    <!-- ko if: media [0] && media [0].video_info -->
-        <!-- ko with: media [0] -->
-            .videoDiv( data-bind="css: { 'ui segment': typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' }" style="margin: 0;padding: 0;")
-                video( style = "width: 100%;" controls autoplay )
-                    <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
-                        source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
-                    <!-- /ko -->
-                <!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' -->
-                    .ui.active.dimmer
-                        .ui.loader
-                <!-- /ko -->
-                
+	<!-- ko if: media [0] && media [0].video_info -->
+		<!-- ko with: media [0] -->
+			.videoDiv( data-bind="css: { 'ui segment': typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' }" style="margin: 0;padding: 0;")
+				video( style = "width: 100%;" controls autoplay )
+					<!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] === 'string' -->
+						source( data-bind = " attr: { 'src': $root.appScript().twitterObj.videoHref()[ video_info.kloakMediaLink ]}")
+					<!-- /ko -->
+				<!-- ko if: typeof $root.appScript().twitterObj.videoHref() [video_info.kloakMediaLink] !== 'string' -->
+					.ui.active.dimmer
+						.ui.loader
+				<!-- /ko -->
+				
 
-        <!-- /ko -->
-    <!-- /ko -->
+		<!-- /ko -->
+	<!-- /ko -->
 
-    <!-- ko ifnot: media [0] && media [0].video_info -->
-        img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
-    <!-- /ko -->
+	<!-- ko ifnot: media [0] && media [0].video_info -->
+		img.ui.fluid.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ media [0].kloakMediaLink ]}" style=" margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+	<!-- /ko -->
 
 script#twitterItem.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
-    .item
-        .ui.circular.image( style = "height: 47px!important;width: 47px!important;margin-top: 1rem;" )
-            img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
-            
-        .content( style = "padding-left: .5em;")
-            .header( style = " font-size: small; margin-top: 0.5rem;")
-                <!-- ko if: retweeted_statusUserName -->
-                    h5.ui.header.retweet( style = "color: grey;margin-top: -1rem;margin-bottom: 0px;margin-left: -1.9rem;")
-                        span
-                            i.icon.retweet.blue
-                        span( data-bind = " text: retweeted_statusUserName ")
-                        span( data-bind = " text: $root.appScript().twitterObj.retweeted[ $root.languageIndex ()]" )
-                <!-- /ko -->
-                h5( style="margin-top: 0px;")
-                    span( data-bind = "text: user.name " )
-                    <!-- ko if: user.verified -->
-                        span( style="margin-left: 0.2rem;")
-                            i.icons
-                                i.icon.certificate.blue
-                                i.icon.check.small.white
-                    <!-- /ko -->
-                    span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
-                    span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
-            .description( style = "margin-top: 0px;")
-                textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
-                <!-- ko if: typeof quoted_status !== "undefined" -->
-                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
-                <!-- /ko -->
-                <!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
-                    .ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" style = "margin: 0px;" )
-                <!-- /ko -->
-                
-            .extra( style = "height: 1rem;")
-                span
-                    h5.ui.header
-                        i.icon.retweet.blue
-                        .content
-                            .sub.header( data-bind = "text: retweet_count" )
-                        i.icon.heart.outline.red( style = "padding-left: 5rem;" )
-                        .content
-                            .sub.header( data-bind = "text: favorite_count" )
-                            
+	.item
+		.ui.circular.image( style = "height: 47px!important;width: 47px!important;margin-top: 1rem;" )
+			img( data-bind = " attr: { src: $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" )
+			
+		.content( style = "padding-left: .5em;")
+			.header( style = " font-size: small; margin-top: 0.5rem;")
+				<!-- ko if: retweeted_statusUserName -->
+					h5.ui.header.retweet( style = "color: grey;margin-top: -1rem;margin-bottom: 0px;margin-left: -1.9rem;")
+						span
+							i.icon.retweet.blue
+						span( data-bind = " text: retweeted_statusUserName ")
+						span( data-bind = " text: $root.appScript().twitterObj.retweeted[ $root.languageIndex ()]" )
+				<!-- /ko -->
+				h5( style="margin-top: 0px;")
+					span( data-bind = "text: user.name " )
+					<!-- ko if: user.verified -->
+						span( style="margin-left: 0.2rem;")
+							i.icons
+								i.icon.certificate.blue
+								i.icon.check.small.white
+					<!-- /ko -->
+					span.twitter-account-show-name( data-bind = "text: '@' + user.screen_name " )
+					span.twitter-account-show-name( data-bind = "text: $root.appScript().twitterObj.showTimeData[ $root.languageIndex() ]( created_at )")
+			.description( style = "margin-top: 0px;")
+				textarea.kloak_color_DarkBlue( data-bind = " text: full_text, attr:{ 'id': id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+				<!-- ko if: typeof quoted_status !== "undefined" -->
+					.ui.items.unstackable( data-bind = "template: { 'name': 'twitterQuotedItem', 'data': quoted_status }" style="margin-top: 0rem; border: thin solid #dbdbdb;border-radius: 1rem;" )
+				<!-- /ko -->
+				<!-- ko if: typeof extended_entities !== "undefined" && extended_entities -->
+					.ui.items.unstackable( data-bind = "template: { 'name': 'twitterPictureItems', 'data': extended_entities }" style = "margin: 0px;" )
+				<!-- /ko -->
+				
+			.extra( style = "height: 1rem;")
+				span
+					h5.ui.header
+						i.icon.retweet.blue
+						.content
+							.sub.header( data-bind = "text: retweet_count" )
+						i.icon.heart.outline.red( style = "padding-left: 5rem;" )
+						.content
+							.sub.header( data-bind = "text: favorite_count" )
+							
 script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; margin-top: 1rem;")
-    <!-- ko if: _close -->
-        .top.fixed.twitterCloseButton
-            .item( style = "position: absolute; left: 1rem" )
-                i.circular.icon.close.large.link( data-bind = "click: close" style = "background-color: white;")
-    <!-- /ko -->
-    .searchItems
+	<!-- ko if: _close -->
+		.top.fixed.twitterCloseButton
+			.item( style = "position: absolute; left: 1rem" )
+				i.circular.icon.close.large.link( data-bind = "click: close" style = "background-color: white;")
+	<!-- /ko -->
+	.searchItems
 
-        .twitterDetail
-            <!-- ko if: showAccount -->
-                .accountHearer( data-bind = "with: twitterTimeArray()[0]")
-                    .item
-                        img.ui.centered.image( data-bind = " attr: { 'src': user.kloakMediaLinkBanner_url ? $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ] : $parents[0].blockBannerImg }")
-                    
-                    .accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
-                        img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
-                    .extra
-                        h2.ui.header
-                            <!-- ko text: user.name --><!-- /ko -->
-                            <!-- ko if: user.verified -->
-                                span
-                                    i.icons
-                                        i.icon.certificate.blue
-                                        i.icon.check.white.small
-                            <!-- /ko -->
-                            .sub.header( data-bind = " text: '@' + user.screen_name ")
+		.twitterDetail
+			<!-- ko if: showAccount -->
+				.accountHearer( data-bind = "with: twitterTimeArray()[0]")
+					.item
+						img.ui.centered.image( data-bind = " attr: { 'src': user.kloakMediaLinkBanner_url ? $root.appScript().twitterObj.twitterHref[ user.kloakMediaLinkBanner_url ] : $parents[0].blockBannerImg }")
+					
+					.accountImg( style="width: 110px;height: auto;margin-top: -4rem;margin-left: 1rem;")
+						img.ui.tiny.circular.image( data-bind = " attr: { 'src': $root.appScript().twitterObj.twitterHref[ user.kloakMediaLink ]}" style="border: 3px solid white;")
+					.extra
+						h2.ui.header
+							<!-- ko text: user.name --><!-- /ko -->
+							<!-- ko if: user.verified -->
+								span
+									i.icons
+										i.icon.certificate.blue
+										i.icon.check.white.small
+							<!-- /ko -->
+							.sub.header( data-bind = " text: '@' + user.screen_name ")
 
-                        .description
-                            textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
-                        .extra
-                            <!-- ko if: user.location -->
-                            span
-                                i.icon.map.marker.alternate.grey
-                            
-                            span( data-bind = " text: user.location " style = "margin-right: 1rem;")
-                            <!-- /ko -->
+						.description
+							textarea.kloak_color_DarkBlue( data-bind = " text: user.description, attr:{ 'id': user.id }, style: { 'height': function() { return $root.appScript().twitterObj.userTextareaHeight ( user.id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+						.extra
+							<!-- ko if: user.location -->
+							span
+								i.icon.map.marker.alternate.grey
+							
+							span( data-bind = " text: user.location " style = "margin-right: 1rem;")
+							<!-- /ko -->
 
-                            span
-                                i.icon.calendar.alternate.outline.grey
-                            span( data-bind = " $root.appScript().twitterObj.joinedText[ $root.languageIndex() ]")
-                            span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
-                        .extra
-                            h4
-                                span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
-                                span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
-                                span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
-                                span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
-            <!-- /ko -->
-            .ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
+							span
+								i.icon.calendar.alternate.outline.grey
+							span( data-bind = " $root.appScript().twitterObj.joinedText[ $root.languageIndex() ]")
+							span( data-bind = " text: $root.appScript().twitterObj.showUserTimeData[ $root.languageIndex() ]( user.created_at ) ")
+						.extra
+							h4
+								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.friends_count )"  )
+								span.sub.header.grey( data-bind =" text: $root.appScript().twitterObj.text_following[ $root.languageIndex() ]" style="margin-right: 1rem;margin-left: 0.3rem;font-size: smaller;font-weight: normal;" )
+								span( data-bind =" text: $root.appScript().twitterObj.userCountFormat( user.followers_count )"  )
+								span.sub.header.grey( data-bind = " text: $root.appScript().twitterObj.text_follower[ $root.languageIndex() ]" style="margin-left: 0.3rem;font-size: smaller;font-weight: normal;")
+			<!-- /ko -->
+			.ui.unstackable.divided.items( data-bind = "foreach: twitterTimeArray ")
 
-                <!-- ko if: typeof retweeted_status && retweeted_status.retweeted_statusUserName -->
-                    <!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
-                <!-- /ko -->
+				<!-- ko if: typeof retweeted_status && retweeted_status.retweeted_statusUserName -->
+					<!-- ko template: { 'name': 'twitterItem', 'data': retweeted_status } --><!-- /ko -->
+				<!-- /ko -->
 
-                <!-- ko if: !retweeted_status -->
-                    <!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
-                <!-- /ko -->
-            .extra
-                <!-- ko ifnot: nextButtonShowError -->
-                    button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: infoDefine[$root.languageIndex() ].coSearch.moreResults, click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
-                <!-- /ko -->
+				<!-- ko if: !retweeted_status -->
+					<!-- ko template: { 'name': 'twitterItem', 'data': $data } --><!-- /ko -->
+				<!-- /ko -->
+			.extra
+				<!-- ko ifnot: nextButtonShowError -->
+					button.ui.large.button( data-bind = "css: { 'loading buttonUnActive': moreResultsButtomLoading, 'loadingGetResponse': nextButtonLoadingGetResponse, 'conetResponse': nextButtonConetResponse }, text: infoDefine[$root.languageIndex() ].coSearch.moreResults, click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
+				<!-- /ko -->
 
-                <!-- ko if: nextButtonShowError -->
-                    button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
-                <!-- /ko -->
+				<!-- ko if: nextButtonShowError -->
+					button.ui.large.button.negative( data-bind = "text: messageBoxDefine [ nextButtonErrorIndex()][ $root.languageIndex() ], click: searchNext " style="background-color: #b94835e3;margin-top: 1em;margin-bottom: 2em;")
+				<!-- /ko -->
 //-     End of Twitter shared template
 
 //- Screenshot shared template
 
 <!-- ko if: showSnapshop () -->
 #subPage( data-bind = " with: showSnapshop " )
-    
-    .ui.top.fixed.menu.borderless
-        .item( style = "width: 90%; margin-left: 3.5rem !important" )
-            form.ui.form( style = "width: 100%;" data-bind = "css: { 'error': showErrorMessage }" )
-                .field( style = "width: 100%;" )
-                    .ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
-                        i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
-                        input( style = "color: rgba ( 0,0,0,0.5 );padding-right: 7rem!important;" readonly data-bind = "value: showUrl" )
-                        <!-- ko if: ! showLoading() -->
-                            <!-- ko if: !showImgPage() && png() -->
-                                i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
-                            <!-- /ko -->
+	
+	.ui.top.fixed.menu.borderless
+		.item( style = "width: 90%; margin-left: 3.5rem !important" )
+			form.ui.form( style = "width: 100%;" data-bind = "css: { 'error': showErrorMessage }" )
+				.field( style = "width: 100%;" )
+					.ui.left.icon.input.big( data-bind = "css : { 'loading': showLoading }" style = "width: 100%; border-radius: 500rem;" )
+						i.icon.close.link.circular( data-bind = "click: close " style="color: #4285f4!important;")
+						input( style = "color: rgba ( 0,0,0,0.5 );padding-right: 7rem!important;" readonly data-bind = "value: showUrl" )
+						<!-- ko if: ! showLoading() -->
+							<!-- ko if: !showImgPage() && png() -->
+								i.icon.link.image.circular( data-bind = " click: imgClick " style="left: auto; right: .5em; color:#947b66!important;" )
+							<!-- /ko -->
 
-                            <!-- ko if: showMultimediaObjButton () && !showMultimediaPage () -->
-                                i.icon.circular.red.youtube.link( data-bind = " click: showMultimedia" style = "right: 3.5rem; left: auto;")
-                            <!-- /ko -->
+							<!-- ko if: showMultimediaObjButton () && !showMultimediaPage () -->
+								i.icon.circular.red.youtube.link( data-bind = " click: showMultimedia" style = "right: 3.5rem; left: auto;")
+							<!-- /ko -->
 
-                            <!-- ko if: !showHtmlCodePage() && mHtml() -->
-                            i.icon.link.code.circular( data-bind = " click: htmlClick, style: { right: showMultimediaPage () ? '3.5rem' : '.5em' } " style="left: auto ; color:#346b0b!important;" )
-                            <!-- /ko -->
-                        <!-- /ko -->
-                
-                <!-- ko if: showLoading -->
-                    .field
-                        p( data-bind = " text: messageBoxDefine ['LoadingPage'][$root.languageIndex()]" style = "color: grey;")
-                    .field
-                        .loaderCoNET( style = " margin-top: 3em;")
-                            .loaderCoNET-div
-                            .loaderCoNET-div
-                            .loaderCoNET-div
-                            .loaderCoNET-div
-                <!-- /ko -->
+							<!-- ko if: !showHtmlCodePage() && mHtml() -->
+							i.icon.link.code.circular( data-bind = " click: htmlClick, style: { right: showMultimediaPage () ? '3.5rem' : '.5em' } " style="left: auto ; color:#346b0b!important;" )
+							<!-- /ko -->
+						<!-- /ko -->
+				
+				<!-- ko if: showLoading -->
+					.field
+						p( data-bind = " text: messageBoxDefine ['LoadingPage'][$root.languageIndex()]" style = "color: grey;")
+					.field
+						.loaderCoNET( style = " margin-top: 3em;")
+							.loaderCoNET-div
+							.loaderCoNET-div
+							.loaderCoNET-div
+							.loaderCoNET-div
+				<!-- /ko -->
 
-                <!-- ko if: showErrorMessage -->
-                    .ui.error.message
-                        span
-                            i.icon.exclamation.triangle.red.link
-                            span( data-bind=" text: messageBoxDefine ['pageLoadingError'][$root.languageIndex()]")
-                <!-- /ko -->
-    <!-- ko if: showHtmlCodePage -->
-        
-        iframe( style = "border: none;width: 100%; height: -webkit-fill-available;margin-top: 7em;" sandbox = "allow-top-navigation allow-top-navigation allow-same-origin allow-forms allow-popups" )
-    <!-- /ko -->
+				<!-- ko if: showErrorMessage -->
+					.ui.error.message
+						span
+							i.icon.exclamation.triangle.red.link
+							span( data-bind=" text: messageBoxDefine ['pageLoadingError'][$root.languageIndex()]")
+				<!-- /ko -->
+	<!-- ko if: showHtmlCodePage -->
+		
+		iframe( style = "border: none;width: 100%; height: -webkit-fill-available;margin-top: 7em;" sandbox = "allow-top-navigation allow-top-navigation allow-same-origin allow-forms allow-popups" )
+	<!-- /ko -->
 
-    <!-- ko if: showImgPage -->
-        img( data-bind = " attr: { src: png }" style = "border: none;margin: 7em 1em 1em 1em;")
-    <!-- /ko -->
+	<!-- ko if: showImgPage -->
+		img( data-bind = " attr: { src: png }" style = "border: none;margin: 7em 1em 1em 1em;")
+	<!-- /ko -->
 
-    <!-- ko if: showMultimediaPage -->
-        <!-- ko with: MultimediaObjArray() -->
-            .CoContent( style = "margin: 1em; margin-top: 7rem;")
-                .ui.divided.items.searchItems
-                    <!-- ko if: thumbnails -->
-                        a.ui.fluid.image( data-bind ="click: () => { $parent.ClickPlay() }" href ="#" )
-                            img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
-                            .ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
-                                button.ui.icon.youtube.button.huge.circular
-                                    i.icon.large.youtube
-                        .content( style = "margin-top: 1rem;")
-                            .extra( style = "margin-top: 1rem;")
-                                <!-- ko if: audio -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
-                                <!-- /ko -->
+	<!-- ko if: showMultimediaPage -->
+		<!-- ko with: MultimediaObjArray() -->
+			.CoContent( style = "margin: 1em; margin-top: 7rem;")
+				.ui.divided.items.searchItems
+					<!-- ko if: thumbnails -->
+						a.ui.fluid.image( data-bind ="click: () => { $parent.ClickPlay() }" href ="#" )
+							img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+							//- .ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
+								//- button.ui.icon.youtube.button.huge.circular
+								//-     i.icon.large.youtube
+							.ui.active.dimmer(data-bind="style: {'background-color': $parent.multimediaLoading() ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,.01)'}")
+								<!-- ko if: $parent.multimediaLoading()-->
+								.ui.text.loader="Loading video..."
+								<!-- /ko -->
+								<!-- ko if: !$parent.videoUnablePlay() && (!$parent.multimediaLoading() || $parent.videoCanStart())-->
+								i.icon.big.play.white
+								<!-- /ko -->
+								<!-- ko if: $parent.videoUnablePlay() -->
+								i.exclamation.triangle.icon(style="color: white; font-size: 40px;")
+								p(style="margin-top: 10px; color: white; font-weight: bold")="Unable to play video!"
+								<!-- /ko -->
+							video#videoPlayer(data-bind="style: {'visibility': $parent.videoCanStart() ? 'visible' : 'hidden', 'z-index': $parent.videoCanStart() ? '9999' : '-100' }" style="width: 100%; height: 100%; position: absolute; top: 0; background-color: black" controls)
+						.content( style = "margin-top: 1rem;")
+							.extra( style = "margin-top: 1rem;")
+								<!-- ko if: audio -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+								<!-- /ko -->
 
-                                <!-- ko if: video480 -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
-                                <!-- /ko -->
+								<!-- ko if: video480 -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+								<!-- /ko -->
 
-                                <!-- ko if: video720 -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
-                                        
-                                <!-- /ko -->
+								<!-- ko if: video720 -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+										
+								<!-- /ko -->
 
-                                <!-- ko if: video2k -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
-                                <!-- /ko -->
+								<!-- ko if: video2k -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+								<!-- /ko -->
 
-                                <!-- ko if: video4k -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
-                                <!-- /ko -->
+								<!-- ko if: video4k -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+								<!-- /ko -->
 
-                                <!-- ko if: video8k -->
-                                    span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
-                                <!-- /ko -->
-                                
-                            h2.ui.header( data-bind =" text: title" style = "margin-top: 1rem;" )
-                            .description
-                                
-                                p
-                                    <!-- ko if: longer -->
-                                        span.ui.label
-                                            i.icon.history
-                                            span( data-bind =" text: longer ")
-                                    <!-- /ko -->
+								<!-- ko if: video8k -->
+									span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+								<!-- /ko -->
+								
+							h2.ui.header( data-bind =" text: title" style = "margin-top: 1rem;" )
+							.description
+								
+								p
+									<!-- ko if: longer -->
+										span.ui.label
+											i.icon.history
+											span( data-bind =" text: longer ")
+									<!-- /ko -->
 
-                                    <!-- ko if: upload_date -->
-                                        span.ui.label
-                                            i.icon.calendar.alternate.outline
-                                            span( data-bind = " text: upload_date ")
-                                    <!-- /ko -->
+									<!-- ko if: upload_date -->
+										span.ui.label
+											i.icon.calendar.alternate.outline
+											span( data-bind = " text: upload_date ")
+									<!-- /ko -->
 
-                                    <!-- ko if: view_count -->
-                                        span.ui.label
-                                            i.icon.eye
-                                            span( data-bind = " text: view_count ")
-                                    <!-- /ko -->
+									<!-- ko if: view_count -->
+										span.ui.label
+											i.icon.eye
+											span( data-bind = " text: view_count ")
+									<!-- /ko -->
 
-                                    <!-- ko if: like_count -->
-                                        span.ui.label
-                                            i.icon.thumbs.up.outline
-                                            span( data-bind = " text: like_count ")
-                                    <!-- /ko -->
+									<!-- ko if: like_count -->
+										span.ui.label
+											i.icon.thumbs.up.outline
+											span( data-bind = " text: like_count ")
+									<!-- /ko -->
 
-                                textarea.kloak_color_DarkBlue( data-bind = " attr: { 'id': id }, text: description, style: { 'height': function() { return $root.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
-                                
-                            
-                    <!-- /ko -->
-                    <!-- ko if: entriesObj -->
-                        <!-- ko foreach: entriesObj -->
-                            .item
-                                .image
-                                    img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
-                                .content
-                                    .header( data-bind =" text: title" )
-                                    .description
-                                        p
-                                            <!-- ko if: longer -->
-                                                span.ui.label
-                                                    i.icon.history
-                                                    span( data-bind =" text: longer ")
-                                            <!-- /ko -->
+								textarea.kloak_color_DarkBlue( data-bind = " attr: { 'id': id }, text: description, style: { 'height': function() { return $root.userTextareaHeight ( id );}}" style = " border: none; width: 100%; resize: none; overflow: hidden; background-color: transparent;" readOnly disabled )
+								
+							
+					<!-- /ko -->
+					<!-- ko if: entriesObj -->
+						<!-- ko foreach: entriesObj -->
+							.item
+								.image
+									img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
+								.content
+									.header( data-bind =" text: title" )
+									.description
+										p
+											<!-- ko if: longer -->
+												span.ui.label
+													i.icon.history
+													span( data-bind =" text: longer ")
+											<!-- /ko -->
 
-                                            <!-- ko if: upload_date -->
-                                                span.ui.label
-                                                    i.icon.calendar.alternate.outline
-                                                    span( data-bind = " text: upload_date ")
-                                            <!-- /ko -->
+											<!-- ko if: upload_date -->
+												span.ui.label
+													i.icon.calendar.alternate.outline
+													span( data-bind = " text: upload_date ")
+											<!-- /ko -->
 
-                                            <!-- ko if: view_count -->
-                                                span.ui.label
-                                                    i.icon.eye
-                                                    span( data-bind = " text: view_count ")
-                                            <!-- /ko -->
+											<!-- ko if: view_count -->
+												span.ui.label
+													i.icon.eye
+													span( data-bind = " text: view_count ")
+											<!-- /ko -->
 
-                                            <!-- ko if: like_count -->
-                                                span.ui.label
-                                                    i.icon.thumbs.up.outline
-                                                    span( data-bind = " text: like_count ")
-                                            <!-- /ko -->
-                                        textarea( data-bind = " text: description " style = " width: 100%; resize: none; padding: 1rem; overflow: hidden; color: white;" readOnly disabled )
-                                    .extra
-                                        <!-- ko if: audio -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
-                                        <!-- /ko -->
+											<!-- ko if: like_count -->
+												span.ui.label
+													i.icon.thumbs.up.outline
+													span( data-bind = " text: like_count ")
+											<!-- /ko -->
+										textarea( data-bind = " text: description " style = " width: 100%; resize: none; padding: 1rem; overflow: hidden; color: white;" readOnly disabled )
+									.extra
+										<!-- ko if: audio -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: audio }")
+										<!-- /ko -->
 
-                                        <!-- ko if: video480 -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
-                                        <!-- /ko -->
+										<!-- ko if: video480 -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: video480 }")
+										<!-- /ko -->
 
-                                        <!-- ko if: video720 -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
-                                                
-                                        <!-- /ko -->
+										<!-- ko if: video720 -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: video720 }")
+												
+										<!-- /ko -->
 
-                                        <!-- ko if: video2k -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
-                                        <!-- /ko -->
+										<!-- ko if: video2k -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: video2k }")
+										<!-- /ko -->
 
-                                        <!-- ko if: video4k -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
-                                        <!-- /ko -->
+										<!-- ko if: video4k -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: video4k }")
+										<!-- /ko -->
 
-                                        <!-- ko if: video8k -->
-                                            span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
-                                        <!-- /ko -->
-                        <!-- /ko -->
-                    <!-- /ko -->
-        <!-- /ko -->
-    <!-- /ko -->
+										<!-- ko if: video8k -->
+											span( data-bind = "template: { name: 'ajaxLableButton', data: video8k }")
+										<!-- /ko -->
+						<!-- /ko -->
+					<!-- /ko -->
+		<!-- /ko -->
+	<!-- /ko -->
 
 <!-- /ko -->
 //- End of Screenshot shared template

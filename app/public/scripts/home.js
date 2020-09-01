@@ -165,6 +165,7 @@ var view_layout;
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
             this.displayMedia = ko.observable(null);
+            this.mediaViewer = null;
             /*
             public worker = new workerManager ([
                 'mHtml2Html'

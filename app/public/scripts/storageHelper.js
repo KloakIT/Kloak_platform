@@ -11,7 +11,7 @@ class StorageHelper {
             delete temp[uuid];
             pool(temp);
         };
-        this.createDownload = (requestUuid, files = null, downloadTitle, extraHistoryTags, callback) => {
+        this.createDownload = (requestUuid, files = null, downloadTitle, extraHistoryTags, callback, stream) => {
             if (this.downloadPool()[requestUuid]) {
                 callback(`Download already exists!`, requestUuid);
                 console.log('Download already exists');

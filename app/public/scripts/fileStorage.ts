@@ -10,7 +10,7 @@ class fileStorage {
 	private showSuggestions = ko.observable(true)
 	private showDownloads = ko.observable(false)
 	private searchKey = ko.observable()
-	private selectedFile = ko.observable()
+	private selectedFile = ko.observable(null)
 	private addTagInput = ko.observable("")
 	private selectedInfoFile = ko.observable()
 	private colorOptions = [
@@ -383,6 +383,7 @@ class fileStorage {
 			case "download":
 				// let t0 = performance.now()
 				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				this.selectedFile(null)
 				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
 					if (err) {
 						console.log(err)
@@ -398,15 +399,25 @@ class fileStorage {
 				})
 				break;
 			case "play":
-				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
-				return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-					// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
-					_view.displayMedia('player')
-					const videoPlayer = document.getElementById("videoPlayer")
-					videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
-					videoPlayer['play']()
-					updateLastViewed()
+				const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4')
+				_view.mediaViewer = new MediaViewer(type ? type[0] : 'video', fileData.filename, {uuid: fileData.uuid }, (err, msg) => {
+					if (err) {
+						console.log(err)
+						return
+					}
+					console.log(msg)
+				}, () => {
+					_view.mediaViewer = null
 				})
+				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				// return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
+				// 	// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+				// 	_view.displayMedia('player')
+				// 	const videoPlayer = document.getElementById("videoPlayer")
+				// 	videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+				// 	videoPlayer['play']()
+				// 	updateLastViewed()
+				// })
 				// let mediaSource = null
 				// let buffers = []
 				// _view.displayMedia('player')
@@ -448,14 +459,13 @@ class fileStorage {
 				// 	}
 					
 				// })
+				break;
 			case 'view':
 				if ( fileData.tag().includes('snapshot')) {
 					_view.showFileStorage(false)
 						new showWebPageClass ( fileData.filename , fileData.uuid , null, () => {
 							_view.showFileStorage(true)
-					}, () => {
-						
-					})
+					}, () => {})
 					updateLastViewed()
 					return
 				}

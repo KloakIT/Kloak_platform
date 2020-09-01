@@ -11,7 +11,7 @@ class fileStorage {
         this.showSuggestions = ko.observable(true);
         this.showDownloads = ko.observable(false);
         this.searchKey = ko.observable();
-        this.selectedFile = ko.observable();
+        this.selectedFile = ko.observable(null);
         this.addTagInput = ko.observable("");
         this.selectedInfoFile = ko.observable();
         this.colorOptions = [
@@ -294,6 +294,7 @@ class fileStorage {
                 case "download":
                     // let t0 = performance.now()
                     // console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+                    this.selectedFile(null);
                     return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
                         if (err) {
                             console.log(err);
@@ -309,61 +310,71 @@ class fileStorage {
                     });
                     break;
                 case "play":
-                    // console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
-                    return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-                        // console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
-                        _view.displayMedia('player');
-                        const videoPlayer = document.getElementById("videoPlayer");
-                        videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType);
-                        videoPlayer['play']();
-                        updateLastViewed();
+                    const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4');
+                    _view.mediaViewer = new MediaViewer(type ? type[0] : 'video', fileData.filename, { uuid: fileData.uuid }, (err, msg) => {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        console.log(msg);
+                    }, () => {
+                        _view.mediaViewer = null;
                     });
-                // let mediaSource = null
-                // let buffers = []
-                // _view.displayMedia('player')
-                // const vidPlayer = document.getElementById("videoPlayer")
-                // console.log(vidPlayer)
-                // function sourceOpen(e) {
-                // 	console.log(e)
-                // 	// URL.revokeObjectURL(vidPlayer['src']);
-                // 	var mime = 'video/mp4; codecs="avc1.4D401F"';
-                // 	console.log(MediaSource.isTypeSupported(mime))
-                // 	var mediaSource = e.target;
-                // 	var sourceBuffer = mediaSource.addSourceBuffer(mime);
-                // 	const nextSeg = (e) => {
-                // 		console.log(e)
-                // 		if (buffers.length === 0) {
-                // 			sourceBuffer.removeEventListener('update', nextSeg);
-                // 		}
-                // 		sourceBuffer.appendBuffer(new Uint8Array(buffers.shift()))
-                // 	}
-                // 	sourceBuffer.addEventListener('update', nextSeg);
-                // }
-                // return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-                // 	if (err) {
-                // 		console.log(err)
-                // 		return
-                // 	}
-                // 	buffers.push(data)
-                // 	if (data === fileData.uuid) {
-                // 	if (mediaSource === null) {
-                // 		if (window.MediaSource) {
-                // 			mediaSource = new MediaSource();
-                // 			vidPlayer['src'] = URL.createObjectURL(mediaSource);
-                // 			mediaSource.addEventListener('sourceopen', sourceOpen);
-                // 		} else {
-                // 			console.log("The Media Source Extensions API is not supported.")
-                // 		}
-                // 	}
-                // 	}
-                // })
+                    // console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
+                    // return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
+                    // 	// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
+                    // 	_view.displayMedia('player')
+                    // 	const videoPlayer = document.getElementById("videoPlayer")
+                    // 	videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+                    // 	videoPlayer['play']()
+                    // 	updateLastViewed()
+                    // })
+                    // let mediaSource = null
+                    // let buffers = []
+                    // _view.displayMedia('player')
+                    // const vidPlayer = document.getElementById("videoPlayer")
+                    // console.log(vidPlayer)
+                    // function sourceOpen(e) {
+                    // 	console.log(e)
+                    // 	// URL.revokeObjectURL(vidPlayer['src']);
+                    // 	var mime = 'video/mp4; codecs="avc1.4D401F"';
+                    // 	console.log(MediaSource.isTypeSupported(mime))
+                    // 	var mediaSource = e.target;
+                    // 	var sourceBuffer = mediaSource.addSourceBuffer(mime);
+                    // 	const nextSeg = (e) => {
+                    // 		console.log(e)
+                    // 		if (buffers.length === 0) {
+                    // 			sourceBuffer.removeEventListener('update', nextSeg);
+                    // 		}
+                    // 		sourceBuffer.appendBuffer(new Uint8Array(buffers.shift()))
+                    // 	}
+                    // 	sourceBuffer.addEventListener('update', nextSeg);
+                    // }
+                    // return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
+                    // 	if (err) {
+                    // 		console.log(err)
+                    // 		return
+                    // 	}
+                    // 	buffers.push(data)
+                    // 	if (data === fileData.uuid) {
+                    // 	if (mediaSource === null) {
+                    // 		if (window.MediaSource) {
+                    // 			mediaSource = new MediaSource();
+                    // 			vidPlayer['src'] = URL.createObjectURL(mediaSource);
+                    // 			mediaSource.addEventListener('sourceopen', sourceOpen);
+                    // 		} else {
+                    // 			console.log("The Media Source Extensions API is not supported.")
+                    // 		}
+                    // 	}
+                    // 	}
+                    // })
+                    break;
                 case 'view':
                     if (fileData.tag().includes('snapshot')) {
                         _view.showFileStorage(false);
                         new showWebPageClass(fileData.filename, fileData.uuid, null, () => {
                             _view.showFileStorage(true);
-                        }, () => {
-                        });
+                        }, () => { });
                         updateLastViewed();
                         return;
                     }

@@ -49,7 +49,24 @@ class forYoutube extends sharedAppClass {
             exit();
             view = null;
         }, item => {
-            const uu = item;
+            // const uu = item
+            console.log(item);
+            if (item['streamingData']) {
+                _view.mediaViewer = new MediaViewer('video', item['title'], { youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, (err, canStart) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    if (canStart) {
+                        view.videoCanStart(true);
+                    }
+                }, () => {
+                    _view.mediaViewer = null;
+                });
+            }
+            else {
+                view.videoUnablePlay(true);
+                view.multimediaLoading(false);
+            }
         });
     }
     _exit() {

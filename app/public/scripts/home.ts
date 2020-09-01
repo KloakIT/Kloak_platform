@@ -209,6 +209,7 @@ module view_layout {
 		public localServerConnected = ko.observable(false)
 		public showLocalServerDisconnect = ko.observable(false)
 		public displayMedia = ko.observable(null)
+		public mediaViewer: MediaViewer = null
 		/*
         public worker = new workerManager ([
             'mHtml2Html'

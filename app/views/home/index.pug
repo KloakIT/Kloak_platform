@@ -5,7 +5,7 @@ block jumbotron1
 
 	<!-- ko if: displayMedia() -->
 		.displayMediaOverlay(data-bind="style: {'opacity': displayMedia() ? '1' : '0', 'display': displayMedia() ? 'flex' : 'none' }")
-			video.videoPlayer#videoPlayer( controls autoplay data-bind="style: {'display': displayMedia() === 'player' ? 'initial' : 'none'}")
+			video.videoPlayer#videoPlayer( controls autoplay data-bind="style: {'display': displayMedia() === 'player' ? 'initial' : 'none', 'background-color': 'black'}")
 			img.imageViewer#imageViewer(data-bind="style: {'display': displayMedia() === 'image' ? 'initial' : 'none'}")
 			iframe#pdfViewer(data-bind="style: {'display': displayMedia() === 'pdf' ? 'initial' : 'none'}" width="90%" height="90%")
 			p.closeVideoOverlay( data-bind = "click: () => { displayMedia( null )}")="Close"

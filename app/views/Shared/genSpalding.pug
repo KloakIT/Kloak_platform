@@ -44,19 +44,6 @@
 							.ui.text.loader='Fetching Twitter...'
 						p
 					<!-- /ko -->
-					//- .spaldingTwitter
-					//- 	.spaldingTwitterHeader
-					//- 		h2="Tweets"
-					//- 		p(style="margin-left: 10px; margin-bottom: 2.5px; font-size: 13px;")="by @robert_spalding"
-					//- 	.spaldingTwitterTweets(data-bind="foreach: {data: tweetTimeline, as: 'tweet'}")
-					//- 		.spaldingTweets
-					//- 			img.spaldingTwitterProfile(src='./images/spalding/robert_spalding_twitter.jpg')
-					//- 			.spaldingTwitterContent
-					//- 				.spaldingTwitterName
-					//- 					h4(style="font-family: 'Rajdhani-SemiBold'")="General Spalding"
-					//- 					p(style="font-size: 13px; color: grey")="@robert_spalding"
-					//- 				.spaldingTwitterText
-					//- 					p(data-bind="text: tweet.full_text", style="font-size: 20px")
 		section.spaldingWatch#WATCH
 			.spaldingSectionContent
 				h2.spaldingSectionTitle="Watch"
@@ -65,9 +52,14 @@
 						li.spaldingSelectedItemWrapper
 							img.spaldingSelectedVideo(data-bind="attr: {'src': './images/spalding/video/' + $data.image, 'id': $data.image}")
 					.videoCarouselNavigation
+						i.play.circle.outline.icon(style="cursor: pointer; color: rgba(200,200,200,0.75); position: absolute; top: 0; left: 0; bottom: 0; right: 0; font-size: 5rem; margin: auto !important;" data-bind="click: (data, event) => {videoClick(data, event)}")
 						img.carouselNavigation(src="./images/spalding/left-arrow.svg" data-bind="click: () => {navigateCarousel('previous')}")
 						img.carouselNavigation(src="./images/spalding/right-arrow.svg" data-bind="click: () => {navigateCarousel('next')}")
-					.videoDownloadSelection()
+						.ui.active.dimmer(data-bind="style: {'z-index': mediaLoading() ? '9999' : '-100', 'display': mediaLoading() && !videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0")
+							.ui.text.loader="Loading..."
+						video#videoPlayer(data-bind="style: {'display': videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0; background-color: black" controls)
+					<!-- ko ifnot: videoCanPlay() -->
+					.videoDownloadSelection(style="z-index: 100")
 						<!-- ko if: videoList()[selectedIndex()].audio -->
 							span( data-bind = "template: { name: 'ajaxLableButton', data: videoList()[selectedIndex()].audio }")
 						<!-- /ko -->
@@ -78,6 +70,7 @@
 						<!-- ko if: videoList()[selectedIndex()].video720 -->
 							span( data-bind = "template: { name: 'ajaxLableButton', data: videoList()[selectedIndex()].video720 }")
 						<!-- /ko -->
+					<!-- /ko -->
 				ul.videoCarousel(data-bind="foreach: videoList()")
 					li.videoCarouselItem(data-bind="attr: {'id': 'carouselItem ' + $index()},click: () => {$parent.selectedIndex($index())}")
 						img.videoCarouselItemImage(data-bind="attr: {'src': './images/spalding/video/' + $data.image}")

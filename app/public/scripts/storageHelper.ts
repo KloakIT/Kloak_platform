@@ -13,7 +13,7 @@ class StorageHelper {
 		pool(temp)
 	}
 
-	createDownload = (requestUuid: string, files: Array<string> = null, downloadTitle: string, extraHistoryTags: Array<string>, callback: Function) => {
+	createDownload = (requestUuid: string, files: Array<string> = null, downloadTitle: string, extraHistoryTags: Array<string>, callback: Function, stream?:boolean) => {
 		if (this.downloadPool()[requestUuid]) {
 			callback(`Download already exists!`, requestUuid)
 			console.log('Download already exists')
@@ -133,22 +133,4 @@ class StorageHelper {
 		}
 		return callback(new Error('Unable to detect IndexedDB storage information.'), null)
 	}
-
-	// cancel = (requestUuid: string) => {
-	// 	const download = this.downloadPool[requestUuid]
-	// 	if (download) {
-	// 		download.downloader.delete()
-	// 	}
-	// }
-
-	// terminate = (requestUuid: string) => {
-	// 	const download = this.downloadPool[requestUuid]
-	// 	if (download) {
-	// 		download.downloader.terminate()
-	// 	}
-	// 	delete this.downloadPool[requestUuid]
-	// }
-
-
-
 }

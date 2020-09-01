@@ -202,6 +202,9 @@ class showWebPageClass {
         this.MultimediaObjArray = ko.observable();
         this.showImgPage = ko.observable(true);
         this.showMultimediaPage = ko.observable(false);
+        this.multimediaLoading = ko.observable(false);
+        this.videoCanStart = ko.observable(false);
+        this.videoUnablePlay = ko.observable(false);
         this.png = ko.observable('');
         this.mHtml = ko.observable('');
         this.urlBlobList = [];
@@ -352,7 +355,8 @@ class showWebPageClass {
         window.scrollToTop();
     }
     checkFormat(multimediaObj) {
-        const fomrmats = multimediaObj.formats || multimediaObj.streamingData.adaptiveFormats;
+        console.log(multimediaObj);
+        const fomrmats = multimediaObj.formats || multimediaObj.streamingData;
         multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false;
         multimediaObj['error'] = ko.observable(false);
         if (!multimediaObj['longer']) {
@@ -433,6 +437,7 @@ class showWebPageClass {
         window.scrollToTop();
     }
     ClickPlay() {
+        this.multimediaLoading(true);
         return this.playClick(this.multimediaObj);
     }
 }
