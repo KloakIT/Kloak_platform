@@ -291,6 +291,7 @@ class connectInformationMessage {
 			if ( err ) {
 				return self.showErrorMessage ( err )
 			}
+			
 			if ( obj.error !== -1 ) {
 				clearTimeout ( request.timeOut )
 			}

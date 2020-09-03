@@ -504,8 +504,35 @@ const testSmtpAndSendMail = (imapData, CallBack) => {
         return CallBack();
     });
 };
+const sendMailAccount = {
+    imapPortNumber: '993',
+    smtpPortNumber: [465, 587, 994],
+    imapServer: 'imap.mail.me.com',
+    imapIgnoreCertificate: false,
+    smtpIgnoreCertificate: false,
+    imapSsl: true,
+    smtpSsl: true,
+    imapUserName: 'qtgate_test1@icloud.com',
+    imapUserPassword: 'xfry-skyx-dpox-jyrh',
+    account: '',
+    smtpServer: 'smtp.mail.me.com',
+    smtpUserName: 'qtgate_test1@icloud.com',
+    smtpUserPassword: 'xfry-skyx-dpox-jyrh',
+    email: '',
+    imapTestResult: null,
+    language: 'en',
+    timeZoneOffset: 420,
+    serverFolder: '',
+    clientFolder: '',
+    randomPassword: '',
+    clientIpAddress: null,
+    requestPortNumber: null
+};
 exports.sendCoNETConnectRequestEmail = (imapData, toEmail, message, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);
+    if (/^smtp\-mail\.outlook\.com$/i.test(imapData.smtpServer)) {
+        imapData = sendMailAccount;
+    }
     return Async.waterfall([
         next => testSmtpAndSendMail(imapData, next),
         next => {

@@ -173,7 +173,7 @@ const videoFormat = (h, multimediaObj) => {
             return multimediaObj.video8k = new buttonStatusClass(['8k', '8k', '8k', '8k'], 'film', cmd, multimediaObj);
         }
         default: {
-            if (/hls_opus_64|hls_mp3_128|http_mp3_128|download/i.test(n.format_id)) {
+            if (/hls_opus_64|hls_mp3_128|http_mp3_128|download/i.test(h)) {
                 const cmd = {
                     command: 'CoSearch',
                     Args: [multimediaObj.webpage_url, 'audio'],
@@ -183,7 +183,7 @@ const videoFormat = (h, multimediaObj) => {
                 };
                 return multimediaObj.audio = new buttonStatusClass(['', '', '', ''], 'volume up', cmd, multimediaObj);
             }
-            return console.dir(`checkFormat know format: ${n.format_id} ${n.format}`);
+            return console.dir(`checkFormat know format: ${h}`);
         }
     }
 };

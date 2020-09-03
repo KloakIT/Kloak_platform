@@ -254,7 +254,14 @@ class sharedAppClass {
 
 		currentItem['multimediaObj'] = []
 
+		let finished = false
+
 		const youtube_item_response = ( err, com: QTGateAPIRequestCommand ) => {
+
+			if ( finished ) {
+				return 
+			}
+
 			if ( err ) {
 				return error ( err )
             }
@@ -268,9 +275,9 @@ class sharedAppClass {
 			}
 
 			currentItem['showLoading'](0)
-
+			finished = true
 			const totoalTime = new Date().getTime() - com['startTime']
-			console.log (`total time [${ totoalTime/1000 }]`)
+			console.log (`getLinkClick ${ currentItem['url'] }total time [${ totoalTime/1000 }]`)
 
             if ( com.error ) {
                 return error ( com.error )
