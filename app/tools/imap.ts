@@ -1544,7 +1544,7 @@ export class imapPeer extends Event.EventEmitter {
         clearTimeout ( this.needPingTimeOut )
         clearTimeout ( this.checkSocketConnectTime )
         if ( this.doingDestroy ) {
-            return console.log (`destroy but this.doingDestroy = ture`)
+            return //console.log (`destroy but this.doingDestroy = ture`)
         }
             
         this.doingDestroy = true
