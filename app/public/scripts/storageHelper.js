@@ -57,13 +57,13 @@ class StorageHelper {
                 return requestUuid;
             }
         };
-        this.createUploader = (requestUuid, file, path, callback) => {
+        this.createUploader = (requestUuid, file, path, extraTags, callback) => {
             const progress = ko.observable(0);
             const uploader = {
                 requestSerial: requestUuid,
                 filename: file.name,
                 progress,
-                instance: new Uploader(requestUuid, file, path, progress, (err, data) => {
+                instance: new Uploader(requestUuid, file, path, extraTags, progress, (err, data) => {
                     data === requestUuid ? this.removeFromPool(this.uploadPool, requestUuid) : null;
                     callback(err, data);
                 })

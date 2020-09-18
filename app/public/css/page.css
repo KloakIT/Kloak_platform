@@ -1392,6 +1392,75 @@ ANDY - FILE STORAGE
 	min-height: 100vh;
 }
 
+.fileStorageRecorder {
+	width: 100%;
+	height: 100vh;
+	position: absolute;
+	background-color: rgba(0, 0, 0, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 200;
+}
+
+.recorderContent {
+	width: 70%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.recordPreview {
+	width: 100%;
+	height: 50%;
+	margin-bottom: 40px;
+	border-radius: 10px;
+	background-color: black
+}
+
+.recorderButtons {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.recorderButton {
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 5rem;
+	height: 5rem;
+	border: 5px solid ghostwhite;
+	padding: 4px;
+}
+
+.recorderIcon {
+	margin: 0 !important;
+	height: 1.18em;
+	width: 1.18em;
+	font-size: 2rem !important;
+	display: flex !important;
+	justify-content: center;
+	align-items: center;
+	color: white
+}
+
+.recordButtonInner {
+	border-radius: 50%;
+	width: 100%;
+	height: 100%;
+	background-color: red;
+	border: none;
+}
+
+.recordButtonInner:focus {
+	outline: none
+}
+
 .fileDragOverlay {
 	background-color: rgba(52, 81, 146, 0.75);
 	border: 2.5px dashed rgba(0, 0, 0, 0.5);
@@ -1763,7 +1832,7 @@ ANDY - FILE STORAGE
 	margin-top: 10px;
 }
 
-.fsAddTagInput {
+.fsAddTagInput, .mobileAddTagInput {
 	border-radius: 15px;
 	z-index: 9;
 	height: 2rem;
@@ -1772,7 +1841,7 @@ ANDY - FILE STORAGE
 	width: 100%;
 }
 
-.fsAddTagInput:focus {
+.fsAddTagInput:focus, .mobileAddTagInput:focus {
 	outline: none;
 	position: relative;
 }
@@ -2082,6 +2151,7 @@ ANDY - FILE STORAGE
 	min-height: 20vh;
 	width: 100%;
 	bottom: 0;
+	border: 1px solid rgba(0,0,0,0.3);
 	border-top-right-radius: 5px;
 	border-top-left-radius: 5px;
 	position: fixed;
@@ -2089,6 +2159,16 @@ ANDY - FILE STORAGE
 	transition: transform 250ms ease-in-out;
 	z-index: 201;
 	background-color: ghostwhite;
+}
+
+.fsButton {
+	padding: 1px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 5px;
+	border: 1px solid rgba(0,0,0,0.3);
+	background-color: ghostwhite
 }
 
 .mobileOptionHeader {
@@ -2136,6 +2216,38 @@ ANDY - FILE STORAGE
 	font-size: 16px;
 }
 
+.mobileInfoTitle {
+	font-weight: 700;
+}
+
+.mobileInfoSeparator {
+	width: 100%; 
+	border: none; 
+	height: 1px; 
+	background-color: rgba(0,0,0,0.15);
+}
+
+.mobileInfoText {
+	margin-bottom: 15px
+}
+
+.mobileAddTagInput {
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 0px;
+	height: 3rem;
+	padding: 10px;
+}
+
+.mobileAddTagButton {
+	border-top-right-radius: 15px;
+	border-bottom-right-radius: 15px;
+	border: 1px solid rgba(0,0,0,0.3);
+	height: 3rem;
+	padding: 0 15px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
 
 @media screen and (max-width: 700px) {
 	.fileStorageOverlay {

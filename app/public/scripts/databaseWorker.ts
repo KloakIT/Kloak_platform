@@ -107,16 +107,20 @@ class DatabaseWorker {
 		this.getIDBObjectStore().then((fs: IDBObjectStore) => {
 			console.log(uuid)
 			fs.get(uuid).onsuccess = async (e) => {
-				const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd)
-				_view.sharedMainWorker.decryptStreamWithoutPublicKey(pgpMessage, (err, data) => {
-					if (err) {
-						callback(err, null)
-						return
-					}
-					let t1 = performance.now()
-					callback(null, Buffer.from(data.data).buffer)
-					this.time += t1 - t0
-				})
+				if (e.target['result']) {
+					const pgpMessage = pgpStart.concat(e.target['result'], pgpEnd)
+					_view.sharedMainWorker.decryptStreamWithoutPublicKey(pgpMessage, (err, data) => {
+						if (err) {
+							callback(err, null)
+							return
+						}
+						let t1 = performance.now()
+						callback(null, Buffer.from(data.data).buffer)
+						this.time += t1 - t0
+					})
+				} else {
+					callback(null, Buffer.from(JSON.stringify([])).buffer)
+				}
 			}
 		}).catch(e => {
 			callback(e, null)

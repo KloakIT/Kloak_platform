@@ -2,7 +2,6 @@ class MediaViewer {
 	private type: string
 	private filename: string
 	public mediaLoading: KnockoutObservable<boolean> = ko.observable(false)
-	public options: {stream?: boolean, customPlayer?: HTMLElement} = {}
 	private callback: Function = null
 
 	private MP4BoxFile = null
@@ -37,7 +36,7 @@ class MediaViewer {
 
 
 
-	constructor ( type: string, filename: string, options: { uuid?:string, twitterData?: any, youtubeStreamingData?: any, customPlayer?: HTMLElement }, _callback: Function, exit: Function) {
+	constructor ( type: string, filename: string, private options: { recording?: boolean, uuid?:string, twitterData?: any, youtubeStreamingData?: any, customPlayer?: HTMLElement }, _callback: Function, exit: Function) {
 		this.type = type
 		this.filename = filename
 		this.options = options
@@ -49,11 +48,15 @@ class MediaViewer {
 		}
 
 		if (options['uuid']) {
-			this.streamDownloadedVideo()
+			this.streamDownloadedVideo(options['recording'])
 		}
 
 		if (options['twitterData']) {
 			// get twitter
+		}
+
+		if (options['recording']) {
+
 		}
 	}
 
@@ -162,7 +165,22 @@ class MediaViewer {
 		// })
 	}
 
-	streamDownloadedVideo = () => {
+	streamDownloadedVideo = (recording?: boolean) => {
+		if (recording) {
+			_view.storageHelper.createAssembler(this.options.uuid, (err, data) => {
+				if (data) {
+					const blobURL = _view.storageHelper.createBlob(data.buffer, data.contentType)
+					_view.displayMedia('player')
+					this.player = document.getElementById("videoPlayer")
+					this.player['src'] = blobURL
+			
+					this.player.addEventListener('canplay', e => {
+						this.player["play"]()
+					})
+				}
+			})
+			return
+		}
 		this.mediaLoading(true)
 		const beginFileRetrieval = () => {
 			let fileStart = 0

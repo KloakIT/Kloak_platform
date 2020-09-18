@@ -528,11 +528,9 @@ const sendMailAccount = {
     clientIpAddress: null,
     requestPortNumber: null
 };
-exports.sendCoNETConnectRequestEmail = (imapData, toEmail, message, CallBack) => {
+exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);
-    if (/^smtp\-mail\.outlook\.com$/i.test(imapData.smtpServer)) {
-        imapData = sendMailAccount;
-    }
+    const imapData = (/^smtp\-mail\.outlook\.com$/i.test(_imapData.smtpServer) ? sendMailAccount : _imapData);
     return Async.waterfall([
         next => testSmtpAndSendMail(imapData, next),
         next => {

@@ -1,7 +1,7 @@
 class MediaViewer {
     constructor(type, filename, options, _callback, exit) {
+        this.options = options;
         this.mediaLoading = ko.observable(false);
-        this.options = {};
         this.callback = null;
         this.MP4BoxFile = null;
         this.mediaSource = null;
@@ -111,7 +111,21 @@ class MediaViewer {
             // 	this.audioPieces.set(com.Args[0].order, com.Args[0])
             // })
         };
-        this.streamDownloadedVideo = () => {
+        this.streamDownloadedVideo = (recording) => {
+            if (recording) {
+                _view.storageHelper.createAssembler(this.options.uuid, (err, data) => {
+                    if (data) {
+                        const blobURL = _view.storageHelper.createBlob(data.buffer, data.contentType);
+                        _view.displayMedia('player');
+                        this.player = document.getElementById("videoPlayer");
+                        this.player['src'] = blobURL;
+                        this.player.addEventListener('canplay', e => {
+                            this.player["play"]();
+                        });
+                    }
+                });
+                return;
+            }
             this.mediaLoading(true);
             const beginFileRetrieval = () => {
                 let fileStart = 0;
@@ -244,10 +258,12 @@ class MediaViewer {
             this.streamYoutubeVideo();
         }
         if (options['uuid']) {
-            this.streamDownloadedVideo();
+            this.streamDownloadedVideo(options['recording']);
         }
         if (options['twitterData']) {
             // get twitter
+        }
+        if (options['recording']) {
         }
     }
 }

@@ -1,9 +1,10 @@
 class Uploader {
-    constructor(requestUuid, file, path, progressIndicator, callback) {
+    constructor(requestUuid, file, path, extraTags, progressIndicator, callback) {
         this.chunkSize = 1048576;
         this.progressIndicator = null;
         this.pieces = [];
         this.totalPieces = 0;
+        this.extraTags = [];
         this.callback = null;
         this.log = (message) => {
             console.log(`<${new Date().toLocaleString()}> ${message}`);
@@ -48,7 +49,7 @@ class Uploader {
                 path: this.path,
                 url: 'Upload',
                 domain: 'Upload',
-                tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], 'upload', 'local'],
+                tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'],
                 color: null,
                 size: this.fileSize
             };
@@ -142,6 +143,7 @@ class Uploader {
         this.path = path;
         this.file = file;
         this.fileSize = file.size;
+        this.extraTags = extraTags;
         this.progressIndicator = progressIndicator;
         if (this.fileSize <= this.chunkSize) {
             this.chunkSize = Math.floor(this.fileSize / 5);

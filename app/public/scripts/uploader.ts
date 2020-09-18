@@ -9,12 +9,14 @@ class Uploader {
 	private disassemblyWorker: Worker
 	private pieces = []
 	private totalPieces = 0
+	private extraTags = []
 	private callback: Function = null
-	constructor(requestUuid: string, file: File, path: string, progressIndicator: KnockoutObservable<number> | Function, callback: Function) {
+	constructor(requestUuid: string, file: File, path: string, extraTags: Array<string>, progressIndicator: KnockoutObservable<number> | Function, callback: Function) {
 		this.uuid = requestUuid
 		this.path = path
 		this.file = file
 		this.fileSize = file.size
+		this.extraTags = extraTags
 		this.progressIndicator = progressIndicator
 		if (this.fileSize <= this.chunkSize) {
 			this.chunkSize = Math.floor(this.fileSize / 5)
@@ -72,7 +74,7 @@ class Uploader {
 			path: this.path,
 			url: 'Upload',
 			domain: 'Upload',
-			tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], 'upload', 'local'],
+			tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'],
 			color: null,
 			size: this.fileSize
 		}
