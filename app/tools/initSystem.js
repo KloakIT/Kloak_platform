@@ -138,13 +138,13 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     //console.log (`getKeyPairInfo success!\nprivateKey\npublicKey`)
     const privateKey1 = _privateKey.keys[0];
     const publicKey1 = _publicKey.keys;
-    const user = publicKey1[0].users[0];
+    const user = publicKey1[0]["users"][0];
     const ret = InitKeyPair();
     let didCallback = false;
     ret.publicKey = publicKey;
     ret.privateKey = privateKey;
     ret.nikeName = exports.getNickName(user.userId.userid);
-    ret.createDate = privateKey1.primaryKey.created;
+    ret.createDate = privateKey1.primaryKey["created"];
     ret.email = exports.getEmailAddress(user.userId.userid);
     ret.verified = getQTGateSign(user);
     ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase();

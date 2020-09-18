@@ -11,7 +11,7 @@ class Downloader {
 	private totalPieces: number = null
 	private stopDownload = false
 	private callback: Function
-	constructor(requestUuid: string, files: Array<string> = null, downloadTitle: string, progressIndicator: KnockoutObservable<number> | Function, extraHistoryTags: Array<string>, callback: Function) {
+	constructor ( requestUuid: string, files: Array<string> = null, downloadTitle: string, progressIndicator: KnockoutObservable<number> | Function, extraHistoryTags: Array<string>, callback: Function) {
 		if (!window.indexedDB) {
 			alert(
 				"Your browser doesn't support a stable version of IndexedDB.\nWe recommend you use the Chrome browser."

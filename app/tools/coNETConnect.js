@@ -16,30 +16,25 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const Imap = require("./imap");
-const Tool = require("./initSystem");
-const Fs = require("fs");
 const Async = require("async");
-let logFileFlag = 'w';
 const saveLog = (err, _console = false) => {
     if (!err) {
         return;
     }
-    const data = `${new Date().toUTCString()}: ${typeof err === 'object' ? (err['message'] ? err['message'] : '') : err}\r\n`;
-    _console ? console.log(data) : null;
-    return Fs.appendFile(Tool.CoNETConnectLog, data, { flag: logFileFlag }, () => {
-        return logFileFlag = 'a';
-    });
+    const data = `${new Date().toUTCString()}: ${typeof err === 'object' ? (err['message'] ? err['message'] : '') : err}`;
+    _console ? console.dir(data) : null;
 };
 const timeOutWhenSendConnectRequestMail = 1000 * 60;
 const commandRequestTimeOutTime = 1000 * 10;
 const requestTimeOut = 1000 * 60;
 class default_1 extends Imap.imapPeer {
-    constructor(imapData, server, socket, roomEmit, cmdResponse, _exit) {
+    constructor(keyID, imapData, server, socket, roomEmit, cmdResponse, _exit) {
         super(imapData, imapData.clientFolder, imapData.serverFolder, err => {
             console.debug(`imapPeer doing exit! err =`, err);
             this.roomEmit.emit('tryConnectCoNETStage', null, -2);
             return this.exit1(err);
         });
+        this.keyID = keyID;
         this.imapData = imapData;
         this.server = server;
         this.socket = socket;
@@ -52,6 +47,7 @@ class default_1 extends Imap.imapPeer {
         this.timeoutWaitAfterSentrequestMail = null;
         this.timeoutCount = {};
         this.socketPool = [];
+        this.checkSocketConnectTime = null;
         saveLog(`=====================================  new CoNET connect()`, true);
         this.roomEmit.emit('tryConnectCoNETStage', null, 5);
         this.newMail = (mail, hashCode) => {
@@ -65,7 +61,7 @@ class default_1 extends Imap.imapPeer {
             this.connectStage = 4;
             this.roomEmit.emit('tryConnectCoNETStage', null, 4, publicKey);
             socket.emit('tryConnectCoNETStage', null, 4, publicKey);
-            return;
+            return this.checkSocketConnect();
         });
         this.on('pingTimeOut', () => {
             console.log(`class CoNETConnect on pingTimeOut`);
@@ -77,6 +73,7 @@ class default_1 extends Imap.imapPeer {
         });
         this.socketPool.push(socket);
         socket.once('disconnect', () => {
+            clearTimeout(this.timeoutWaitAfterSentrequestMail);
             const index = this.socketPool.findIndex(n => n.id === socket.id);
             if (index < 0) {
                 return console.dir(`CoNetConnect class socket.on disconnect, socket id [${socket.id}] have not in socketPool 【${this.socketPool.map(n => n.id)}]】`);
@@ -99,7 +96,24 @@ class default_1 extends Imap.imapPeer {
             return this.roomEmit.emit('tryConnectCoNETStage', null, 0);
         }, requestTimeOut * 2);
     }
+    checkSocketConnect() {
+        return this.roomEmit.clients((err, n) => {
+            if (err) {
+                return console.log(`checkSocketConnect roomEmit.clients error!!!`, err);
+            }
+            console.log(`\n\n`);
+            console.dir(`checkSocketConnect roomEmit.clients [${n.length}]`);
+            console.log(`\n\n`);
+            if (!n || !n.length) {
+                return this.destroy(0);
+            }
+            this.checkSocketConnectTime = setTimeout(() => {
+                return this.checkSocketConnect();
+            }, requestTimeOut);
+        });
+    }
     requestCoNET_v1(uuid, text, CallBack) {
+        this.checklastAccessTime();
         return this.sendDataToANewUuidFolder(Buffer.from(text).toString('base64'), this.imapData.serverFolder, uuid, CallBack);
     }
     /**
@@ -122,7 +136,7 @@ class default_1 extends Imap.imapPeer {
         let rImap = new Imap.qtGateImapRead(imapClone, fileName, true, mail => {
             const attr = Imap.getMailAttached(mail);
             const subject = Imap.getMailSubject(mail);
-            console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
+            console.dir(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
             if (!callback) {
                 callback = true;
                 CallBack(null, attr, subject);
@@ -170,7 +184,7 @@ class default_1 extends Imap.imapPeer {
             _mail = true;
             const attr = Imap.getMailAttached(mail);
             const subject = Imap.getMailSubject(mail);
-            console.log(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
+            console.dir(`=========>   getFile mail.length = [${mail.length}] attr.length = [${attr.length}]`);
             if (!callback) {
                 callback = true;
                 CallBack(null, attr, subject);
@@ -187,6 +201,15 @@ class default_1 extends Imap.imapPeer {
                 next => rImap.imapStream.fetch(1, next)
             ], err => {
                 let doAgain = false;
+                if (_mail) {
+                    return Async.series([
+                        next => rImap.imapStream.flagsDeleted('1', next),
+                        next => rImap.imapStream.expunge(next),
+                        next => rImap.imapStream._logoutWithoutCheck(next)
+                    ], err => {
+                        console.log(`new rImap success!`);
+                    });
+                }
                 if (err || !callback) {
                     if (++this.timeoutCount[fileName] < 20) {
                         console.dir(`getFileV1 [${fileName}] this.timeoutCount[ ${fileName}  ] < 20, doing again`);
@@ -197,15 +220,6 @@ class default_1 extends Imap.imapPeer {
                     }
                 }
                 console.log(`doAgain = 【${doAgain}】 callback = 【${callback} 】`);
-                if (_mail) {
-                    return Async.series([
-                        next => rImap.imapStream.flagsDeleted('1', next),
-                        next => rImap.imapStream.expunge(next),
-                        next => rImap.imapStream._logoutWithoutCheck(next)
-                    ], err => {
-                        console.log(`new rImap success!`);
-                    });
-                }
                 return rImap.imapStream._logoutWithoutCheck(() => {
                     if (doAgain) {
                         console.log(`getFileV1 [${fileName}] doAgain`);

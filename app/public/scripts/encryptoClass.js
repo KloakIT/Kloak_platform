@@ -365,21 +365,16 @@ class encryptoClass {
         };
         this.decryptStreamWithoutPublicKey = async (encryptoText, CallBack) => {
             const _self = this;
-            return openpgp.message.readArmored(encryptoText).then(mem => {
-                const option = {
-                    privateKeys: this._privateKey,
-                    message: mem,
-                    format: 'binary'
-                };
-                return openpgp.message.readArmored(encryptoText).then(data => {
-                    option.message = data;
-                    return openpgp.decrypt(option);
-                }).then(_plaintext => {
-                    const ret = Buffer.from(_plaintext.data);
-                    return CallBack(null, ret);
-                });
+            const option = {
+                privateKeys: this._privateKey,
+                message: await openpgp.message.readArmored(encryptoText),
+                format: 'binary'
+            };
+            return openpgp.decrypt(option).then(_plaintext => {
+                const ret = Buffer.from(_plaintext.data);
+                return CallBack(null, ret);
             }).catch(ex => {
-                CallBack(ex);
+                return CallBack(ex);
             });
         };
         this.makeKeyReady(ready);

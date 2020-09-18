@@ -797,6 +797,7 @@ interface kloak_downloadObj {
 	totalLength?: number
 	totalPieces?: number
 	requestUuid?: string
+	order: number
 	
 }
 

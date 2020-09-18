@@ -26,6 +26,9 @@ const Uuid = require("node-uuid");
 const Imap = require("./tools/imap");
 const coNETConnect_1 = require("./tools/coNETConnect");
 const mime = require("mime-types");
+var CSR = require('@root/csr');
+var PEM = require('@root/pem/packer');
+var Keypairs = require('@root/keypairs');
 const Package = require('../package.json');
 let logFileFlag = 'w';
 const saveLog = (err) => {
@@ -70,7 +73,7 @@ const imapErrorCallBack = (message) => {
     }
     return -1;
 };
-const resetConnectTimeLength = 1000 * 60 * 30;
+const resetConnectTimeLength = 1000 * 60 * 1;
 class localServer {
     constructor(postNumber = 3000, folderName = '') {
         this.expressServer = Express();
@@ -134,19 +137,19 @@ class localServer {
         });
     }
     catchCmd(mail, uuid) {
-        console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
+        // /console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
         const socket = this.requestPool.get(uuid);
         if (!socket) {
-            const keyIdRoom = this.socketServer.of(uuid);
-            return keyIdRoom.clients((err, clients) => {
+            const nameSpace = this.socketServer.of(uuid);
+            return nameSpace.clients((err, clients) => {
                 if (err) {
                     console.log(err);
-                    return console.dir(`keyIdRoom [${uuid}] get Error`);
+                    return console.dir(`catchCmd nameSpace.clients [${uuid}] get Error`);
                 }
                 if (!clients.length) {
-                    console.dir(`keyIdRoom [${uuid}] have not client!`);
+                    console.dir(`catchCmd nameSpace.clients request [${uuid}] have not client!`);
                 }
-                keyIdRoom.emit(uuid, mail);
+                nameSpace.emit(uuid, mail);
             });
         }
         socket.emit('doingRequest', mail, uuid);
@@ -158,31 +161,41 @@ class localServer {
         clearTimeout(this.destoryConnectTimePool.get(keyID));
         if (ConnectCalss) {
             console.log(`${imapData.account} have CoNETConnectCalss `);
-            let dontNeedReset = true;
-            if (ConnectCalss.lastAccessTime && typeof ConnectCalss.lastAccessTime.getTime === "function") {
-                dontNeedReset = (new Date().getTime() - ConnectCalss.lastAccessTime.getTime()) < resetConnectTimeLength;
-            }
-            if (dontNeedReset && !ConnectCalss.pingUuid) {
-                console.log(`tryConnectCoNET already have room; [${keyID}]`);
-                return ConnectCalss.Ping(sendMail);
-            }
-            ConnectCalss.destroy();
+            return ConnectCalss.Ping(sendMail);
         }
         const _exitFunction = err => {
             console.trace(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
-            if (err && err.message) {
+            /*
+            if ( err && err.message ) {
+                
                 //		network error
-                if (/ ECONNRESET /i.test) {
-                    if (typeof ConnectCalss.destroy === 'function') {
-                        ConnectCalss.destroy();
+                if ( / ECONNRESET /i.test) {
+                    if ( typeof ConnectCalss.destroy === 'function' ) {
+                        ConnectCalss.destroy ()
                     }
-                    makeConnect();
+                    
+                    //makeConnect ()
+                    
                 }
             }
-            return console.log(`_exitFunction doing nathing!`);
+            */
+            if (typeof ConnectCalss.destroy === 'function') {
+                ConnectCalss.destroy();
+            }
+            //makeConnect ()
+            this.imapConnectPool.delete(keyID);
+            return nameSpace.clients((err, n) => {
+                if (err) {
+                    return console.log(`_exitFunction nameSpace.clients get error`, err);
+                }
+                console.log(`nameSpace.clients = [${n.length}]`);
+                if (n && n.length > 0) {
+                    return makeConnect();
+                }
+            });
         };
         const makeConnect = () => {
-            ConnectCalss = new coNETConnect_1.default(imapData, this.socketServer, socket, nameSpace, (mail, uuid) => {
+            ConnectCalss = new coNETConnect_1.default(keyID, imapData, this.socketServer, socket, nameSpace, (mail, uuid) => {
                 return this.catchCmd(mail, uuid);
             }, _exitFunction);
             return this.imapConnectPool.set(keyID, socket['userConnet'] = ConnectCalss);
@@ -253,6 +266,7 @@ class localServer {
                 saveLog(`doingRequest on ${uuid} but have not CoNETConnectCalss need restart! socket.emit ( 'systemErr' )`);
                 return socket.emit(uuid, new Error('have no connect to node'));
             }
+            console.dir(`on doingRequest request_uuid [${request_uuid}]`);
             userConnet.requestCoNET_v1(request_uuid, request, _callBack);
         });
         socket.on('getFilesFromImap', (files, CallBack1) => {
@@ -430,3 +444,31 @@ class localServer {
     }
 }
 exports.default = localServer;
+/*
+const csrKey = async () => {
+    const pair = await Keypairs.generate()
+    let keyPem = await Keypairs.export ({ jwk: pair.private, format: 'pkcs8' })
+    
+    let csr: string = await CSR.csr({
+        jwk: pair.private,
+        domains: ['example.com', '*.example.com', 'foo.bar.example.com'],
+        encoding: 'pem'
+    })
+    
+    
+    
+    console.log ( keyPem )
+    console.log ( csr )
+    const server = Https.createServer ({
+        key: keyPem,
+        cert: csr
+    }, (req, res) => {
+        console.log (`${ req }`)
+    })
+    
+    server.listen (8000)
+}
+
+csrKey ()
+
+*/ 

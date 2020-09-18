@@ -157,14 +157,14 @@ export const getKeyPairInfo = async ( publicKey: string, privateKey: string, pas
 	//console.log (`getKeyPairInfo success!\nprivateKey\npublicKey`)
 	const privateKey1 = _privateKey.keys[0]
 	const publicKey1 = _publicKey.keys
-	const user = publicKey1[0].users[0]
+	const user = publicKey1[0]["users"][0]
 	const ret = InitKeyPair()
 	let didCallback = false
 	
 	ret.publicKey = publicKey
 	ret.privateKey = privateKey
 	ret.nikeName = getNickName ( user.userId.userid )
-	ret.createDate = privateKey1.primaryKey.created
+	ret.createDate = privateKey1.primaryKey["created"]
 	ret.email = getEmailAddress ( user.userId.userid )
 	ret.verified = getQTGateSign ( user )
 	ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase()
@@ -252,13 +252,14 @@ export const newKeyPair = ( emailAddress: string, nickname: string, password: st
 		name: nickname,
 		email: emailAddress
 	}
-	const option: OpenPgp.KeyOptions = {
+	const option = {
 		passphrase: password,
 		userIds: [ userId ],
 		curve: "ed25519",
 		aead_protect: true,
 		aead_protect_version: 4
 	}
+
 
 	return OpenPgp.generateKey ( option ).then ( async ( keypair: { publicKeyArmored, privateKeyArmored }) => {
 		const _key = await ( OpenPgp.key.readArmored ( keypair.publicKeyArmored ))

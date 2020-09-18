@@ -53,6 +53,7 @@ class forYoutube extends sharedAppClass {
         if ( !multimediaObj['title'] ) {
             this.converterWatchObj ( multimediaObj )
         }
+        
         let view = new showWebPageClass ( url, null, multimediaObj, () => {
             exit ()
             view = null
@@ -60,14 +61,19 @@ class forYoutube extends sharedAppClass {
 			// const uu = item
 			console.log(item)
 			if (item['streamingData']) {
-				_view.mediaViewer = new MediaViewer('video', item['title'], {youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, (err, canStart) => {
-					if (err) {
-						console.log(err)
+				console.time("STARTING VIDEO PLAY REQUEST")
+				_view.mediaViewer = new MediaViewer('video', item['title'], { youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, ( err, canStart) => {
+					if ( err ) {
+						console.log( err)
 					}
-					if (canStart) {
-						view.videoCanStart(true)
+					if ( canStart ) {
+						console.timeEnd("STARTING VIDEO PLAY REQUEST")
+						view.videoCanStart ( true )
 					}
 				}, () => {
+                    URL.revokeObjectURL ( _view.mediaViewer.options['customPlayer']['src'] )
+                    URL.revokeObjectURL ( _view.mediaViewer.player['src'])
+                    
 					_view.mediaViewer = null
 				})
 			} else {

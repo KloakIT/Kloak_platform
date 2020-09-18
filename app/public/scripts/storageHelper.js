@@ -89,9 +89,6 @@ class StorageHelper {
         this.decryptLoad = (uuid, callback) => {
             return this.databaseWorker.decryptLoad(uuid, callback);
         };
-        this.decryptLoad2 = (uuid, callback) => {
-            return this.databaseWorker.decryptLoad2(uuid, callback);
-        };
         this.getIndex = (uuid, callback) => {
             return this.databaseWorker.decryptLoad(uuid, callback);
         };

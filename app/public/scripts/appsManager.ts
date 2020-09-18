@@ -480,7 +480,7 @@ class appsManager {
 		self.showTempMain ( true )
 		return self.mainScript ( _mainMenuObj )
 		/** */
-		
+		/*
 		const viewMainMenuu = () => {
 			
 			self.mainHtml ( self.appMenu [1] )
@@ -556,7 +556,7 @@ class appsManager {
 			return viewMainMenuu ()
 
 		})
-		
+		*/
 	}
 
 	public mainNemuError () {
@@ -635,7 +635,7 @@ class appsManager {
 
 		/** end Debug */
 
-
+		/*
 
 		if ( obj ) {
 			runningApp ( obj )
@@ -692,7 +692,7 @@ class appsManager {
 
 		})
 
-
+		*/
 		
 		
 		

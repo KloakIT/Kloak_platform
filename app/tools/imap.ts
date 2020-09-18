@@ -78,7 +78,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     private needLoginout = null
 
 	private idleDoingDown () {
-        if ( !this.doingIdle ) {
+        if ( !this.doingIdle || this.runningCommand !== 'idle' ) {
             return console.dir (`idleDoingDown stop because this.doingIdle === false!`)
         }
         this.doingIdle = false
@@ -345,7 +345,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 const uids = newMailIds.split(',')
                 //console.log (`doNewMail newMailIds = 【${ newMailIds }】`)
 				return Async.eachSeries ( uids, ( n: string ,next ) => {
-					const _uid = parseInt( n )
+					const _uid = parseInt ( n )
 					if ( _uid > 0 ) {
 						return getNewMail ( _uid, next )
 					}
@@ -797,7 +797,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 						
 						this.callback = true
 						
-						this.debug ? debugOut ( out, false, this.imapServer.IMapConnect.imapUserName ) : null
+						//this.debug ? debugOut ( out, false, this.imapServer.IMapConnect.imapUserName ) : null
 						next ( null, out + Base64Data + '\r\n' )
 					}
 					return _callback ()
@@ -829,7 +829,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 		if ( this.imapServer.literalPlus ) {
 			
 			
-			this.debug ? debugOut ( out + Base64Data + '\r\n', false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
+			//this.debug ? debugOut ( out + Base64Data + '\r\n', false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
 			this.push ( out )
 			this.push ( Base64Data + '\r\n' )
 			
@@ -891,7 +891,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     public fetch ( fetchNum, callback ) {
 
         this.doCommandCallback = ( err ) => {
-            console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }]`)
+            //console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }], err [${ err }]`)
             return callback ( err, this.newSwitchRet )
         }
         
@@ -909,7 +909,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 							
                         } 
 						
-						this.debug ? console.log ( `${ text1 } doing length [${ this.imapServer.fetching }]` ) : null
+						//this.debug ? console.log ( `${ text1 } doing length [${ this.imapServer.fetching }]` ) : null
 						
                     }
                     if ( /^RECENT$/i.test ( cmdArray[2]) && parseInt ( cmdArray[1]) > 0 ) {
@@ -1191,10 +1191,10 @@ export class qtGateImap extends Event.EventEmitter {
 
 }
 
-export const seneMessageToFolder = ( IMapConnect: imapConnect, writeFolder: string, message: string, subject: string, CallBack ) => {
+export const seneMessageToFolder = ( IMapConnect: imapConnect, writeFolder: string, message: string, subject: string, createFolder: boolean, CallBack ) => {
 	const wImap = new qtGateImap ( IMapConnect, null, false, writeFolder, debug, null )
 	let _callback = false 
-	console.log ( `seneMessageToFolder !!!`)
+	//console.log ( `seneMessageToFolder !!! ${ subject }`)
 	wImap.once ( 'error', err => {
 		wImap.destroyAll ( err )
 		if ( !_callback ) {
@@ -1205,7 +1205,12 @@ export const seneMessageToFolder = ( IMapConnect: imapConnect, writeFolder: stri
 
 	wImap.once ( 'ready', () => {
 		Async.series ([
-			next => wImap.imapStream.createBox ( false, writeFolder, next ),
+			next => {
+                if ( !createFolder ) {
+                    return next ()
+                }
+                return wImap.imapStream.createBox ( false, writeFolder, next )
+            },
 			next => wImap.imapStream.appendStreamV4 ( message, subject, writeFolder, next ),
 			next => wImap.imapStream._logoutWithoutCheck ( next )
 		], err => {
@@ -1224,18 +1229,6 @@ export const seneMessageToFolder = ( IMapConnect: imapConnect, writeFolder: stri
 export class qtGateImapRead extends qtGateImap {
 
     private openBox = false
-
-    public fetchAndDelete ( Uid: string, CallBack ) {
-        if ( !this.openBox ) {
-            return CallBack ( new Error ( 'not ready!'))
-        }
-            
-        return Async.series ([
-            next => this.imapStream.fetch ( Uid, next ),
-            next => this.imapStream.flagsDeleted ( Uid, next ),
-            next => this.imapStream.expunge ( next )
-        ], CallBack )
-    }
 
     constructor ( IMapConnect: imapConnect, listenFolder: string, deleteBoxWhenEnd: boolean, newMail: ( mail ) => void ) {
 
@@ -1344,6 +1337,7 @@ interface mailPool {
 	mail: Buffer
 	uuid: string
 }
+const resetConnectTimeLength = 1000 * 60 * 15
 
 export class imapPeer extends Event.EventEmitter {
 
@@ -1356,15 +1350,49 @@ export class imapPeer extends Event.EventEmitter {
     public newMail: ( data: any, subject ) => void
     private makeRImap = false
 	public needPingTimeOut = null
-	public lastAccessTime: Date = null
+    public lastAccessTime = new Date ().getTime()
+    
+    public pinging = false
+    public connected = false
+    public rImap_restart = false
+    public checkSocketConnectTime = null
+
+    private restart_rImap () {
+
+
+        if ( this.rImap_restart ) {
+            return 
+        }
+
+        this.rImap_restart = true
+
+        if ( this.makeRImap ) {
+            return
+        }
+        
+        return this.rImap.imapStream.loginoutWithCheck (() => {
+            console.dir (`restart_rImap`)
+            this.rImap.emit ('end')
+            return this.newReadImap ()
+        })
+    }
+
+    public checklastAccessTime () {
+        const now = new Date().getTime ()
+        if ( now - this.lastAccessTime > resetConnectTimeLength ) {
+            
+            this.restart_rImap ()
+        }
+        this.lastAccessTime = now
+    }
 
     private mail ( email: Buffer ) {
         
 		//console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = getMailSubject ( email )
         const attr = getMailAttached ( email )
-        
-		this.lastAccessTime = new Date ()
+       
+        this.checklastAccessTime ()
 		if ( subject ) {
 
             /**
@@ -1374,12 +1402,15 @@ export class imapPeer extends Event.EventEmitter {
              */
             if ( subject === this.pingUuid ) {
                 this.pingUuid = null
-                console.log (`CoNETConnected`)
-                //console.log (attr)
+                
+                this.connected = true
+                this.pinging = false
                 clearTimeout ( this.waitingReplyTimeOut )
+
                 return this.emit ('CoNETConnected', attr )
             }
-            console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
+
+            //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail ( attr, subject )
 
 		}
@@ -1401,37 +1432,44 @@ export class imapPeer extends Event.EventEmitter {
 
     private AppendWImap1 ( mail: string, uuid: string, CallBack ) {
         
-        return seneMessageToFolder ( this.imapData, this.writeBox, mail, uuid, CallBack )
+        return seneMessageToFolder ( this.imapData, this.writeBox, mail, uuid, !this.connected, CallBack )
         
     }
 
     private setTimeOutOfPing ( sendMail: boolean ) {
-        console.trace (`setTimeOutOfPing`)
+        //console.trace (`setTimeOutOfPing`)
         clearTimeout ( this.waitingReplyTimeOut )
         clearTimeout ( this.needPingTimeOut )
 		debug ? saveLog ( `Make Time Out for a Ping, ping ID = [${ this.pingUuid }]`, true ): null
 		
         return this.waitingReplyTimeOut = setTimeout (() => {
             debug ? saveLog ( `ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true ): null
-            this.pingUuid = null
             return this.emit ( 'pingTimeOut' )
         }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut )
     }
     
     public Ping ( sendMail: boolean ) {
         
+        if ( this.pinging ) {
+            return console.trace ('pinging = true !')
+        }
+        this.pinging = true
+
         if ( this.pingUuid && !sendMail ) {
 
             return debug ? saveLog ( `Ping already waiting other ping, STOP!\nthis.pingUuid = [${ this.pingUuid }], sendMail = [${ sendMail }]`, ): null
-		}
+        }
+        
 		
 		this.emit ( 'ping' )
 
         this.pingUuid = Uuid.v4 ()
         
         return this.AppendWImap1 ( null, this.pingUuid, err => {
+            this.pinging = false
             if ( err ) {
-				this.pingUuid = null
+                this.pingUuid = null
+                console.dir ( `PING this.AppendWImap1 Error [${ err.message }]`)
                 return this.destroy ( err )
             }
             return this.setTimeOutOfPing ( sendMail )
@@ -1454,12 +1492,12 @@ export class imapPeer extends Event.EventEmitter {
         })
 
         this.rImap.once ( 'ready', () => {
-            this.makeRImap = false
-            debug ? saveLog ( `this.rImap.once on ready `): null
+            this.makeRImap = this.rImap_restart = false
+            //debug ? saveLog ( `this.rImap.once on ready `): null
 			this.Ping ( false )
         })
 
-        this.rImap.once ( 'error', err => {
+        this.rImap.on ( 'error', err => {
             this.makeRImap = false
             debug ? saveLog ( `rImap on Error [${ err.message }]`, true ): null
             if ( err && err.message && /auth|login|log in|Too many simultaneous|UNAVAILABLE/i.test ( err.message )) {
@@ -1472,10 +1510,16 @@ export class imapPeer extends Event.EventEmitter {
 
         })
 
-        this.rImap.once ( 'end', err => {
-            
+        this.rImap.on ( 'end', err => {
+            this.rImap.removeAllListeners ()
             this.rImap = null
             this.makeRImap = false
+
+            if ( this.rImap_restart ) {
+                return console.dir (`rImap.on ( 'end' ) this.rImap_restart = TRUE`, err )
+            }
+
+
             if ( typeof this.exit === 'function') {
                 debug ? saveLog (`imapPeer rImap on END!`): null
                 this.exit ( err )
@@ -1497,6 +1541,8 @@ export class imapPeer extends Event.EventEmitter {
     public destroy ( err?: number ) {
         
         clearTimeout ( this.waitingReplyTimeOut )
+        clearTimeout ( this.needPingTimeOut )
+        clearTimeout ( this.checkSocketConnectTime )
         if ( this.doingDestroy ) {
             return console.log (`destroy but this.doingDestroy = ture`)
         }
@@ -1521,7 +1567,7 @@ export class imapPeer extends Event.EventEmitter {
 	
 	public sendDataToANewUuidFolder ( data: string, writeBox: string, subject: string, CallBack ) {
 		
-		return seneMessageToFolder ( this.imapData, writeBox, data, subject, CallBack )
+		return seneMessageToFolder ( this.imapData, writeBox, data, subject, !this.connected, CallBack )
 	}
 
 }

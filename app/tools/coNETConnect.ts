@@ -15,21 +15,16 @@
  */
 
 import * as Imap from './imap'
-import * as Tool from './initSystem'
-import * as Fs from 'fs'
 import * as Async from 'async'
 
 
-let logFileFlag = 'w'
 const saveLog = ( err: {} | string, _console = false ) => {
 	if ( !err ) {
 		return 
 	}
-	const data = `${ new Date().toUTCString () }: ${ typeof err === 'object' ? ( err['message'] ? err['message'] : '' ) : err }\r\n`
-	_console ? console.log ( data ) : null
-	return Fs.appendFile ( Tool.CoNETConnectLog, data, { flag: logFileFlag }, () => {
-		return logFileFlag = 'a'
-	})
+	const data = `${ new Date().toUTCString () }: ${ typeof err === 'object' ? ( err['message'] ? err['message'] : '' ) : err }`
+	_console ? console.dir ( data ) : null
+	
 }
 
 const timeOutWhenSendConnectRequestMail = 1000 * 60
@@ -43,6 +38,7 @@ export default class extends Imap.imapPeer {
 	private timeoutWaitAfterSentrequestMail: NodeJS.Timeout = null
 	private timeoutCount = {}
 	private socketPool = []
+	public checkSocketConnectTime = null
 
 	public exit1 ( err ) {
 		console.trace (`imapPeer doing exit! this.sockerServer.emit ( 'tryConnectCoNETStage', null, -1 )`)
@@ -61,7 +57,26 @@ export default class extends Imap.imapPeer {
 		}, requestTimeOut * 2 )
 	}
 
-	constructor ( public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket, public roomEmit: SocketIO.Namespace,
+	private checkSocketConnect () {
+		return this.roomEmit.clients (( err, n ) => {
+			if ( err ) {
+				return console.log (`checkSocketConnect roomEmit.clients error!!!`, err )
+			}
+			console.log (`\n\n`)
+			console.dir (`checkSocketConnect roomEmit.clients [${ n.length }]`)
+			console.log (`\n\n`)
+
+			if ( !n || !n.length ) {
+				return this.destroy ( 0 )
+			}
+
+			this.checkSocketConnectTime = setTimeout (() => {
+				return this.checkSocketConnect ()
+			}, requestTimeOut )
+		})
+	}
+
+	constructor ( public keyID, public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket, public roomEmit: SocketIO.Namespace,
 		private cmdResponse: ( mail: string, hashCode: string ) => void, public _exit: ( err ) => void ) {
 		super ( imapData, imapData.clientFolder, imapData.serverFolder, err => {
 			console.debug ( `imapPeer doing exit! err =`, err )
@@ -83,9 +98,10 @@ export default class extends Imap.imapPeer {
 			//console.log ( publicKey )
 			clearTimeout ( this.timeoutWaitAfterSentrequestMail )
 			this.connectStage = 4
+			
 			this.roomEmit.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
 			socket.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
-			return 
+			return this.checkSocketConnect ()
 		})
 
 		this.on ( 'pingTimeOut', () => {
@@ -105,6 +121,7 @@ export default class extends Imap.imapPeer {
 		this.socketPool.push ( socket )
 
 		socket.once ( 'disconnect', () => {
+			clearTimeout ( this.timeoutWaitAfterSentrequestMail )
 			const index = this.socketPool.findIndex ( n => n.id === socket.id )
 			if ( index < 0 ) {
 				return console.dir (`CoNetConnect class socket.on disconnect, socket id [${ socket.id }] have not in socketPool 【${ this.socketPool.map ( n => n.id )}]】`)
@@ -116,6 +133,7 @@ export default class extends Imap.imapPeer {
 	}
 
 	public requestCoNET_v1 ( uuid: string, text: string, CallBack ) {
+		this.checklastAccessTime ()
 		return this.sendDataToANewUuidFolder ( Buffer.from ( text ).toString ( 'base64' ), this.imapData.serverFolder, uuid, CallBack )
 	}
 
@@ -142,7 +160,7 @@ export default class extends Imap.imapPeer {
 			
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
-			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
+			console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
 			if ( !callback ) {
 				callback = true
 				CallBack ( null, attr, subject )
@@ -198,7 +216,7 @@ export default class extends Imap.imapPeer {
 			_mail = true
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
-			console.log (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
+			console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
 			if ( !callback ) {
 				callback = true
 				CallBack ( null, attr, subject )
@@ -221,17 +239,7 @@ export default class extends Imap.imapPeer {
 			], err => {
 				
 				let doAgain = false
-				if ( err || !callback ) {
-					
-					if ( ++ this.timeoutCount[ fileName ] < 20 ) {
-						console.dir ( `getFileV1 [${ fileName }] this.timeoutCount[ ${ fileName }  ] < 20, doing again`)
-						doAgain = true
-					} else {
-						console.dir (` ++ this.timeoutCount[  ${ fileName } ] [${ this.timeoutCount[ fileName ] }] > 20 `)
-					}
-					
-				}
-				console.log (`doAgain = 【${ doAgain }】 callback = 【${ callback } 】`)
+				
 
 				if ( _mail ) {
 					return Async.series ([
@@ -243,6 +251,19 @@ export default class extends Imap.imapPeer {
 					})
 					
 				}
+
+				if ( err || !callback ) {
+					
+					if ( ++ this.timeoutCount[ fileName ] < 20 ) {
+						console.dir ( `getFileV1 [${ fileName }] this.timeoutCount[ ${ fileName }  ] < 20, doing again`)
+						doAgain = true
+					} else {
+						console.dir (` ++ this.timeoutCount[  ${ fileName } ] [${ this.timeoutCount[ fileName ] }] > 20 `)
+					}
+					
+				}
+				console.log (`doAgain = 【${ doAgain }】 callback = 【${ callback } 】`)
+				
 				return rImap.imapStream._logoutWithoutCheck (() => {
 					
 					if ( doAgain ) {
@@ -262,5 +283,4 @@ export default class extends Imap.imapPeer {
 	}
 
 	
-
 }

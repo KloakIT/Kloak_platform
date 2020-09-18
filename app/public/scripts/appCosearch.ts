@@ -72,7 +72,7 @@ const appScript = {
 	showHistory: ko.observable(false),
 
 	showDownloadProgress: ko.observable(false),
-	currentDownloads: ko.observable(<currentDownloads>{}),
+	currentDownloads: ko.observable(<any>{}),
 	finishedDownloads: ko.observableArray([]),
 	showTwitterObjResult: ko.observable ( false ),
 	twitterObj: null,

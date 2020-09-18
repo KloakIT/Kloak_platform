@@ -462,60 +462,83 @@ class appsManager {
         self.showTempMain(true);
         return self.mainScript(_mainMenuObj);
         /** */
+        /*
         const viewMainMenuu = () => {
-            self.mainHtml(self.appMenu[1]);
-            const _mainMenuObj = JSON.parse(self.appMenu[2]);
-            self.initMenuArray(_mainMenuObj.mainMenuItem);
-            _mainMenuObj['_mainMenuItem'] = ko.observableArray(_mainMenuObj.mainMenuItem);
-            self.mainScript(_mainMenuObj);
-            self.showMain(true);
-            self.mainLoading(false);
-            self.mainLoading(false);
-            self.conetResponse(false);
-            _view.connectInformationMessage.hideMessage();
-            this.getAppObject(_mainMenuObj.mainMenuItem);
-        };
-        if (this.appMenu && this.appMenu.length) {
-            viewMainMenuu();
+            
+            self.mainHtml ( self.appMenu [1] )
+            
+            const _mainMenuObj = JSON.parse ( self.appMenu [2] )
+            self.initMenuArray ( _mainMenuObj.mainMenuItem )
+
+            _mainMenuObj['_mainMenuItem'] = ko.observableArray ( _mainMenuObj.mainMenuItem )
+
+            self.mainScript ( _mainMenuObj )
+            self.showMain ( true )
+            self.mainLoading ( false )
+            self.mainLoading ( false )
+            self.conetResponse ( false )
+            _view.connectInformationMessage.hideMessage()
+            this.getAppObject ( _mainMenuObj.mainMenuItem )
         }
-        const showError = (err) => {
-            self.mainLoading(false);
+
+        if ( this.appMenu && this.appMenu.length ) {
+
+            viewMainMenuu ()
+            
+        }
+
+        const showError = ( err ) => {
+            self.mainLoading ( false )
             //_view.connectInformationMessage.hideMessage()
-            self.loadingError(_view.connectInformationMessage.getErrorIndex(err));
-            self.loadingGetResponse(false);
-            return self.conetResponse(false);
-        };
-        const com = {
+            self.loadingError ( _view.connectInformationMessage.getErrorIndex ( err ) )
+            self.loadingGetResponse ( false )
+            return self.conetResponse ( false )
+        }
+        
+        const com: QTGateAPIRequestCommand = {
             command: 'mainMenu',
-            Args: this.appMenu && this.appMenu[0] ? this.appMenu[0] : null,
+            Args: this.appMenu && this.appMenu[0] ? this.appMenu[0]: null ,
             error: null,
             subCom: null
-        };
-        return _view.keyPairCalss.emitRequest(com, (err, com) => {
-            if (err) {
-                return showError(err);
+        }
+
+        return _view.keyPairCalss.emitRequest ( com,( err, com: QTGateAPIRequestCommand ) => {
+        
+            if ( err ) {
+                return showError ( err )
             }
-            if (!com) {
-                self.conetResponse(false);
-                return self.loadingGetResponse(true);
+
+            if ( !com ) {
+                self.conetResponse ( false )
+                return self.loadingGetResponse ( true )
             }
-            if (com.error === -1) {
-                self.loadingGetResponse(false);
-                return self.conetResponse(true);
+
+            if ( com.error === -1 ) {
+                self.loadingGetResponse ( false )
+                return self.conetResponse ( true )
             }
-            if (com.error) {
-                return showError(com.error);
+
+            if ( com.error ) {
+                return showError ( com.error  )
             }
-            _view.connectInformationMessage.hideMessage();
-            if (!com.Args || !com.Args.length) {
-                return;
+            _view.connectInformationMessage.hideMessage ()
+            if ( !com.Args || !com.Args.length ) {
+                return
             }
-            this.appMenu = com.Args;
-            if (typeof Storage !== "undefined") {
-                window.localStorage.setItem(appMenuData, JSON.stringify(com.Args));
+
+            this.appMenu = com.Args
+            
+            if ( typeof Storage !== "undefined" ) {
+                
+                window.localStorage.setItem ( appMenuData, JSON.stringify ( com.Args ))
             }
-            return viewMainMenuu();
-        });
+
+            
+            
+            return viewMainMenuu ()
+
+        })
+        */
     }
     mainNemuError() {
         this.exit();
@@ -569,44 +592,63 @@ class appsManager {
          */
         return runningApp(null);
         /** end Debug */
-        if (obj) {
-            runningApp(obj);
+        /*
+
+        if ( obj ) {
+            runningApp ( obj )
         }
-        const com = {
+
+        const com: QTGateAPIRequestCommand = {
             command: AppName,
-            Args: obj && obj[0] ? obj[0] : null,
+            Args: obj && obj[0] ? obj[0]: null,
             error: null,
             subCom: null
-        };
-        const showError = (err) => {
-            item.loading(false);
-            self.appLoadingErrorIndex(_view.connectInformationMessage.getErrorIndex(err));
-            return self.appLoadingError(true);
-        };
-        return _view.keyPairCalss.emitRequest(com, (err, com) => {
-            if (err) {
-                return showError(err);
+        }
+
+        const showError = ( err ) => {
+            item.loading ( false )
+            self.appLoadingErrorIndex ( _view.connectInformationMessage.getErrorIndex ( err ))
+            return self.appLoadingError ( true )
+            
+        }
+
+        return _view.keyPairCalss.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+        
+            if ( err ) {
+                return showError ( err )
             }
-            if (!com) {
-                self.conetResponse(false);
-                return self.loadingGetResponse(true);
+
+            if ( !com ) {
+                self.conetResponse ( false )
+                return self.loadingGetResponse ( true )
             }
-            if (com.error === -1) {
-                self.loadingGetResponse(false);
-                return self.conetResponse(true);
+
+            if ( com.error === -1 ) {
+                self.loadingGetResponse ( false )
+                return self.conetResponse ( true )
             }
-            if (com.error) {
-                return showError(com.error);
+
+            if ( com.error ) {
+                return showError ( com.error  )
             }
-            _view.connectInformationMessage.hideMessage();
-            if (!com.Args || !com.Args.length) {
-                return;
+            _view.connectInformationMessage.hideMessage ()
+            if ( !com.Args || !com.Args.length ) {
+                return
             }
-            obj = com.Args;
-            if (typeof Storage !== "undefined") {
-                window.localStorage.setItem(AppName, JSON.stringify(com.Args));
+
+            obj = com.Args
+            
+            if ( typeof Storage !== "undefined" ) {
+                
+                window.localStorage.setItem ( AppName, JSON.stringify ( com.Args ))
             }
-            return runningApp(obj);
-        });
+
+            
+            
+            return runningApp ( obj )
+
+        })
+
+        */
     }
 }

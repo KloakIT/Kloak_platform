@@ -282,6 +282,7 @@ class sharedAppClass {
             if ( com.error ) {
                 return error ( com.error )
 			}
+			
 			currentItem ['multimediaObj'].push ( com )
 
 			if ( typeof this.item_request_get_response === 'function' ) {
@@ -290,7 +291,6 @@ class sharedAppClass {
 
 			currentItem ['showLoading']( 5 )
 			
-
 		}
 		
 		currentItem ['showLoading'](1)

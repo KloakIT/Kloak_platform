@@ -13,6 +13,7 @@ class fileStorage {
 	private selectedFile = ko.observable(null)
 	private addTagInput = ko.observable("")
 	private selectedInfoFile = ko.observable()
+	private mediaViewer = null
 	private colorOptions = [
 		["maroon", "red", "olive", "yellow"],
 		["green", "lime", "teal", "aqua"],
@@ -213,23 +214,25 @@ class fileStorage {
 
 	getHistory = () => {
 		_view.storageHelper.decryptLoad('history', (err, data) => {
+
 			if (err) {
 				return
 			}
-			let temp = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
 
-			temp = temp.map((history: any) => {
+			let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
+			let temp = []
+
+			histories.forEach((history: any) => {
 				history['filename'] = ko.observable(history['filename'])
 				history['time_stamp'] = ko.observable(history['time_stamp'])
 				history['last_viewed'] = ko.observable(history['last_viewed'])
 				history['color'] = ko.observable(history['color'])
 				history['tag'] = ko.observableArray(history['tag'])
-				return history
+				temp.push(history)
 			})
+
 			this.allFileStorageData(temp)
-			this.fileStorageData(temp.sort((a, b) => {
-				return Date.parse(b['last_viewed']()) - Date.parse(a['last_viewed']())
-			}))
+			this.fileStorageData(temp)
 			this.setTags(this.allFileStorageData())
 		})
 	}
@@ -241,10 +244,25 @@ class fileStorage {
 	}
 
 	updateHistory = (uuid) => {
-		const temp = this.allFileStorageData().filter((file) => file.uuid !== uuid)
-		this.fileStorageData(temp)
-		this.allFileStorageData(temp)
-		_view.storageHelper.replaceHistory(this.allFileStorageData(), null)
+		const histories = this.allFileStorageData().filter((file) => file.uuid !== uuid)
+		const temp = []
+		histories.map((history: any) => {
+			const n = {}
+			n['uuid'] = history['uuid']
+			n['filename'] = history['filename']()
+			n['time_stamp'] = history['time_stamp']()
+			n['last_viewed'] = history['last_viewed']()
+			n['path'] = history['path']
+			n['url'] = history['url']
+			n['domain'] = history['domain']
+			n['tag'] = history['tag']()
+			n['color'] = history['color']()
+			n['size'] = history['size'] ? history['size'] : null
+			temp.push(n)
+		})
+		this.fileStorageData(histories)
+		this.allFileStorageData(histories)
+		_view.storageHelper.replaceHistory(temp, null)
 		this.fileStorageData.valueHasMutated()
 		this.selectedFile(null)
 		this.detectStorageUsage()
@@ -340,6 +358,7 @@ class fileStorage {
 				n['size'] = history['size'] ? history['size'] : null
 				return n
 			})
+			console.log('REPLACE HISTORY', temp)
 			_view.storageHelper.replaceHistory((temp.reverse() as Array<fileHistory>), (err, data) => {
 			})
 		}
@@ -361,22 +380,24 @@ class fileStorage {
 				const videoPlayer = document.getElementById("videoPlayer")
 				URL.revokeObjectURL(videoPlayer['src'])
 				videoPlayer['src'] = null;
+				this.mediaViewer = null
 				break;
 			case "delete":
 				this.closeAll()
 				const callback = () => {
-					const temp = this.allFileStorageData().filter((file) => file['uuid'] !== fileData['uuid'])
-					this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== fileData.uuid))
-					this.fileStorageData(temp)
-					this.allFileStorageData(temp)
-					_view.storageHelper.replaceHistory(temp, (err, data) => {
-						if (err) {
-							return
-						}
-					})
-					this.fileStorageData.valueHasMutated()
-					this.setTags(this.allFileStorageData())
-					this.selectedFile(null)
+					this.updateHistory(fileData['uuid'])
+					// const temp = this.allFileStorageData().filter((file) => file['uuid'] !== fileData['uuid'])
+					// this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== fileData.uuid))
+					// this.fileStorageData(temp)
+					// this.allFileStorageData(temp)
+					// _view.storageHelper.replaceHistory(temp, (err, data) => {
+					// 	if (err) {
+					// 		return
+					// 	}
+					// })
+					// this.fileStorageData.valueHasMutated()
+					// this.setTags(this.allFileStorageData())
+					// this.selectedFile(null)
 				}
 				this.deleteFile(fileData.uuid, callback)
 				break;
@@ -399,66 +420,17 @@ class fileStorage {
 				})
 				break;
 			case "play":
+				updateLastViewed()
 				const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4')
-				_view.mediaViewer = new MediaViewer(type ? type[0] : 'video', fileData.filename, {uuid: fileData.uuid }, (err, msg) => {
+				this.mediaViewer = new MediaViewer(type ? type[0] : 'video', fileData.filename, {uuid: fileData.uuid }, (err, msg) => {
 					if (err) {
 						console.log(err)
 						return
 					}
 					console.log(msg)
 				}, () => {
-					_view.mediaViewer = null
+					this.fileAction(null, null, 'close')
 				})
-				// console.time(`STARTING DOWNLOAD: ${fileData.uuid}`)
-				// return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-				// 	// console.timeEnd(`STARTING DOWNLOAD: ${fileData.uuid}`)
-				// 	_view.displayMedia('player')
-				// 	const videoPlayer = document.getElementById("videoPlayer")
-				// 	videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
-				// 	videoPlayer['play']()
-				// 	updateLastViewed()
-				// })
-				// let mediaSource = null
-				// let buffers = []
-				// _view.displayMedia('player')
-				// const vidPlayer = document.getElementById("videoPlayer")
-				// console.log(vidPlayer)
-				// function sourceOpen(e) {
-				// 	console.log(e)
-				// 	// URL.revokeObjectURL(vidPlayer['src']);
-				// 	var mime = 'video/mp4; codecs="avc1.4D401F"';
-				// 	console.log(MediaSource.isTypeSupported(mime))
-				// 	var mediaSource = e.target;
-				// 	var sourceBuffer = mediaSource.addSourceBuffer(mime);
-				// 	const nextSeg = (e) => {
-				// 		console.log(e)
-				// 		if (buffers.length === 0) {
-				// 			sourceBuffer.removeEventListener('update', nextSeg);
-				// 		}
-				// 		sourceBuffer.appendBuffer(new Uint8Array(buffers.shift()))
-				// 	}
-				// 	sourceBuffer.addEventListener('update', nextSeg);
-				// }
-				// return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
-				// 	if (err) {
-				// 		console.log(err)
-				// 		return
-				// 	}
-				// 	buffers.push(data)
-				// 	if (data === fileData.uuid) {
-
-				// 	if (mediaSource === null) {
-				// 		if (window.MediaSource) {
-				// 			mediaSource = new MediaSource();
-				// 			vidPlayer['src'] = URL.createObjectURL(mediaSource);
-				// 			mediaSource.addEventListener('sourceopen', sourceOpen);
-				// 		} else {
-				// 			console.log("The Media Source Extensions API is not supported.")
-				// 		}
-				// 	}
-				// 	}
-					
-				// })
 				break;
 			case 'view':
 				if ( fileData.tag().includes('snapshot')) {
@@ -489,28 +461,6 @@ class fileStorage {
 					}
 					updateLastViewed()
 				})
-				// _view.storageHelper.createAssembler(currentItem.snapshotUuid, (err, data) => {
-				// 	if (err) {
-				// 		console.log(err)
-				// 		return
-				// 	}
-				// 	let y = null
-				// 	self.showMain (false)
-				// 	self.showSnapshop (true)
-				// 	self.showWebPage(
-				// 		(y = new showWebPageClass(
-				// 			isImage ? currentItem.clickUrl : currentItem.url,
-				// 			Buffer.from( data.buffer ).toString('base64'),
-				// 			currentItem.snapshotUuid, 
-				// 			currentItem.multimediaObj,
-				// 			() => {
-				// 				self.showWebPage((y = null))
-				// 				self.showMain(true)
-				// 				self.showSnapshop(false)
-				// 			}
-				// 		))
-				// 	)
-				// })
 				break;
 			case 'deleteMultiple':
 				const uuid = this.checkedFiles.shift()
@@ -592,6 +542,9 @@ class fileStorage {
 	}
 
 	getDate = (timestamp: Date | string, type: string) => {
+		if (!timestamp) {
+			return
+		}
 		if (typeof timestamp === 'string') {
 			timestamp = new Date(timestamp)
 		}
@@ -746,6 +699,7 @@ class fileStorage {
 					let c = 0;
 
 					if (c === 0) {
+						console.log("getting history!")
 						this.getHistory()
 						c++
 					}
@@ -753,6 +707,7 @@ class fileStorage {
 					this.detectStorageUsage()
 
 					if (data === uuid) {
+						console.log("getting history!")
 						this.getHistory()
 					}
 				})
