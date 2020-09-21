@@ -849,6 +849,7 @@ const appScript = {
 				currentItem.showDownload ( false )
 				currentItem.snapshotReady ( true )
 				currentItem.showLoading ( false )
+				currentItem ['serialNumber'] = com.requestSerial
 				return currentItem ['multimediaObj'] = com.Args
 				
 			}
@@ -856,11 +857,9 @@ const appScript = {
 			if ( com.subCom === 'twitter' ) {
 				currentItem.showLoading ( false )
 				currentItem.showDownload ( true )
-				currentItem ['twObj'] = com.Args [0]
-				currentItem ['twitterHref'] = com.Args[1]
 				currentItem ['serialNumber'] = com.requestSerial
-				currentItem ['fileBuffer'] = null//com.Args[2]
-
+				currentItem ['twitterObj'] = com.Args
+				/*
 				if ( currentItem['fileBuffer'] ) {
 					_view.storageHelper.createDownload ( com.requestSerial, currentItem['fileBuffer'], currentItem ['twitterHref'], [ 'snapshot', 'librarium', 'html', 'twitter' ], (err, data) => {
 						if ( err ) {
@@ -883,7 +882,7 @@ const appScript = {
 						})
 					})
 				}
-
+				*/
 				//return self.showTwitter ( self, twObj, twitterHref, serialNumber, null, true )
 				
 				/**
@@ -956,8 +955,10 @@ const appScript = {
 		 * 		Twitter obj
 		 */
 		//showTwitter: ( self, twitterObj, twitterHref, serialNumber, showAccount: boolean )
-		if ( currentItem ['twObj'] ) {
-			return self.showTwitter ( self, currentItem ['twObj'], currentItem ['twitterHref'], currentItem ['serialNumber'], true )
+		if ( currentItem ['twitterObj'] ) {
+			const args = currentItem ['twitterObj']
+			
+			return self.showTwitter ( self, args [0], args [1], currentItem ['serialNumber'], true )
 		}
 
 		/**
