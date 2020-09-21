@@ -42,6 +42,7 @@ class DownloadQueue {
 		if ( !com ) {
 			return this.Log (`_check return null, currentIndex [${ this.currentIndex }] downloadQueue.length [ ${ this.downloadQueue.length }]`)
 		}
+
 		this.Log (`downloadObj coming! [${ com.downloadUuid }] ORDER [${ com.order }] EOF [${ com.eof }]`)
 
 		return _view.connectInformationMessage.fetchFiles ( com.downloadUuid, ( err, data ) => {
@@ -53,19 +54,24 @@ class DownloadQueue {
 			}
 
 			if ( data ) {
+				if ( typeof this.dataCallBackBeforeDecryptoCallBack === 'function' ) {
+					this.dataCallBackBeforeDecryptoCallBack ( data.data )
+				}
 				return _view.sharedMainWorker.decryptStreamWithoutPublicKey ( Buffer.from ( data.data ).toString(), ( err, _data ) => {
 					if ( err ) {
 						const err = `Unable to decrypt file ORDER [${ com.order }]`
 						return this.stopProcess ( err )
 					}
+					this.currentIndex ++
+					this.downloading = false
+
 					if ( _data ) {
 						this.CallBack ( null, _data.data )
 					}
 					if ( com.eof ) {
 						return this.stopProcess ('EOF')
 					}
-					this.currentIndex ++
-					this.downloading = false
+					
 					return this.downloadProcess ()
 				})
 			}
@@ -85,7 +91,7 @@ class DownloadQueue {
 		console.log (`[${ now.toLocaleTimeString()}:${ now.getMilliseconds()}]  [${ this.title }] ${ args }`)
 	}
 
-	constructor ( downloadUrl: string, private title: string, private CallBack ) {
+	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( data: string ) => void = null ) {
 		this.Log (`new DownloadQueue UUID [${ this.requestUUID }]`)
 
 		if (! downloadUrl) {

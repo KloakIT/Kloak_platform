@@ -1,7 +1,8 @@
 class DownloadQueue {
-    constructor(downloadUrl, title, CallBack) {
+    constructor(downloadUrl, title, CallBack, dataCallBackBeforeDecryptoCallBack = null) {
         this.title = title;
         this.CallBack = CallBack;
+        this.dataCallBackBeforeDecryptoCallBack = dataCallBackBeforeDecryptoCallBack;
         this.downloadQueue = [];
         this.downloading = false;
         this.stoped = false;
@@ -102,19 +103,22 @@ class DownloadQueue {
                 return this.stopProcess(message);
             }
             if (data) {
+                if (typeof this.dataCallBackBeforeDecryptoCallBack === 'function') {
+                    this.dataCallBackBeforeDecryptoCallBack(data.data);
+                }
                 return _view.sharedMainWorker.decryptStreamWithoutPublicKey(Buffer.from(data.data).toString(), (err, _data) => {
                     if (err) {
                         const err = `Unable to decrypt file ORDER [${com.order}]`;
                         return this.stopProcess(err);
                     }
+                    this.currentIndex++;
+                    this.downloading = false;
                     if (_data) {
                         this.CallBack(null, _data.data);
                     }
                     if (com.eof) {
                         return this.stopProcess('EOF');
                     }
-                    this.currentIndex++;
-                    this.downloading = false;
                     return this.downloadProcess();
                 });
             }
