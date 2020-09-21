@@ -42,7 +42,7 @@ class DownloadQueue {
 		if ( !com ) {
 			return this.Log (`_check return null, currentIndex [${ this.currentIndex }] downloadQueue.length [ ${ this.downloadQueue.length }]`)
 		}
-		
+		this.Log (`downloadObj coming! [${ com.downloadUuid }] ORDER [${ com.order }] EOF [${ com.eof }]`)
 
 		return _view.connectInformationMessage.fetchFiles ( com.downloadUuid, ( err, data ) => {
 
@@ -128,7 +128,7 @@ class DownloadQueue {
 	
 			if ( com.subCom === 'downloadFile' ) {
 				const downloadObj: kloak_downloadObj = com.Args[0]
-				this.Log (`downloadObj coming! [${ downloadObj.downloadUuid }] ORDER [${ downloadObj.order }] EOF [${ downloadObj.eof }]`)
+				
 				if ( downloadObj.order !== this.currentIndex ) {
 					if ( downloadObj.order < this.currentIndex ) {
 						return this.Log (`ORDER [${ downloadObj.order }] already passed `)
@@ -148,7 +148,7 @@ class DownloadQueue {
 				 */
 
 				if ( this.downloading ) {
-					return 
+					return
 				}
 
 				this.downloadQueue.push ( downloadObj )

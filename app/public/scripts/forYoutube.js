@@ -62,7 +62,7 @@ class forYoutube extends sharedAppClass {
                         view.videoCanStart(true);
                     }
                 }, () => {
-                    URL.revokeObjectURL(_view.mediaViewer.options['customPlayer']['src']);
+                    URL.revokeObjectURL(_view.mediaViewer["options"]['customPlayer']['src']);
                     URL.revokeObjectURL(_view.mediaViewer.player['src']);
                     _view.mediaViewer = null;
                 });

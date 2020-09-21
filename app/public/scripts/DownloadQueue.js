@@ -41,7 +41,6 @@ class DownloadQueue {
             }
             if (com.subCom === 'downloadFile') {
                 const downloadObj = com.Args[0];
-                this.Log(`downloadObj coming! [${downloadObj.downloadUuid}] ORDER [${downloadObj.order}] EOF [${downloadObj.eof}]`);
                 if (downloadObj.order !== this.currentIndex) {
                     if (downloadObj.order < this.currentIndex) {
                         return this.Log(`ORDER [${downloadObj.order}] already passed `);
@@ -96,6 +95,7 @@ class DownloadQueue {
         if (!com) {
             return this.Log(`_check return null, currentIndex [${this.currentIndex}] downloadQueue.length [ ${this.downloadQueue.length}]`);
         }
+        this.Log(`downloadObj coming! [${com.downloadUuid}] ORDER [${com.order}] EOF [${com.eof}]`);
         return _view.connectInformationMessage.fetchFiles(com.downloadUuid, (err, data) => {
             if (err) {
                 const message = `downloadProcess ERROR [${err}] when fetch order ${com.order} UUID [${com.downloadUuid}], Download STOP!`;
@@ -130,5 +130,8 @@ class DownloadQueue {
     Log(...args) {
         const now = new Date();
         console.log(`[${now.toLocaleTimeString()}:${now.getMilliseconds()}]  [${this.title}] ${args}`);
+    }
+    stopDownload() {
+        this.stoped = true;
     }
 }

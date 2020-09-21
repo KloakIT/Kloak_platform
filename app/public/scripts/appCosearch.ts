@@ -900,8 +900,6 @@ const appScript = {
 
 			const files: any[] = com.Args[0]
 			currentItem.snapshotUuid = com.requestSerial
-			
-
 
 			try {
 				currentItem ['multimediaObj'] = JSON.parse ( com.Args[1] )
@@ -910,7 +908,6 @@ const appScript = {
 			}
 
 			console.log( files )
-			
 			
 			_view.storageHelper.createDownload ( com.requestSerial, files, currentItem.title, [ 'snapshot', 'librarium', 'html' ], ( err, data ) => {
 				if ( err)  {
