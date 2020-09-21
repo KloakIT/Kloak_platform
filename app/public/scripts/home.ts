@@ -816,6 +816,7 @@ const mainMenuArray = [
 		online: true,
 		htmlTemp: 'forYoutubeHtml'
 	},
+	/*
 	{
 		name: 'tw',
 		img: Kloak_twitter,
@@ -861,7 +862,7 @@ const mainMenuArray = [
 		extra: null,
 		click: null,
 		online: true,
-	}*/
+	}
 	{
 		img: Kloak_Daggr,
 		header: ['大哥', 'ダク', 'Daggr', '大哥'],
@@ -875,7 +876,7 @@ const mainMenuArray = [
 		click: daggr,
 		htmlTemp: 'daggrHtml',
 		online: false,
-	},
+	},*/
 	{
 		img: Kloak_generalspalding,
 		header: [

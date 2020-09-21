@@ -376,17 +376,34 @@ class connectInformationMessage {
 		return messageBoxDefine [ err['message']] ? err['message'] : 'unKnowError'
 	}
 
-	public sockEmit ( eventName: string, ...args ) {
+	private waitingCallBack = false
+	private emitWaitingList = []
 
+	public emitQueue () {
+		if ( this.waitingCallBack ) {
+			return
+		}
+		const emitObj = this.emitWaitingList.shift ()
+		if ( ! emitObj ) {
+			return 
+		}
+		this.waitingCallBack = true
+		return this._sockEmit ( emitObj.eventName, ...emitObj.args )
+	}
+
+
+	private _sockEmit ( eventName: string, ...args ) {
 		const argLength = args.length - 1
 		let _CallBack = null
 	
 		if ( argLength > -1 && typeof ( args[ argLength ]) === 'function' ) {
 			_CallBack = args.pop ()
 		}
-		
+
 		this.socketIo.emit ( eventName, ...args, uuid => {
 			clearTimeout ( _timeout )
+			this.waitingCallBack = false
+			this.emitQueue ()
 			if ( _CallBack ) {
 				const reconnect = () => {
 					return _CallBack ( new Error ( 'socket.io reconnected ' ))
@@ -413,6 +430,12 @@ class connectInformationMessage {
 			}
 			return this.showSystemError()
 		}, 5000 )
+	}
+
+	public sockEmit ( eventName: string, ...args ) {
+
+		this.emitWaitingList.push ({ eventName: eventName, args: args })
+		return this.emitQueue ()
 	}
 
 	public fetchFiles ( filename: string, CallBack ) {

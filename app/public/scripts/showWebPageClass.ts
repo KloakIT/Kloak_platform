@@ -232,7 +232,7 @@ class showWebPageClass {
 
 	private urlBlobList = []
 
-	public close() {
+	public close () {
 		this.showImgPage ( false )
 		this.showHtmlCodePage ( false )
 		this.png ( null )

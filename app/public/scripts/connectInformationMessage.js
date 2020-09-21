@@ -134,6 +134,8 @@ class connectInformationMessage {
                 return request.CallBack(null, obj);
             });
         };
+        this.waitingCallBack = false;
+        this.emitWaitingList = [];
         const self = this;
         this.offlineInfo.subscribe(function (vv) {
             if (this.first) {
@@ -308,7 +310,18 @@ class connectInformationMessage {
         }
         return messageBoxDefine[err['message']] ? err['message'] : 'unKnowError';
     }
-    sockEmit(eventName, ...args) {
+    emitQueue() {
+        if (this.waitingCallBack) {
+            return;
+        }
+        const emitObj = this.emitWaitingList.shift();
+        if (!emitObj) {
+            return;
+        }
+        this.waitingCallBack = true;
+        return this._sockEmit(emitObj.eventName, ...emitObj.args);
+    }
+    _sockEmit(eventName, ...args) {
         const argLength = args.length - 1;
         let _CallBack = null;
         if (argLength > -1 && typeof (args[argLength]) === 'function') {
@@ -316,6 +329,8 @@ class connectInformationMessage {
         }
         this.socketIo.emit(eventName, ...args, uuid => {
             clearTimeout(_timeout);
+            this.waitingCallBack = false;
+            this.emitQueue();
             if (_CallBack) {
                 const reconnect = () => {
                     return _CallBack(new Error('socket.io reconnected '));
@@ -339,6 +354,10 @@ class connectInformationMessage {
             }
             return this.showSystemError();
         }, 5000);
+    }
+    sockEmit(eventName, ...args) {
+        this.emitWaitingList.push({ eventName: eventName, args: args });
+        return this.emitQueue();
     }
     fetchFiles(filename, CallBack) {
         let repertTime = 0;

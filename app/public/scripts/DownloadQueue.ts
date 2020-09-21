@@ -163,4 +163,8 @@ class DownloadQueue {
 
 		_view.connectInformationMessage.emitRequest ( com, _CallBack )
 	}
+
+	public stopDownload () {
+		this.stoped = true
+	}
 }

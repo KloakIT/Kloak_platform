@@ -62,7 +62,7 @@ class forYoutube extends sharedAppClass {
 			console.log(item)
 			if (item['streamingData']) {
 				console.time("STARTING VIDEO PLAY REQUEST")
-				_view.mediaViewer = new MediaViewer('video', item['title'], { youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, ( err, canStart) => {
+				_view.mediaViewer = new MediaViewer ('video', item['title'], { youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, ( err, canStart ) => {
 					if ( err ) {
 						console.log( err)
 					}
@@ -71,7 +71,7 @@ class forYoutube extends sharedAppClass {
 						view.videoCanStart ( true )
 					}
 				}, () => {
-                    URL.revokeObjectURL ( _view.mediaViewer.options['customPlayer']['src'] )
+                    URL.revokeObjectURL ( _view.mediaViewer["options"]['customPlayer']['src'] )
                     URL.revokeObjectURL ( _view.mediaViewer.player['src'])
                     
 					_view.mediaViewer = null
