@@ -660,13 +660,27 @@ const mainMenuArray = [
         online: false,
     },
     {
+        img: Kloak_Daggr,
+        header: ['大哥', 'ダク', 'Daggr', '大哥'],
+        description: [
+            '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
+            'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+            'EndtoEnd encrypted message system.',
+            '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照',
+        ],
+        extra: null,
+        click: daggr,
+        htmlTemp: 'daggrHtml',
+        online: false,
+    },
+    {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
-        header: ['油管客户端', 'Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube'],
+        header: ['油管客户端', 'For Youtube', 'For Youtube', 'For Youtube'],
         description: [
             'Youtube客户端',
             'Youtubeクライアント',
-            'Client for Youtube',
+            'For Youtube',
             'Youtube客戶端',
         ],
         extra: null,
@@ -721,26 +735,13 @@ const mainMenuArray = [
         click: null,
         online: true,
     }
-    {
-        img: Kloak_Daggr,
-        header: ['大哥', 'ダク', 'Daggr', '大哥'],
-        description: [
-            '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
-            'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
-            'EndtoEnd encrypted message system.',
-            '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照',
-        ],
-        extra: null,
-        click: daggr,
-        htmlTemp: 'daggrHtml',
-        online: false,
-    },*/
+    */
     {
         img: Kloak_generalspalding,
         header: [
             '史帕丁将军',
-            'Robert Spalding将軍',
-            'General Robert Spalding',
+            'ｽﾎﾟﾃﾞﾝ将軍',
+            'Spalding',
             '史帕丁將軍',
         ],
         description: [
@@ -753,6 +754,21 @@ const mainMenuArray = [
         click: genSpalding,
         online: false,
         htmlTemp: 'showGeneralSpalding',
+    },
+    {
+        name: 'canada',
+        img: canadaGov,
+        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
+        description: [
+            '加拿大政府',
+            'カナダ政府',
+            'For Canada',
+            '加拿大政府',
+        ],
+        extra: null,
+        click: forTwitter,
+        online: true,
+        htmlTemp: 'forTwitterHtml'
     },
 ];
 const _view = new view_layout.view();

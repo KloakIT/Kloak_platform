@@ -9,7 +9,6 @@ class DownloadQueue {
 	private requestUUID = uuid_generate()
 
 	private stopProcess ( err ) {
-		this.CallBack ( new Error ( err ))
 		this.stoped = true
 		this.downloadQueue = []
 		return this.Log ( err )

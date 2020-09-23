@@ -69,7 +69,6 @@ class DownloadQueue {
         _view.connectInformationMessage.emitRequest(com, _CallBack);
     }
     stopProcess(err) {
-        this.CallBack(new Error(err));
         this.stoped = true;
         this.downloadQueue = [];
         return this.Log(err);

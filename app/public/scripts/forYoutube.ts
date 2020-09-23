@@ -57,6 +57,7 @@ class forYoutube extends sharedAppClass {
         let view = new showWebPageClass ( url, null, multimediaObj, () => {
             exit ()
             view = null
+            
         }, item => {
 			// const uu = item
 			console.log(item)
