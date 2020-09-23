@@ -659,6 +659,7 @@ const mainMenuArray = [
         htmlTemp: 'showFileStorage',
         online: false,
     },
+    /*
     {
         img: Kloak_Daggr,
         header: ['大哥', 'ダク', 'Daggr', '大哥'],
@@ -673,6 +674,7 @@ const mainMenuArray = [
         htmlTemp: 'daggrHtml',
         online: false,
     },
+    */
     {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
@@ -754,21 +756,6 @@ const mainMenuArray = [
         click: genSpalding,
         online: false,
         htmlTemp: 'showGeneralSpalding',
-    },
-    {
-        name: 'canada',
-        img: canadaGov,
-        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
-        description: [
-            '加拿大政府',
-            'カナダ政府',
-            'For Canada',
-            '加拿大政府',
-        ],
-        extra: null,
-        click: forTwitter,
-        online: true,
-        htmlTemp: 'forTwitterHtml'
     },
 ];
 const _view = new view_layout.view();

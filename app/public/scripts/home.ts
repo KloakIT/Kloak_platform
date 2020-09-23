@@ -801,6 +801,7 @@ const mainMenuArray = [
 		htmlTemp: 'showFileStorage',
 		online: false,
 	},
+	/*
 	{
 		img: Kloak_Daggr,
 		header: ['大哥', 'ダク', 'Daggr', '大哥'],
@@ -815,6 +816,7 @@ const mainMenuArray = [
 		htmlTemp: 'daggrHtml',
 		online: false,
 	},
+	*/
 	{
 		name: 'Kloak_youtube',
 		img: Kloak_youtube,
@@ -898,7 +900,7 @@ const mainMenuArray = [
 		online: false,
 		htmlTemp: 'showGeneralSpalding',
 	},
-
+	/*
 	{
 		name: 'canada',
 		img: canadaGov,
@@ -914,6 +916,7 @@ const mainMenuArray = [
 		online: true,
 		htmlTemp: 'forTwitterHtml'
 	},
+	/** */
 ]
 
 
