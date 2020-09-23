@@ -42,7 +42,7 @@ class Uploader {
         this.createHistory = () => {
             const date = new Date();
             const history = {
-                uuid: this.uuid,
+                uuid: [this.uuid],
                 filename: this.file.name,
                 time_stamp: date,
                 last_viewed: date,
@@ -65,7 +65,7 @@ class Uploader {
                 pieces: this.pieces.map(piece => piece['uuid']),
                 finished: true,
             };
-            _view.storageHelper.encryptSave(this.uuid, JSON.stringify(index), (err, data) => {
+            _view.storageHelper.createUpdateIndex(this.uuid, index, (err, data) => {
                 if (err) {
                     this.log(err);
                     return;

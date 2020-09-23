@@ -840,7 +840,7 @@ interface finishedDownload {
 
 
 interface fileHistory {
-	uuid: string
+	uuid: Array<string>
 	filename: string
 	time_stamp: Date
 	last_viewed: any
@@ -850,4 +850,5 @@ interface fileHistory {
 	tag: string[]
 	color: number
 	size?: number
+	youtubeId?: string
 }

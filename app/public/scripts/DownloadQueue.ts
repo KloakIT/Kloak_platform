@@ -9,6 +9,7 @@ class DownloadQueue {
 	private requestUUID = uuid_generate()
 
 	private stopProcess ( err ) {
+		// this.CallBack ( new Error ( err ))
 		this.stoped = true
 		this.downloadQueue = []
 		return this.Log ( err )
@@ -54,7 +55,7 @@ class DownloadQueue {
 
 			if ( data ) {
 				if ( typeof this.dataCallBackBeforeDecryptoCallBack === 'function' ) {
-					this.dataCallBackBeforeDecryptoCallBack ( this.requestUUID, com.downloadUuid, data.data )
+					this.dataCallBackBeforeDecryptoCallBack ( this.requestUUID, com.downloadUuid, data.data, com.eof )
 				}
 				return _view.sharedMainWorker.decryptStreamWithoutPublicKey ( Buffer.from ( data.data ).toString(), ( err, _data ) => {
 					if ( err ) {
@@ -90,7 +91,7 @@ class DownloadQueue {
 		console.log (`[${ now.toLocaleTimeString()}:${ now.getMilliseconds()}]  [${ this.title }] ${ args }`)
 	}
 
-	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: String, downloadUuid: string,  data: string ) => void = null ) {
+	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: String, downloadUuid: string,  data: string, eof: boolean ) => void = null ) {
 		this.Log (`new DownloadQueue UUID [${ this.requestUUID }]`)
 
 		if (! downloadUrl) {
