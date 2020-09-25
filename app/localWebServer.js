@@ -26,6 +26,8 @@ const Uuid = require("node-uuid");
 const Imap = require("./tools/imap");
 const coNETConnect_1 = require("./tools/coNETConnect");
 const mime = require("mime-types");
+const stream_1 = require("stream");
+const stramUrl_1 = require("./tools/stramUrl");
 var CSR = require('@root/csr');
 var PEM = require('@root/pem/packer');
 var Keypairs = require('@root/keypairs');
@@ -87,6 +89,7 @@ class localServer {
         this.requestPool = new Map();
         this.imapConnectPool = new Map();
         this.destoryConnectTimePool = new Map();
+        this.streamUrlPool = new Map();
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
         Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
@@ -96,6 +99,7 @@ class localServer {
         this.expressServer.use(Express.static(Path.join(__dirname, 'public')));
         this.expressServer.use(Express.static(Path.join(__dirname, 'html')));
         const localPath = `/${folderName}`;
+        const workspaces = this.socketServer.of(/^\/\w+$/);
         this.expressServer.get(localPath, (req, res) => {
             res.render('home', { title: 'home', proxyErr: false });
         });
@@ -107,7 +111,30 @@ class localServer {
         this.expressServer.get(`${folderName}/browserNotSupport`, (req, res) => {
             res.render('home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false });
         });
-        const workspaces = this.socketServer.of(/^\/\w+$/);
+        this.expressServer.get(`${folderName}/streamUrl`, (req, res) => {
+            const errRespon = () => {
+                res.status(404);
+                return res.end();
+            };
+            const uuid = req.query['uuid'];
+            if (!uuid) {
+                return errRespon();
+            }
+            console.dir(`typeof uuid = [${typeof uuid}] ${uuid}`);
+            const stream = this.streamUrlPool.get(uuid);
+            if (!stream) {
+                return errRespon();
+            }
+            if (!stream.readable) {
+                stream.end();
+                return errRespon();
+            }
+            stream_1.Stream.pipeline(stream, res, finished => {
+                return console.dir(`streamUrl on END`);
+            });
+            res.status(200);
+            res.writeHead(200, { 'Content-Type': 'video/mp4' });
+        });
         workspaces.on('connection', socket => {
             return this.listenAfterPassword(socket);
         });
@@ -396,6 +423,42 @@ class localServer {
                     console.dir(`socket.once ( 'disconnect') keyID = [${keyID}] connect = ${connect} `);
                 }
             });
+        });
+        socket.on('requestStreamUrl', (request_uuid, CallBack1) => {
+            const _uuid = Uuid.v4();
+            CallBack1(_uuid);
+            console.log(`socket.on ( 'requestStreamUrl' ) [${request_uuid}]`);
+            const stream = new stramUrl_1.default();
+            stream.once('end', () => {
+                this.streamUrlPool.delete(_uuid);
+                socket.removeListener(_uuid, listenChunk);
+            });
+            this.streamUrlPool.set(_uuid, stream);
+            let drain = false;
+            const listenChunk = (buffer, CallBack1) => {
+                const __uuid = Uuid.v4();
+                //		Destory Buffer Url
+                CallBack1(__uuid);
+                if (/^\r\n/.test(buffer)) {
+                    this.streamUrlPool.delete(_uuid);
+                    socket.removeListener(_uuid, listenChunk);
+                    stream.end();
+                    return socket.emit(__uuid);
+                }
+                if (drain) {
+                    return socket.emit(__uuid, 'drain');
+                }
+                if (stream.write(buffer)) {
+                    return socket.emit(__uuid);
+                }
+                drain = true;
+                stream.once('drain', () => {
+                    drain = false;
+                    return socket.emit(__uuid);
+                });
+            };
+            socket.on(_uuid, listenChunk);
+            socket.emit(_uuid, _uuid);
         });
         /*
                 socket.on ('getUrl', ( url: string, CallBack ) => {

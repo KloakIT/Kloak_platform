@@ -26,6 +26,8 @@ import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
 import * as mime from 'mime-types'
 import * as Https from 'https'
+import { Stream } from 'stream'
+import streamUrl from './tools/stramUrl'
 var CSR = require('@root/csr')
 var PEM = require('@root/pem/packer')
 var Keypairs = require('@root/keypairs')
@@ -109,6 +111,7 @@ export default class localServer {
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss > = new Map()
 	private destoryConnectTimePool: Map <string, any > = new Map ()
+	private streamUrlPool: Map <string, streamUrl > = new Map ()
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
@@ -467,7 +470,55 @@ export default class localServer {
 			
 		})
 
+		socket.on ( 'requestStreamUrl', ( request_uuid, CallBack1 ) => {
+			const _uuid = Uuid.v4()
+			CallBack1( _uuid )
+			console.log ( `socket.on ( 'requestStreamUrl' ) [${ request_uuid }]`)
+			const stream = new streamUrl ()
 
+			stream.once ( 'end', () => {
+				this.streamUrlPool.delete ( _uuid )
+				socket.removeListener ( _uuid, listenChunk )
+			})
+
+
+			this.streamUrlPool.set ( _uuid, stream )
+			let drain = false
+
+
+			const listenChunk = ( buffer, CallBack1 ) => {
+				const __uuid = Uuid.v4()
+				//		Destory Buffer Url
+				CallBack1 ( __uuid )
+
+				if ( /^\r\n/.test ( buffer )) {
+					this.streamUrlPool.delete ( _uuid )
+					socket.removeListener ( _uuid, listenChunk )
+					stream.end ()
+					return socket.emit ( __uuid )
+				}
+
+				if ( drain ) {
+					return socket.emit ( __uuid, 'drain' )
+				}
+
+				if ( stream.write ( buffer ) ) {
+					return socket.emit ( __uuid )
+				}
+
+				drain = true
+
+				stream.once ( 'drain', () => {
+					drain = false
+					return socket.emit ( __uuid )
+				})
+			}
+
+
+			socket.on ( _uuid, listenChunk )
+			socket.emit ( _uuid, _uuid )
+
+		})
 /*
 		socket.on ('getUrl', ( url: string, CallBack ) => {
 			const uu = new URLSearchParams ( url )
@@ -533,6 +584,8 @@ export default class localServer {
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'public' )))
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'html' )))
 		const localPath = `/${ folderName }`
+		const workspaces = this.socketServer.of(/^\/\w+$/)
+
 		this.expressServer.get ( localPath, ( req, res ) => {
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
@@ -545,7 +598,44 @@ export default class localServer {
             res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
 		})
 
-		const workspaces = this.socketServer.of(/^\/\w+$/)
+		this.expressServer.get ( `${ folderName }/streamUrl`, ( req, res ) => {
+
+			const errRespon = () => {
+				res.status ( 404 )
+				return res.end ()
+			}
+
+			const uuid = req.query['uuid']
+			
+			if ( !uuid ) {
+				return errRespon ()
+			}
+			console.dir (`typeof uuid = [${ typeof uuid }] ${ uuid }`)
+			const stream = this.streamUrlPool.get ( uuid )
+			if ( !stream ) {
+				return errRespon ()
+			}
+
+			if ( !stream.readable  ) {
+				stream.end ()
+				return errRespon ()
+			}
+
+			Stream.pipeline (
+				stream,
+				res,
+				finished => {
+					return console.dir (`streamUrl on END`)
+				}
+			)
+			
+			res.status ( 200 )
+			res.writeHead ( 200, {'Content-Type': 'video/mp4' })
+			
+            
+		})
+
+		
 
 
 		workspaces.on ( 'connection', socket => {

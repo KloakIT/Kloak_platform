@@ -1,6 +1,6 @@
 {
 	"name": "kloak_platform",
-	"version": "0.1.210",
+	"version": "0.1.211",
 	"license": "MIT",
 	"description": "Kloak platform",
 	"scripts": {
@@ -102,7 +102,7 @@
 		"nodemailer": "^6.4.11",
 		"openpgp": "4.10.8",
 		"pug": "^3.0.0",
-		"snyk": "^1.399.1",
+		"snyk": "^1.400.0",
 		"socket.io": "^2.3.0"
 	},
 	"snyk": true,

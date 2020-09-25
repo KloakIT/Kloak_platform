@@ -95,9 +95,11 @@ class MediaViewer {
 	
 
 		const initMediaSource = () => {
-			if (!MediaSource.isTypeSupported(this.audioCodec) || !MediaSource.isTypeSupported(this.videoCodec)) {
-				this.callback('Unable to play codec', null)
-				return console.log("Unable to stream this codec!")
+			if ( typeof MediaSource !== 'undefined' ) {
+				if (!MediaSource.isTypeSupported(this.audioCodec) || !MediaSource.isTypeSupported(this.videoCodec)) {
+					this.callback('Unable to play codec', null)
+					return console.log("Unable to stream this codec!")
+				}
 			}
 	
 			this.mediaSource = new MediaSource()
@@ -294,7 +296,7 @@ class MediaViewer {
 
 	streamDownloadedVideo = (recording?: boolean) => {
 		if (recording) {
-			_view.storageHelper.createAssembler(this.options.uuid, (err, data) => {
+			_view.storageHelper.createAssembler(this.options.uuid[0], (err, data) => {
 				if (data) {
 					console.log(data)
 					const blobURL = _view.storageHelper.createBlob(data.buffer, data.contentType)
