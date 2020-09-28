@@ -297,14 +297,14 @@ var view_layout;
         initWelcomeView() {
             this.welcomeTitle(true);
             this.sectionLogin(false);
-            const dom = document.getElementById('body');
             const eve = () => {
                 clearTimeout(this.demoTimeout);
-                dom.removeEventListener('click', eve);
+                dom.off('click touch');
                 this.KloakTL.clear();
                 this.openClick();
             };
-            dom.addEventListener('click', eve);
+            const dom = $('.welcome');
+            dom.on('click touch', eve);
         }
         //          change language
         selectItem(that, site) {
@@ -382,12 +382,6 @@ var view_layout;
             if (remote && remote.app && typeof remote.app.quit === 'function') {
                 return remote.app.quit();
             }
-        }
-        showKeyInfoClick() {
-            this.sectionLogin(true);
-            this.AppList(false);
-            this.appsManager(null);
-            //this.showImapSetup ()
         }
         showImapSetup() {
             const self = this;
@@ -659,14 +653,30 @@ const mainMenuArray = [
         htmlTemp: 'showFileStorage',
         online: false,
     },
+    /*
+    {
+        img: Kloak_Daggr,
+        header: ['大哥', 'ダク', 'Daggr', '大哥'],
+        description: [
+            '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
+            'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+            'EndtoEnd encrypted message system.',
+            '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照',
+        ],
+        extra: null,
+        click: daggr,
+        htmlTemp: 'daggrHtml',
+        online: false,
+    },
+    */
     {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
-        header: ['油管客户端', 'Kloak for Youtube', 'Kloak for Youtube', 'Kloak for Youtube'],
+        header: ['油管客户端', 'For Youtube', 'For Youtube', 'For Youtube'],
         description: [
             'Youtube客户端',
             'Youtubeクライアント',
-            'Client for Youtube',
+            'For Youtube',
             'Youtube客戶端',
         ],
         extra: null,
@@ -721,26 +731,13 @@ const mainMenuArray = [
         click: null,
         online: true,
     }
-    {
-        img: Kloak_Daggr,
-        header: ['大哥', 'ダク', 'Daggr', '大哥'],
-        description: [
-            '强加密点对点加密群聊，支持文件多媒体传输和网页链接快照',
-            'エンドツーエンドメッセージローカールネットワークモージュルとCoNet通信用メールアカウント設定',
-            'EndtoEnd encrypted message system.',
-            '強加密點對點群聊，支持群聊，文件多媒體傳輸和網頁鏈接快照',
-        ],
-        extra: null,
-        click: daggr,
-        htmlTemp: 'daggrHtml',
-        online: false,
-    },*/
+    */
     {
         img: Kloak_generalspalding,
         header: [
             '史帕丁将军',
-            'Robert Spalding将軍',
-            'General Robert Spalding',
+            'ｽﾎﾟﾃﾞﾝ将軍',
+            'Spalding',
             '史帕丁將軍',
         ],
         description: [

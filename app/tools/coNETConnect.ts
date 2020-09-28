@@ -160,7 +160,7 @@ export default class extends Imap.imapPeer {
 			
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
-			console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
+			//console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
 			if ( !callback ) {
 				callback = true
 				CallBack ( null, attr, subject )
@@ -208,7 +208,7 @@ export default class extends Imap.imapPeer {
 			imapClone.imapServer = 'p03-imap.mail.me.com'
 		}
 
-		const rImap = new Imap.qtGateImap ( imapClone, null, false, null, true, mail => {
+		const rImap = new Imap.qtGateImap ( imapClone, null, false, null, false, mail => {
 			clearTimeout ( idle_wait_timeout_process )
 			if ( !mail || mail.length < 50 ) {
 				return console.log (`getFileV1 [${ fileName }] mail empty!`)
@@ -216,7 +216,7 @@ export default class extends Imap.imapPeer {
 			_mail = true
 			const attr = Imap.getMailAttached ( mail )
 			const subject = Imap.getMailSubject ( mail )
-			console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
+			//console.dir (`=========>   getFile mail.length = [${ mail.length }] attr.length = [${ attr.length }]`)
 			if ( !callback ) {
 				callback = true
 				CallBack ( null, attr, subject )
@@ -230,7 +230,7 @@ export default class extends Imap.imapPeer {
 	
 		rImap.once ( 'ready', () => {
 			rImap.imapSerialID = fileName
-			console.log (`getFileV1 rImap.once ( 'ready' )`)
+			//console.log (`getFileV1 rImap.once ( 'ready' )`)
 			return Async.series ([
 				
 				next => rImap.imapStream.openBoxV1 ( fileName, next ),
@@ -247,7 +247,7 @@ export default class extends Imap.imapPeer {
 						next => rImap.imapStream.expunge ( next ),
 						next => rImap.imapStream._logoutWithoutCheck ( next )
 					], err => {
-						console.log (`new rImap success!`)
+						//console.log (`new rImap success!`)
 					})
 					
 				}

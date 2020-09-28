@@ -8,6 +8,7 @@ class DownloadQueue {
         this.stoped = false;
         this.currentIndex = 0;
         this.requestUUID = uuid_generate();
+        this.totalLength = 0;
         this.Log(`new DownloadQueue UUID [${this.requestUUID}]`);
         if (!downloadUrl) {
             const err = new Error(`No URL present! Decode signatureCipher!`);
@@ -42,6 +43,7 @@ class DownloadQueue {
             }
             if (com.subCom === 'downloadFile') {
                 const downloadObj = com.Args[0];
+                this.totalLength = downloadObj.totalLength;
                 if (downloadObj.order !== this.currentIndex) {
                     if (downloadObj.order < this.currentIndex) {
                         return this.Log(`ORDER [${downloadObj.order}] already passed `);
@@ -69,7 +71,7 @@ class DownloadQueue {
         _view.connectInformationMessage.emitRequest(com, _CallBack);
     }
     stopProcess(err) {
-        this.CallBack(new Error(err));
+        // this.CallBack ( new Error ( err ))
         this.stoped = true;
         this.downloadQueue = [];
         return this.Log(err);
@@ -104,7 +106,7 @@ class DownloadQueue {
             }
             if (data) {
                 if (typeof this.dataCallBackBeforeDecryptoCallBack === 'function') {
-                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com.downloadUuid, data.data);
+                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com.downloadUuid, data.data, com.eof);
                 }
                 return _view.sharedMainWorker.decryptStreamWithoutPublicKey(Buffer.from(data.data).toString(), (err, _data) => {
                     if (err) {
@@ -137,5 +139,9 @@ class DownloadQueue {
     }
     stopDownload() {
         this.stoped = true;
+    }
+}
+class mediaHtmlStream {
+    constructor(uuid) {
     }
 }

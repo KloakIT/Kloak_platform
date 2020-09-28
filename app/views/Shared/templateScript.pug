@@ -232,12 +232,12 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 			.CoContent( style = "margin: 1em; margin-top: 7rem;")
 				.ui.divided.items.searchItems
 					<!-- ko if: thumbnails -->
-						a.ui.fluid.image( data-bind ="click: () => { $parent.ClickPlay() }" href ="#" )
+						a.ui.fluid.image( data-bind ="click: () => { $parent.videoCanStart() || $parent.multimediaLoading() || $parent.videoUnablePlay() ? null : $parent.ClickPlay() }" href ="#" )
 							img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
 							//- .ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
 								//- button.ui.icon.youtube.button.huge.circular
 								//-     i.icon.large.youtube
-							.ui.active.dimmer(data-bind="style: {'background-color': $parent.multimediaLoading() ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,.01)'}")
+							.ui.active.dimmer(data-bind="style: {'background-color': $parent.multimediaLoading() ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,.01)', display: $parent.videoCanStart() ? 'none' : 'flex'}")
 								<!-- ko if: $parent.multimediaLoading()-->
 								.ui.text.loader="Loading video..."
 								<!-- /ko -->
@@ -248,7 +248,7 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 								i.exclamation.triangle.icon(style="color: white; font-size: 40px;")
 								p(style="margin-top: 10px; color: white; font-weight: bold")="Unable to play video!"
 								<!-- /ko -->
-							video#videoPlayer(data-bind="style: {'visibility': $parent.videoCanStart() ? 'visible' : 'hidden', 'z-index': $parent.videoCanStart() ? '9999' : '-100' }" style="width: 100%; height: 100%; position: absolute; top: 0; background-color: black" controls)
+							video#videoPlayer(data-bind="style: {'visibility': $parent.videoCanStart() ? 'visible' : 'hidden', 'z-index': $parent.videoCanStart() ? '100' : '-100' }" style="width: 100%; height: 100%; position: absolute; top: 0; background-color: black" controls autoplay type="video/mp4" )
 						.content( style = "margin-top: 1rem;")
 							.extra( style = "margin-top: 1rem;")
 								<!-- ko if: audio -->

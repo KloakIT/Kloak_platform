@@ -136,6 +136,7 @@ class connectInformationMessage {
         };
         this.waitingCallBack = false;
         this.emitWaitingList = [];
+        this.currentEmitRequest = null;
         const self = this;
         this.offlineInfo.subscribe(function (vv) {
             if (this.first) {
@@ -312,7 +313,8 @@ class connectInformationMessage {
     }
     emitQueue() {
         if (this.waitingCallBack) {
-            return;
+            console.log(this.currentEmitRequest);
+            return console.dir(this.emitWaitingList);
         }
         const emitObj = this.emitWaitingList.shift();
         if (!emitObj) {
@@ -327,6 +329,7 @@ class connectInformationMessage {
         if (argLength > -1 && typeof (args[argLength]) === 'function') {
             _CallBack = args.pop();
         }
+        this.currentEmitRequest = eventName;
         this.socketIo.emit(eventName, ...args, uuid => {
             clearTimeout(_timeout);
             this.waitingCallBack = false;

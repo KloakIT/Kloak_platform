@@ -381,7 +381,8 @@ class connectInformationMessage {
 
 	public emitQueue () {
 		if ( this.waitingCallBack ) {
-			return
+			console.log ( this.currentEmitRequest )
+			return console.dir ( this.emitWaitingList )
 		}
 		const emitObj = this.emitWaitingList.shift ()
 		if ( ! emitObj ) {
@@ -391,7 +392,7 @@ class connectInformationMessage {
 		return this._sockEmit ( emitObj.eventName, ...emitObj.args )
 	}
 
-
+	private currentEmitRequest = null
 	private _sockEmit ( eventName: string, ...args ) {
 		const argLength = args.length - 1
 		let _CallBack = null
@@ -399,7 +400,9 @@ class connectInformationMessage {
 		if ( argLength > -1 && typeof ( args[ argLength ]) === 'function' ) {
 			_CallBack = args.pop ()
 		}
+		this.currentEmitRequest = eventName
 
+		
 		this.socketIo.emit ( eventName, ...args, uuid => {
 			clearTimeout ( _timeout )
 			this.waitingCallBack = false

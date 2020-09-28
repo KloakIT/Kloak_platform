@@ -42,8 +42,6 @@ class sharedAppClass {
 
 	constructor ( public exit: () => void ) {}
 	
-
-
 	
 	public showInputTextAreaError ( err ) {
 		this.searchInputText_searching ( false )

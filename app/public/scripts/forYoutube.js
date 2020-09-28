@@ -48,24 +48,19 @@ class forYoutube extends sharedAppClass {
         let view = new showWebPageClass(url, null, multimediaObj, () => {
             exit();
             view = null;
+            if (_view.mediaViewer) {
+                _view.mediaViewer.terminate();
+            }
         }, item => {
             // const uu = item
             console.log(item);
             if (item['streamingData']) {
                 console.time("STARTING VIDEO PLAY REQUEST");
-                _view.mediaViewer = new MediaViewer('video', item['title'], { youtubeStreamingData: item['streamingData'], customPlayer: document.getElementById('videoPlayer') }, (err, canStart) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    if (canStart) {
-                        console.timeEnd("STARTING VIDEO PLAY REQUEST");
-                        view.videoCanStart(true);
-                    }
+                _view.mediaViewer = new MediaViewer('video', item['title'], document.getElementById('videoPlayer'), (err, canplay) => {
+                    view.videoCanStart(canplay);
                 }, () => {
-                    URL.revokeObjectURL(_view.mediaViewer["options"]['customPlayer']['src']);
-                    URL.revokeObjectURL(_view.mediaViewer.player['src']);
-                    _view.mediaViewer = null;
                 });
+                _view.mediaViewer.youtube(item);
             }
             else {
                 view.videoUnablePlay(true);

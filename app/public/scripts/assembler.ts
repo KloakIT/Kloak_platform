@@ -17,7 +17,7 @@ class Assembler {
 	}
 
 	private getIndex = (uuid) => {
-		_view.storageHelper.getIndex(uuid, async (err, data) => {
+		_view.storageHelper.getIndex(uuid, (err, data) => {
 			if (err) {
 				this.terminate()
 				this.callback(err, null)
@@ -25,8 +25,8 @@ class Assembler {
 			}
 			try {
 				this.log(`File: ${this.requestUuid} got index.`)
-				this.downloadIndex = await JSON.parse(Buffer.from(data).toString())
-				this.filePieces = await this.downloadIndex.pieces
+				this.downloadIndex = JSON.parse(Buffer.from(data).toString())
+				this.filePieces = this.downloadIndex.pieces
 				this.totalPieces = this.filePieces.length
 				this.updateProgress()
 				this.retrieveData(this.filePieces.shift())

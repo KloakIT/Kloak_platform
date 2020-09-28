@@ -7,9 +7,10 @@ class DownloadQueue {
 	private stoped = false
 	private currentIndex = 0
 	private requestUUID = uuid_generate()
+	public totalLength = 0
 
 	private stopProcess ( err ) {
-		this.CallBack ( new Error ( err ))
+		// this.CallBack ( new Error ( err ))
 		this.stoped = true
 		this.downloadQueue = []
 		return this.Log ( err )
@@ -55,7 +56,7 @@ class DownloadQueue {
 
 			if ( data ) {
 				if ( typeof this.dataCallBackBeforeDecryptoCallBack === 'function' ) {
-					this.dataCallBackBeforeDecryptoCallBack ( this.requestUUID, com.downloadUuid, data.data )
+					this.dataCallBackBeforeDecryptoCallBack ( this.requestUUID, com.downloadUuid, data.data, com.eof )
 				}
 				return _view.sharedMainWorker.decryptStreamWithoutPublicKey ( Buffer.from ( data.data ).toString(), ( err, _data ) => {
 					if ( err ) {
@@ -91,7 +92,7 @@ class DownloadQueue {
 		console.log (`[${ now.toLocaleTimeString()}:${ now.getMilliseconds()}]  [${ this.title }] ${ args }`)
 	}
 
-	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: String, downloadUuid: string,  data: string ) => void = null ) {
+	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: String, downloadUuid: string,  data: string, eof: boolean ) => void = null ) {
 		this.Log (`new DownloadQueue UUID [${ this.requestUUID }]`)
 
 		if (! downloadUrl) {
@@ -134,7 +135,7 @@ class DownloadQueue {
 	
 			if ( com.subCom === 'downloadFile' ) {
 				const downloadObj: kloak_downloadObj = com.Args[0]
-				
+				this.totalLength = downloadObj.totalLength
 				if ( downloadObj.order !== this.currentIndex ) {
 					if ( downloadObj.order < this.currentIndex ) {
 						return this.Log (`ORDER [${ downloadObj.order }] already passed `)
@@ -172,5 +173,11 @@ class DownloadQueue {
 
 	public stopDownload () {
 		this.stoped = true
+	}
+}
+
+class mediaHtmlStream {
+	constructor ( uuid: string, ) {
+
 	}
 }
