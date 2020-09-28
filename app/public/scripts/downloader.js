@@ -83,7 +83,7 @@ class Downloader {
         this.updateHistory = () => {
             const date = new Date();
             const history = {
-                uuid: [this.requestUuid],
+                uuid: this.requestUuid,
                 filename: this.downloadIndex.filename,
                 time_stamp: date,
                 last_viewed: date,

@@ -7,13 +7,13 @@ class StorageHelper {
 	private hiddenAnchor = document.createElement('a')
 	constructor() {}
 
-	public removeFromPool = (pool: KnockoutObservable<any>, uuid: string) => {
+	removeFromPool = (pool: KnockoutObservable<any>, uuid: string) => {
 		const temp = pool()
 		delete temp[uuid]
 		pool(temp)
 	}
 
-	public createDownload = (requestUuid: string, files: Array<string> = null, downloadTitle: string, extraHistoryTags: Array<string>, callback: Function, stream?:boolean) => {
+	createDownload = (requestUuid: string, files: Array<string> = null, downloadTitle: string, extraHistoryTags: Array<string>, callback: Function, stream?:boolean) => {
 		if (this.downloadPool()[requestUuid]) {
 			callback(`Download already exists!`, requestUuid)
 			console.log('Download already exists')
@@ -33,7 +33,7 @@ class StorageHelper {
 		return this.downloadPool()[requestUuid].instance
 	}
 
-	public createAssembler = (requestUuid: string, callback: Function) => {
+	createAssembler = (requestUuid: string, callback: Function) => {
 		if (this.currentAssembly[requestUuid]) {
 			callback(`Assembly already exists!`, requestUuid)
 			console.log('Assembly already exists')
@@ -60,7 +60,7 @@ class StorageHelper {
 		}
 	}
 
-	public createUploader = (requestUuid: string, file: File, path: string, extraTags: string[], callback: Function) => {
+	createUploader = (requestUuid: string, file: File, path: string, extraTags: string[], callback: Function) => {
 		const progress = ko.observable(0)
 		const uploader = {
 			requestSerial: requestUuid,
@@ -73,31 +73,6 @@ class StorageHelper {
 		}
 		this.uploadPool({...this.uploadPool(), [requestUuid]: uploader})
 		return this.uploadPool()[requestUuid]
-	}
-
-	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string> ) => {
-		const date = new Date()
-		const history: fileHistory = {
-			uuid: requestUUIDs,
-			filename: title,
-			time_stamp: date,
-			last_viewed: date,
-			path: "",
-			url: 'YouTube',
-			domain: 'YouTube',
-			tag: [...extraTags, 'upload', 'local'],
-			color: null,
-			youtubeId
-		}
-
-		history.tag = history.tag.filter(tag => tag !== null)
-		_view.storageHelper.saveHistory(history, (err, data) => {
-
-		})
-	}
-
-	public createUpdateIndex = (uuid: string, index: kloakIndex, callback: Function) => {
-		this.encryptSave(uuid, JSON.stringify(index), callback)
 	}
 
 	public delete = (uuid: string, callback: Function) => {

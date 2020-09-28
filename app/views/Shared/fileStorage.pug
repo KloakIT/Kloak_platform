@@ -116,18 +116,12 @@
 									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
 										i.play.icon(style="margin: 0 !important")
 									<!-- /ko -->
-									<!-- ko if: file.youtubeId -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'youtube', $index())}")
-										i.play.icon(style="margin: 0 !important")
-									<!-- /ko -->
 									<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
 									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
 										i.eye.icon(style="margin: 0 !important")
 									<!-- /ko -->
-									<!-- ko if: !file.youtubeId -->
 									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
 										i.download.icon(style="margin: 0 !important")
-									<!-- /ko -->
 									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
 										i.trash.alternate.outline.icon(style="margin: 0 !important")
 									.fileStorageOptionIcon(data-bind="style: {'visibility': $root.storageHelper.uploadPool()[file.uuid] ? 'hidden' : 'visible'}, click: () => {$parent.showFileOptions($index())}, clickBubble: false")
@@ -157,11 +151,11 @@
 									.fsDetailLeft
 										.fsDetailInformation
 											p.fsDetailLabel(style="flex: 1")="Filename"
-											.fsDetailWrapper(style="display: flex; align-items: center; justify-content: flex-end; position: relative; flex: 2")
+											.fsDetailWrapper(style="display: flex; align-items: center; justify-content: flex-end; position: relative; flex: .8")
 												p.fsDetailText.fsDetailFilename(data-bind="text: $parent.formatFilename(file['filename']())" style="max-width: 35ch; margin-right: 5px !important")
 												button.fsButton(data-bind="click: () => { $parent.showEditFilename(true) }" style="padding: 1px")
 													i.pencil.alternate.icon(style="margin: 0 !important; height: 1.4em; width: 1.4em; padding: 2px !important;")
-												input(data-bind="textInput: $parent.editFilenameInput, value: file['filename'](),style: {display: $parent.showEditFilename() ? 'initial' : 'none'}" style="width: 100%; height: 100%; position: absolute; left: 0; padding-right: 3ch")
+												input(data-bind="textInput: $parent.editFilenameInput, style: {display: $parent.showEditFilename() ? 'initial' : 'none'}" style="width: 100%; height: 100%; position: absolute; left: 0; padding-right: 3ch")
 												button.fsButton(data-bind="click: () => { $parent.fileAction(file, event, 'editFilename') }, style: { display: $parent.showEditFilename() ? 'initial' : 'none', 'z-index': $parent.showEditFilename() ? '300' : '-100'}" style="position: relative; height: 100%; padding: 2px;")
 													i.check.square.icon(style="margin: 0 !important")
 										.fsDetailInformation

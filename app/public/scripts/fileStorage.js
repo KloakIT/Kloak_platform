@@ -227,27 +227,20 @@ class fileStorage {
             this.detectStorageUsage();
         };
         this.deleteFile = (uuid, callback) => {
-            if (!uuid.length) {
-                return;
-            }
             let pieces = null;
             let count = 0;
-            const u = uuid.shift();
-            _view.storageHelper.getIndex(u, (err, data) => {
+            _view.storageHelper.getIndex(uuid, (err, data) => {
                 pieces = JSON.parse(Buffer.from(data).toString()).pieces;
                 pieces.forEach(piece => {
                     _view.storageHelper.delete(piece, (err, data) => {
                         count++;
                         if (count === pieces.length) {
-                            _view.storageHelper.delete(u, (err, data) => {
+                            _view.storageHelper.delete(uuid, (err, data) => {
                                 callback(err, data);
                             });
                         }
                     });
                 });
-                if (uuid.length) {
-                    this.deleteFile(uuid, callback);
-                }
             });
         };
         this.sortHistory = (type, direction) => {
@@ -318,8 +311,7 @@ class fileStorage {
                     n['domain'] = history['domain'];
                     n['tag'] = history['tag']();
                     n['color'] = history['color']();
-                    n['size'] = history['size'] || null;
-                    n['youtubeId'] = history['youtubeId'] || null;
+                    n['size'] = history['size'] ? history['size'] : null;
                     return n;
                 });
                 console.log('REPLACE HISTORY', temp);
@@ -360,7 +352,7 @@ class fileStorage {
                     break;
                 case "download":
                     this.selectedFile(null);
-                    return _view.storageHelper.createAssembler(fileData.uuid[0], (err, data) => {
+                    return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
                         if (err) {
                             console.log(err);
                             return;
@@ -386,28 +378,16 @@ class fileStorage {
                         this.fileAction(null, null, 'close');
                     });
                     break;
-                case 'youtube':
-                    this.mediaViewer = new MediaViewer('youtube', fileData.filename, { localYoutube: fileData }, (err, msg) => {
-                        if (err) {
-                            console.log(err);
-                            return;
-                        }
-                        console.log(msg);
-                    }, () => {
-                        this.fileAction(null, null, 'close');
-                    });
-                    updateLastViewed();
-                    break;
                 case 'view':
                     if (fileData.tag().includes('snapshot')) {
                         _view.showFileStorage(false);
-                        new showWebPageClass(fileData.filename, fileData.uuid[0], null, () => {
+                        new showWebPageClass(fileData.filename, fileData.uuid, null, () => {
                             _view.showFileStorage(true);
                         }, () => { });
                         updateLastViewed();
                         return;
                     }
-                    return _view.storageHelper.createAssembler(fileData.uuid[0], (err, data) => {
+                    return _view.storageHelper.createAssembler(fileData.uuid, (err, data) => {
                         if (err) {
                             console.log(err);
                             return;
@@ -589,7 +569,7 @@ class fileStorage {
             if (item.isFile) {
                 item.file((file) => {
                     const uuid = uuid_generate();
-                    _view.storageHelper.createUploader(uuid, file, path, [], (err, data) => {
+                    _view.storageHelper.createUploader(uuid, file, path, (err, data) => {
                         if (err) {
                             console.log(err);
                             return;
@@ -645,7 +625,7 @@ class fileStorage {
             const hiddenInput = document.getElementById("hiddenInput");
             const fileHandler = (e) => {
                 const files = e.target.files;
-                _view.storageHelper.createUploader(uuid_generate(), files[0], "", [], (err, data) => {
+                _view.storageHelper.createUploader(uuid_generate(), files[0], "", (err, data) => {
                     if (err) {
                         console.log(err);
                         return;

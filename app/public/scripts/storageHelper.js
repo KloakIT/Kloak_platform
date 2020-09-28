@@ -71,27 +71,6 @@ class StorageHelper {
             this.uploadPool({ ...this.uploadPool(), [requestUuid]: uploader });
             return this.uploadPool()[requestUuid];
         };
-        this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags) => {
-            const date = new Date();
-            const history = {
-                uuid: requestUUIDs,
-                filename: title,
-                time_stamp: date,
-                last_viewed: date,
-                path: "",
-                url: 'YouTube',
-                domain: 'YouTube',
-                tag: [...extraTags, 'upload', 'local'],
-                color: null,
-                youtubeId
-            };
-            history.tag = history.tag.filter(tag => tag !== null);
-            _view.storageHelper.saveHistory(history, (err, data) => {
-            });
-        };
-        this.createUpdateIndex = (uuid, index, callback) => {
-            this.encryptSave(uuid, JSON.stringify(index), callback);
-        };
         this.delete = (uuid, callback) => {
             return this.databaseWorker.delete(uuid, callback);
         };

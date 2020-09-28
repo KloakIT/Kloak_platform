@@ -69,7 +69,7 @@ class DownloadQueue {
         _view.connectInformationMessage.emitRequest(com, _CallBack);
     }
     stopProcess(err) {
-        // this.CallBack ( new Error ( err ))
+        this.CallBack(new Error(err));
         this.stoped = true;
         this.downloadQueue = [];
         return this.Log(err);
@@ -104,7 +104,7 @@ class DownloadQueue {
             }
             if (data) {
                 if (typeof this.dataCallBackBeforeDecryptoCallBack === 'function') {
-                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com.downloadUuid, data.data, com.eof);
+                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com.downloadUuid, data.data);
                 }
                 return _view.sharedMainWorker.decryptStreamWithoutPublicKey(Buffer.from(data.data).toString(), (err, _data) => {
                     if (err) {

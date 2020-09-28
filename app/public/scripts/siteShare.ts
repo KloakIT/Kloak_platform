@@ -2724,7 +2724,7 @@ const infoDefine = [
 			firstTitle1: 'Kloak OS',
 			firstTitle2: 'AN INTERNET BUILT ON TRUST, PRIVACY & SECURITY',
 			firstTitle3:
-				'A Revolutionary Online Experience: No IP Address--Absolute Security',
+				'A revolutionary technology that does not have an IP address',
 
 			start: 'ENTER NOW',
 			proxyStoped: 'Gateway server shutdown. Please rebuild try again.',
@@ -4807,99 +4807,41 @@ const kloakSearchIcon_svg =
 </svg>
 
 `
-const canadaGov = `
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">
-<style type="text/css">
-	.st00100010{fill:url(#SVGID_111000_);}
-	.st10001000{fill:#FF0000;}
-</style>
 
-	<linearGradient id="SVGID_111000_" gradientUnits="userSpaceOnUse" x1="5.8656" y1="74.1344" x2="73.6577" y2="6.3423">
-		<stop  offset="0" style="stop-color:#FFFFFF;stop-opacity:0.7"/>
-		<stop  offset="0.3231" style="stop-color:#EEEEEE"/>
-		<stop  offset="0.5072" style="stop-color:#F6F6F6"/>
-		<stop  offset="0.8407" style="stop-color:#FFFFFF"/>
-	</linearGradient>
-	<path class="st00100010" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)"/>
-<g transform="translate(-1, -1)" filter = "url(#cosearch_Filter3)">
-	<path class="st10001000" d="M67.4,50.6h2.1v4.3h-2.1V50.6z M63.7,52.8l-0.1,0c0,0,0.7,0.6,0.7,0.7c0,0,0.1,0,0,0.2c0,0.1-0.1,0.2-0.1,0.2
-		s0.7-0.1,0.7-0.2c0.1,0,0.1,0,0.1,0.1c0,0.1,0,0.8,0,0.8h0.2c0,0,0-0.7,0-0.8c0-0.1,0-0.1,0.1-0.1c0.1,0,0.7,0.2,0.7,0.2
-		s0-0.2-0.1-0.2c0-0.1,0-0.1,0-0.2s0.7-0.7,0.7-0.7l-0.1,0c-0.1,0,0-0.1,0-0.1c0,0,0.1-0.5,0.1-0.5s-0.3,0.1-0.4,0.1
-		c0,0-0.1,0-0.1,0c0,0-0.1-0.2-0.1-0.2s-0.4,0.4-0.4,0.5c-0.1,0.1-0.2,0-0.1-0.1c0-0.1,0.2-0.9,0.2-0.9s-0.2,0.1-0.3,0.2
-		c-0.1,0-0.1,0-0.1,0c0-0.1-0.3-0.5-0.3-0.6c0,0-0.2,0.5-0.3,0.6c0,0.1-0.1,0.1-0.1,0c-0.1,0-0.3-0.2-0.3-0.2s0.2,0.9,0.2,0.9
-		s0,0.1-0.1,0.1L64.2,52c0,0,0,0.1-0.1,0.2c0,0,0,0.1-0.1,0c-0.1,0-0.4-0.1-0.4-0.1s0.1,0.4,0.2,0.5C63.8,52.6,63.8,52.7,63.7,52.8z
-		 M61,50.6h2.1v4.3H61V50.6z"/>
-	<path class="st10001000" d="M70,63.4c-0.2,0.4-0.5,0.5-0.7,0.5c-0.2,0-1,0-1-2c0,0,0-3.9,0-4.1c0-1.3-1-2.3-3.5-2.3
-		c-2.7,0-2.8,1.4-2.8,1.7c0,0.4,0.2,0.8,0.9,0.8c0.6,0,0.8-0.7,0.9-0.9c0.1-0.3,0.1-1.1,1.2-1.1c0.9,0,1.5,0.8,1.6,2
-		c0,0.2,0,0.3,0,0.5c0,0.1,0,0.1,0,0.2l0,0l0,0v0c-0.1,0.4-0.3,0.6-0.7,0.8c-0.5,0.2-1.9,0.5-2.1,0.5c-0.6,0.1-2.2,0.5-2.1,2.2
-		c0,1.6,1.7,2.2,2.8,2.2c1.1,0,1.8-0.5,2.1-0.7c0.2-0.1,0.2-0.1,0.3,0c0.2,0.2,0.7,0.7,2,0.7c1.3,0,1.5-0.6,1.6-0.8
-		C70.4,63.3,70.1,63.2,70,63.4z M64.9,63.9c-1.1,0-1.4-0.9-1.4-1.4c0-0.5,0.2-1.4,1.4-2.1c0,0,0.5-0.3,1.6-0.7c0,0,0.1,0,0.1,0
-		s0,0,0,0.1l0,0l0,0v0l0,0l0,0v0l0,0l0,0l0,0v1.7C66.5,62.9,65.9,63.9,64.9,63.9z M61.1,63.8c-0.2,0-1.2,0.1-1.2-3s0-9.8,0-9.8
-		c0-0.1,0-0.5-0.4-0.5c-0.4,0-2.8,0.1-3,0.2c-0.2,0-0.3,0.2,0,0.2c0.3,0,1.6,0.1,1.6,2.3c0,1.1,0,2.1,0,2.9c0,0,0,0.1,0,0.1
-		c0,0.1,0,0.1,0,0.2c0,0,0,0,0,0l0,0c0,0-0.1,0-0.2-0.1c-0.2-0.2-1.1-0.7-2.3-0.7c-1.9,0-4.3,1.4-4.3,4.3c0,3.1,2.2,4.6,4.4,4.6
-		c1.1,0,1.9-0.5,2.2-0.7c0.3-0.2,0.3-0.2,0.3,0.1c0,0.2,0,0.6,0.6,0.6c0.6-0.1,2.1-0.2,2.4-0.3C61.4,64,61.4,63.9,61.1,63.8z M56,64
-		c-1.8,0-2.7-2.1-2.7-4.2c0-2.3,1.3-3.8,2.6-3.7c1.8,0.1,2.2,1.5,2.3,4c0,0.2,0,0.3,0,0.5C58.1,63.1,57.1,64,56,64z M51.2,63.4
-		c-0.2,0.4-0.5,0.5-0.7,0.5c-0.2,0-1,0-1-2c0,0,0-3.9,0-4.1c0-1.3-1-2.3-3.5-2.3c-2.7,0-2.8,1.4-2.8,1.7c0,0.4,0.2,0.8,0.9,0.8
-		c0.6,0,0.8-0.7,0.9-0.9c0.1-0.3,0.1-1.1,1.2-1.1c0.9,0,1.6,0.8,1.6,2.1v0c0,0,0,0.1,0,0.1v0.1c0,0,0,0.1,0,0.2
-		c0,0.6-0.2,0.8-0.7,1.1c-0.5,0.2-1.9,0.5-2.1,0.5c-0.6,0.1-2.2,0.5-2.1,2.2c0,1.6,1.7,2.2,2.8,2.2c1.1,0,1.8-0.5,2.1-0.7
-		c0.2-0.1,0.2-0.1,0.3,0c0.2,0.2,0.7,0.7,2,0.7c1.3,0,1.5-0.6,1.6-0.8C51.6,63.3,51.4,63.2,51.2,63.4z M46.1,63.9
-		c-1.1,0-1.4-0.9-1.4-1.4c0-0.5,0.2-1.4,1.4-2.1c0,0,0.5-0.3,1.6-0.7c0,0,0.1,0,0.1,0v0l0,0l0,0c0,0,0,0.1,0,0.2v0c0,0,0,0,0,0v1.7
-		C47.7,62.9,47.1,63.9,46.1,63.9z M42.2,63.8c-0.3-0.1-0.9-0.5-0.9-2.3v-3.3c0-0.8,0.1-2.8-3-2.8c-1.6,0-2.5,0.8-2.6,0.9
-		c-0.1,0.1-0.2,0.2-0.2,0c0-0.2-0.1-0.4-0.2-0.6c0-0.1-0.1-0.2-0.4-0.2c-0.3,0-2.1,0.3-2.4,0.4c-0.3,0.1-0.2,0.2,0,0.2
-		c0.2,0,1.2,0.1,1.2,1.8s0,3.5,0,3.5c0,2.1-0.4,2.2-0.8,2.3c-0.5,0.1-0.2,0.3,0,0.3c0,0,3.7,0,3.7,0c0.2,0,0.4-0.2-0.1-0.3
-		s-0.9-0.4-0.9-2c0-0.2,0-1.9,0-2.3c0-0.9-0.2-3.5,2.2-3.5c1.7,0,1.8,1.4,1.8,2.3v3.5c0,1.4-0.4,1.9-0.9,2c-0.5,0.1-0.4,0.3-0.1,0.3
-		c0.1,0,3.8,0,3.8,0C42.5,64.2,42.7,64,42.2,63.8z M32.2,63.4c-0.2,0.4-0.5,0.5-0.7,0.5c-0.2,0-1,0-1-2c0,0,0-3.9,0-4.1
-		c0-1.3-1-2.3-3.5-2.3c-2.7,0-2.8,1.4-2.8,1.7c0,0.4,0.2,0.8,0.9,0.8c0.6,0,0.8-0.7,0.9-0.9c0.1-0.3,0.1-1.1,1.2-1.1
-		c0.9,0,1.5,0.8,1.6,2c0,0.2,0,0.3,0,0.5c0,0.1,0,0.2,0,0.2v0l0,0c-0.1,0.4-0.3,0.6-0.7,0.8c-0.5,0.2-1.9,0.5-2.1,0.5
-		c-0.6,0.1-2.2,0.5-2.1,2.2c0,1.6,1.7,2.2,2.8,2.2c1.1,0,1.8-0.5,2.1-0.7c0.2-0.1,0.2-0.1,0.3,0c0.2,0.2,0.7,0.7,2,0.7
-		c1.3,0,1.5-0.6,1.6-0.8C32.6,63.3,32.3,63.2,32.2,63.4z M27.1,63.9c-1.1,0-1.4-0.9-1.4-1.4c0-0.5,0.2-1.4,1.4-2.1
-		c0,0,0.5-0.3,1.6-0.7c0,0,0.1,0,0.1,0s0,0,0,0.1l0,0l0,0l0,0c0,0,0,0,0,0.1l0,0l0,0v0l0,0l0,0l0,0v1.7
-		C28.8,62.9,28.1,63.9,27.1,63.9z M23.2,60.3c-0.4,1.3-1.2,3.4-4,3.5c-3,0-4.7-2-4.8-5.7c-0.1-4,1.6-7,4.3-7.1c3,0,4.1,3.5,4.1,4.1
-		c0,0.4,0.6,0.4,0.6,0c0-0.2-0.2-3.7-0.3-4.1c-0.1-0.4-0.4-0.2-0.5-0.1c0,0.1,0-0.1-0.1,0.2c-0.2,0.4-0.6,0.2-0.8,0.1
-		c-0.5-0.2-1.4-0.7-3-0.7c-3.5,0.1-7.1,2.7-7,7.2c0.1,4.4,3.6,6.8,6.9,6.8c3,0,4.7-1.9,5.2-4.1C23.9,59.9,23.3,59.8,23.2,60.3z"/>
-	<path class="st10001000" d="M54.7,19.1h13.6v27.2H54.7V19.1z M31.2,32.7l-0.8,0.3c0,0,4.7,3.9,4.7,4.2c0.3,0.3,0.5,0.3,0.3,1
-		c-0.3,0.8-0.5,1.6-0.5,1.6s4.2-0.8,4.7-1c0.5,0,0.8,0,0.8,0.5s-0.3,5-0.3,5h1.3c0,0-0.3-4.7-0.3-5c0-0.5,0.3-0.5,0.8-0.5
-		c0.5,0,4.7,1,4.7,1s-0.3-1-0.5-1.6c-0.3-0.8,0-0.8,0.3-1c0.3-0.3,4.7-4.2,4.7-4.2l-0.8-0.3c-0.5-0.3-0.3-0.5-0.3-0.8
-		c0-0.3,0.8-2.9,0.8-2.9s-2.1,0.5-2.4,0.5c-0.3,0-0.5,0-0.5-0.3c0-0.3-0.5-1.3-0.5-1.3s-2.4,2.6-2.6,2.9c-0.5,0.5-1,0-0.8-0.5
-		c0-0.5,1.3-6,1.3-6s-1.3,0.8-1.8,1c-0.5,0.3-0.8,0.3-0.8-0.3c-0.3-0.5-1.8-3.4-1.8-3.7c0,0-1.6,3.1-1.8,3.7
-		c-0.3,0.5-0.5,0.5-0.8,0.3c-0.5-0.3-1.8-1-1.8-1s1.3,5.5,1.3,6c0,0.5-0.3,0.8-0.8,0.5l-2.6-2.9c0,0-0.3,0.8-0.5,1
-		c0,0.3-0.3,0.5-0.5,0.3c-0.5,0-2.6-0.5-2.6-0.5s0.8,2.6,1,2.9C31.7,31.9,31.7,32.4,31.2,32.7z M13.7,19.1h13.6v27.2H13.7V19.1z"/>
-</g>
-</svg>
-
-`
 const KloakFortress = 
 `
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">
 <style type="text/css">
-	.st0_0_0_0{fill:url(#SVGID_1_1_1_1);}
-	.st1_1_1_1{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st010{fill:url(#SVG_gold_ID_1_);}
+	.st101{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
 </style>
 <g>
-	<linearGradient id="SVGID_1_1_1_1" gradientUnits="userSpaceOnUse" x1="4.0144" y1="75.9856" x2="75.0832" y2="4.9168">
-		<stop  offset="0" style="stop-color:#6D6E71"/>
-		<stop  offset="0.1012" style="stop-color:#909193"/>
-		<stop  offset="0.2148" style="stop-color:#B0B1B3"/>
-		<stop  offset="0.3101" style="stop-color:#C4C5C7"/>
-		<stop  offset="0.3748" style="stop-color:#CBCCCE"/>
-		<stop  offset="0.3852" style="stop-color:#C9CACC"/>
-		<stop  offset="0.5041" style="stop-color:#B3B4B7"/>
-		<stop  offset="0.6339" style="stop-color:#A3A5A8"/>
-		<stop  offset="0.7827" style="stop-color:#9A9C9F"/>
-		<stop  offset="0.9912" style="stop-color:#97999C"/>
+	<linearGradient id="SVG_gold_ID_1_" gradientUnits="userSpaceOnUse" x1="4.0144" y1="75.9856" x2="97.2564" y2="-17.2564">
+		<stop  offset="1.299629e-02" style="stop-color:#AE9B0A"/>
+		<stop  offset="4.227213e-02" style="stop-color:#B6A418"/>
+		<stop  offset="0.148" style="stop-color:#CEC045"/>
+		<stop  offset="0.2425" style="stop-color:#E0D565"/>
+		<stop  offset="0.3213" style="stop-color:#EBE179"/>
+		<stop  offset="0.3748" style="stop-color:#EFE680"/>
+		<stop  offset="0.3844" style="stop-color:#EDE37B"/>
+		<stop  offset="0.4631" style="stop-color:#DDCD59"/>
+		<stop  offset="0.5469" style="stop-color:#D0BB3C"/>
+		<stop  offset="0.6362" style="stop-color:#C6AD26"/>
+		<stop  offset="0.7334" style="stop-color:#BFA316"/>
+		<stop  offset="0.8445" style="stop-color:#BA9D0D"/>
+		<stop  offset="1" style="stop-color:#B99B0A"/>
 	</linearGradient>
-	<path class="st0_0_0_0" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)" />
-	<g filter = "url(#cosearch_Filter3)" >
-		<path class="st1_1_1_1" d="M24.3,42.1v-2.8h1.8v-7h-1.8v-1.5l-4.6-6.5v-2.3c2.7-2.2,4.7,1.1,7.4-1.3c-2.9,1.5-4.6-2.7-7.4-1.5v-0.2H19
-			v5.2l-4.5,6.5v1.5h-1.8v7h1.8v2.8H24.3z"/>
-		<path class="st1_1_1_1" d="M64.6,30.8L60,24.4v-2.3c2.7-2.2,4.7,1.1,7.4-1.3c-2.9,1.5-4.6-2.7-7.4-1.5v-0.2h-0.7v5.2l-4.5,6.5v1.5h-1.9
-			v7h1.9v2.8h9.8v-2.8h1.8v-7h-1.8V30.8z"/>
-		<path class="st1_1_1_1" d="M35,35.1h9.8v-2.8h1.9v-7h-1.9v-1.5l-4.6-6.5v-2.3c2.7-2.2,4.7,1.1,7.4-1.2c-2.9,1.4-4.6-2.8-7.4-1.5v-0.3
-			h-0.7v5.4L35,23.9v1.5h-1.8v7H35V35.1z"/>
-		<path class="st1_1_1_1" d="M56,49.1H45.4V36.5H34.6v12.6H23v-5.7h-7.4v21.9c15.9,0,31.8,0,47.7,0V43.4H56V49.1z M25.9,62.4h-5.4v-6.1
-			c0-3,5.4-3,5.4,0V62.4z M42.7,62.4h-5.4v-6.1c0-3,5.4-3,5.4,0V62.4z M59.5,56.3v6.1h-5.4v-6.1C54.1,53.3,59.5,53.3,59.5,56.3z"/>
+	<path class="st010" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)"/>
+	<g filter = "url(#cosearch_Filter3)">
+		<path class="st101" d="M24.3,44v-3.3h1.8v-8.2h-1.8v-1.7l-4.6-7.6v-2.7c2.7-2.6,4.7,1.3,7.4-1.5c-2.9,1.7-4.6-3.2-7.4-1.7v-0.2H19
+			v6.2l-4.5,7.6v1.7h-1.8v8.2h1.8V44H24.3z"/>
+		<path class="st101" d="M64.6,30.7L60,23.1v-2.7c2.7-2.6,4.7,1.3,7.4-1.5c-2.9,1.7-4.6-3.2-7.4-1.7v-0.2h-0.7v6.2l-4.5,7.6v1.7h-1.9
+			v8.2h1.9V44h9.8v-3.3h1.8v-8.2h-1.8V30.7z"/>
+		<path class="st101" d="M35,35.8h9.8v-3.2h1.9v-8.2h-1.9v-1.7l-4.6-7.7v-2.7c2.7-2.5,4.7,1.3,7.4-1.4c-2.9,1.7-4.6-3.2-7.4-1.7V8.7
+			h-0.7V15L35,22.6v1.7h-1.8v8.2H35V35.8z"/>
+		<path class="st101" d="M56,52.3H45.4V37.4H34.6v14.9H23v-6.7h-7.4v25.8c15.9,0,31.8,0,47.7,0V45.5H56V52.3z M25.9,68h-5.4v-7.2
+			c0-3.6,5.4-3.6,5.4,0V68z M42.7,68h-5.4v-7.2c0-3.6,5.4-3.6,5.4,0V68z M59.5,60.8V68h-5.4v-7.2C54.1,57.2,59.5,57.2,59.5,60.8z"/>
 	</g>
 </g>
 </svg>
@@ -4908,25 +4850,64 @@ const KloakFortress =
 
 const Kloak_youtube = 
 `
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.2" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">
 <style type="text/css">
-	.st0__2__2{fill:url(#SVGID_1_0_1_0);}
-	.st1__1__1{fill:#FFFFFF;}
+	.ssttt0{fill:url(#S_VGID_1_);}
+	.ssttt1{fill:#FFFFFF;}
+	.ssttt2{fill:none;stroke:#FFFFFF;stroke-miterlimit:100;}
+	.ssttt3{display:none;fill:none;stroke:#FFFFFF;stroke-miterlimit:10;}
+	.ssttt4{fill:url(#S_VGID_2_);}
 </style>
+<defs>
+    <filter id="f33" x="-0.1" y="-0.1" width="200%" height="200%">
+	  	<feDropShadow dx="-0.5" dy="0.5" stdDeviation="0.5" flood-color="#333" flood-opacity="0.9" />
+    </filter>
+</defs>
 <g>
-	<linearGradient id="SVGID_1_0_1_0" gradientUnits="userSpaceOnUse" x1="-1.31" y1="63.9666" x2="81.7128" y2="16.0334">
+	<linearGradient id="S_VGID_1_" gradientUnits="userSpaceOnUse" x1="-1.31" y1="63.9666" x2="81.7128" y2="16.0334">
 		<stop  offset="0" style="stop-color:#FF0000"/>
 		<stop  offset="1" style="stop-color:#FF5555"/>
 	</linearGradient>
-	<path class="st0__2__2" d="M68.7,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.7,73.5,73.7,77.5,68.7,77.5z" filter = "url(#cosearch_Filter3)" />
-	<g filter = "url(#cosearch_Filter3)" >
-		<path class="st1__1__1" d="M65.3,27.8c-0.6-2.7-2.9-4.8-5.6-5.1c-6.4-0.7-13-1.2-19.4-1.2c-6.5,0-13,0.4-19.4,1.2
-			c-2.7,0.3-5,2.3-5.6,5.1c-0.9,3.9-0.9,8.2-0.9,12.2c0,4,0,8.3,0.9,12.2c0.6,2.7,2.9,4.8,5.6,5.1c6.4,0.7,13,1.2,19.4,1.2
-			c6.5,0,13-0.4,19.4-1.2c2.7-0.3,5-2.3,5.6-5.1c0.9-3.9,0.9-8.2,0.9-12.2S66.2,31.7,65.3,27.8 M49.1,41.2l-12.2,6.6
-			c-1.2,0.7-2.2,0.1-2.2-1.3v-13c0-1.4,1-2,2.2-1.3l12.2,6.6C50.3,39.5,50.3,40.5,49.1,41.2"/>
+	<linearGradient id="S_VGID_2_" gradientUnits="userSpaceOnUse" x1="18.6698" y1="39.492" x2="55.4773" y2="39.492">
+		<stop  offset="0" style="stop-color:#FFFFFF;stop-opacity:0.3"/>
+		<stop  offset="0.9142" style="stop-color:#FFFFFF"/>
+	</linearGradient>
+	<path class="ssttt0" d="M68.7,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.7,73.5,73.7,77.5,68.7,77.5z" filter = "url(#f33)"/>
+	<g filter = "url(#f33)" >
+		<rect x="8.6" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="18.1" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="27.6" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="37.1" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="46.6" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="56" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="65.5" y="13.8" class="ssttt1" width="5.9" height="5.9"/>
+	</g>
+	<g filter = "url(#f33)">
+		<rect x="8.6" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="18.1" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="27.6" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="37.1" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="46.6" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="56" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+		<rect x="65.5" y="60.4" class="ssttt1" width="5.9" height="5.9"/>
+	</g>
+	<g>
+		<g>
+			<line class="ssttt2" x1="69.9" y1="23.1" x2="69.9" y2="55.9" />
+			<line class="ssttt2" x1="10.5" y1="23.1" x2="10.5" y2="55.9"/>
+			<line class="ssttt2" x1="51.1" y1="23.1" x2="51.1" y2="55.9"/>
+		</g>
+		<g>
+			<path class="ssttt4" d="M55.1,36.1L40.9,23.4c-0.3-0.3-0.8-0.4-1.2-0.2c-0.4,0.2-0.7,0.6-0.7,1v6c-8.3,0.1-12.2,3.6-12.6,3.9
+				c-5,4.2-6.8,9.2-7.4,12.7c-0.7,3.9-0.2,6.8-0.2,6.8l0.3,1.7c0.1,0.3,0.3,0.5,0.6,0.6c0,0,0.1,0,0.1,0c0.3,0,0.5-0.1,0.6-0.4
+				l0.9-1.5c2.9-4.8,6.5-8,10.8-9.5c2.9-1,5.4-1,6.7-0.8v6.2c0,0.4,0.3,0.9,0.7,1.1c0.4,0.2,0.9,0.1,1.2-0.2l14.2-12.9
+				c0.2-0.2,0.4-0.5,0.4-0.9C55.5,36.6,55.3,36.3,55.1,36.1z" filter = "url(#f33)"/>
+		</g>
+		<g >
+			<line class="ssttt2" x1="29.3" y1="23.1" x2="29.3" y2="55.9"/>
+		</g>
+		
 	</g>
 </g>
 </svg>
@@ -5081,7 +5062,7 @@ const Kloak_Daggr =
 	<g>
 		<g>
 			<linearGradient id="SVG__11_ID_1_" gradientUnits="userSpaceOnUse" x1="-1.8575" y1="64.1664" x2="82.196" y2="15.6381">
-				<stop  offset="1.299629e-02" style="stop-color:#aaaa"/>
+				<stop  offset="1.299629e-02" style="stop-color:#aaaaaa"/>
 				<stop  offset="1" style="stop-color:#eeeeee"/>
 			</linearGradient>
 			<path class="st__0" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)"/>
