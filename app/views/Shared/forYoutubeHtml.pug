@@ -39,29 +39,30 @@
 				.ui.items( style = "margin-top: 1rem;" )
 					<!-- ko foreach: searchItemsArray -->
 						.item( style=" margin-bottom: 2rem;" )
-							
-							.image.ui.top.aligned( data-bind = "click:  function() { $parents[0].getLinkClick( $index ())}, css: { 'circular': channel || user, 'bordered': user }, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width:150px " )
-								img( data-bind = "attr: { src: imageInfo.img }, style: { 'border-radius': playlist ? '0.5rem' : 'unset' }" )
-								<!-- ko if: user -->
-									.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
-										i.icon.user.huge( style = "color: rgba(0,0,0,0.4);")
-								<!-- /ko -->
-								<!-- ko if: imageInfo['videoTime'] -->
-									.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
-										i.icon.youtube.big.red
-									.ui.bottom.right.attached.label.tiny( data-bind = "text: imageInfo['videoTime'] " style = " background-color: #313030ff!important; color: white!important;font-weight: bolder;border-radius:unset!important;font-family: system-ui;font-style: italic;")
-								<!-- /ko -->
-								<!-- ko if: showLoading () > 0 && showLoading() !== 5 -->
-									.ui.active.dimmer( style = "background-color: rgba(0,0,0,.45);z-index: 10;")
-										<!-- ko if: showError() -->
-											i.icon.exclamation.big.triangle.red
-										<!-- /ko -->
-										.ui.loader( data-bind = "css: {'icon-background-response-local-server': showLoading () === 2, 'icon-background-response-Kloak-server': showLoading () === 3 }")
+							.videoElm
+								.image.ui.top.aligned( data-bind = "click:  function() { $parents[0].getLinkClick( $index ())}, css: { 'circular': channel || user, 'bordered': user }, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width:150px " )
+									img( data-bind = "attr: { src: imageInfo.img }, style: { 'border-radius': playlist ? '0.5rem' : 'unset' }" style="width: inherit;")
+									<!-- ko if: user -->
+										.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
+											i.icon.user.huge( style = "color: rgba(0,0,0,0.4);")
+									<!-- /ko -->
+									<!-- ko if: imageInfo['videoTime'] -->
 										
-								<!-- /ko -->
+										.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10;")
+											i.icon.youtube.big.red
+										.ui.bottom.right.attached.label.tiny( data-bind = "text: imageInfo['videoTime'] " style = " background-color: #313030ff!important; color: white!important;font-weight: bolder;border-radius:unset!important;font-family: system-ui;font-style: italic;")
+									<!-- /ko -->
+									<!-- ko if: showLoading () > 0 && showLoading() !== 5 -->
+										.ui.active.dimmer( style = "background-color: rgba(0,0,0,.45);z-index: 10;")
+											<!-- ko if: showError() -->
+												i.icon.exclamation.big.triangle.red
+											<!-- /ko -->
+											.ui.loader( data-bind = "css: {'icon-background-response-local-server': showLoading () === 2, 'icon-background-response-Kloak-server': showLoading () === 3 }")
+											
+									<!-- /ko -->
 
 							
-							.content
+							.content( style="padding-left: 1rem;")
 								.ui.header( data-bind = "style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }, css: { 'kloak_color_DarkBlue': !showLoading(), 'kloak_color_PrimaryTeal': showLoading() > 0, 'kloak_item_ready': showLoading() === 5, 'red': showError() }, click: function() { $parents[0].getLinkClick( $index ())}, attr: { 'id': id + '-urlLink', 'data-content': messageBoxDefine['copyClipboard'][ $root.languageIndex() ] }" style = "font-size: medium;")
 									<!-- ko text: title --><!-- /ko -->
 								
