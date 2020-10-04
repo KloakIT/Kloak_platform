@@ -483,8 +483,15 @@ class MediaViewer {
 						}
 						console.log ( `requestStreamUrl return uuid = [${ uuid }]`)
 						sockEmitUuid = uuid
-						streamURL = `${window.location.href}streamUrl?uuid=${ uuid }`
-						this.player['src'] = streamURL
+						streamURL = `${ window.location.href }streamUrl?uuid=${ uuid }`
+
+						let source = document.createElement("source")
+						source['src'] = streamURL
+						source['type'] = 'video/mp4'
+
+						// document.getElementById("videoSource")['src'] = streamURL
+						// this.player['src'] = streamURL
+						this.player.appendChild(source)
 						_view.connectInformationMessage.sockEmit ( uuid, Buffer.from ( data ).toString('base64'), () => {
 
 						})

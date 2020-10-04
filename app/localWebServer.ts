@@ -580,11 +580,21 @@ export default class localServer {
 		this.expressServer.get ( localPath, ( req, res ) => {
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
+
+
 		/*
 		this.expressServer.get ( `${ folderName }/message`, ( req, res ) => {
             res.render( 'home/message', { title: 'message', proxyErr: false  })
 		})
 		*/
+
+		this.expressServer.get ( `${ folderName }/mp4/*`, ( req, res ) => {
+			const uuid = req.url.split ( `${ folderName }/mp4/`)[1].split ('.mp4')[0]
+			const length = this.lengthPool.get ( uuid )
+			res.writeHead ( 200, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length,'Cache-Control': 'public,max-age=14400,public','Connection':'close' })
+			this.streamUrlPool.set ( uuid, res )
+		})
+
 		this.expressServer.get ( `${ folderName }/browserNotSupport`, ( req, res ) => {
             res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
 		})
@@ -613,14 +623,34 @@ export default class localServer {
 			const fangeEnd = range.split ('bytes=0-')[1]
 			if ( range && fangeEnd ) {
 				
-				if ( /bytes\=0\-1/.test (range)) {
+				if ( /bytes\=0\-1$/.test ( range )) {
 					console.dir ( req.rawHeaders )
-					res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${ length }`,'Connection':'close' })
+					res.writeHead ( 206, { 
+						'Content-Type': 'video/mp4', 
+						'accept-ranges': 'bytes', 
+						'Content-Length': 2, 
+						'Content-Range': `bytes 0-1/${ length }`,
+						'Connection':'close',
+						'X-Content-Type-Options': 'nosniff',
+						'Vary': 'Origin',
+						'Cache-Control': 'private, max-age=21187',
+						
+					 })
+					console.log (`res.end ( Buffer.alloc( 2, 0))`)
 					return res.end ( Buffer.alloc( 2, 0))
 				}
-
+				
 				console.dir (`range = 【${ range } 】`)
-				res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length, 'Content-Range': `bytes 0-${ length }/${ length }`,'Connection':'close' })
+				res.writeHead ( 206, { 
+					'Content-Type': 'video/mp4', 
+					'accept-ranges': 'bytes', 
+					'Content-Length': length, 
+					'Content-Range': `bytes 0-${ (typeof length === 'string' ?  parseInt(length) : length ) -1 }/${ length }`,
+					'Connection': 'close',
+					'X-Content-Type-Options': 'nosniff',
+					'Vary': 'Origin',
+					'Cache-Control': 'private, max-age=21187'
+				 })
 				
 			} else {
 				res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes' })
