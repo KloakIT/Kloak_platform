@@ -97,6 +97,7 @@ class StorageHelper {
 	}
 
 	public createUpdateIndex = (uuid: string, index: kloakIndex, callback: Function) => {
+		console.log(index)
 		this.encryptSave(uuid, JSON.stringify(index), callback)
 	}
 

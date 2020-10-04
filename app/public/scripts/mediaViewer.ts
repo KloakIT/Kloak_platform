@@ -447,10 +447,9 @@
 
 class MediaViewer {
 	private state: 'RUN' | 'STOP' = 'RUN'
-	private videoQueue: DownloadQueue = null
-	private audioQueue: DownloadQueue = null
+	private download: DownloadQueue = null
 	public mediaLoading: KnockoutObservable<boolean> = ko.observable(false)
-	private callback: Function = null
+	// private callback: Function = null
 
 	private MP4BoxFile = null
 	private mediaSource: MediaSource = null
@@ -458,131 +457,389 @@ class MediaViewer {
 	private audioInit = null
 	private audioCodec = null
 	private videoCodec = null
-	private audioSourceBuffer = null
-	private videoSourceBuffer = null
-
-	private videoPlay = false
-
+	private sourceBuffers: {video: SourceBuffer, audio: SourceBuffer} = {
+		video: null,
+		audio: null
+	}
+	private pieces: Array<string> = null
+	private videoPlaying = false
+	private buffered = 0
 	// public exit: Function = () => {}
 
 
-	constructor(private type: string, private filename: string, private player: HTMLElement, exit: () => void ) {
+	constructor(private type: string, private filename: string, private customPlayer: { player: HTMLElement, fullBar?: HTMLElement, bufferBar?: HTMLElement, currentTimeBar?: HTMLElement, playButton?: HTMLElement, stopButton?: HTMLElement, fullscreenButton?: HTMLElement, durationText?: HTMLElement}, private callback: Function, private exit: () => void ) {
+		if (customPlayer.player) {
+			this.customPlayer.player.addEventListener('canplay', _ => {
+				callback(null, true)
+				this.videoPlaying = true
+			})
+			this.customPlayer.player.addEventListener("pause", _ => {
+				this.videoPlaying = false
+				callback(null, this.videoPlaying)
+			})
+			this.customPlayer.player.addEventListener('ended', _ => {
+				this.videoPlaying = false
+				callback(null, this.videoPlaying)
+			})
+		}
+	}
+
+
+
+	sourceOpen = (codecs: Array<string>, callback: Function) => {
+		console.log("source open")
+		codecs.map((codec, idx) => {
+			const keys = Object.keys(this.sourceBuffers)
+			this.sourceBuffers[keys[idx]] = this.mediaSource.addSourceBuffer(codec)
+		})
+		callback()
+	}
+
+	setupMediaSource = (codecs: Array<string>, callback: Function) => {
+		console.log("setting up media source!")
+		if (!MediaSource) {
+			return console.log("Your browser does not support MediaSource!")
+		}
+		this.mediaSource = new MediaSource()
+		this.customPlayer.player['src'] = URL.createObjectURL(this.mediaSource)
+		this.mediaSource.addEventListener("sourceopen", () => { this.sourceOpen(codecs, () => {
+			callback()
+			this.mediaSource.removeEventListener('sourceopen', () => {})
+		}) })
+	}
+
+	endOfStream = () => {
+		if (this.sourceBuffers['video']?.updating || this.sourceBuffers['audio']?.updating) {
+			return setTimeout(() => {
+				this.endOfStream()
+			}, 250)
+		}
+		if (this.mediaSource.readyState === 'open') {
+			this.mediaSource.endOfStream()
+		}
 	}
 
 	youtube = (youtubeStreamingData: any) => {
-		let streamURL = null
-		let sockEmitUuid = null
-		let download = new DownloadQueue(youtubeStreamingData['streamingData']['formats'].pop().url, 'video', (err, data) => {
-			
-			console.log(data)
+		let youtubeId = youtubeStreamingData['videoDetails']['videoId']
+		let format = youtubeStreamingData['streamingData']['formats'].pop()
+		let duration = youtubeStreamingData['duration']
+		console.log(duration)
+		let extension = format['mimeType'].split(" ")[0].replace(";", "").split("/")[1]
+		let url = format.url
+		let downloadedPieces = []
+
+		const createUpdateIndex = (requestUuid, com: kloak_downloadObj) => {
+			const index: kloakIndex = {
+				filename: com.downloadFilename,
+				fileExtension: extension,
+				totalLength: com.totalLength ? com.totalLength : null,
+				contentType: com.contentType,
+				pieces: [...downloadedPieces],
+				finished: com.eof
+			}
+			_view.storageHelper.createUpdateIndex(requestUuid, index, (err, data) => {
+				if (err) {
+					console.log(err)
+				}
+			})
+		}
+
+		const createHistory = (requestUuid, com: kloak_downloadObj) => {
+			const date = new Date()
+			const history: fileHistory = {
+				uuid: [requestUuid],
+				filename: `${youtubeStreamingData['videoDetails']['title']}.mp4`,
+				time_stamp: date,
+				last_viewed: date,
+				path: "",
+				url: `https://www.youtube.com/watch?v=${youtubeStreamingData['videoDetails']['videoId']}`,
+				domain: "https://www.youtube.com",
+				tag: ['youtube', extension, 'video'],
+				color: null,
+				size: com.totalLength ? com.totalLength : null,
+				mimeType: format['mimeType'],
+				youtubeId,
+				duration
+			}
+
+			_view.storageHelper.saveHistory(history, (err, data) => {
+				if (err) {
+					return console.log(err)
+				}
+			})
+		}
+
+		let history = false
+
+		this.download = new DownloadQueue(url, 'video', (err, data) => {
+			if (err) {
+				return console.log(err)
+			}
 			if ( data ) {
-				if (!sockEmitUuid) {
-					return _view.connectInformationMessage.sockEmit('requestStreamUrl', download.totalLength, uuid => {
-						if ( !uuid ) {
-							return console.log (`requestStreamUrl return null`)
-						}
-						console.log ( `requestStreamUrl return uuid = [${ uuid }]`)
-						sockEmitUuid = uuid
-						streamURL = `${ window.location.href }streamUrl?uuid=${ uuid }`
+				console.log(data)
+				if (!this.mediaSource) {
+					this.setupMediaSource([format['mimeType']], () => {
+						this.mediaSource.duration = parseInt(duration.toString())
+						this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
+					})
+					return
+				}
+				this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
+			}
+		}, (requestUuid, com: kloak_downloadObj, data) => {
+			console.log(com, Buffer.from(data).toString())
+			downloadedPieces.push(com.downloadUuid)
+			if (!history) {
+				createHistory(requestUuid, com)
+				history = true
+			}
+			_view.storageHelper.save(com.downloadUuid, data, (err, data) => {
+				if (data) {
+					createUpdateIndex(requestUuid, com)
+				}
+			})
+			// console.log(requestUuid, downloadUuid, data, eof)
+		})
+	}
 
-						let source = document.createElement("source")
-						source['src'] = streamURL
-						source['type'] = 'video/mp4'
+	removeBuffers = (start, end, sourceBuffer: SourceBuffer, callback: Function) => {
+		console.log("called remove buffer")
+		if (sourceBuffer.updating) {
+			return setTimeout(() => {
+				this.removeBuffers(start, end, sourceBuffer, callback)
+			}, 250)
+		}
+		sourceBuffer.remove(start, end)
+		callback()
+	}
 
-						// document.getElementById("videoSource")['src'] = streamURL
-						// this.player['src'] = streamURL
-						this.player.appendChild(source)
-						_view.connectInformationMessage.sockEmit ( uuid, Buffer.from ( data ).toString('base64'), () => {
+	appendNext = (pieces, callback: Function) => {
+		console.log(this.sourceBuffers['video'].buffered)
+		console.log(this.customPlayer.player['currentTime'])
+		console.log(pieces)
+		_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+			if (err) {
+				return console.log(err)
+			}
+			if (data) {
+				this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
+				callback()
+			}
+			if (!pieces.length) {
+				this.endOfStream()
+			}
+		})
+	}
 
-						})
+	formatTime = (seconds: number) => {
+		let date = new Date(null)
+		let s: number | string = parseInt(seconds.toString(), 10)
+		date.setSeconds(s)
+		let time = date.toISOString().substr(11,8).split(":")
+		if (time[0] === '00') {
+			return [time[1], time[2]].join(":")
+		} else {
+			return time.join(":")
+		}
+	}
+
+	timeUpdateEvent = e => {
+		try {
+			this.buffered = e.target['buffered'].end(0)
+			const currentTime = this.customPlayer.player['currentTime']
+
+			if (this.customPlayer['durationText']) {
+				this.customPlayer.durationText.textContent = `${this.formatTime(currentTime)} / ${this.formatTime(this.mediaSource.duration)}`
+			}
+
+			if (this.customPlayer['currentTimeBar']) {
+				this.customPlayer.currentTimeBar.style.width = `${(currentTime / this.mediaSource.duration) * 100}%`
+			}
+
+			const percent = Math.floor((currentTime/this.buffered) * 100)
+			if (percent > 80) {
+				if (this.pieces.length) {
+					this.appendNext(this.pieces, () => {
+
 					})
 				}
-				_view.connectInformationMessage.sockEmit ( sockEmitUuid, Buffer.from ( data ).toString('base64'), () => {
+			}
+		} catch (e) {
+			return
+		}
+	}
 
+	progressUpdateEvent = e => {
+		try {
+			const buffered = e.target['buffered'].end(0)
+			this.customPlayer.bufferBar.style.width = `${(buffered / this.mediaSource.duration) * 100}%`
+		} catch (e) {
+			return
+		}
+	}
+
+	setupPlayer = () => {
+		this.customPlayer.player.addEventListener("timeupdate", this.timeUpdateEvent)
+
+		this.customPlayer.player.addEventListener("progress", this.progressUpdateEvent)
+		
+
+		this.customPlayer?.fullBar.addEventListener("click", e => {
+			console.log(e)
+			const x = e?.['layerX']
+			console.log(x)
+			const full = this.customPlayer.fullBar.clientWidth
+			console.log(e.target)
+			console.log(full)
+			const percent = (x / full)
+			console.log(percent)
+			const time = percent * this.mediaSource.duration
+			if (time > this.buffered) {
+				return
+			}
+			this.customPlayer.player['currentTime'] = percent * this.mediaSource.duration
+			this.customPlayer.currentTimeBar.style.width = `${Math.round(percent * 100)}%`
+		})
+		
+		this.customPlayer?.playButton.addEventListener("click", _ => {
+			this.videoPlaying = !this.videoPlaying
+			if (this.videoPlaying) {
+				this.customPlayer?.player['play']()
+			} else {
+				this.customPlayer?.player['pause']()
+			}
+			this.callback(null, this.videoPlaying)
+		})
+
+		this.customPlayer?.stopButton.addEventListener("click", _ => {
+			this.videoPlaying = false
+			this.customPlayer?.player['pause']()
+			this.callback(null, this.videoPlaying)
+		})
+
+		this.customPlayer?.fullscreenButton.addEventListener("click", _ => {
+			this.customPlayer?.player.requestFullscreen()
+		})
+	}
+
+	localYoutube = (uuid: string, mimeType: string, duration: number | string, filesize: number, youtubeId: string) => {
+		let removedOffset = 0
+		_view.storageHelper.getIndex(uuid, (err, data) => {
+			if (err) {
+				return console.log(err)
+			}
+			const index = JSON.parse(Buffer.from(data).toString())
+			console.log(uuid, filesize, youtubeId, index)
+			this.pieces = index['pieces']
+
+			if (!this.mediaSource) {
+				this.setupMediaSource([mimeType], () => {
+					this.mediaSource.duration = parseInt(duration.toString())
+					this.setupPlayer()
+					if (this.pieces.length) {
+						this.appendNext(this.pieces, () => {
+
+						})
+					}
 				})
 			}
-			
 
-		}, (requestUuid, downloadUuid, data, eof) => {
+			// return _view.connectInformationMessage.sockEmit("requestStreamUrl", filesize, uuid => {
+			// 	streamUuid = uuid
+			// 	streamURL = `${window.location.href}streamUrl?uuid=${ uuid }`
+			// 	this.player['src'] = streamURL
+				
+			// 	_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+			// 		if (err) {
+			// 			return console.log(err)
+			// 		}
+			// 		if (data) {
+			// 			_view.connectInformationMessage.sockEmit ( uuid, Buffer.from(data).toString('base64'), () => {
+			// 			})
+			// 			appendNext(pieces)
+			// 		}
+			// 	})
+			// 	// _view.connectInformationMessage.sockEmit ( uuid, _view.storageHelper.decryptLoad(pieces.shift), () => {
+			// 	// })
+			// })
 		})
-		console.log(youtubeStreamingData['streamingData']['formats'][1])
 	}
 
 	recording = (uuid: string) => {
 		_view.storageHelper.createAssembler(uuid, (err, data) => {
 			if (data) {
-				this.player['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
+				this.customPlayer.player['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
 				console.log(data)
-				this.player.addEventListener('canplay', e => {
-					this.player["play"]()
+				this.customPlayer.player.addEventListener('canplay', e => {
+					this.customPlayer.player["play"]()
 				})
 			}
 		})
 		return
 	}
 
-	downloaded = (uuid: string) => {
-		this.mediaLoading(true)
+	// downloaded = (uuid: string) => {
+	// 	this.mediaLoading(true)
 
-		const beginFileRetrieval = () => {
-			let fileStart = 0
-			let pieces = null
-			const appendSourceBuffer = (uuid: string) => {
-				_view.storageHelper.decryptLoad(uuid, (err, data) => {
-					console.log(err, data)
-					if (err) {
-						return console.log("Error grabbing video data!")
-					}
-					if (data) {
-						if (this.type === 'webm') {
-							this.videoSourceBuffer.appendBuffer(data)
-						} else {
-							data['fileStart'] = fileStart
-							this.MP4BoxFile.appendBuffer(data)
-							if (!pieces.length) {
-								this.MP4BoxFile.flush()
-							}
-						}
-						fileStart += data.byteLength
-						if (pieces.length) {
-							appendSourceBuffer(pieces.shift())
-						}
-					}
-				})
-			}
-			_view.storageHelper.getIndex(uuid, (err, data) => {
-				let index = JSON.parse(Buffer.from(data).toString())
-				pieces = index.pieces
-				appendSourceBuffer(pieces.shift())
-			})
-		}
+	// 	const beginFileRetrieval = () => {
+	// 		let fileStart = 0
+	// 		let pieces = null
+	// 		const appendSourceBuffer = (uuid: string) => {
+	// 			_view.storageHelper.decryptLoad(uuid, (err, data) => {
+	// 				console.log(err, data)
+	// 				if (err) {
+	// 					return console.log("Error grabbing video data!")
+	// 				}
+	// 				if (data) {
+	// 					if (this.type === 'webm') {
+	// 						this.videoSourceBuffer.appendBuffer(data)
+	// 					} else {
+	// 						data['fileStart'] = fileStart
+	// 						this.MP4BoxFile.appendBuffer(data)
+	// 						if (!pieces.length) {
+	// 							this.MP4BoxFile.flush()
+	// 						}
+	// 					}
+	// 					fileStart += data.byteLength
+	// 					if (pieces.length) {
+	// 						appendSourceBuffer(pieces.shift())
+	// 					}
+	// 				}
+	// 			})
+	// 		}
+	// 		_view.storageHelper.getIndex(uuid, (err, data) => {
+	// 			let index = JSON.parse(Buffer.from(data).toString())
+	// 			pieces = index.pieces
+	// 			appendSourceBuffer(pieces.shift())
+	// 		})
+	// 	}
 
-		const webmSourceOpen = () => {
-			const mimeType = 'video/webm; codecs="vp9, opus"'
-			this.videoSourceBuffer = this.mediaSource.addSourceBuffer(mimeType)
-			beginFileRetrieval()
-		}
+	// 	const webmSourceOpen = () => {
+	// 		const mimeType = 'video/webm; codecs="vp9, opus"'
+	// 		this.videoSourceBuffer = this.mediaSource.addSourceBuffer(mimeType)
+	// 		beginFileRetrieval()
+	// 	}
 
-		const setupMediaSource = () => {
-			this.mediaSource = new MediaSource()
-			this.player['src'] = URL.createObjectURL(this.mediaSource)
+	// 	const setupMediaSource = () => {
+	// 		this.mediaSource = new MediaSource()
+	// 		this.player['src'] = URL.createObjectURL(this.mediaSource)
 	
-			this.player.addEventListener('canplay', e => {
-				this.mediaLoading(false)
-			})
+	// 		this.player.addEventListener('canplay', e => {
+	// 			this.mediaLoading(false)
+	// 		})
 	
 	
-			this.mediaSource.addEventListener("sourceopen", () => {
-				if (this.type === 'webm') {
-					webmSourceOpen()
-					return
-				}
-				//createMP4Box()
-			})
-		}
+	// 		this.mediaSource.addEventListener("sourceopen", () => {
+	// 			if (this.type === 'webm') {
+	// 				webmSourceOpen()
+	// 				return
+	// 			}
+	// 			//createMP4Box()
+	// 		})
+	// 	}
 
-		setupMediaSource()
-	}
+	// 	setupMediaSource()
+	// }
 	// constructor ( type: string, filename: string, private options: { recording?: boolean, uuid?:string, twitterData?: any, youtubeStreamingData?: any, localYoutube?: fileHistory, customPlayer?: HTMLElement }, _callback: Function, exit: Function) {
 	// 	this.type = type
 	// 	this.filename = filename
@@ -604,9 +861,16 @@ class MediaViewer {
 	// }
 
 	terminate = () => {
-		this.state = 'STOP'
-		this.audioQueue ? this.audioQueue.stopDownload() : null
-		this.videoQueue ? this.videoQueue.stopDownload() : null
+		this.customPlayer.player.removeEventListener("timeupdate", this.timeUpdateEvent)
+		this.customPlayer.player.removeEventListener("progress", this.progressUpdateEvent)
+		this.customPlayer.player['pause']()
+		URL.revokeObjectURL(this.customPlayer.player['src'])
+		this.download?.stopDownload()
+		this.mediaSource = null
+		this.sourceBuffers = {
+			video: null,
+			audio: null
+		}
 	}
 
 	Log = ( message: string ) => {

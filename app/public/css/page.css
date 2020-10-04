@@ -1692,7 +1692,6 @@ ANDY - FILE STORAGE
 	flex-direction: column;
 	justify-content: center;
 	position: relative;
-	padding: 0 20px;
 	border-bottom: 1px solid rgba(0,0,0,0.15);
 	overflow: hidden;
 	min-height: 6rem;
@@ -1706,7 +1705,7 @@ ANDY - FILE STORAGE
 	display: flex;
 	justify-content: center;
 	height: 6rem;
-	
+	padding: 0 20px;
 }
 
 .fileStorageLeft {
@@ -1725,6 +1724,10 @@ ANDY - FILE STORAGE
 
 .fileStorageDetails {
 	border-top: 1px solid rgba(125,125,125,0.2);
+}
+
+.fsVideoPlayer:focus {
+	outline: none
 }
 
 .fsDetailInformations {
@@ -2881,4 +2884,329 @@ body {
 .coSearchHomeButton:hover {
 	color: rgba(50,50,50,0.9);
 	background-color: rgba(248, 248, 255, 0.75)
+}
+
+
+
+
+
+
+/* VIDEO PLAYER CSS */
+
+.videoActionButton {
+	background-color: transparent;
+	border: none;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	cursor: pointer
+}
+
+.videoActionButton:hover {
+	background-color: rgba(175, 175, 175, 0.3)
+}
+
+.videoActionButton:focus {
+	outline: none
+}
+
+.videoActionButton i {
+	margin: 0 !important;
+	height: 1.18em;
+	color: white;
+}
+
+.videoControlOverlay {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	align-items: flex-end
+}
+
+.videoControls {
+	width: 100%;
+	background-color: rgba(0,0,0,0.8); 
+	display: flex; 
+	flex-direction: column; 
+	justify-content: center;
+	transition: opacity 200ms ease-in-out
+}
+
+.videoControlBottom {
+	display: none;
+}
+
+.videoControlOverlay:hover #videoControlBottom {
+	display: flex
+}
+
+.videoControls:hover {
+	opacity: 1;
+}
+
+/* CANADA WEBSITE */
+#canadaGovernment .canadaTop {
+	height: 101px;
+	justify-content: center;
+}
+
+#canadaGovernment .canadaTopFrench {
+	width: 100%; 
+	max-width: 1170px; 
+	padding: 0 50px; 
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.canadaTop, .canadaBanner, .canadaFocus, .canadaLinks, .canadaTopRequested, .canadaYourGov, .canadaInitiatives, .canadaFooter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#canadaGovernment .canadaMenu {
+	border-top: 1px solid rgba(0,0,0,0.25);
+	display: flex;
+	justify-content: center;
+	height: 100%;
+}
+
+#canadaGovernment .content {
+	display: flex;
+	padding: 0 50px;
+	width: 100%;
+	max-width: 1170px;
+}
+
+#canadaGovernment .menu {
+	height: 3.5rem;
+	display: flex;
+	align-items: center;
+}
+
+#canadaGovernment .menuButton {
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	font-size: 18px;
+	transition: all 150ms ease-in-out;
+	letter-spacing: 1px;
+	padding: 0 20px;
+}
+
+#canadaGovernment .menuIcon {
+	margin: 0 !important;
+	margin-left: 7.5px !important;
+	font-size: 16px !important;
+}
+
+#canadaGovernment .menuButton:hover {
+	background-color: #444;
+	color: white
+}
+
+#canadaGovernment .splitSection {
+	flex: 1;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+#canadaGovernment .splitRight {
+	align-items: flex-end;
+}
+
+#canadaGovernment .canadaLogo {
+	width: 60%;
+}
+
+#canadaGovernment .canadaSearchContainer {
+	height: 2.75rem;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+#canadaGovernment .canadaSearchInput {
+	height: 100%;
+	border: 1px solid rgba(0,0,0,0.25);
+	width: 60%;
+	padding: 0 10px;
+}
+
+#canadaGovernment .searchIcon {
+	width: 3.25rem !important;
+	height: 2.75rem !important;
+	display: flex !important;
+	justify-content: center;
+	align-items: center;
+	background-color: #26374a;
+	margin: 0 !important;
+	color: white;
+	font-size: 16px !important;
+}
+
+#canadaGovernment .canadaBanner {
+	height: 20rem;
+	position: relative;
+	display: flex;
+}
+
+#canadaGovernment .bkgBanner {
+	width: 100%;
+	height: 20rem;
+	position: absolute;
+	top: 0;
+	left: 0;
+	object-fit: cover;
+	object-position: top;
+}
+
+#canadaGovernment .bannerBox {
+	background-color: #26374a;
+	padding: 20px;
+	color: white;
+}
+
+#canadaGovernment .bannerTitle {
+	max-width: 65%;
+	width: 65%;
+	border-bottom: 4px solid #af3c43;
+	font-size: 3rem;
+	font-weight: 300;
+}
+
+#canadaGovernment .bannerText {
+	font-size: 1.3rem;
+}
+
+#canadaGovernment .canadaTopRequested {
+	background-color: #f5f5f5;
+	padding: 20px 0;
+}
+
+#canadaGovernment .contentBox {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 70%;
+}
+
+#canadaGovernment .mostRequestedLink, #canadaGovernment .linkTitle {
+	text-decoration: underline;
+	font-weight: 600;
+	font-size: 16px;
+	color: #284162;
+}
+
+#canadaGovernment .mostRequestedLink:visited {
+	color: #7834bc
+}
+
+#canadaGovernment .linkColumn {
+	display: flex;
+	flex-direction: column;
+	padding-right: 20px;
+	flex: 1
+}
+
+#canadaGovernment .linkItem {
+	margin: 20px 0;
+}
+
+#canadaGovernment .linkTitle {
+	font-size: 18px;
+}
+
+#canadaGovernment .linkText {
+	font-size: 17px;
+	line-height: 25px
+}
+
+#canadaGovernment .canadaYourGov {
+	background-color: #F4F5F5;
+	flex-direction: row;
+	overflow: hidden;
+	max-height: 25rem;
+	justify-content: center;
+	padding: 50px;
+	position: relative;
+	background-image: url(../images/canada/bkg-home-yourgov.jpg);
+	background-position: right center;
+	background-repeat: no-repeat;
+	background-size: 35%;
+}
+
+#canadaGovernment .canadaInitiatives {
+	padding: 50px 0px;
+}
+
+#canadaGovernment.initiativeImage {
+	width: 100%;
+	object-fit: cover;
+}
+
+#canadaGovernment .canadaActionButton {
+	height: 3rem;
+	padding: 0 50px;
+	border-radius: 3px;
+	border: none;
+	background-color: rgba(0,0,0,0.1);
+	box-shadow: .5px .5px 1px rgba(0, 0, 0, 0.75);
+	color: #335077;
+	transition: all 100ms ease-in-out;
+	cursor: pointer;
+}
+
+#canadaGovernment .canadaActionButton:hover {
+	background-color: rgba(0,0,0,0.2)
+}
+
+#canadaGovernment .canadaFooter {
+	flex-direction: row;
+	background: #26374a url(../images/canada/landscape.png) no-repeat right bottom;
+	padding: 40px 50px;
+	justify-content: center;
+}
+
+#canadaGovernment .footerLink {
+	margin: 8px 0;
+	color: whitesmoke;
+}
+
+#canadaGovernment .canadaFooterEnd {
+	display: flex;
+	align-items: center;
+	background-color: whitesmoke;
+	padding: 50px;
+	height: 10rem;
+	justify-content: center;
+}
+
+#canadaGovernment .footerEndLinks {
+	display: flex;
+	align-items: center;
+}
+
+#canadaGovernment .footerEndLink {
+	margin-left: 25px;
+}
+
+#canadaGovernment .footerEndLinkText {
+	color: #284168;
+	font-size: 15px;
+}
+
+#canadaGovernment .footerEndBanner {
+	width: 14rem;
 }

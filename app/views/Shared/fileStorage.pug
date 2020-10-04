@@ -113,22 +113,18 @@
 									.fileStorageActionButton(data-bind="click: () => {$parent.selectedInfoFile() === $index() ? $parent.selectedInfoFile(null) : $parent.selectedInfoFile($index())}, clickBubble: false")
 										i.info.icon(style="margin: 0 !important")
 									<!-- ko if: file.tag().includes('audio') || file.tag().includes('video') || file.tag().includes('media') -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}")
-										i.play.icon(style="margin: 0 !important")
-									<!-- /ko -->
-									<!-- ko if: file.youtubeId -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'youtube', $index())}")
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'play', $index())}, clickBubble: false" disabled)
 										i.play.icon(style="margin: 0 !important")
 									<!-- /ko -->
 									<!-- ko if: file.tag().includes('pdf') || file.tag().includes('image') || file.tag().includes('snapshot') && file.tag().includes('librarium') -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}")
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'view', $index())}, clickBubble: false")
 										i.eye.icon(style="margin: 0 !important")
 									<!-- /ko -->
-									<!-- ko if: !file.youtubeId -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}")
+									<!-- ko if: file.uuid.length === 1 -->
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'download', $index())}, clickBubble: false")
 										i.download.icon(style="margin: 0 !important")
 									<!-- /ko -->
-									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
+									.fileStorageActionButton(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}, clickBubble: false")
 										i.trash.alternate.outline.icon(style="margin: 0 !important")
 									.fileStorageOptionIcon(data-bind="style: {'visibility': $root.storageHelper.uploadPool()[file.uuid] ? 'hidden' : 'visible'}, click: () => {$parent.showFileOptions($index())}, clickBubble: false")
 										i.ellipsis.horizontal.icon(style="margin: 0 !important; height: 1.18em; color: rgba(0,0,0,0.65); position: relative;")
@@ -152,8 +148,8 @@
 									//- 	.fileStorageOption(style="border-top: 1px solid rgba(0,0,0,0.15" data-bind="click: (data, event) => {$parent.fileAction(data, event, 'delete')}")
 									//- 		i.trash.alternate.outline.icon(style="margin: 0 !important")
 									//- 		p(style="margin-left: 5px;")="Delete"
-							.fileStorageDetails(data-bind="style: {height: $parent.selectedInfoFile() == $index() ? 'auto' : '0rem', 'border-top': $parent.selectedInfoFile() === $index() ? '1px solid rgba(125,125,125,0.2)' : 'none', padding: $parent.selectedInfoFile() === $index() ? '20px 0' : '0px'}, click: () => {}, clickBubble: false")
-								.fsDetailInformations
+							.fileStorageDetails(data-bind="style: {height: $parent.selectedInfoFile() == $index() || $parent.selectedVideo() == file['uuid'][0] ? 'auto' : '0rem', 'border-top': $parent.selectedInfoFile() === $index() ? '1px solid rgba(125,125,125,0.2)' : 'none', padding: $parent.selectedInfoFile() === $index() ? '20px' : '0px'}, click: () => {}, clickBubble: false")
+								.fsDetailInformations(data-bind="style: {display: $parent.selectedInfoFile() == $index() ? 'flex' : 'none'}")
 									.fsDetailLeft
 										.fsDetailInformation
 											p.fsDetailLabel(style="flex: 1")="Filename"
@@ -180,14 +176,39 @@
 										.fsDetailInformation
 											p.fsDetailLabel="Last viewed:"
 											p.fsDetailText.fsDetailLastViewed(data-bind="text: file['last_viewed'] ? $parent.getDate(file['last_viewed'](), 'full') : $parent.getDate(file['time_stamp'](), 'full')")
-								.fsDetailTagContainer
+								.fsDetailTagContainer(data-bind="style: {display: $parent.selectedInfoFile() == $index() ? 'flex' : 'none'}")
 									.fsDetailTagHeader
 										p.fsDetailLabel="Tags:"
 									.fsDetailTags(data-bind="foreach: file.tag")
 										p.fsDetailTag(data-bind="text: $data, click: () => {$parentContext.$parent.searchKey(`#${$data}`); $parentContext.$parent.showSearchInput(true); $parentContext.$parent.filterFromTag($data)}" style="margin: 0 5px 0 0 !important")
-								.fsAddTag()
+								.fsAddTag(data-bind="style: {display: $parent.selectedInfoFile() == $index() ? 'flex' : 'none'}")
 									input.fsAddTagInput(placeholder="Add tag(s)..." data-bind="textInput: $parent.addTagInput, click: () => {}, clickBubble: false")
 									i.check.circle.icon.fsAddTagSubmit(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'addTag')}, clickBubble: false")
+							.videoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'][0] ? 'auto' : '0rem'}" style="position: relative; width: 100%")
+								video.fsVideoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'][0] ? '30rem' : '0rem'}, attr: {'id' : file['uuid'][0]}" style="width: 100%; height: 20%; background-color: black; transition: height 150ms ease-in-out" autoplay)
+								.videoControlOverlay(data-bind="click: () => {}, clickBubble: false")
+									.videoControls(data-bind="style: {display: $parent.selectedVideo() === file['uuid'][0] ? 'flex' : 'none'}" style="")
+										.videoControlTop
+											.videoSeekBar(style="flex-grow: 1; cursor: pointer")
+												.fullBar#fullBar(style="width: 100%; height: 8px; position: relative; background-color: rgba(125, 125, 125, 1);")
+													.bufferedBar#bufferedBar(style="height: 8px; position: absolute; content: ''; background-color: rgba(200, 200, 200, 0.75); transition: width 100ms ease-in-out;")
+													.currentTimeBar#currentTimeBar(style="height: 8px; position: absolute; content: ''; background-color: red; transition: width 100ms ease-in-out;")
+										.videoControlBottom#videoControlBottom(data-bind="click: () => {}, clickBubble: false" style="align-items: center; justify-content: space-between;")
+											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-start")
+												button.videoActionButton#videoPlayButton
+													<!-- ko if: $parent.videoPlaying() -->
+													i.pause.icon
+													<!-- /ko -->
+													<!-- ko if: !$parent.videoPlaying() -->
+													i.play.icon
+													<!-- /ko -->
+												button.videoActionButton#videoStopButton
+													i.stop.icon
+												.videoDuration(style="height: 100%; display: flex; align-items: center; margin-left: 5px")
+													p#durationText(style="color: white; font-size: 12px")="00:00 / 00:00"
+											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-end")
+												button.videoActionButton#videoFullScreenButton
+													i.expand.icon
 							<!-- ko if: $root.storageHelper.currentAssembly()[file.uuid] -->
 							.fileStorageProgressBar
 								.fsProgressBarUncomplete

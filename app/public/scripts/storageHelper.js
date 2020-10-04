@@ -90,6 +90,7 @@ class StorageHelper {
             });
         };
         this.createUpdateIndex = (uuid, index, callback) => {
+            console.log(index);
             this.encryptSave(uuid, JSON.stringify(index), callback);
         };
         this.delete = (uuid, callback) => {

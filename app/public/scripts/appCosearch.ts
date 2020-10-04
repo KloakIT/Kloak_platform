@@ -332,7 +332,6 @@ const appScript = {
 			 * 
 			 */
 			self.showInputLoading (false )
-			
 			if ( com.subCom === 'youtube' ) {
 				const multimediaObj = com.Args
 				let y = null

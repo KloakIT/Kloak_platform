@@ -158,6 +158,7 @@ var view_layout;
             this.daggrHtml = ko.observable(false);
             this.showFileStorage = ko.observable(false);
             this.showGeneralSpalding = ko.observable(false);
+            this.showCanada = ko.observable(false);
             this.muteHtml = ko.observable(false);
             this.forTwitterHtml = ko.observable(false);
             this.forYoutubeHtml = ko.observable(false);
@@ -750,6 +751,21 @@ const mainMenuArray = [
         click: genSpalding,
         online: false,
         htmlTemp: 'showGeneralSpalding',
+    },
+    {
+        name: 'canada',
+        img: canadaGov,
+        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
+        description: [
+            '加拿大政府',
+            'カナダ政府',
+            'For Canada',
+            '加拿大政府',
+        ],
+        extra: null,
+        click: Canada,
+        online: false,
+        htmlTemp: 'showCanada'
     },
 ];
 const _view = new view_layout.view();

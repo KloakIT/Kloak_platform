@@ -4,6 +4,7 @@ class genSpalding {
 	private selectedPage = ko.observable("HOME")
 	private selectedIndex = ko.observable(0)
 	private videoList = ko.observableArray([{url: "https://www.youtube.com/watch?v=TNHCSo-taoA", image: "video1.jpg", title: "Life After Coronavirus - Will It Ever Be the Same?"}, {url: "https://www.youtube.com/watch?v=MeB5tlCILBk", image: "video2.jpg", title: "General Robert Spalding - The Adam Carolla Show"}, {url: "https://www.youtube.com/watch?v=Gdd7dtDaYmM", image: "video3.jpg", title: "1st documentary movie on the origin of CCP virus, Tracking Down the Origin of the Wuhan Coronavirus"}, {url: "https://www.youtube.com/watch?v=P3T8ZlWiNzE", image: "video4.jpg", title: "WHAT IS 5G? | DID CHINA GIVE US CO.... ? | BRIGADIER GENERAL ROBERT SPALDING ANSWERS LIVE"}, {url: "https://www.youtube.com/watch?v=NdbO7Id7cq8", image: "video5.jpg", title: "The Future of U.S.-China Relations"}, {url: "https://www.youtube.com/watch?v=KXB_ntyGmqs", image: "video6.jpg", title: "175: China’s Stealth War On America—Brig. Gen (Ret) Robert Spalding"}, {url: "https://www.youtube.com/watch?v=DfuV7K3A08g", image: "video7.jpg", title: "Gen. Spalding: How China’s Communist Party Uses the Coronavirus Pandemic to Expand Global Influence"}, {url: "https://www.youtube.com/watch?v=nZiL33Ui-9E", image: "video8.jpg", title: "General Robert Spalding on Spicer and Co. speaking about the CCP"}, {url: "https://www.youtube.com/watch?v=MlozqUJoGg8", image: "video9.jpg", title: "What Coronavirus reveals about capitalism"}, {url: "https://www.youtube.com/watch?v=-JS-IjVF9Lw", image: "video10.jpg", title: "DID CHINA CREATE CORONAVIRUS? | Brig. Gen. Robert Spalding, USAF (Ret.)"}, {url: "https://www.youtube.com/watch?v=tr4TwzfkAjA", image: "video11.jpg", title: "Gen. Robert Spalding's Keynote Speech - MLI's 2020 Annual Dinner"}, {url: "https://www.youtube.com/watch?v=h8IEtlOVzq4", image: "video12.jpg", title: "China’s Silent Takeover While America's Elite Slept"}, {url: "https://www.youtube.com/watch?v=oiRHDTnvfDc", image: "video13.jpg", title: "Dems' Iran Over-Reaction Analyzed By Victor Davis Hanson, Michael Waltz & Brig Gen Robert Spalding"}, {url: "https://www.youtube.com/watch?v=TJBwQEMcBpo", image: "video14.jpg", title: "Tariffs will likely go up because China is not ready to deal, policy pro says"}, {url: "https://www.youtube.com/watch?v=AGkU7HmAAAc", image: "video15.jpg", title: "The Threat of 5G"}, {url: "https://www.youtube.com/watch?v=X3VbBNZPfhM", image: "video16.jpg", title: "China’s ‘Stealth War’ Exposed by General Robert Spalding"}, {url: "https://www.youtube.com/watch?v=ghpL0VZvwRU", image: "video17.jpg", title: "Coronavirus Pandemic: Robert Spalding, Senior Fellow at Hudson Institute"}, {url: "https://www.youtube.com/watch?v=PAK025woVLs", image: "video18.jpg", title: "China Expert, General Robert Spalding on China's Six-Front War on the US"} ])
+
 	private showTwitterObjResult = ko.observable ( false )
 	private twitterObj = null
 	private mediaLoading = ko.observable(false)
@@ -183,13 +184,13 @@ class genSpalding {
 			if (com) {
 				const data = com.Args.streamingData
 				console.log(data)
-				let viewer = new MediaViewer('video', null, {youtubeStreamingData: data, customPlayer: document.getElementById("videoPlayer")}, (err, canPlay) => {
+				let viewer = new MediaViewer('video', null, {player: document.getElementById("videoPlayer")}, (err, playing) => {
 					if (err) {
 						this.mediaLoading(false)
 						console.log(err)
 						return
 					}
-					if (canPlay) {
+					if (playing) {
 						this.mediaLoading(false)
 						this.videoCanPlay(true)
 					}

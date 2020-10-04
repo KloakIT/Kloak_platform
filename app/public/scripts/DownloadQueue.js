@@ -106,7 +106,7 @@ class DownloadQueue {
             }
             if (data) {
                 if (typeof this.dataCallBackBeforeDecryptoCallBack === 'function') {
-                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com.downloadUuid, data.data, com.eof);
+                    this.dataCallBackBeforeDecryptoCallBack(this.requestUUID, com, data.data);
                 }
                 return _view.sharedMainWorker.decryptStreamWithoutPublicKey(Buffer.from(data.data).toString(), (err, _data) => {
                     if (err) {

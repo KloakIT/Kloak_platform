@@ -850,5 +850,7 @@ interface fileHistory {
 	tag: string[]
 	color: number
 	size?: number
-	youtubeId?: string
+	youtubeId?: string,
+	mimeType?: string,
+	duration?: number
 }

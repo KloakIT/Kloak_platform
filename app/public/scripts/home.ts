@@ -200,6 +200,7 @@ module view_layout {
 		public daggrHtml = ko.observable(false)
 		public showFileStorage = ko.observable(false)
 		public showGeneralSpalding = ko.observable(false)
+		public showCanada = ko.observable(false)
 		public muteHtml = ko.observable ( false )
 		public forTwitterHtml = ko.observable ( false )
 		public forYoutubeHtml = ko.observable ( false )
@@ -891,7 +892,7 @@ const mainMenuArray = [
 		online: false,
 		htmlTemp: 'showGeneralSpalding',
 	},
-	/*
+	
 	{
 		name: 'canada',
 		img: canadaGov,
@@ -903,11 +904,10 @@ const mainMenuArray = [
 			'加拿大政府',
 		],
 		extra: null,
-		click: forTwitter,
-		online: true,
-		htmlTemp: 'forTwitterHtml'
+		click: Canada,
+		online: false,
+		htmlTemp: 'showCanada'
 	},
-	/** */
 ]
 
 

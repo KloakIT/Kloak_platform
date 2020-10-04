@@ -14,6 +14,7 @@ class fileStorage {
         this.showFileInfo = ko.observable(null);
         this.showEditFilename = ko.observable(false);
         this.showDownloads = ko.observable(false);
+        this.selectedVideo = ko.observable(null);
         this.searchKey = ko.observable();
         this.selectedFile = ko.observable(null);
         this.editFilenameInput = ko.observable("");
@@ -22,6 +23,7 @@ class fileStorage {
         this.isRecording = ko.observable(false);
         this.mediaViewer = null;
         this.recorder = ko.observable();
+        this.videoPlaying = ko.observable(false);
         this.colorOptions = [
             ["maroon", "red", "olive", "yellow"],
             ["green", "lime", "teal", "aqua"],
@@ -217,6 +219,9 @@ class fileStorage {
                 n['tag'] = history['tag']();
                 n['color'] = history['color']();
                 n['size'] = history['size'] ? history['size'] : null;
+                n['youtubeId'] = history['youtubeId'] || null;
+                n['mimeType'] = history['mimeType'] || null;
+                n['duration'] = history['duration'] || null;
                 temp.push(n);
             });
             this.fileStorageData(histories);
@@ -303,29 +308,35 @@ class fileStorage {
             this.selectedFile(null);
             this.selectedInfoFile(null);
             this.showFileOptions(null);
+            if (this.mediaViewer) {
+                this.mediaViewer.terminate();
+                this.mediaViewer = null;
+            }
             return;
         };
+        this.replaceHistory = () => {
+            const temp = this.allFileStorageData().map((history) => {
+                const n = {};
+                n['uuid'] = history['uuid'];
+                n['filename'] = history['filename']();
+                n['time_stamp'] = history['time_stamp']();
+                n['last_viewed'] = history['last_viewed']();
+                n['path'] = history['path'];
+                n['url'] = history['url'];
+                n['domain'] = history['domain'];
+                n['tag'] = history['tag']();
+                n['color'] = history['color']();
+                n['size'] = history['size'] || null;
+                n['youtubeId'] = history['youtubeId'] || null;
+                n['mimeType'] = history['mimeType'] || null;
+                n['duration'] = history['duration'] || null;
+                return n;
+            });
+            console.log('REPLACE HISTORY', temp);
+            _view.storageHelper.replaceHistory(temp.reverse(), (err, data) => {
+            });
+        };
         this.fileAction = (fileData, event, action) => {
-            const replaceHistory = () => {
-                const temp = this.allFileStorageData().map((history) => {
-                    const n = {};
-                    n['uuid'] = history['uuid'];
-                    n['filename'] = history['filename']();
-                    n['time_stamp'] = history['time_stamp']();
-                    n['last_viewed'] = history['last_viewed']();
-                    n['path'] = history['path'];
-                    n['url'] = history['url'];
-                    n['domain'] = history['domain'];
-                    n['tag'] = history['tag']();
-                    n['color'] = history['color']();
-                    n['size'] = history['size'] || null;
-                    n['youtubeId'] = history['youtubeId'] || null;
-                    return n;
-                });
-                console.log('REPLACE HISTORY', temp);
-                _view.storageHelper.replaceHistory(temp.reverse(), (err, data) => {
-                });
-            };
             const updateLastViewed = () => {
                 let currentTime = new Date();
                 fileData.last_viewed(currentTime);
@@ -333,7 +344,7 @@ class fileStorage {
                     return Date.parse(b['last_viewed']()) - Date.parse(a['last_viewed']());
                 });
                 this.fileStorageData(sorted);
-                replaceHistory();
+                this.replaceHistory();
             };
             switch (action) {
                 case 'close':
@@ -346,7 +357,7 @@ class fileStorage {
                 case 'editFilename':
                     if (this.editFilenameInput().trim() !== "") {
                         fileData['filename'](this.editFilenameInput());
-                        replaceHistory();
+                        this.replaceHistory();
                     }
                     this.editFilenameInput("");
                     this.showEditFilename(false);
@@ -366,19 +377,37 @@ class fileStorage {
                             return;
                         }
                         const url = _view.storageHelper.createBlob(data.buffer, data.contentType);
-                        const filename = data.filename.split('.').pop().includes(data.extension) ? data.filename : `${data.filename}.${data.extension}`;
+                        const filename = fileData.filename().split('.').pop().includes(data.extension) ? fileData.filename() : `${fileData.filename()}.${data.extension}`;
                         _view.storageHelper.downloadBlob(url, filename);
                         updateLastViewed();
                     });
                     break;
                 case "play":
+                    if (this.selectedVideo() === fileData['uuid'][0]) {
+                        this.selectedVideo(null);
+                        console.log(this.mediaViewer);
+                        this.mediaViewer.terminate();
+                        return;
+                    }
+                    this.selectedVideo(fileData['uuid'][0]);
+                    if (fileData.youtubeId) {
+                        this.mediaViewer = new MediaViewer('video', fileData.filename, { player: document.getElementById(fileData['uuid'][0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, playing) => {
+                            if (err) {
+                                return console.log(err);
+                            }
+                            if (playing !== null) {
+                                this.videoPlaying(playing);
+                            }
+                        }, () => { });
+                        this.mediaViewer.localYoutube(fileData.uuid[0], fileData.mimeType, fileData.duration, fileData.size, fileData.youtubeId);
+                    }
                     updateLastViewed();
-                    const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4' || tag === 'mp3');
-                    const isRecording = fileData.tag().includes('recording');
-                    _view.displayMedia('player');
-                    this.mediaViewer = new MediaViewer('video', fileData.filename, document.getElementById("videoPlayer"), () => {
-                    });
-                    isRecording ? this.mediaViewer.recording(fileData.uuid[0]) : this.mediaViewer.downloaded(fileData.uuid[0]);
+                // const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4' || tag === 'mp3')
+                // const isRecording = fileData.tag().includes('recording')
+                // _view.displayMedia('player')
+                // this.mediaViewer = new MediaViewer('video', fileData.filename, document.getElementById("videoPlayer"), () => {
+                // })
+                // isRecording ? this.mediaViewer.recording(fileData.uuid[0]) : this.mediaViewer.downloaded(fileData.uuid[0])
                 case 'youtube':
                     // _view.displayMedia('player')
                     // this.mediaViewer = new MediaViewer('youtube', fileData.filename, document.getElementById("videoPlayer"), () => {})
@@ -437,7 +466,7 @@ class fileStorage {
                     fileData['tag'].push(this.addTagInput().trim());
                     this.addTagInput("");
                     this.setTags(this.allFileStorageData());
-                    replaceHistory();
+                    this.replaceHistory();
                     break;
                 default:
                     break;

@@ -1,0 +1,179 @@
+#canadaGovernment
+	<!-- ko with: appScript -->
+		.canadaTop
+			.canadaTopFrench
+				p(data-bind="click: () => {exit()}" style="text-decoration: underline; font-size: 16px; color: #284168; margin: 0; cursor: pointer")="Back to Kloak"
+				a(style="text-decoration: underline; font-size: 16px; color: #284168; cursor: pointer")="Français"
+			.content(style="padding: 0 50px")
+				.splitLeft.splitSection
+					img.canadaLogo(src="./images/canada/sig-blk-en.svg", alt="")
+				.splitRight.splitSection
+					.canadaSearchContainer
+						input.canadaSearchInput(type="text" placeholder="Search Canada.ca")
+						i.search.icon.searchIcon
+		.canadaMenu.menu
+			.content(style="height: 100%")
+				button.menuButton="MENU"
+					i.chevron.down.icon.menuIcon
+		.canadaBanner
+			img.bkgBanner(src="./images/canada/bkg-home-banner-fall.jpg")
+			.content(style="height: 20rem; position: relative; z-index: 100")
+				.splitSection(style="justify-content: center")
+					.bannerBox
+						h2.bannerTitle="Canada.ca"
+						p.bannerText="The official website of the Government of Canada"
+				.splitSection
+		.canadaTopRequested
+			.content(style="flex-direction: column; height: 10rem")
+				h2="Most requested"
+				.contentInner(style="display: flex; align-items: center; height: 100%;")
+					.contentBox
+						a.mostRequestedLink="Sign in to an account"
+						a.mostRequestedLink="Coronavirus (COVID-19)"
+					.contentBox
+						a.mostRequestedLink="Employement Insurance and leave"
+						a.mostRequestedLink="COVID-19 Financial assistance"
+					.contentBox
+						a.mostRequestedLink="Public pensions (CPP and OAS)"
+						a.mostRequestedLink="COVID Alert App"
+					.contentBox
+						a.mostRequestedLink="Get a passport"
+						a.mostRequestedLink="Grants and funding"
+		.canadaLinks
+			.content(style="padding: 30px 50px;")
+				.linkColumn
+					.linkItem
+						a.linkTitle="Jobs"
+						p.linkText="Find a job, training, hiring programs, work permits, Social Insurance Number (SIN)"
+					.linkItem
+						a.linkTitle="Business and industry"
+						p.linkText="Starting a business, permits, copyright, business support, selling to government"
+					.linkItem
+						a.linkTitle="Taxes"
+						p.linkText="Income tax, payroll, GST/HST, contribution limits, tax credits, charities"
+					.linkItem
+						a.linkTitle="Culture, history and sport"
+						p.linkText="Arts, media, heritage, official languages, national identity and funding"
+					.linkItem
+						a.linkTitle="Canada and the world"
+						p.linkText="Foreign policy, trade agreements, development work, global issues"	
+				.linkColumn
+					.linkItem
+						a.linkTitle="Immigration and citizenship"
+						p.linkText="Visit, work, study, immigrate, refugees, permanent residents, apply, check status"
+					.linkItem
+						a.linkTitle="Benefits"
+						p.linkText="EI, family and sickness leave, pensions, housing, student aid, disabilities"
+					.linkItem
+						a.linkTitle="Environment and natural resources"
+						p.linkText="Weather, climate, agriculture, wildlife, pollution, conservation, fisheries"
+					.linkItem
+						a.linkTitle="Policing, justice and emergencies"
+						p.linkText="Safety, justice system, prepare for emergencies, services for victims of crime"
+					.linkItem
+						a.linkTitle="Money and finances"
+						p.linkText="Personal finance, credit reports, fraud protection, paying for education"
+				.linkColumn
+					.linkItem
+						a.linkTitle="Travel and tourism"
+						p.linkText="In Canada or abroad, advice, advisories, passports, visit Canada, events, attractions"
+					.linkItem
+						a.linkTitle="Health"
+						p.linkText="Food, nutrition, diseases, vaccines, drugs, product safety and recalls"
+					.linkItem
+						a.linkTitle="National security and defence"
+						p.linkText="Military, transportation and cyber security, securing the border, counter-terrorism"
+					.linkItem
+						a.linkTitle="Transport and infrastructure"
+						p.linkText="Aviation, marine, road and rail, car seat and vehicle recalls"
+					.linkItem
+						a.linkTitle="Science and innovation"
+						p.linkText="Scientific research on health, environment and space, grants and funding"
+		.canadaFocus
+			.content(style="padding: 30px 50px; flex-direction: column")
+				h2="Focus on"
+				.contentInner(style="display: flex; align-items: center")
+					.linkColumn
+						.linkItem
+							a.linkTitle="Indigenous peoples"
+							p.linkText="Programs and services for First Nations, Inuit and Métis"
+					.linkColumn
+						.linkItem
+							a.linkTitle="Youth"
+							p.linkText="Programs and services for teenagers and young adults"
+					.linkColumn
+						.linkItem
+							a.linkTitle="Veterans"
+							p.linkText="Services for current and former military, RCMP and their families"
+		.canadaYourGov
+			.content(style="flex-direction: column;")
+				h2="Your government"
+				.contentInner(style="display: flex;")
+					.splitLeft(style="width: 65%; display: flex; align-items: center")
+						.linkColumn
+							.linkItem
+								a.linkTitle="Contact us"
+								p.linkText="Department and agency contacts, change your address"
+							.linkItem
+								a.linkTitle="About government"
+								p.linkText="How government works, its priorities, laws, finances and regulations"
+						.linkColumn
+							.linkItem
+								a.linkTitle="Departments and agencies"
+								p.linkText="A list of current government and related organizations"
+							.linkItem
+								a.linkTitle="Open government"
+								p.linkText="Accessible government, open information and data, open dialogue"
+		.canadaInitiatives
+			.content(style="flex-direction: column;")
+				h2="Government initiatives"
+				.contentInner(style="display: flex; align-items: center")
+					.splitLeft(style="flex: 1; margin-right: 30px; padding: 10px; background-color: #F4F5F5; border: 1px solid rgba(0,0,0,0.15); height: 28rem")
+						img.initiativeImage(src="./images/canada/initiativeCovid.jpg")
+						.initiativeText(style="margin-top: 20px; padding: 5px")
+							a.linkTitle(style="font-size: 20px")="Coronavirus disease (COVID-19)"
+							p.linkText(style="font-size: 18px; margin-top: 10px; line-height: 30px")="Latest updates, precautionary measures and travel advice"
+					.splitRight(style="flex: 1; padding: 10px; background-color: #F4F5F5; border: 1px solid rgba(0,0,0,0.15); height: 28rem;")
+						img.initiativeImage(src="./images/canada/initiativeTurner.jpg")
+						.initiativeText(style="margin-top: 20px; padding: 5px")
+							a.linkTitle(style="font-size: 20px")="Remembering the Rt. Hon. John Turner"
+							p.linkText(style="font-size: 18px; margin-top: 10px; line-height: 30px")="Remembering the Right Honourable John Napier Wyndham Turner, 17th Prime Minister of Canada, who passed away September 19, 2020"
+				.contentInner(style="display: flex; align-items: center; margin-top: 40px")
+					.splitLeft(style="flex: 1")
+						button.canadaActionButton(style="display: flex; align-items: center;")
+							i.play.icon(style="margin: 0 !important; font-size: 12px;")
+							p(style="margin-left: 5px")="Report a problem or mistake on this page"
+					.splitRight(style="margin-left: 10px; display: flex; flex: 1; justify-content: flex-end")
+						button.canadaActionButton(style="display: flex; align-items: center;")
+							i.share.square.icon(style="margin: 0 !important; font-size: 12px;")
+							p(style="margin-left: 5px")="Share this page"
+				p(style="font-size: 16px; margin-top: 40px")="Date modified: 2020-09-25"
+		.canadaFooter
+			.content
+				.linkColumn
+					a.footerLink="Contact us"
+					a.footerLink="Departments and agencies"
+					a.footerLink="Public service and military"
+				.linkColumn
+					a.footerLink="News"
+					a.footerLink="Treaties, laws and regulations"
+					a.footerLink="Government-wide reporting"
+				.linkColumn
+					a.footerLink="Prime Minister"
+					a.footerLink="About government"
+					a.footerLink="Open government"
+		.canadaFooterEnd()
+			.content(style="justify-content: space-between")
+				ul.footerEndLinks
+					li(style="list-style: none;")
+						a.footerEndLinkText="Social media"
+					li.footerEndLink
+						a.footerEndLinkText="Mobile applications"
+					li.footerEndLink
+						a.footerEndLinkText="About Canada.ca"
+					li.footerEndLink
+						a.footerEndLinkText="Terms and conditions"
+					li.footerEndLink
+						a.footerEndLinkText="Privacy"
+				img.footerEndBanner(src="./images/canada/canada-bkg.svg")
+	<!-- /ko -->

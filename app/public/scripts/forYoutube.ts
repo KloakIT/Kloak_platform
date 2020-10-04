@@ -66,7 +66,7 @@ class forYoutube extends sharedAppClass {
 			console.log(item)
 			if (item['streamingData']) {
 				console.time("STARTING VIDEO PLAY REQUEST")
-				_view.mediaViewer = new MediaViewer ('video', item['title'], document.getElementById('videoPlayer'), (err, canplay) => {
+				_view.mediaViewer = new MediaViewer ('video', item['title'], { player: document.getElementById('videoPlayer') as HTMLElement }, (err, canplay) => {
                     view.videoCanStart( canplay )
                 }, () => {
 

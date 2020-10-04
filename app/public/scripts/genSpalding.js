@@ -93,13 +93,13 @@ class genSpalding {
                 if (com) {
                     const data = com.Args.streamingData;
                     console.log(data);
-                    let viewer = new MediaViewer('video', null, { youtubeStreamingData: data, customPlayer: document.getElementById("videoPlayer") }, (err, canPlay) => {
+                    let viewer = new MediaViewer('video', null, { player: document.getElementById("videoPlayer") }, (err, playing) => {
                         if (err) {
                             this.mediaLoading(false);
                             console.log(err);
                             return;
                         }
-                        if (canPlay) {
+                        if (playing) {
                             this.mediaLoading(false);
                             this.videoCanPlay(true);
                         }
