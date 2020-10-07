@@ -826,9 +826,9 @@ interface kloak_multipleObj {
 
 interface kloakFileInstance {
 	requestSerial: string
-	filename: string
+	filename?: string
 	progress: KnockoutObservable<number> | Function
-	instance: Downloader | Assembler | Uploader
+	instance?: Downloader | Assembler | Uploader
 }
 
 interface finishedDownload {
@@ -850,7 +850,16 @@ interface fileHistory {
 	tag: string[]
 	color: number
 	size?: number
-	youtubeId?: string,
-	mimeType?: string,
-	duration?: number
+	videoData?: {
+		duration: string | number,
+		mimeType: string,
+		fastStart: boolean
+	}
+	youtube?: {
+		id?: string,
+		mimeType?: {video?: string, audio?: string},
+		duration?: number,
+		type?: 'video' | 'audio',
+		quality?: string
+	}
 }

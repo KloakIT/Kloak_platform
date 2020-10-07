@@ -30,6 +30,159 @@ class StorageHelper {
             this.downloadPool({ ...this.downloadPool(), [requestUuid]: download });
             return this.downloadPool()[requestUuid].instance;
         };
+        this.createYoutubeDownloader = (requestSerial, videoURL = null, audioURL = null, title, duration, youtubeId, callback) => {
+            let progress = null;
+            let downloadRequestUuid = {
+                video: null,
+                audio: null,
+                created: false
+            };
+            let EOF = {
+                video: null,
+                audio: null
+            };
+            let totalSize = {
+                video: {
+                    downloaded: 0,
+                    total: 0
+                },
+                audio: {
+                    downloaded: 0,
+                    total: 0
+                }
+            };
+            let audioPieces = [];
+            let videoPieces = [];
+            const createProgress = () => {
+                const download = {
+                    requestSerial: requestSerial,
+                    progress
+                };
+                this.downloadPool({ ...this.downloadPool(), [requestSerial]: download });
+            };
+            const updateProgress = () => {
+                console.log(totalSize);
+                if (audioURL && !videoURL) {
+                    const percent = Math.round((totalSize['audio'].downloaded / totalSize['audio'].total) * 100);
+                    console.log(`=============${percent}==================`);
+                    this.downloadPool()[requestSerial].progress(percent);
+                    return;
+                }
+                if (totalSize['video'].total && totalSize['audio'].total) {
+                    const total = totalSize['video'].total + totalSize['audio'].total;
+                    const downloaded = totalSize['video'].downloaded + totalSize['audio'].downloaded;
+                    const percent = Math.round((downloaded / total) * 100);
+                    this.downloadPool()[requestSerial].progress(percent);
+                }
+            };
+            const createUpdateIndex = (requestUuid, com, pieces) => {
+                const index = {
+                    filename: com.downloadFilename,
+                    fileExtension: 'webm',
+                    totalLength: com.totalLength ? com.totalLength : null,
+                    contentType: com.contentType,
+                    pieces: [...pieces],
+                    finished: com.eof
+                };
+                _view.storageHelper.createUpdateIndex(requestUuid, index, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            };
+            const createHistory = () => {
+                const videoMimeType = {
+                    video: 'video/webm; codecs="vp9"'
+                };
+                const audioMimeType = {
+                    audio: 'audio/webm; codecs="opus"'
+                };
+                if (!downloadRequestUuid.created) {
+                    if (audioURL && !videoURL) {
+                        _view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration);
+                        downloadRequestUuid.created = true;
+                        return;
+                    }
+                    if (downloadRequestUuid['video'] && downloadRequestUuid['audio']) {
+                        _view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration);
+                        downloadRequestUuid.created = true;
+                    }
+                }
+            };
+            if (videoURL) {
+                let videoDownload = new DownloadQueue(videoURL, title, () => { }, (requestUuid, com, data) => {
+                    if (!downloadRequestUuid['video']) {
+                        downloadRequestUuid['video'] = requestUuid;
+                    }
+                    createHistory();
+                    if (!totalSize['video']['total']) {
+                        totalSize['video']['total'] = parseInt(com.totalLength.toString());
+                    }
+                    console.log(com);
+                    totalSize['video'].downloaded += com.currentlength;
+                    if (!progress) {
+                        progress = ko.observable(0);
+                        createProgress();
+                    }
+                    else {
+                        updateProgress();
+                    }
+                    if (com.eof) {
+                        EOF['video'] = true;
+                        if (EOF['video'] && EOF['audio']) {
+                            callback(true);
+                            this.removeFromPool(this.downloadPool, requestSerial);
+                        }
+                    }
+                    this.save(com.downloadUuid, data, (err, data) => {
+                        if (err) {
+                            return;
+                        }
+                        videoPieces.push(com.downloadUuid);
+                        createUpdateIndex(requestUuid, com, videoPieces);
+                    });
+                });
+            }
+            if (audioURL) {
+                let audioDownload = new DownloadQueue(audioURL, title, () => { }, (requestUuid, com, data) => {
+                    if (!downloadRequestUuid['audio']) {
+                        downloadRequestUuid['audio'] = requestUuid;
+                    }
+                    createHistory();
+                    if (!totalSize['audio']['total']) {
+                        totalSize['audio']['total'] = parseInt(com.totalLength.toString());
+                    }
+                    totalSize['audio'].downloaded += com.currentlength;
+                    if (!progress) {
+                        progress = ko.observable(0);
+                        createProgress();
+                    }
+                    else {
+                        updateProgress();
+                    }
+                    if (com.eof) {
+                        EOF['audio'] = true;
+                        if (audioURL && !videoURL) {
+                            if (EOF['audio']) {
+                                callback(true);
+                                this.removeFromPool(this.downloadPool, requestSerial);
+                            }
+                        }
+                        if (EOF['video'] && EOF['audio']) {
+                            callback(true);
+                            this.removeFromPool(this.downloadPool, requestSerial);
+                        }
+                    }
+                    this.save(com.downloadUuid, data, (err, data) => {
+                        if (err) {
+                            return;
+                        }
+                        audioPieces.push(com.downloadUuid);
+                        createUpdateIndex(requestUuid, com, audioPieces);
+                    });
+                });
+            }
+        };
         this.createAssembler = (requestUuid, callback) => {
             if (this.currentAssembly[requestUuid]) {
                 callback(`Assembly already exists!`, requestUuid);
@@ -71,7 +224,7 @@ class StorageHelper {
             this.uploadPool({ ...this.uploadPool(), [requestUuid]: uploader });
             return this.uploadPool()[requestUuid];
         };
-        this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags) => {
+        this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags, mimeType, duration, type) => {
             const date = new Date();
             const history = {
                 uuid: requestUUIDs,
@@ -83,8 +236,15 @@ class StorageHelper {
                 domain: 'YouTube',
                 tag: [...extraTags, 'upload', 'local'],
                 color: null,
-                youtubeId
+                youtube: {
+                    id: youtubeId,
+                    type,
+                    mimeType
+                }
             };
+            if (duration) {
+                history.youtube.duration = parseInt(duration.toString());
+            }
             history.tag = history.tag.filter(tag => tag !== null);
             _view.storageHelper.saveHistory(history, (err, data) => {
             });

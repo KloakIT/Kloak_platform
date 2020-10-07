@@ -57,7 +57,7 @@
 						img.carouselNavigation(src="./images/spalding/right-arrow.svg" data-bind="click: () => {navigateCarousel('next')}")
 						.ui.active.dimmer(data-bind="style: {'z-index': mediaLoading() ? '9999' : '-100', 'display': mediaLoading() && !videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0")
 							.ui.text.loader="Loading..."
-						video#videoPlayer(data-bind="style: {'display': videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0; background-color: black" controls)
+						video#videoPlayer(data-bind="style: {'display': videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0; background-color: black" controls autoplay)
 					<!-- ko ifnot: videoCanPlay() -->
 					.videoDownloadSelection(style="z-index: 100")
 						<!-- ko if: videoList()[selectedIndex()].audio -->

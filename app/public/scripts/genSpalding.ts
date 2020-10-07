@@ -9,6 +9,7 @@ class genSpalding {
 	private twitterObj = null
 	private mediaLoading = ko.observable(false)
 	private videoCanPlay = ko.observable(false)
+	private mediaViewer: MediaViewer = null
 	
 	constructor() {
 		// window.addEventListener("scroll", (e) => {
@@ -69,6 +70,13 @@ class genSpalding {
 		this.videoList(temp)
 
 		this.selectedIndex.subscribe(async val => {
+				if (this.mediaViewer) {
+					this.mediaViewer.terminate()
+					this.mediaViewer = null
+					this.mediaLoading(false)
+					this.videoCanPlay(false)
+				}
+
 				this.isScrolling = true
 				const id = this.videoList()[val].image
 				const videoItem = document.getElementById(id)
@@ -182,26 +190,28 @@ class genSpalding {
 			}
 
 			if (com) {
-				const data = com.Args.streamingData
-				console.log(data)
-				let viewer = new MediaViewer('video', null, {player: document.getElementById("videoPlayer")}, (err, playing) => {
+				console.log(com.Args)
+				this.mediaViewer = new MediaViewer({player: document.getElementById("videoPlayer")}, (err, canplay) => {
+					if (canplay) {
+						this.videoCanPlay( canplay )
+					}
 					if (err) {
-						this.mediaLoading(false)
 						console.log(err)
-						return
 					}
-					if (playing) {
-						this.mediaLoading(false)
-						this.videoCanPlay(true)
-					}
-				}, () => {
-					viewer = null
-				})
+				}, () => {})
+				this.mediaViewer.youtube(com.Args)
 			}
 		})
 	}
 
 	navigateCarousel = (action: string, init?: boolean) => {
+		if (this.mediaViewer) {
+			this.mediaViewer.terminate()
+			this.mediaViewer = null
+			this.videoCanPlay(false)
+			this.mediaLoading(false)
+		}
+
 		if (init) {
 			this.selectedIndex(0)
 		}

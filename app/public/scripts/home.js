@@ -738,7 +738,7 @@ const mainMenuArray = [
         header: [
             '史帕丁将军',
             'ｽﾎﾟﾃﾞﾝ将軍',
-            'Gen. Spalding',
+            'Spalding',
             '史帕丁將軍',
         ],
         description: [

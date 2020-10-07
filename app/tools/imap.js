@@ -27,7 +27,7 @@ const Crypto = require("crypto");
 const timers_1 = require("timers");
 const buffer_1 = require("buffer");
 const MAX_INT = 9007199254740992;
-const debug = true;
+const debug = false;
 const NoopLoopWaitingTime = 1000 * 1;
 exports.saveLog = (log, _console = true) => {
     const data = `${new Date().toUTCString()}: ${log}\r\n`;
@@ -73,7 +73,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
     idleDoingDown() {
         if (!this.doingIdle || this.runningCommand !== 'idle') {
-            return console.dir(`idleDoingDown stop because this.doingIdle === false!`);
+            return; //console.dir (`idleDoingDown stop because this.doingIdle === false!`)
         }
         this.doingIdle = false;
         timers_1.clearTimeout(this.idleNextStop);
@@ -121,7 +121,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     if (this.Tag !== cmdArray[0]) {
                         return this.serverCommandError(new Error(`this.Tag[${this.Tag}] !== cmdArray[0] [${cmdArray[0]}]\ncommandLine[${commandLine}]`), callback);
                     }
-                    console.log(`IMAP preProcessCommane on NO Tag!`, commandLine);
+                    //console.log (`IMAP preProcessCommane on NO Tag!`, commandLine )
                     const errs = cmdArray.slice(2).join(' ');
                     this.doCommandCallback(new Error(errs));
                     return callback();

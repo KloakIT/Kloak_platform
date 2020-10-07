@@ -17,19 +17,38 @@ class buttonStatusClass {
 		return 
 	}
 	public click ( self ) {
-		
+		const command = this.cmd
+		const _self = this
+
 		if ( this.loading () === 5 ) {
-			this.loading( 4 )
-			return _view.storageHelper.createAssembler(this.requestUuid, (err, data) => {
+			_view.storageHelper.decryptLoad('history', (err, data) => {
+
 				if (err) {
-					console.log(err)
 					return
 				}
-				_view.displayMedia('player')
-				const videoPlayer = document.getElementById("videoPlayer")
-				videoPlayer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType)
-				videoPlayer['play']()
-				this.loading( 5 )
+	
+				let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
+				for(let i = 0; i < histories.length; i++) {
+					if (histories[i].youtube.id === this.obj?.videoDetails?.videoId) {
+						_view.mediaViewer = new MediaViewer ({player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
+							if (err) {
+								return
+							}
+							_view.appScript().view.videoPlaying( playing )
+							if (!_view.appScript().view.videoCanStart()) {
+								_view.appScript().view.videoCanStart(true)
+							}
+						}, () => {
+		
+						})
+						// if (_self.cmd.Args[1] === 'audio') {
+						// 	_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType,histories[i].youtube.duration)
+						// } else {
+						_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType, histories[i].youtube.duration)
+						// }
+					}
+					break
+				}
 			})
 		}
 
@@ -40,11 +59,9 @@ class buttonStatusClass {
 		if ( this.loading() ) {
 			return 
 		}
-
-		const command = this.cmd
-		const _self = this
+		console.log(_self)
 		this.loading ( 1 )
-		
+		const audio = this.obj?.audio?.cmd?.Args[0]
 		return _view.connectInformationMessage.emitRequest ( command, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
 				return _self.errorProcess ( err )
@@ -62,16 +79,12 @@ class buttonStatusClass {
 				return _self.errorProcess ( com.error )
 			}
 
-			const files = com.Args[0]
+			const url = com.Args[0]
+			console.log(_self)
 		
-			_view.storageHelper.createDownload ( com.requestSerial, files, `${_self.obj.title}.${self.labelText[0] === '' ? 'mp3' : 'mp4'}`, ['media', 'librarium', 'html'], ( err, data ) => {
-				if ( err ) {
-					console.error(err)
-					return
-				}
-				if ( data ) {
-					this.requestUuid = com.requestSerial
-					this.loading( 5 )
+			_view.storageHelper.createYoutubeDownloader(command.requestSerial, _self.cmd.Args[1] !== 'audio' ? url : null, audio, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, (eof) => {
+				if (eof) {
+					this.loading(5)
 				}
 			})
 
@@ -88,28 +101,28 @@ class buttonStatusClass {
 }
 
 const videoFormat = ( h, multimediaObj, n ) => {
-
+	console.log(h,multimediaObj,n)
 	switch ( h ) {
 		
-		case 140:
+		// case 140:
 		case 249:
 		case 250:
 		case 251: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, 'audio' ],
+				Args: [ n.url, 'audio' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
 			}
 			return multimediaObj.audio = new buttonStatusClass (['','','',''], 'volume up', cmd, multimediaObj )
 		}
-		case 18:
+		// case 18:
 		case 43:
-		case 133:
-		case 134:
-		case 135:
-		case 160:
+		// case 133:
+		// case 134:
+		// case 135:
+		// case 160:
 		case 242:
 		case 243:
 		case 244:
@@ -117,45 +130,45 @@ const videoFormat = ( h, multimediaObj, n ) => {
 		case 330: 
 		case 331: 
 		case 332: 
-		case 333:
-		case 394:
-		case 395:
-		case 396:
-		case 397: {
+		case 333: {
+		// case 394:
+		// case 395:
+		// case 396: {
+		// case 397: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, '480' ],
+				Args: [ n.url, '480' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
 			}
 			return multimediaObj.video480 = new buttonStatusClass (['480','480','480','480'],'film', cmd, multimediaObj )
 		}
-		case 22:
-		case 136:
+		// case 22:
+		// case 136:
 		case 247:
-		case 298:
+		// case 298:
 		case 302:
-		case 334:
-		case 398:{
+		case 334: {
+		// case 398:{
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, '720' ],
+				Args: [ n.url, '720' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
 			}
 			return multimediaObj.video720 = new buttonStatusClass (['720','720','720','720'],'film', cmd, multimediaObj )
 		}
-		case 137:
+		// case 137:
 		case 248:
-		case 299:
+		// case 299:
 		case 303:
-		case 335:
-		case 399: {
+		case 335: {
+		// case 399: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, '1080' ],
+				Args: [ n.url, '1080' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -168,12 +181,12 @@ const videoFormat = ( h, multimediaObj, n ) => {
 		case 313:
 		case 315:
 		case 336:
-		case 337:
-		case 400: 
-		case 401: {
+		case 337: {
+		// case 400: 
+		// case 401: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, '2048' ],
+				Args: [ n.url, '2048' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -184,7 +197,7 @@ const videoFormat = ( h, multimediaObj, n ) => {
 		case 272: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ n.webpage_url, '4096' ],
+				Args: [ n.url, '4096' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -196,7 +209,7 @@ const videoFormat = ( h, multimediaObj, n ) => {
 			if ( /hls_opus_64|hls_mp3_128|http_mp3_128|download/i.test ( h )) {
 				const cmd: QTGateAPIRequestCommand = {
 					command: 'CoSearch',
-					Args: [ n.webpage_url, 'audio' ],
+					Args: [ n.url, 'audio' ],
 					error: null,
 					subCom: 'getMediaData',
 					requestSerial: uuid_generate(),
@@ -219,6 +232,7 @@ class showWebPageClass {
 	public showImgPage = ko.observable ( true )
 	public showMultimediaPage = ko.observable ( false )
 	public multimediaLoading = ko.observable ( false )
+	public videoPlaying = ko.observable(false)
 	public videoCanStart = ko.observable ( false )
 	public videoUnablePlay = ko.observable( false )
 
@@ -278,7 +292,7 @@ class showWebPageClass {
 
 	private checkFormat ( multimediaObj ) {
 
-		const fomrmats: any[] = multimediaObj.formats || multimediaObj.streamingData.adaptiveFormats
+		const fomrmats: any[] = multimediaObj.formats
 	
 		multimediaObj['audio'] = multimediaObj['video8k'] = multimediaObj['video4k'] = multimediaObj['video2k'] = multimediaObj['video720'] = multimediaObj['video480'] = false
 		
@@ -317,7 +331,7 @@ class showWebPageClass {
 		if ( fomrmats ) {
 			
 			return fomrmats.forEach ( n => {
-
+				console.log(n)
 				const h = n.format_id ? parseInt ( n.format_id ) : n.itag
 				videoFormat ( h, multimediaObj, n )
 			})

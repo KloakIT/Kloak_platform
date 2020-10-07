@@ -33,6 +33,179 @@ class StorageHelper {
 		return this.downloadPool()[requestUuid].instance
 	}
 
+	public createYoutubeDownloader = (requestSerial, videoURL: string = null, audioURL: string = null, title: string, duration: string | number, youtubeId: string, callback: (eof) => void) => {
+		let progress: KnockoutObservable<number> = null
+
+		let downloadRequestUuid = {
+			video: null,
+			audio: null,
+			created: false
+		}
+
+		let EOF = {
+			video: null,
+			audio: null
+		}
+
+		let totalSize = {
+			video: {
+				downloaded: 0,
+				total: 0
+			},
+			audio: {
+				downloaded: 0,
+				total: 0
+			}
+		}
+
+		let audioPieces = []
+		let videoPieces = []
+
+		const createProgress = () => {
+			const download = {
+				requestSerial: requestSerial,
+				progress
+			}
+			this.downloadPool({...this.downloadPool(), [requestSerial]: download})
+		}
+
+		const updateProgress = () => {
+			console.log(totalSize)
+			if (audioURL && !videoURL) {
+				const percent = Math.round((totalSize['audio'].downloaded / totalSize['audio'].total) * 100)
+				console.log(`=============${percent}==================`)
+				this.downloadPool()[requestSerial].progress(percent)
+				return
+			}
+			if (totalSize['video'].total && totalSize['audio'].total) {
+				const total = totalSize['video'].total + totalSize['audio'].total
+				const downloaded = totalSize['video'].downloaded + totalSize['audio'].downloaded
+				const percent = Math.round((downloaded / total) * 100)
+				this.downloadPool()[requestSerial].progress(percent)
+			}
+		}
+		
+
+		const createUpdateIndex = (requestUuid, com: kloak_downloadObj, pieces) => {
+			const index: kloakIndex = {
+				filename: com.downloadFilename,
+				fileExtension: 'webm',
+				totalLength: com.totalLength ? com.totalLength : null,
+				contentType: com.contentType,
+				pieces: [...pieces],
+				finished: com.eof
+			}
+			_view.storageHelper.createUpdateIndex(requestUuid, index, (err, data) => {
+				if (err) {
+					console.log(err)
+				}
+			})
+		}
+
+		const createHistory = () => {
+			const videoMimeType = {
+				video: 'video/webm; codecs="vp9"'
+			}
+			const audioMimeType = {
+				audio: 'audio/webm; codecs="opus"'
+			}
+
+			if (!downloadRequestUuid.created) {
+				if (audioURL && !videoURL) {
+					_view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration)
+					downloadRequestUuid.created = true
+					return
+				}
+				if (downloadRequestUuid['video'] && downloadRequestUuid['audio']) {
+					_view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration)
+					downloadRequestUuid.created = true
+				}
+			}
+		}
+		
+		if (videoURL) {
+			let videoDownload = new DownloadQueue(videoURL, title, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
+				if (!downloadRequestUuid['video']) {
+					downloadRequestUuid['video'] = requestUuid
+				}
+				createHistory()
+				if (!totalSize['video']['total']) {
+					totalSize['video']['total'] = parseInt(com.totalLength.toString())
+				}
+
+				console.log(com)
+
+				totalSize['video'].downloaded += com.currentlength
+
+				if (!progress) {
+					progress = ko.observable(0)
+					createProgress()
+				} else {
+					updateProgress()
+				}
+
+				if (com.eof) {
+					EOF['video'] = true
+					if (EOF['video'] && EOF['audio']) {
+						callback(true)
+						this.removeFromPool(this.downloadPool, requestSerial)
+					}
+				}
+				this.save(com.downloadUuid, data, (err, data) => {
+					if (err) {
+						return
+					}
+					videoPieces.push(com.downloadUuid)
+					createUpdateIndex(requestUuid, com, videoPieces)
+				})
+			})
+		}
+
+		if (audioURL) {
+			let audioDownload = new DownloadQueue(audioURL, title, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
+				if (!downloadRequestUuid['audio']) {
+					downloadRequestUuid['audio'] = requestUuid
+				}
+				createHistory()
+				if (!totalSize['audio']['total']) {
+					totalSize['audio']['total'] = parseInt(com.totalLength.toString())
+				}
+
+				totalSize['audio'].downloaded += com.currentlength
+
+				if (!progress) {
+					progress = ko.observable(0)
+					createProgress()
+				} else {
+					updateProgress()
+				}
+
+
+
+				if (com.eof) {
+					EOF['audio'] = true
+					if (audioURL && !videoURL) {
+						if (EOF['audio']) {
+							callback(true)
+							this.removeFromPool(this.downloadPool, requestSerial)
+						}
+					}
+					if (EOF['video'] && EOF['audio']) {
+						callback(true)
+						this.removeFromPool(this.downloadPool, requestSerial)
+					}
+				}
+				this.save(com.downloadUuid, data, (err, data) => {
+					if (err) {
+						return
+					}
+					audioPieces.push(com.downloadUuid)
+					createUpdateIndex(requestUuid, com, audioPieces)
+				})
+			})
+		}
+	}
+
 	public createAssembler = (requestUuid: string, callback: Function) => {
 		if (this.currentAssembly[requestUuid]) {
 			callback(`Assembly already exists!`, requestUuid)
@@ -75,7 +248,7 @@ class StorageHelper {
 		return this.uploadPool()[requestUuid]
 	}
 
-	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string> ) => {
+	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string>,  mimeType: {video?: string, audio?: string}, duration?: number | string, type?: 'audio' | 'video' ) => {
 		const date = new Date()
 		const history: fileHistory = {
 			uuid: requestUUIDs,
@@ -87,7 +260,15 @@ class StorageHelper {
 			domain: 'YouTube',
 			tag: [...extraTags, 'upload', 'local'],
 			color: null,
-			youtubeId
+			youtube: {
+				id: youtubeId,
+				type,
+				mimeType
+			}
+		}
+
+		if (duration) {
+			history.youtube.duration = parseInt(duration.toString())
 		}
 
 		history.tag = history.tag.filter(tag => tag !== null)

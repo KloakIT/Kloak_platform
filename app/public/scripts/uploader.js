@@ -5,7 +5,36 @@ class Uploader {
         this.pieces = [];
         this.totalPieces = 0;
         this.extraTags = [];
+        this.videoData = {
+            duration: null,
+            mimeType: null,
+            fastStart: null
+        };
+        this.MP4BoxFile = null;
         this.callback = null;
+        this.getVideoData = (callback) => {
+            const _self = this;
+            this.MP4BoxFile = MP4Box.createFile();
+            this.MP4BoxFile.onError = (e) => {
+                console.log(e);
+            };
+            this.MP4BoxFile.onReady = (info) => {
+                const mime = info.mime.split(" ");
+                _self.videoData.mimeType = [mime[0], mime[1]].join(" ");
+                _self.videoData.fastStart = info.isFragmented && info.isProgressive;
+                console.log(info);
+                this.disassemblyWorker = this.getWorker(this.callback);
+                this.disassemblyWorker.postMessage({ cmd: 'START', payload: { arrayBuffer: this.arrayBuffer } }, [this.arrayBuffer]);
+            };
+            const video = document.createElement("video");
+            video.preload = 'metadata';
+            video['src'] = URL.createObjectURL(this.file);
+            video.onloadedmetadata = function () {
+                URL.revokeObjectURL(video.src);
+                _self.videoData.duration = Math.round(video.duration);
+                callback();
+            };
+        };
         this.log = (message) => {
             console.log(`<${new Date().toLocaleString()}> ${message}`);
         };
@@ -19,8 +48,15 @@ class Uploader {
         this.generateOffsetUUID = (offset = 0) => {
             if (offset > this.fileSize) {
                 this.createIndex();
-                this.createHistory();
-                this.beginFileRead();
+                if (this.file.type === 'video/mp4') {
+                    return this.beginFileRead(() => {
+                        this.createHistory();
+                    });
+                }
+                else {
+                    this.beginFileRead();
+                    this.createHistory();
+                }
                 return;
             }
             this.pieces.push({ offset, uuid: uuid_generate() });
@@ -29,12 +65,18 @@ class Uploader {
                 this.generateOffsetUUID(offset + this.chunkSize);
             }
         };
-        this.beginFileRead = () => {
+        this.beginFileRead = (callback) => {
             const reader = new FileReader();
             reader.readAsArrayBuffer(this.file);
             reader.onloadend = (e) => {
                 this.arrayBuffer = e.target['result'];
                 console.log(this.arrayBuffer.byteLength);
+                if (this.file.type === 'video/mp4') {
+                    this.arrayBuffer['fileStart'] = 0;
+                    this.MP4BoxFile.appendBuffer(this.arrayBuffer);
+                    callback();
+                    return;
+                }
                 this.disassemblyWorker = this.getWorker(this.callback);
                 this.disassemblyWorker.postMessage({ cmd: 'START', payload: { arrayBuffer: this.arrayBuffer } }, [this.arrayBuffer]);
             };
@@ -51,7 +93,8 @@ class Uploader {
                 domain: 'Upload',
                 tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'],
                 color: null,
-                size: this.fileSize
+                size: this.fileSize,
+                videoData: this.videoData
             };
             history.tag = history.tag.filter(tag => tag !== null);
             _view.storageHelper.saveHistory(history, this.callback);
@@ -149,6 +192,13 @@ class Uploader {
             this.chunkSize = Math.floor(this.fileSize / 5);
         }
         this.callback = callback;
-        this.generateOffsetUUID();
+        if (file.type === 'video/mp4') {
+            this.getVideoData(() => {
+                this.generateOffsetUUID();
+            });
+        }
+        else {
+            this.generateOffsetUUID();
+        }
     }
 }

@@ -219,9 +219,8 @@ class fileStorage {
                 n['tag'] = history['tag']();
                 n['color'] = history['color']();
                 n['size'] = history['size'] ? history['size'] : null;
-                n['youtubeId'] = history['youtubeId'] || null;
-                n['mimeType'] = history['mimeType'] || null;
-                n['duration'] = history['duration'] || null;
+                n['videoData'] = history['videoData'] || null;
+                n['youtube'] = history['youtube'] || null;
                 temp.push(n);
             });
             this.fileStorageData(histories);
@@ -308,6 +307,7 @@ class fileStorage {
             this.selectedFile(null);
             this.selectedInfoFile(null);
             this.showFileOptions(null);
+            this.selectedVideo(null);
             if (this.mediaViewer) {
                 this.mediaViewer.terminate();
                 this.mediaViewer = null;
@@ -327,9 +327,8 @@ class fileStorage {
                 n['tag'] = history['tag']();
                 n['color'] = history['color']();
                 n['size'] = history['size'] || null;
-                n['youtubeId'] = history['youtubeId'] || null;
-                n['mimeType'] = history['mimeType'] || null;
-                n['duration'] = history['duration'] || null;
+                n['videoData'] = history['videoData'] || null;
+                n['youtube'] = history['youtube'] || null;
                 return n;
             });
             console.log('REPLACE HISTORY', temp);
@@ -383,23 +382,33 @@ class fileStorage {
                     });
                     break;
                 case "play":
-                    if (this.selectedVideo() === fileData['uuid'][0]) {
+                    if (this.selectedVideo() === fileData['uuid'].filter(uuid => uuid !== null)[0]) {
                         this.selectedVideo(null);
                         console.log(this.mediaViewer);
-                        this.mediaViewer.terminate();
+                        this.mediaViewer.terminate(() => {
+                            this.mediaViewer = null;
+                        });
                         return;
                     }
-                    this.selectedVideo(fileData['uuid'][0]);
-                    if (fileData.youtubeId) {
-                        this.mediaViewer = new MediaViewer('video', fileData.filename, { player: document.getElementById(fileData['uuid'][0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, playing) => {
-                            if (err) {
-                                return console.log(err);
-                            }
-                            if (playing !== null) {
-                                this.videoPlaying(playing);
-                            }
-                        }, () => { });
-                        this.mediaViewer.localYoutube(fileData.uuid[0], fileData.mimeType, fileData.duration, fileData.size, fileData.youtubeId);
+                    this.selectedVideo(fileData['uuid'].filter(uuid => uuid !== null)[0]);
+                    this.mediaViewer = new MediaViewer({ player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, playing) => {
+                        if (err) {
+                            return console.log(err);
+                        }
+                        if (playing !== null) {
+                            this.videoPlaying(playing);
+                        }
+                    }, () => { });
+                    if (fileData.youtube) {
+                        if (fileData.uuid.length > 1) {
+                            this.mediaViewer.downloadedYoutube(fileData.uuid, fileData.youtube.mimeType, fileData.youtube.duration);
+                        }
+                        else {
+                            this.mediaViewer.streamedYoutube(fileData.uuid[0], fileData.youtube.mimeType, fileData.youtube.duration, fileData.size, fileData.youtube.id);
+                        }
+                    }
+                    else {
+                        this.mediaViewer.uploadedVideo(fileData.uuid, fileData.videoData.mimeType, fileData.videoData.duration, fileData.videoData.fastStart);
                     }
                     updateLastViewed();
                 // const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4' || tag === 'mp3')
@@ -605,6 +614,7 @@ class fileStorage {
             if (item.isFile) {
                 item.file((file) => {
                     const uuid = uuid_generate();
+                    console.log(uuid);
                     _view.storageHelper.createUploader(uuid, file, path, [], (err, data) => {
                         if (err) {
                             console.log(err);

@@ -10,6 +10,12 @@ class Uploader {
 	private pieces = []
 	private totalPieces = 0
 	private extraTags = []
+	private videoData = {
+		duration: null,
+		mimeType: null,
+		fastStart: null
+	}
+	private MP4BoxFile = null
 	private callback: Function = null
 	constructor(requestUuid: string, file: File, path: string, extraTags: Array<string>, progressIndicator: KnockoutObservable<number> | Function, callback: Function) {
 		this.uuid = requestUuid
@@ -22,7 +28,42 @@ class Uploader {
 			this.chunkSize = Math.floor(this.fileSize / 5)
 		}
 		this.callback = callback
-		this.generateOffsetUUID()
+		if (file.type === 'video/mp4') {
+			this.getVideoData(() => {
+				this.generateOffsetUUID()
+			})
+		} else {
+			this.generateOffsetUUID()
+		}
+		
+	}
+
+	private getVideoData = (callback: Function) => {
+		const _self = this
+		this.MP4BoxFile = MP4Box.createFile()
+
+		this.MP4BoxFile.onError = (e) => {
+			console.log(e)
+		}
+
+		this.MP4BoxFile.onReady = (info) => {
+			const mime = info.mime.split(" ")
+			_self.videoData.mimeType = [mime[0], mime[1]].join(" ")
+			_self.videoData.fastStart = info.isFragmented && info.isProgressive
+			console.log(info)
+			this.disassemblyWorker = this.getWorker(this.callback)
+			this.disassemblyWorker.postMessage({cmd: 'START', payload: {arrayBuffer: this.arrayBuffer}}, [this.arrayBuffer])
+		}
+
+		const video = document.createElement("video")
+		video.preload = 'metadata'
+		video['src'] = URL.createObjectURL(this.file)
+		video.onloadedmetadata = function() {
+			URL.revokeObjectURL(video.src);
+			_self.videoData.duration = Math.round(video.duration)
+			callback()
+		}
+
 	}
 
 	private log = (message: string) => {
@@ -42,8 +83,15 @@ class Uploader {
 	private generateOffsetUUID = (offset: number = 0) => {
 		if (offset > this.fileSize) {
 			this.createIndex()
-			this.createHistory()
-			this.beginFileRead()
+			
+			if (this.file.type === 'video/mp4') {
+				return this.beginFileRead(() => {
+					this.createHistory()
+				})
+			} else {
+				this.beginFileRead()
+				this.createHistory()
+			}
 			return
 		}
 		this.pieces.push({offset, uuid: uuid_generate()})
@@ -53,12 +101,18 @@ class Uploader {
 		}
 	}
 
-	private beginFileRead = () => {
+	private beginFileRead = (callback?: Function) => {
 		const reader = new FileReader()
 		reader.readAsArrayBuffer(this.file)
 		reader.onloadend = (e) => {
 			this.arrayBuffer = e.target['result'] as ArrayBuffer
 			console.log(this.arrayBuffer.byteLength)
+			if (this.file.type === 'video/mp4') {
+				this.arrayBuffer['fileStart'] = 0
+				this.MP4BoxFile.appendBuffer(this.arrayBuffer)
+				callback()
+				return
+			}
 			this.disassemblyWorker = this.getWorker(this.callback)
 			this.disassemblyWorker.postMessage({cmd: 'START', payload: {arrayBuffer: this.arrayBuffer}}, [this.arrayBuffer])
 		}
@@ -76,9 +130,9 @@ class Uploader {
 			domain: 'Upload',
 			tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'],
 			color: null,
-			size: this.fileSize
+			size: this.fileSize,
+			videoData: this.videoData
 		}
-
 		history.tag = history.tag.filter(tag => tag !== null)
 		_view.storageHelper.saveHistory(history, this.callback)
 	}

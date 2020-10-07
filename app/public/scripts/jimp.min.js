@@ -1,5 +1,5 @@
 /*
-Jimp v0.13.0
+Jimp v0.16.0
 https://github.com/oliver-moran/jimp
 Ported for the Web by Phil Seaton
 MIT License
@@ -20245,6 +20245,7 @@ var JpegImage = (function jpegImage() {
       var quantizationTables = [], frames = [];
       var huffmanTablesAC = [], huffmanTablesDC = [];
       var fileMarker = readUint16();
+      this.comments = [];
       if (fileMarker != 0xFFD8) { // SOI (Start of Image)
         throw new Error("SOI not found");
       }
@@ -20272,6 +20273,11 @@ var JpegImage = (function jpegImage() {
           case 0xFFEF: // APP15
           case 0xFFFE: // COM (Comment)
             var appData = readDataBlock();
+
+            if (fileMarker === 0xFFFE) {
+              var comment = String.fromCharCode.apply(null, appData);
+              this.comments.push(comment);
+            }
 
             if (fileMarker === 0xFFE0) {
               if (appData[0] === 0x4A && appData[1] === 0x46 && appData[2] === 0x49 &&
@@ -20398,6 +20404,11 @@ var JpegImage = (function jpegImage() {
             resetInterval = readUint16();
             break;
 
+          case 0xFFDC: // Number of Lines marker
+            readUint16() // skip data length
+            readUint16() // Ignore this data since it represents the image height
+            break;
+            
           case 0xFFDA: // SOS (Start of Scan)
             var scanLength = readUint16();
             var selectorsCount = data[offset++];
@@ -20716,8 +20727,11 @@ function decode(jpegData, userOpts = {}) {
       exifBuffer: decoder.exifBuffer,
       data: opts.useTArray ?
         new Uint8Array(bytesNeeded) :
-        new Buffer(bytesNeeded)
+        Buffer.alloc(bytesNeeded)
     };
+    if(decoder.comments.length > 0) {
+      image["comments"] = decoder.comments;
+    }
   } catch (err){
     if (err instanceof RangeError){
       throw new Error("Could not allocate enough memory for the image. " +
@@ -20773,7 +20787,7 @@ Basic GUI blocking jpeg encoder
 */
 
 var btoa = btoa || function(buf) {
-  return new Buffer(buf).toString('base64');
+  return Buffer.from(buf).toString('base64');
 };
 
 function JPEGEncoder(quality) {
@@ -21451,7 +21465,7 @@ function JPEGEncoder(quality) {
 			writeWord(0xFFD9); //EOI
 
 			if (typeof module === 'undefined') return new Uint8Array(byteout);
-      return new Buffer(byteout);
+      return Buffer.from(byteout);
 
 			var jpegDataUri = 'data:image/jpeg;base64,' + btoa(byteout.join(''));
 			
@@ -45045,7 +45059,13 @@ function pluginCrop(event) {
 
         var cropSymmetric = false; // flag to force cropping top be symmetric.
         // i.e. north and south / east and west are cropped by the same value
-        // parse arguments
+
+        var ignoreSides = {
+          north: false,
+          south: false,
+          east: false,
+          west: false
+        }; // parse arguments
 
         for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
@@ -45086,6 +45106,10 @@ function pluginCrop(event) {
             if (typeof config.leaveBorder !== 'undefined') {
               leaveBorder = config.leaveBorder;
             }
+
+            if (typeof config.ignoreSides !== 'undefined') {
+              ignoreSides = config.ignoreSides;
+            }
           }
         }
         /**
@@ -45108,76 +45132,84 @@ function pluginCrop(event) {
 
         colorTarget = this.getPixelColor(0, 0);
 
-        north: for (var y = 0; y < h - minPixelsPerSide; y++) {
-          for (var x = 0; x < w; x++) {
-            var colorXY = this.getPixelColor(x, y);
-            var rgba2 = this.constructor.intToRGBA(colorXY);
+        if (!ignoreSides.north) {
+          north: for (var y = 0; y < h - minPixelsPerSide; y++) {
+            for (var x = 0; x < w; x++) {
+              var colorXY = this.getPixelColor(x, y);
+              var rgba2 = this.constructor.intToRGBA(colorXY);
 
-            if (this.constructor.colorDiff(rgba1, rgba2) > tolerance) {
-              // this pixel is too distant from the first one: abort this side scan
-              break north;
-            }
-          } // this row contains all pixels with the same color: increment this side pixels to crop
+              if (this.constructor.colorDiff(rgba1, rgba2) > tolerance) {
+                // this pixel is too distant from the first one: abort this side scan
+                break north;
+              }
+            } // this row contains all pixels with the same color: increment this side pixels to crop
 
 
-          northPixelsToCrop++;
+            northPixelsToCrop++;
+          }
         } // east side (scan columns from east to west)
 
 
         colorTarget = this.getPixelColor(w, 0);
 
-        east: for (var _x = 0; _x < w - minPixelsPerSide; _x++) {
-          for (var _y = 0 + northPixelsToCrop; _y < h; _y++) {
-            var _colorXY = this.getPixelColor(_x, _y);
+        if (!ignoreSides.east) {
+          east: for (var _x = 0; _x < w - minPixelsPerSide; _x++) {
+            for (var _y = 0 + northPixelsToCrop; _y < h; _y++) {
+              var _colorXY = this.getPixelColor(_x, _y);
 
-            var _rgba = this.constructor.intToRGBA(_colorXY);
+              var _rgba = this.constructor.intToRGBA(_colorXY);
 
-            if (this.constructor.colorDiff(rgba1, _rgba) > tolerance) {
-              // this pixel is too distant from the first one: abort this side scan
-              break east;
-            }
-          } // this column contains all pixels with the same color: increment this side pixels to crop
+              if (this.constructor.colorDiff(rgba1, _rgba) > tolerance) {
+                // this pixel is too distant from the first one: abort this side scan
+                break east;
+              }
+            } // this column contains all pixels with the same color: increment this side pixels to crop
 
 
-          eastPixelsToCrop++;
+            eastPixelsToCrop++;
+          }
         } // south side (scan rows from south to north)
 
 
         colorTarget = this.getPixelColor(0, h);
 
-        south: for (var _y2 = h - 1; _y2 >= northPixelsToCrop + minPixelsPerSide; _y2--) {
-          for (var _x2 = w - eastPixelsToCrop - 1; _x2 >= 0; _x2--) {
-            var _colorXY2 = this.getPixelColor(_x2, _y2);
+        if (!ignoreSides.south) {
+          south: for (var _y2 = h - 1; _y2 >= northPixelsToCrop + minPixelsPerSide; _y2--) {
+            for (var _x2 = w - eastPixelsToCrop - 1; _x2 >= 0; _x2--) {
+              var _colorXY2 = this.getPixelColor(_x2, _y2);
 
-            var _rgba2 = this.constructor.intToRGBA(_colorXY2);
+              var _rgba2 = this.constructor.intToRGBA(_colorXY2);
 
-            if (this.constructor.colorDiff(rgba1, _rgba2) > tolerance) {
-              // this pixel is too distant from the first one: abort this side scan
-              break south;
-            }
-          } // this row contains all pixels with the same color: increment this side pixels to crop
+              if (this.constructor.colorDiff(rgba1, _rgba2) > tolerance) {
+                // this pixel is too distant from the first one: abort this side scan
+                break south;
+              }
+            } // this row contains all pixels with the same color: increment this side pixels to crop
 
 
-          southPixelsToCrop++;
+            southPixelsToCrop++;
+          }
         } // west side (scan columns from west to east)
 
 
         colorTarget = this.getPixelColor(w, h);
 
-        west: for (var _x3 = w - 1; _x3 >= 0 + eastPixelsToCrop + minPixelsPerSide; _x3--) {
-          for (var _y3 = h - 1; _y3 >= 0 + northPixelsToCrop; _y3--) {
-            var _colorXY3 = this.getPixelColor(_x3, _y3);
+        if (!ignoreSides.west) {
+          west: for (var _x3 = w - 1; _x3 >= 0 + eastPixelsToCrop + minPixelsPerSide; _x3--) {
+            for (var _y3 = h - 1; _y3 >= 0 + northPixelsToCrop; _y3--) {
+              var _colorXY3 = this.getPixelColor(_x3, _y3);
 
-            var _rgba3 = this.constructor.intToRGBA(_colorXY3);
+              var _rgba3 = this.constructor.intToRGBA(_colorXY3);
 
-            if (this.constructor.colorDiff(rgba1, _rgba3) > tolerance) {
-              // this pixel is too distant from the first one: abort this side scan
-              break west;
-            }
-          } // this column contains all pixels with the same color: increment this side pixels to crop
+              if (this.constructor.colorDiff(rgba1, _rgba3) > tolerance) {
+                // this pixel is too distant from the first one: abort this side scan
+                break west;
+              }
+            } // this column contains all pixels with the same color: increment this side pixels to crop
 
 
-          westPixelsToCrop++;
+            westPixelsToCrop++;
+          }
         } // decide if a crop is needed
 
 

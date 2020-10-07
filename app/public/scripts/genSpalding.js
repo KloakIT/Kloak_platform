@@ -12,6 +12,7 @@ class genSpalding {
         this.twitterObj = null;
         this.mediaLoading = ko.observable(false);
         this.videoCanPlay = ko.observable(false);
+        this.mediaViewer = null;
         this.backToMain = () => {
             _view.showGeneralSpalding(false);
             _view.showMainPage(true);
@@ -91,25 +92,26 @@ class genSpalding {
                     return console.log(com.error);
                 }
                 if (com) {
-                    const data = com.Args.streamingData;
-                    console.log(data);
-                    let viewer = new MediaViewer('video', null, { player: document.getElementById("videoPlayer") }, (err, playing) => {
+                    console.log(com.Args);
+                    this.mediaViewer = new MediaViewer({ player: document.getElementById("videoPlayer") }, (err, canplay) => {
+                        if (canplay) {
+                            this.videoCanPlay(canplay);
+                        }
                         if (err) {
-                            this.mediaLoading(false);
                             console.log(err);
-                            return;
                         }
-                        if (playing) {
-                            this.mediaLoading(false);
-                            this.videoCanPlay(true);
-                        }
-                    }, () => {
-                        viewer = null;
-                    });
+                    }, () => { });
+                    this.mediaViewer.youtube(com.Args);
                 }
             });
         };
         this.navigateCarousel = (action, init) => {
+            if (this.mediaViewer) {
+                this.mediaViewer.terminate();
+                this.mediaViewer = null;
+                this.videoCanPlay(false);
+                this.mediaLoading(false);
+            }
             if (init) {
                 this.selectedIndex(0);
             }
@@ -187,6 +189,12 @@ class genSpalding {
         });
         this.videoList(temp);
         this.selectedIndex.subscribe(async (val) => {
+            if (this.mediaViewer) {
+                this.mediaViewer.terminate();
+                this.mediaViewer = null;
+                this.mediaLoading(false);
+                this.videoCanPlay(false);
+            }
             this.isScrolling = true;
             const id = this.videoList()[val].image;
             const videoItem = document.getElementById(id);
