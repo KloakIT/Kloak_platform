@@ -26,8 +26,6 @@ import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
 import * as mime from 'mime-types'
 import * as Https from 'https'
-import { Stream } from 'stream'
-import streamUrl from './tools/stramUrl'
 var CSR = require('@root/csr')
 var PEM = require('@root/pem/packer')
 var Keypairs = require('@root/keypairs')
@@ -111,8 +109,6 @@ export default class localServer {
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss > = new Map()
 	private destoryConnectTimePool: Map <string, any > = new Map ()
-	private lengthPool: Map <string, string > = new Map()
-	private streamUrlPool = new Map ()
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
@@ -126,10 +122,10 @@ export default class localServer {
 			return nameSpace.clients (( err, clients ) => {
 				if ( err ) {
 					console.log ( err )
-					return //console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
+					return console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
 				}
 				if ( !clients.length ) {
-					return //console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
+					console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
 				}
 				nameSpace.emit ( uuid, mail )
 				
@@ -320,7 +316,7 @@ export default class localServer {
 
 				const _files = data
 				
-				//console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
+				console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
 				
 				
 				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
@@ -330,11 +326,11 @@ export default class localServer {
 					return socket.emit ( 'systemErr' )
 				}
 
-				//console.time ( `getFilesFromImap ${ _files }` )
+				console.time ( `getFilesFromImap ${ _files }` )
 				let ret = ''
 				
 				return userConnect.getFileV1 ( _files, ( err, data, subject ) => {
-					//console.timeEnd ( `getFilesFromImap ${ _files } ` )
+					console.timeEnd ( `getFilesFromImap ${ _files } ` )
 					
 					if ( err ) {
 						console.log(err)
@@ -471,41 +467,7 @@ export default class localServer {
 			
 		})
 
-		socket.on ( 'requestStreamUrl', ( length, CallBack1 )=> {
-			const _uuid = Uuid.v4()
-			CallBack1( _uuid )
-			console.dir ( `socket.on ( 'requestStreamUrl' ) length = ${ length }`)
 
-			const listenChunk = ( buffer: string, CallBack1 ) => {
-				const __uuid = Uuid.v4()
-				//		Destory Buffer Url
-				CallBack1 ( __uuid )
-
-				
-
-				const urlSocket = this.streamUrlPool.get ( _uuid )
-				if ( !urlSocket ) {
-					return console.dir (`【have no URL uuid as ${ _uuid }】`)
-				}
-
-
-				//console.dir (`stream.write`)
-				//console.log ( Buffer.from ( buffer.substr (0, 100),'base64').toString ('hex'))
-				const uuu = Buffer.from ( buffer, 'base64')
-				console.dir (`socket.on 【${ _uuid }】buffer length = [${ uuu.length }]`)
-				//console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
-
-				urlSocket.write ( uuu )
-
-				
-			}
-
-			this.lengthPool.set ( _uuid, length )
-
-			socket.on ( _uuid, listenChunk )
-			socket.emit ( _uuid, _uuid )
-
-		})
 /*
 		socket.on ('getUrl', ( url: string, CallBack ) => {
 			const uu = new URLSearchParams ( url )
@@ -550,10 +512,6 @@ export default class localServer {
 		
 	}
 
-	private mediaHttpServer () {
-
-	}
-
 	private newKeyPair ( CallBack ) {
 		return Tool.newKeyPair ( "admin@Localhost.local", "admin", this.serverKeyPassword, async ( err, data: localServerKeyPair ) => {
 			if ( err ) {
@@ -575,8 +533,6 @@ export default class localServer {
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'public' )))
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'html' )))
 		const localPath = `/${ folderName }`
-		const workspaces = this.socketServer.of(/^\/\w+$/)
-
 		this.expressServer.get ( localPath, ( req, res ) => {
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
@@ -589,49 +545,7 @@ export default class localServer {
             res.render( 'home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false  })
 		})
 
-		this.expressServer.get ( `${ folderName }/streamUrl`, ( req, res ) => {
-
-			const errRespon = () => {
-				res.status ( 404 )
-				return res.end ()
-			}
-			
-			const uuid = req.query['uuid']
-			console.dir (`ON ${ folderName }/streamUrl typeof UUID = ${ typeof uuid } UUID= [${ uuid }]`)
-
-			if ( !uuid ) {
-				return errRespon ()
-			}
-
-			const length = this.lengthPool.get ( uuid )
-			if ( !length ) {
-				return errRespon ()
-			}
-			
-			console.dir ( req.headers , { depth: 4 })
-			const range = req.header('range').toLocaleLowerCase()
-			const fangeEnd = range.split ('bytes=0-')[1]
-			if ( range && fangeEnd ) {
-				
-				if ( /bytes\=0\-1/.test (range)) {
-					console.dir ( req.rawHeaders )
-					res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${ length }`,'Connection':'close' })
-					return res.end ( Buffer.alloc( 2, 0))
-				}
-
-				console.dir (`range = 【${ range } 】`)
-				res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length, 'Content-Range': `bytes 0-${ length }/${ length }`,'Connection':'close' })
-				
-			} else {
-				res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes' })
-			}
-			
-			
-			this.streamUrlPool.set ( uuid, res )
-            
-		})
-
-		
+		const workspaces = this.socketServer.of(/^\/\w+$/)
 
 
 		workspaces.on ( 'connection', socket => {

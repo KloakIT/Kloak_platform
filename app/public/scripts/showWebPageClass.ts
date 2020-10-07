@@ -87,7 +87,7 @@ class buttonStatusClass {
 
 }
 
-const videoFormat = ( h, multimediaObj ) => {
+const videoFormat = ( h, multimediaObj, n ) => {
 
 	switch ( h ) {
 		
@@ -97,7 +97,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 251: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, 'audio' ],
+				Args: [ n.webpage_url, 'audio' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -124,7 +124,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 397: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, '480' ],
+				Args: [ n.webpage_url, '480' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -140,7 +140,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 398:{
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, '720' ],
+				Args: [ n.webpage_url, '720' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -155,7 +155,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 399: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, '1080' ],
+				Args: [ n.webpage_url, '1080' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -173,7 +173,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 401: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, '2048' ],
+				Args: [ n.webpage_url, '2048' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -184,7 +184,7 @@ const videoFormat = ( h, multimediaObj ) => {
 		case 272: {
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
-				Args: [ multimediaObj.webpage_url, '4096' ],
+				Args: [ n.webpage_url, '4096' ],
 				error: null,
 				subCom: 'getMediaData',
 				requestSerial: uuid_generate(),
@@ -196,7 +196,7 @@ const videoFormat = ( h, multimediaObj ) => {
 			if ( /hls_opus_64|hls_mp3_128|http_mp3_128|download/i.test ( h )) {
 				const cmd: QTGateAPIRequestCommand = {
 					command: 'CoSearch',
-					Args: [ multimediaObj.webpage_url, 'audio' ],
+					Args: [ n.webpage_url, 'audio' ],
 					error: null,
 					subCom: 'getMediaData',
 					requestSerial: uuid_generate(),
@@ -319,7 +319,7 @@ class showWebPageClass {
 			return fomrmats.forEach ( n => {
 
 				const h = n.format_id ? parseInt ( n.format_id ) : n.itag
-				videoFormat ( h, multimediaObj )
+				videoFormat ( h, multimediaObj, n )
 			})
 		}
 	}

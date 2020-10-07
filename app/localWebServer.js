@@ -87,8 +87,6 @@ class localServer {
         this.requestPool = new Map();
         this.imapConnectPool = new Map();
         this.destoryConnectTimePool = new Map();
-        this.lengthPool = new Map();
-        this.streamUrlPool = new Map();
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
         Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
@@ -98,7 +96,6 @@ class localServer {
         this.expressServer.use(Express.static(Path.join(__dirname, 'public')));
         this.expressServer.use(Express.static(Path.join(__dirname, 'html')));
         const localPath = `/${folderName}`;
-        const workspaces = this.socketServer.of(/^\/\w+$/);
         this.expressServer.get(localPath, (req, res) => {
             res.render('home', { title: 'home', proxyErr: false });
         });
@@ -110,37 +107,7 @@ class localServer {
         this.expressServer.get(`${folderName}/browserNotSupport`, (req, res) => {
             res.render('home/browserNotSupport', { title: 'browserNotSupport', proxyErr: false });
         });
-        this.expressServer.get(`${folderName}/streamUrl`, (req, res) => {
-            const errRespon = () => {
-                res.status(404);
-                return res.end();
-            };
-            const uuid = req.query['uuid'];
-            console.dir(`ON ${folderName}/streamUrl typeof UUID = ${typeof uuid} UUID= [${uuid}]`);
-            if (!uuid) {
-                return errRespon();
-            }
-            const length = this.lengthPool.get(uuid);
-            if (!length) {
-                return errRespon();
-            }
-            console.dir(req.headers, { depth: 4 });
-            const range = req.header('range').toLocaleLowerCase();
-            const fangeEnd = range.split('bytes=0-')[1];
-            if (range && fangeEnd) {
-                if (/bytes\=0\-1/.test(range)) {
-                    console.dir(req.rawHeaders);
-                    res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${length}`, 'Connection': 'close' });
-                    return res.end(Buffer.alloc(2, 0));
-                }
-                console.dir(`range = 【${range} 】`);
-                res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length, 'Content-Range': `bytes 0-${length}/${length}`, 'Connection': 'close' });
-            }
-            else {
-                res.writeHead(200, { 'Content-Type': 'video/mp4', 'status': 200, 'accept-ranges': 'bytes' });
-            }
-            this.streamUrlPool.set(uuid, res);
-        });
+        const workspaces = this.socketServer.of(/^\/\w+$/);
         workspaces.on('connection', socket => {
             return this.listenAfterPassword(socket);
         });
@@ -177,10 +144,10 @@ class localServer {
             return nameSpace.clients((err, clients) => {
                 if (err) {
                     console.log(err);
-                    return; //console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
+                    return console.dir(`catchCmd nameSpace.clients [${uuid}] get Error`);
                 }
                 if (!clients.length) {
-                    return; //console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
+                    console.dir(`catchCmd nameSpace.clients request [${uuid}] have not client!`);
                 }
                 nameSpace.emit(uuid, mail);
             });
@@ -317,16 +284,16 @@ class localServer {
                     return _callBack(err.message || err);
                 }
                 const _files = data;
-                //console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
+                console.log(`socket.on ('getFilesFromImap') _files = [${_files}] _files.length = [${_files.length}]`);
                 const userConnect = socket["userConnet"] || this.imapConnectPool.get(keyID);
                 if (!userConnect) {
                     console.log(`getFilesFromImap error:![ Have no userConnect ]`);
                     return socket.emit('systemErr');
                 }
-                //console.time ( `getFilesFromImap ${ _files }` )
+                console.time(`getFilesFromImap ${_files}`);
                 let ret = '';
                 return userConnect.getFileV1(_files, (err, data, subject) => {
-                    //console.timeEnd ( `getFilesFromImap ${ _files } ` )
+                    console.timeEnd(`getFilesFromImap ${_files} `);
                     if (err) {
                         console.log(err);
                         return _callBack(err);
@@ -430,29 +397,6 @@ class localServer {
                 }
             });
         });
-        socket.on('requestStreamUrl', (length, CallBack1) => {
-            const _uuid = Uuid.v4();
-            CallBack1(_uuid);
-            console.dir(`socket.on ( 'requestStreamUrl' ) length = ${length}`);
-            const listenChunk = (buffer, CallBack1) => {
-                const __uuid = Uuid.v4();
-                //		Destory Buffer Url
-                CallBack1(__uuid);
-                const urlSocket = this.streamUrlPool.get(_uuid);
-                if (!urlSocket) {
-                    return console.dir(`【have no URL uuid as ${_uuid}】`);
-                }
-                //console.dir (`stream.write`)
-                //console.log ( Buffer.from ( buffer.substr (0, 100),'base64').toString ('hex'))
-                const uuu = Buffer.from(buffer, 'base64');
-                console.dir(`socket.on 【${_uuid}】buffer length = [${uuu.length}]`);
-                //console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
-                urlSocket.write(uuu);
-            };
-            this.lengthPool.set(_uuid, length);
-            socket.on(_uuid, listenChunk);
-            socket.emit(_uuid, _uuid);
-        });
         /*
                 socket.on ('getUrl', ( url: string, CallBack ) => {
                     const uu = new URLSearchParams ( url )
@@ -488,8 +432,6 @@ class localServer {
                 return socket.emit('imapTestFinish', err, data);
             });
         });
-    }
-    mediaHttpServer() {
     }
     newKeyPair(CallBack) {
         return Tool.newKeyPair("admin@Localhost.local", "admin", this.serverKeyPassword, async (err, data) => {
