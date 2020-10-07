@@ -29,8 +29,8 @@ class buttonStatusClass {
 	
 				let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
 				for(let i = 0; i < histories.length; i++) {
-					if (histories[i].youtube.id === this.obj?.videoDetails?.videoId) {
-						_view.mediaViewer = new MediaViewer ({player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
+					if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
+						_view.mediaViewer = new MediaViewer ( {player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
 							if (err) {
 								return
 							}
@@ -44,7 +44,7 @@ class buttonStatusClass {
 						// if (_self.cmd.Args[1] === 'audio') {
 						// 	_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType,histories[i].youtube.duration)
 						// } else {
-						_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType, histories[i].youtube.duration)
+						_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration)
 						// }
 					}
 					break

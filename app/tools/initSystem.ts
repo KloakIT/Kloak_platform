@@ -26,6 +26,7 @@ import * as Https from 'https'
 import * as Net from 'net'
 import * as Nodemailer from 'nodemailer'
 import * as Url from 'url'
+import * as Util from 'util'
 /**
  * 		define
  */
@@ -631,7 +632,7 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 			}
 
 			const transporter = Nodemailer.createTransport ( option )
-			//console.log ( Util.inspect ( option ))
+			console.log ( Util.inspect ( option ))
 			const mailOptions = {
 				from: imapData.smtpUserName,
 				to: toEmail,

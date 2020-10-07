@@ -26,6 +26,7 @@ const Https = require("https");
 const Net = require("net");
 const Nodemailer = require("nodemailer");
 const Url = require("url");
+const Util = require("util");
 /**
  * 		define
  */
@@ -551,7 +552,7 @@ exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) =
                 debug: true
             };
             const transporter = Nodemailer.createTransport(option);
-            //console.log ( Util.inspect ( option ))
+            console.log(Util.inspect(option));
             const mailOptions = {
                 from: imapData.smtpUserName,
                 to: toEmail,

@@ -26,7 +26,7 @@ import { setTimeout, clearTimeout } from 'timers';
 import { Buffer } from 'buffer'
 
 const MAX_INT = 9007199254740992
-const debug = false
+const debug = true
 
 const NoopLoopWaitingTime = 1000 * 1
 
@@ -649,16 +649,26 @@ class ImapServerSwitchStream extends Stream.Transform {
 
     public _logoutWithoutCheck ( CallBack ) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
+        let _callback = false
+        const callbackM = ( err ) => {
+            if ( _callback ) {
+                return console.trace (`_logoutWithoutCheck already callbak!`)
+                
+            }
+            _callback = true
+            return CallBack ( err )
+        }
         if ( !this.isImapUserLoginSuccess ) {
-            return CallBack ()
+            return callbackM ( null )
         }
 
         this.doCommandCallback = ( err, info: string ) => {
             
-            return CallBack ( err )
+            return callbackM ( err )
 		}
 		
         clearTimeout ( this.idleResponsrTime )
+
         this.commandProcess = ( text: string, cmdArray: string[], next, _callback ) => {
             //console.log (`_logout doing this.commandProcess `)
             this.isImapUserLoginSuccess = false
@@ -672,14 +682,12 @@ class ImapServerSwitchStream extends Stream.Transform {
         if ( this.writable ) {
 			this.appendWaitResponsrTimeOut = setTimeout (() => {
 				
-				return CallBack ()
+				return callbackM ( new Error ('_logoutWithoutCheck appendWaitResponsrTimeOut!'))
 			}, 1000 * 10 )
 
             return this.push ( this.cmd + '\r\n')
         }
-        if ( CallBack && typeof CallBack === 'function') {
-            return CallBack()
-        }
+        callbackM ( null )
         
     }
 
