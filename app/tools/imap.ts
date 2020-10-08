@@ -22,11 +22,13 @@ import * as Event from 'events'
 import * as Uuid from 'node-uuid'
 import * as Async from 'async'
 import * as Crypto from 'crypto'
+import { join } from 'path'
 import { setTimeout, clearTimeout } from 'timers';
 import { Buffer } from 'buffer'
+import * as Tool from './initSystem'
 
 const MAX_INT = 9007199254740992
-const debug = true
+const debug = false
 
 const NoopLoopWaitingTime = 1000 * 1
 
@@ -649,26 +651,16 @@ class ImapServerSwitchStream extends Stream.Transform {
 
     public _logoutWithoutCheck ( CallBack ) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
-        let _callback = false
-        const callbackM = ( err ) => {
-            if ( _callback ) {
-                return console.trace (`_logoutWithoutCheck already callbak!`)
-                
-            }
-            _callback = true
-            return CallBack ( err )
-        }
         if ( !this.isImapUserLoginSuccess ) {
-            return callbackM ( null )
+            return CallBack ()
         }
 
         this.doCommandCallback = ( err, info: string ) => {
             
-            return callbackM ( err )
+            return CallBack ( err )
 		}
 		
         clearTimeout ( this.idleResponsrTime )
-
         this.commandProcess = ( text: string, cmdArray: string[], next, _callback ) => {
             //console.log (`_logout doing this.commandProcess `)
             this.isImapUserLoginSuccess = false
@@ -682,12 +674,14 @@ class ImapServerSwitchStream extends Stream.Transform {
         if ( this.writable ) {
 			this.appendWaitResponsrTimeOut = setTimeout (() => {
 				
-				return callbackM ( new Error ('_logoutWithoutCheck appendWaitResponsrTimeOut!'))
+				return CallBack ()
 			}, 1000 * 10 )
 
             return this.push ( this.cmd + '\r\n')
         }
-        callbackM ( null )
+        if ( CallBack && typeof CallBack === 'function') {
+            return CallBack()
+        }
         
     }
 

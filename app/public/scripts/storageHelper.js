@@ -30,7 +30,7 @@ class StorageHelper {
             this.downloadPool({ ...this.downloadPool(), [requestUuid]: download });
             return this.downloadPool()[requestUuid].instance;
         };
-        this.createYoutubeDownloader = (requestSerial, videoURL = null, audioURL = null, title, duration, youtubeId, callback) => {
+        this.createYoutubeDownloader = (requestSerial, videoURL = null, audioURL = null, title, duration, youtubeId, quality, thumbnail, callback) => {
             let progress = null;
             let downloadRequestUuid = {
                 video: null,
@@ -99,12 +99,12 @@ class StorageHelper {
                 };
                 if (!downloadRequestUuid.created) {
                     if (audioURL && !videoURL) {
-                        _view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration);
+                        _view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration, quality, thumbnail);
                         downloadRequestUuid.created = true;
                         return;
                     }
                     if (downloadRequestUuid['video'] && downloadRequestUuid['audio']) {
-                        _view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration);
+                        _view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration, quality, thumbnail);
                         downloadRequestUuid.created = true;
                     }
                 }
@@ -224,7 +224,7 @@ class StorageHelper {
             this.uploadPool({ ...this.uploadPool(), [requestUuid]: uploader });
             return this.uploadPool()[requestUuid];
         };
-        this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags, mimeType, duration, type) => {
+        this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags, mimeType, duration, quality, thumbnail = null) => {
             const date = new Date();
             const history = {
                 uuid: requestUUIDs,
@@ -238,16 +238,26 @@ class StorageHelper {
                 color: null,
                 youtube: {
                     id: youtubeId,
-                    type,
-                    mimeType
+                    mimeType,
+                    quality,
                 }
             };
             if (duration) {
                 history.youtube.duration = parseInt(duration.toString());
             }
+            if (thumbnail) {
+                const arr = thumbnail.split(','), mime = arr[0].match(/:(.*?);/)[1];
+                history['youtube']['thumbnail'] = {
+                    data: arr[1],
+                    mime: mime
+                };
+            }
             history.tag = history.tag.filter(tag => tag !== null);
             _view.storageHelper.saveHistory(history, (err, data) => {
             });
+        };
+        this.dataURItoBlob = (base64, mime) => {
+            return URL.createObjectURL(new Blob([Buffer.from(base64, 'base64')], { type: mime }));
         };
         this.createUpdateIndex = (uuid, index, callback) => {
             console.log(index);

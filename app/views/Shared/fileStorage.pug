@@ -18,7 +18,7 @@
 			input#hiddenInput(type="file" style="display: none")
 			.fileDragOverlay#fileDragOverlay
 				h3="Drop files to upload"
-			.fileStorageWrapper(data-bind="click: () => { closeAll() }, clickBubble: false")
+			.fileStorageWrapper(data-bind="click: () => { }, clickBubble: false")
 				.fileStorageHeader
 					//- img.fileStorageLogo(src="./images/fortressLogo.svg" data-bind="style: {opacity: showSearchInput() ? '0' : '1'}")
 					.fileStorageHeaderInner
@@ -42,7 +42,7 @@
 								<!-- /ko -->
 							<!-- /ko -->
 						<!-- /ko -->
-				.fileStorageInner(data-bind="click: () => { closeAll() }, clickBubble: false")
+				.fileStorageInner(data-bind="click: () => { }, clickBubble: false")
 					.fileStorageGlobalActions
 						<!-- ko if: showDownloads() -->
 						h3="Downloads"

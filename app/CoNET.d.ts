@@ -860,6 +860,10 @@ interface fileHistory {
 		mimeType?: {video?: string, audio?: string},
 		duration?: number,
 		type?: 'video' | 'audio',
-		quality?: string
+		quality?: string,
+		thumbnail?: {
+			data: string,
+			mime: string
+		}
 	}
 }

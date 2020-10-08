@@ -19,6 +19,7 @@ class buttonStatusClass {
 	public click ( self ) {
 		const command = this.cmd
 		const _self = this
+		console.log(_self)
 
 		if ( this.loading () === 5 ) {
 			_view.storageHelper.decryptLoad('history', (err, data) => {
@@ -26,17 +27,21 @@ class buttonStatusClass {
 				if (err) {
 					return
 				}
-	
+				if (_view.mediaViewer) {
+					_view.mediaViewer.terminate()
+					_view.appScript().view.videoCanStart(false)
+				}
 				let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
 				for(let i = 0; i < histories.length; i++) {
 					if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
-						_view.mediaViewer = new MediaViewer ( {player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
+						if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
+						_view.mediaViewer = new MediaViewer ({player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
 							if (err) {
 								return
 							}
-							_view.appScript().view.videoPlaying( playing )
-							if (!_view.appScript().view.videoCanStart()) {
-								_view.appScript().view.videoCanStart(true)
+							_view.appScript()['view'].videoPlaying( playing )
+							if (!_view.appScript()['view'].videoCanStart()) {
+								_view.appScript()['view'].videoCanStart(true)
 							}
 						}, () => {
 		
@@ -44,10 +49,10 @@ class buttonStatusClass {
 						// if (_self.cmd.Args[1] === 'audio') {
 						// 	_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType,histories[i].youtube.duration)
 						// } else {
-						_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration)
+						return _view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i]['youtube']['thumbnail'])
 						// }
+						}
 					}
-					break
 				}
 			})
 		}
@@ -62,6 +67,7 @@ class buttonStatusClass {
 		console.log(_self)
 		this.loading ( 1 )
 		const audio = this.obj?.audio?.cmd?.Args[0]
+		console.log(this.obj)
 		return _view.connectInformationMessage.emitRequest ( command, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
 				return _self.errorProcess ( err )
@@ -80,9 +86,8 @@ class buttonStatusClass {
 			}
 
 			const url = com.Args[0]
-			console.log(_self)
 		
-			_view.storageHelper.createYoutubeDownloader(command.requestSerial, _self.cmd.Args[1] !== 'audio' ? url : null, audio, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, (eof) => {
+			_view.storageHelper.createYoutubeDownloader(command.requestSerial, _self.cmd.Args[1] !== 'audio' ? url : null, audio, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, _self.cmd.Args[1], this.obj?.thumbnails[this.obj.thumbnails.length - 1].url, (eof) => {
 				if (eof) {
 					this.loading(5)
 				}
@@ -101,7 +106,6 @@ class buttonStatusClass {
 }
 
 const videoFormat = ( h, multimediaObj, n ) => {
-	console.log(h,multimediaObj,n)
 	switch ( h ) {
 		
 		// case 140:
@@ -331,7 +335,6 @@ class showWebPageClass {
 		if ( fomrmats ) {
 			
 			return fomrmats.forEach ( n => {
-				console.log(n)
 				const h = n.format_id ? parseInt ( n.format_id ) : n.itag
 				videoFormat ( h, multimediaObj, n )
 			})

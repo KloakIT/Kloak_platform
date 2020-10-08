@@ -27,7 +27,7 @@ const Crypto = require("crypto");
 const timers_1 = require("timers");
 const buffer_1 = require("buffer");
 const MAX_INT = 9007199254740992;
-const debug = true;
+const debug = false;
 const NoopLoopWaitingTime = 1000 * 1;
 exports.saveLog = (log, _console = true) => {
     const data = `${new Date().toUTCString()}: ${log}\r\n`;
@@ -524,19 +524,11 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
     _logoutWithoutCheck(CallBack) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
-        let _callback = false;
-        const callbackM = (err) => {
-            if (_callback) {
-                return console.trace(`_logoutWithoutCheck already callbak!`);
-            }
-            _callback = true;
-            return CallBack(err);
-        };
         if (!this.isImapUserLoginSuccess) {
-            return callbackM(null);
+            return CallBack();
         }
         this.doCommandCallback = (err, info) => {
-            return callbackM(err);
+            return CallBack(err);
         };
         timers_1.clearTimeout(this.idleResponsrTime);
         this.commandProcess = (text, cmdArray, next, _callback) => {
@@ -549,11 +541,13 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.debug ? debugOut(this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (this.writable) {
             this.appendWaitResponsrTimeOut = timers_1.setTimeout(() => {
-                return callbackM(new Error('_logoutWithoutCheck appendWaitResponsrTimeOut!'));
+                return CallBack();
             }, 1000 * 10);
             return this.push(this.cmd + '\r\n');
         }
-        callbackM(null);
+        if (CallBack && typeof CallBack === 'function') {
+            return CallBack();
+        }
     }
     append(text, subject, CallBack) {
         //console.log (`[${ this.imapServer.imapSerialID }] ImapServerSwitchStream append => [${ text.length }]`)

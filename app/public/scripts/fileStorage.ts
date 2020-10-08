@@ -141,6 +141,7 @@ class fileStorage {
 	}
 
 	backToMain = () => {
+		this.closeAll()
 		_view.showFileStorage(false)
 		_view.showMainPage ( true )
 		_view.bodyBlue ( true )
@@ -508,12 +509,12 @@ class fileStorage {
 				}, () => {})
 				if (fileData.youtube) {
 					if (fileData.uuid.length > 1) {
-						this.mediaViewer.downloadedYoutube(fileData.uuid, fileData.youtube.mimeType, fileData.youtube.duration)
+						this.mediaViewer.downloadedYoutube(fileData.uuid, fileData['youtube'].mimeType, fileData['youtube'].duration, fileData['youtube']['thumbnail'])
 					} else {
-						this.mediaViewer.streamedYoutube(fileData.uuid[0], fileData.youtube.mimeType, fileData.youtube.duration, fileData.size, fileData.youtube.id)
+						this.mediaViewer.streamedYoutube(fileData.uuid[0], fileData['youtube'].mimeType, fileData['youtube'].duration, fileData.size, fileData['youtube'].id)
 					}
 				} else {
-					this.mediaViewer.uploadedVideo(fileData.uuid, fileData.videoData.mimeType, fileData.videoData.duration, fileData.videoData.fastStart)
+					this.mediaViewer.uploadedVideo(fileData.uuid, fileData['videoData'].mimeType, fileData['videoData'].duration, fileData['videoData'].fastStart)
 				}
 				updateLastViewed()
 				// const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4' || tag === 'mp3')

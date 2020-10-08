@@ -333,7 +333,7 @@ class MediaViewer {
 		})
 	}
 
-	downloadedYoutube = (requestUuid: Array<string>, mimeTypes: {video?: string, audio?: string}, duration?: string | number) => {
+	downloadedYoutube = (requestUuid: Array<string>, mimeTypes: {video?: string, audio?: string}, duration?: string | number, thumbnail?: {data: string, mime: string}) => {
 		console.log(requestUuid)
 		let videoIndex = null
 		let audioIndex = null
@@ -350,7 +350,9 @@ class MediaViewer {
 				}
 				console.log(this.sourceBuffers)
 				this.setupPlayer()
-
+				if (thumbnail) {
+					this.customPlayer['player']['poster'] = _view.storageHelper.dataURItoBlob(thumbnail.data, thumbnail.mime)
+				}
 				requestUuid.map(uuid => {
 					if (uuid) {
 						_view.storageHelper.getIndex(uuid, (err, data) => {
@@ -433,6 +435,9 @@ class MediaViewer {
 		this.customPlayer.player.removeEventListener("timeupdate", this.timeUpdateEvent)
 		this.customPlayer.player.removeEventListener("progress", this.progressUpdateEvent)
 		this.customPlayer.player['pause']()
+		if (this.customPlayer.player['poster']) {
+			URL.revokeObjectURL(this.customPlayer.player['poster'])
+		}
 		URL.revokeObjectURL(this.customPlayer.player['src'])
 		this.download?.stopDownload()
 		this.mediaSource = null

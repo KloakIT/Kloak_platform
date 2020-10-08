@@ -33,7 +33,7 @@ class StorageHelper {
 		return this.downloadPool()[requestUuid].instance
 	}
 
-	public createYoutubeDownloader = (requestSerial, videoURL: string = null, audioURL: string = null, title: string, duration: string | number, youtubeId: string, callback: (eof) => void) => {
+	public createYoutubeDownloader = (requestSerial, videoURL: string = null, audioURL: string = null, title: string, duration: string | number, youtubeId: string, quality: string, thumbnail: string, callback: (eof) => void) => {
 		let progress: KnockoutObservable<number> = null
 
 		let downloadRequestUuid = {
@@ -112,12 +112,12 @@ class StorageHelper {
 
 			if (!downloadRequestUuid.created) {
 				if (audioURL && !videoURL) {
-					_view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration)
+					_view.storageHelper.youtubeHistory([null, downloadRequestUuid['audio']], youtubeId, title, ['youtube', 'audio'], audioMimeType, duration, quality, thumbnail)
 					downloadRequestUuid.created = true
 					return
 				}
 				if (downloadRequestUuid['video'] && downloadRequestUuid['audio']) {
-					_view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration)
+					_view.storageHelper.youtubeHistory([downloadRequestUuid['video'], downloadRequestUuid['audio']], youtubeId, title, ['video', 'youtube'], Object.assign(videoMimeType, audioMimeType), duration, quality, thumbnail)
 					downloadRequestUuid.created = true
 				}
 			}
@@ -248,7 +248,7 @@ class StorageHelper {
 		return this.uploadPool()[requestUuid]
 	}
 
-	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string>,  mimeType: {video?: string, audio?: string}, duration?: number | string, type?: 'audio' | 'video' ) => {
+	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string>,  mimeType: {video?: string, audio?: string}, duration?: number | string, quality?: string, thumbnail: string = null ) => {
 		const date = new Date()
 		const history: fileHistory = {
 			uuid: requestUUIDs,
@@ -262,8 +262,8 @@ class StorageHelper {
 			color: null,
 			youtube: {
 				id: youtubeId,
-				type,
-				mimeType
+				mimeType,
+				quality,
 			}
 		}
 
@@ -271,10 +271,22 @@ class StorageHelper {
 			history.youtube.duration = parseInt(duration.toString())
 		}
 
+		if (thumbnail) {
+			const arr = thumbnail.split(','), mime = arr[0].match(/:(.*?);/)[1];
+			history['youtube']['thumbnail'] = {
+				data: arr[1],
+				mime: mime
+			}
+		}
+
 		history.tag = history.tag.filter(tag => tag !== null)
 		_view.storageHelper.saveHistory(history, (err, data) => {
 
 		})
+	}
+
+	public dataURItoBlob = (base64: string, mime: string) => {
+		return URL.createObjectURL(new Blob([Buffer.from(base64, 'base64')], {type: mime}))
 	}
 
 	public createUpdateIndex = (uuid: string, index: kloakIndex, callback: Function) => {
