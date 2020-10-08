@@ -581,8 +581,8 @@ const testSmtpAndSendMail = ( imapData: IinputData, CallBack ) => {
 		return CallBack ()
 	})
 }
-const sendMailAccount = {
-	imapPortNumber: '993',
+const sendMailAccount: IinputData = {
+	imapPortNumber: [993],
     smtpPortNumber: [ 465, 587, 994 ],
     imapServer: 'imap.mail.me.com',
     imapIgnoreCertificate: false,
@@ -602,8 +602,7 @@ const sendMailAccount = {
     serverFolder: '',
     clientFolder: '',
     randomPassword: '',
-    clientIpAddress: null,
-    requestPortNumber: null
+    clientIpAddress: null
 }
 
 export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: string, message: string, CallBack ) => {
