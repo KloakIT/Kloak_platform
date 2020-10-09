@@ -255,8 +255,8 @@
 					i.info.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Get information"
 				<!-- ko if: selectedFile() !== null -->
-				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('audio') || fileStorageData()[selectedFile()].tag().includes('video') || fileStorageData()[selectedFile()].tag().includes('media') -->
-				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'play'), closeAll()}")
+				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('audio') || ( fileStorageData()[selectedFile()].tag().includes('video') && (fileStorageData()[selectedFile()].videoData && fileStorageData()[selectedFile()].videoData.fastStart)) || fileStorageData()[selectedFile()].tag().includes('media') || fileStorageData()[selectedFile()].tag().includes('youtube') -->
+				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'play'), selectedFile(null)}")
 					i.play.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Play"
 				<!-- /ko -->
@@ -265,9 +265,11 @@
 					i.eye.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="View"
 				<!-- /ko -->
+				<!-- ko if: file.uuid.length === 1 -->
 				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'download'), closeAll()}")
 					i.download.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Download"
+				<!-- /ko -->
 				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'delete'), closeAll()}")
 					i.trash.alternate.outline.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Delete"

@@ -505,7 +505,7 @@ const testSmtpAndSendMail = (imapData, CallBack) => {
     });
 };
 const sendMailAccount = {
-    imapPortNumber: [993],
+    imapPortNumber: '993',
     smtpPortNumber: [465, 587, 994],
     imapServer: 'imap.mail.me.com',
     imapIgnoreCertificate: false,
@@ -525,7 +525,8 @@ const sendMailAccount = {
     serverFolder: '',
     clientFolder: '',
     randomPassword: '',
-    clientIpAddress: null
+    clientIpAddress: null,
+    requestPortNumber: null
 };
 exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);

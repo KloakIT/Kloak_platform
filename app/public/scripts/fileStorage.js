@@ -392,13 +392,11 @@ class fileStorage {
                         return;
                     }
                     this.selectedVideo(fileData['uuid'].filter(uuid => uuid !== null)[0]);
-                    this.mediaViewer = new MediaViewer({ player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, playing) => {
+                    this.mediaViewer = new MediaViewer({ player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, canPlay, playing) => {
                         if (err) {
                             return console.log(err);
                         }
-                        if (playing !== null) {
-                            this.videoPlaying(playing);
-                        }
+                        this.videoPlaying(playing);
                     }, () => { });
                     if (fileData.youtube) {
                         if (fileData.uuid.length > 1) {

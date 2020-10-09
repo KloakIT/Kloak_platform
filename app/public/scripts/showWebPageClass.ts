@@ -35,20 +35,24 @@ class buttonStatusClass {
 				for(let i = 0; i < histories.length; i++) {
 					if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
 						if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
-						_view.mediaViewer = new MediaViewer ({player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
+						_view.mediaViewer = new MediaViewer ({player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, canPlay, playing) => {
 							if (err) {
+								console.log(err)
 								return
 							}
-							_view.appScript()['view'].videoPlaying( playing )
-							if (!_view.appScript()['view'].videoCanStart()) {
-								_view.appScript()['view'].videoCanStart(true)
-							}
+							_view.appScript()['view']?.videoPlaying( playing )
+							_view.appScript()['view']?.videoCanStart(canPlay)
+							_view.appScript()['view']?.skipAdvertisement(true)
+							// _view.mediaViewer.play()
 						}, () => {
 		
 						})
 						// if (_self.cmd.Args[1] === 'audio') {
 						// 	_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType,histories[i].youtube.duration)
 						// } else {
+						if (_self.cmd.Args[1] === '480' || _self.cmd.Args[1] === '720') {
+							return _view.mediaViewer.streamedYoutube(histories[i].uuid[0], histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i].size, histories[i]['youtube'].id)
+						}
 						return _view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i]['youtube']['thumbnail'])
 						// }
 						}
@@ -86,13 +90,24 @@ class buttonStatusClass {
 			}
 
 			const url = com.Args[0]
-		
-			_view.storageHelper.createYoutubeDownloader(command.requestSerial, _self.cmd.Args[1] !== 'audio' ? url : null, audio, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, _self.cmd.Args[1], this.obj?.thumbnails[this.obj.thumbnails.length - 1].url, (eof) => {
-				if (eof) {
-					this.loading(5)
-				}
-			})
-
+			const quality = _self.cmd.Args[1]
+			const lowQuality = this.obj.formats.filter(format => format.itag === 18)[0]
+			const highQuality = this.obj.formats.filter(format => format.itag === 22)[0]
+			console.log(lowQuality)
+			console.log(_self.cmd.Args)
+			if (_self.cmd.Args[1] == '480' || _self.cmd.Args[1] == '720') {
+				_view.storageHelper.createYoutubeMP4Downloader(command.requestSerial, url, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, _self.cmd.Args[1], quality === '480' ? lowQuality.mimeType : highQuality.mimeType, this.obj?.thumbnails[this.obj.thumbnails.length - 1].url, (eof)=> {
+					if (eof) {
+						this.loading(5)
+					}
+				})
+			} else {
+				_view.storageHelper.createYoutubeDownloader(command.requestSerial, _self.cmd.Args[1] !== 'audio' ? url : null, audio, this.obj?.videoDetails?.title, this.obj?.duration || Math.round(this.obj?.formats[0].approxDurationMs / 1000), this.obj?.videoDetails?.videoId, _self.cmd.Args[1], this.obj?.thumbnails[this.obj.thumbnails.length - 1].url, (eof) => {
+					if (eof) {
+						this.loading(5)
+					}
+				})
+			}
 			this.loading( 4 )
 		})
 		
@@ -107,7 +122,6 @@ class buttonStatusClass {
 
 const videoFormat = ( h, multimediaObj, n ) => {
 	switch ( h ) {
-		
 		// case 140:
 		case 249:
 		case 250:
@@ -121,20 +135,20 @@ const videoFormat = ( h, multimediaObj, n ) => {
 			}
 			return multimediaObj.audio = new buttonStatusClass (['','','',''], 'volume up', cmd, multimediaObj )
 		}
-		// case 18:
-		case 43:
+		case 18: {
+		// case 43:
 		// case 133:
 		// case 134:
 		// case 135:
-		// case 160:
-		case 242:
-		case 243:
-		case 244:
-		case 278: 
-		case 330: 
-		case 331: 
-		case 332: 
-		case 333: {
+		// // case 160:
+		// case 242:
+		// case 243:
+		// case 244:
+		// case 278: 
+		// case 330: 
+		// case 331: 
+		// case 332: 
+		// case 333: {
 		// case 394:
 		// case 395:
 		// case 396: {
@@ -148,12 +162,12 @@ const videoFormat = ( h, multimediaObj, n ) => {
 			}
 			return multimediaObj.video480 = new buttonStatusClass (['480','480','480','480'],'film', cmd, multimediaObj )
 		}
-		// case 22:
+		case 22: {
 		// case 136:
-		case 247:
-		// case 298:
-		case 302:
-		case 334: {
+		// case 247:
+		// // case 298:
+		// case 302:
+		// case 334: {
 		// case 398:{
 			const cmd: QTGateAPIRequestCommand = {
 				command: 'CoSearch',
@@ -236,6 +250,7 @@ class showWebPageClass {
 	public showImgPage = ko.observable ( true )
 	public showMultimediaPage = ko.observable ( false )
 	public multimediaLoading = ko.observable ( false )
+	public skipAdvertisement = ko.observable ( false )
 	public videoPlaying = ko.observable(false)
 	public videoCanStart = ko.observable ( false )
 	public videoUnablePlay = ko.observable( false )

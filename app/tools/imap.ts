@@ -28,7 +28,7 @@ import { Buffer } from 'buffer'
 import * as Tool from './initSystem'
 
 const MAX_INT = 9007199254740992
-const debug = true
+const debug = false
 
 const NoopLoopWaitingTime = 1000 * 1
 
@@ -651,33 +651,16 @@ class ImapServerSwitchStream extends Stream.Transform {
 
     public _logoutWithoutCheck ( CallBack ) {
         //console.trace (`doing _logout typeof CallBack = [${ typeof CallBack }]`)
-
-        
-
-
         if ( !this.isImapUserLoginSuccess ) {
             return CallBack ()
         }
 
-        let _callback = false
-        const callbackM = ( err ) => {
-            if ( _callback ) {
-                return console.trace (`_logoutWithoutCheck already callbak!`)
-
-            }
-            _callback = true
-            return CallBack ( err )
-        }
-
-
         this.doCommandCallback = ( err, info: string ) => {
             
-            return callbackM ( err )
+            return CallBack ( err )
 		}
 		
         clearTimeout ( this.idleResponsrTime )
-
-
         this.commandProcess = ( text: string, cmdArray: string[], next, _callback ) => {
             //console.log (`_logout doing this.commandProcess `)
             this.isImapUserLoginSuccess = false
@@ -688,17 +671,17 @@ class ImapServerSwitchStream extends Stream.Transform {
 		this.cmd = `${ this.Tag } LOGOUT`
 		
         this.debug ? debugOut ( this.cmd, false, this.imapServer.listenFolder || this.imapServer.imapSerialID ) : null
-
         if ( this.writable ) {
-
 			this.appendWaitResponsrTimeOut = setTimeout (() => {
-				return callbackM ( new Error ( `_logoutWithoutCheck Timeout!`))
+				
+				return CallBack ()
 			}, 1000 * 10 )
 
             return this.push ( this.cmd + '\r\n')
         }
-
-        return callbackM ( new Error ('_logoutWithoutCheck unable to write pipe!'))
+        if ( CallBack && typeof CallBack === 'function') {
+            return CallBack()
+        }
         
     }
 

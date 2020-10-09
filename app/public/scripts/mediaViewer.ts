@@ -21,21 +21,33 @@ class MediaViewer {
 	// public exit: Function = () => {}
 
 
-	constructor(private customPlayer: { player: HTMLElement, fullBar?: HTMLElement, bufferBar?: HTMLElement, currentTimeBar?: HTMLElement, playButton?: HTMLElement, stopButton?: HTMLElement, fullscreenButton?: HTMLElement, durationText?: HTMLElement}, private callback: Function, private exit: () => void ) {
+	constructor(private customPlayer: { player: HTMLElement, fullBar?: HTMLElement, bufferBar?: HTMLElement, currentTimeBar?: HTMLElement, playButton?: HTMLElement, stopButton?: HTMLElement, fullscreenButton?: HTMLElement, durationText?: HTMLElement}, private callback: (err, canPlay, playing) => void, private exit: () => void ) {
 		console.log(this.customPlayer)
 		if (customPlayer.player) {
 			this.customPlayer.player.addEventListener('canplay', _ => {
-				callback(null, true)
-				this.videoPlaying = true
+				callback(null, true, false)
 			})
 			this.customPlayer.player.addEventListener("pause", _ => {
 				this.videoPlaying = false
-				callback(null, this.videoPlaying)
+				callback(null, true, this.videoPlaying)
+				console.log(null, true, this.videoPlaying)
 			})
 			this.customPlayer.player.addEventListener('ended', _ => {
 				this.videoPlaying = false
-				callback(null, this.videoPlaying)
+				callback(null, true, this.videoPlaying)
 			})
+			this.customPlayer.player.addEventListener("play", _ => {
+				this.videoPlaying = true
+				callback(null, true, this.videoPlaying)
+				this.playAds('stop')
+			})
+		}
+	}
+
+	play = () => {
+		if (this.customPlayer.player) {
+			this.customPlayer.player['play']()
+			this.callback(null, true, true)
 		}
 	}
 
@@ -78,7 +90,25 @@ class MediaViewer {
 		this.mediaSource.endOfStream()
 	}
 
+	playAds = (action: string) => {
+		const adPlayer = document.getElementById("adPlayer")
+		if (adPlayer) {
+			switch (action) {
+				case 'play':
+					const ads = ['coronavirus-ad.mp4', 'ipad-ad.mp4', 'nike-ad.mp4']
+					adPlayer['src'] = `./videos/ads/${ads[Math.floor(Math.random() * 3)]}`
+					adPlayer['play']()
+					break;
+				case 'stop':
+					adPlayer['pause']()
+					adPlayer['src'] = null
+					break;
+			}
+		}
+	}
+
 	youtube = (youtubeStreamingData: any) => {
+		this.playAds('play')
 		let youtubeId = youtubeStreamingData['videoDetails']['videoId']
 		let format = youtubeStreamingData['formats'].filter(format => format.itag === 22 || format.itag === 18).pop()
 		console.log(format)
@@ -294,13 +324,13 @@ class MediaViewer {
 			} else {
 				this.customPlayer?.player['pause']()
 			}
-			this.callback(null, this.videoPlaying)
+			this.callback(null, true, this.videoPlaying)
 		})
 
 		this.customPlayer?.stopButton.addEventListener("click", _ => {
 			this.videoPlaying = false
 			this.customPlayer?.player['pause']()
-			this.callback(null, this.videoPlaying)
+			this.callback(null, true, this.videoPlaying)
 		})
 
 		this.customPlayer?.fullscreenButton.addEventListener("click", _ => {
@@ -310,6 +340,9 @@ class MediaViewer {
 
 	streamedYoutube = (uuid: string, mimeType: {video?: string, audio?: string}, duration: number | string, filesize: number, youtubeId: string) => {
 		let removedOffset = 0
+		if (!this.customPlayer.player['autoplay']) {
+			this.customPlayer.player['autoplay'] = true
+		}
 		_view.storageHelper.getIndex(uuid, (err, data) => {
 			if (err) {
 				return console.log(err)

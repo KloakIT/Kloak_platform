@@ -168,9 +168,17 @@ class genSpalding {
 			command: 'CoSearch',
 			Args: [url],
 			error: null,
-			subCom: 'getSnapshop',
-			requestSerial: uuid_generate()
+			subCom: 'youtube_search',
+			requestSerial: null
 		}
+		
+		// const cmd = {
+		// 	command: 'CoSearch',
+		// 	Args: [url],
+		// 	error: null,
+		// 	subCom: 'getSnapshop',
+		// 	requestSerial: uuid_generate()
+		// }
 
 		return _view.connectInformationMessage.emitRequest ( cmd, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
@@ -190,16 +198,17 @@ class genSpalding {
 			}
 
 			if (com) {
-				console.log(com.Args)
-				this.mediaViewer = new MediaViewer({player: document.getElementById("videoPlayer")}, (err, canplay) => {
-					if (canplay) {
-						this.videoCanPlay( canplay )
-					}
-					if (err) {
-						console.log(err)
-					}
-				}, () => {})
-				this.mediaViewer.youtube(com.Args)
+				console.log(com)
+				// console.log(com.Args)
+				// this.mediaViewer = new MediaViewer({player: document.getElementById("videoPlayer")}, (err, canplay) => {
+				// 	if (canplay) {
+				// 		this.videoCanPlay( canplay )
+				// 	}
+				// 	if (err) {
+				// 		console.log(err)
+				// 	}
+				// }, () => {})
+				// this.mediaViewer.youtube(com.Args)
 			}
 		})
 	}

@@ -67,14 +67,16 @@ class forYoutube extends sharedAppClass {
 			console.log(item)
 			if (item) {
 				console.time("STARTING VIDEO PLAY REQUEST")
-				_view.mediaViewer = new MediaViewer ({player: document.getElementById('youtubePlayer'), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, playing) => {
+				_view.mediaViewer = new MediaViewer ({player: document.getElementById('youtubePlayer'), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, canPlay, playing) => {
 					if (err) {
 						return err
 					}
-					if (!this.view.videoCanStart()) {
-						this.view.videoCanStart(playing)
+					if (canPlay) {
+						if (!this['view']?.videoCanStart()) {
+							this['view']?.videoCanStart(canPlay)
+						}
 					}
-					this.view.videoPlaying( playing )
+					this['view']?.videoPlaying( playing )
                 }, () => {
 
 				})

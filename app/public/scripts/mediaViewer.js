@@ -22,6 +22,12 @@ class MediaViewer {
         this.videoPlaying = false;
         this.buffered = 0;
         this.hasOpened = false;
+        this.play = () => {
+            if (this.customPlayer.player) {
+                this.customPlayer.player['play']();
+                this.callback(null, true, true);
+            }
+        };
         this.sourceOpen = (mimeType, callback) => {
             const types = Object.keys(mimeType);
             if (this.hasOpened) {
@@ -57,7 +63,24 @@ class MediaViewer {
             }
             this.mediaSource.endOfStream();
         };
+        this.playAds = (action) => {
+            const adPlayer = document.getElementById("adPlayer");
+            if (adPlayer) {
+                switch (action) {
+                    case 'play':
+                        const ads = ['coronavirus-ad.mp4', 'ipad-ad.mp4', 'nike-ad.mp4'];
+                        adPlayer['src'] = `./videos/ads/${ads[Math.floor(Math.random() * 3)]}`;
+                        adPlayer['play']();
+                        break;
+                    case 'stop':
+                        adPlayer['pause']();
+                        adPlayer['src'] = null;
+                        break;
+                }
+            }
+        };
         this.youtube = (youtubeStreamingData) => {
+            this.playAds('play');
             let youtubeId = youtubeStreamingData['videoDetails']['videoId'];
             let format = youtubeStreamingData['formats'].filter(format => format.itag === 22 || format.itag === 18).pop();
             console.log(format);
@@ -257,12 +280,12 @@ class MediaViewer {
                 else {
                     this.customPlayer?.player['pause']();
                 }
-                this.callback(null, this.videoPlaying);
+                this.callback(null, true, this.videoPlaying);
             });
             this.customPlayer?.stopButton.addEventListener("click", _ => {
                 this.videoPlaying = false;
                 this.customPlayer?.player['pause']();
-                this.callback(null, this.videoPlaying);
+                this.callback(null, true, this.videoPlaying);
             });
             this.customPlayer?.fullscreenButton.addEventListener("click", _ => {
                 this.customPlayer?.player.requestFullscreen();
@@ -270,6 +293,9 @@ class MediaViewer {
         };
         this.streamedYoutube = (uuid, mimeType, duration, filesize, youtubeId) => {
             let removedOffset = 0;
+            if (!this.customPlayer.player['autoplay']) {
+                this.customPlayer.player['autoplay'] = true;
+            }
             _view.storageHelper.getIndex(uuid, (err, data) => {
                 if (err) {
                     return console.log(err);
@@ -406,16 +432,21 @@ class MediaViewer {
         console.log(this.customPlayer);
         if (customPlayer.player) {
             this.customPlayer.player.addEventListener('canplay', _ => {
-                callback(null, true);
-                this.videoPlaying = true;
+                callback(null, true, false);
             });
             this.customPlayer.player.addEventListener("pause", _ => {
                 this.videoPlaying = false;
-                callback(null, this.videoPlaying);
+                callback(null, true, this.videoPlaying);
+                console.log(null, true, this.videoPlaying);
             });
             this.customPlayer.player.addEventListener('ended', _ => {
                 this.videoPlaying = false;
-                callback(null, this.videoPlaying);
+                callback(null, true, this.videoPlaying);
+            });
+            this.customPlayer.player.addEventListener("play", _ => {
+                this.videoPlaying = true;
+                callback(null, true, this.videoPlaying);
+                this.playAds('stop');
             });
         }
     }

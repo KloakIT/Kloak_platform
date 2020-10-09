@@ -2949,6 +2949,23 @@ body {
 	opacity: 1;
 }
 
+.skipAdButton {
+	background-color: rgba(0,0,0,0.75); 
+	position: absolute; 
+	right: 0; 
+	bottom: 0;
+	border: 1px solid ghostwhite; 
+	border-right: none; 
+	color: ghostwhite; 
+	z-index: 101; 
+	margin-bottom: 15px;
+	padding: 10px 25px;
+}
+
+.skipAdButton:focus {
+	outline: none
+}
+
 /* CANADA WEBSITE */
 #canadaGovernment .canadaTop {
 	height: 101px;

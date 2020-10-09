@@ -196,8 +196,8 @@ interface regionV1 {
 }
 
 interface IinputData extends imapConnect {
-	publicKeyID?: string
-	account?: string
+	publicKeyID: string
+	account: string
 	email: string
 	smtpServer: string
 	smtpUserName: string
@@ -211,11 +211,11 @@ interface IinputData extends imapConnect {
 	serverFolder: string
 	timeZoneOffset: number
 	randomPassword: string
-	uuid?: string
+	uuid: string
 	clientIpAddress: string
-	ciphers?: string
-	confirmRisk?: boolean
-	sendToQTGate?: boolean
+	ciphers: string
+	confirmRisk: boolean
+	sendToQTGate: boolean
 }
 
 interface CoPromo {

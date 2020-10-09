@@ -105,7 +105,7 @@ export default class extends Imap.imapPeer {
 		})
 
 		this.on ( 'pingTimeOut', () => {
-			this.pinging = false
+
 			console.log ( `class CoNETConnect on pingTimeOut` )
 			
 			return this.roomEmit.emit ( 'pingTimeOut' )

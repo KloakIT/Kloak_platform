@@ -30,6 +30,95 @@ class StorageHelper {
             this.downloadPool({ ...this.downloadPool(), [requestUuid]: download });
             return this.downloadPool()[requestUuid].instance;
         };
+        this.createYoutubeMP4Downloader = (requestSerial, url, title, duration, youtubeId, quality, mimeType, thumbnail, callback) => {
+            console.log(mimeType);
+            let progress = null;
+            let createdHistory = false;
+            const pieces = [];
+            let totalSize = {
+                downloaded: 0,
+                total: 0
+            };
+            const createHistory = (requestUuid) => {
+                const date = new Date();
+                const history = {
+                    uuid: [requestUuid],
+                    filename: `${title}.mp4`,
+                    time_stamp: date,
+                    last_viewed: date,
+                    path: "",
+                    url: `YouTube`,
+                    domain: "https://www.youtube.com",
+                    tag: ['youtube', 'mp4', 'video'],
+                    color: null,
+                    size: totalSize.total,
+                    youtube: {
+                        id: youtubeId,
+                        mimeType: {
+                            video: mimeType,
+                        },
+                        quality,
+                        duration: parseInt(duration.toString())
+                    }
+                };
+                _view.storageHelper.saveHistory(history, (err, data) => {
+                    if (err) {
+                        return console.log(err);
+                    }
+                });
+            };
+            const createProgress = () => {
+                const download = {
+                    requestSerial: requestSerial,
+                    progress
+                };
+                this.downloadPool({ ...this.downloadPool(), [requestSerial]: download });
+            };
+            const createUpdateIndex = (requestUuid, com, pieces) => {
+                const index = {
+                    filename: com.downloadFilename,
+                    fileExtension: com.contentType.split("/")[1],
+                    totalLength: com.totalLength ? com.totalLength : null,
+                    contentType: com.contentType,
+                    pieces: [...pieces],
+                    finished: com.eof
+                };
+                _view.storageHelper.createUpdateIndex(requestUuid, index, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+            };
+            new DownloadQueue(url, title, (err, data) => {
+                console.log(err, data);
+            }, (requestUuid, com, data) => {
+                console.log(com);
+                totalSize.downloaded += com.currentlength;
+                totalSize.total = com.totalLength;
+                this.save(com.downloadUuid, data, (err, data) => {
+                    if (err) {
+                        return;
+                    }
+                    pieces.push(com.downloadUuid);
+                    createUpdateIndex(requestUuid, com, pieces);
+                    if (!createdHistory) {
+                        createHistory(requestUuid);
+                        createdHistory = true;
+                    }
+                    if (!progress) {
+                        progress = ko.observable(0);
+                        createProgress();
+                    }
+                    else {
+                        this.downloadPool()[requestSerial].progress(Math.round(totalSize['downloaded'] / totalSize['total'] * 100));
+                    }
+                    if (com.eof) {
+                        this.removeFromPool(this.downloadPool, requestSerial);
+                        callback(com.eof);
+                    }
+                });
+            });
+        };
         this.createYoutubeDownloader = (requestSerial, videoURL = null, audioURL = null, title, duration, youtubeId, quality, thumbnail, callback) => {
             let progress = null;
             let downloadRequestUuid = {
@@ -78,7 +167,7 @@ class StorageHelper {
             const createUpdateIndex = (requestUuid, com, pieces) => {
                 const index = {
                     filename: com.downloadFilename,
-                    fileExtension: 'webm',
+                    fileExtension: com.contentType.split("/")[1],
                     totalLength: com.totalLength ? com.totalLength : null,
                     contentType: com.contentType,
                     pieces: [...pieces],
@@ -90,7 +179,7 @@ class StorageHelper {
                     }
                 });
             };
-            const createHistory = () => {
+            const createHistory = (mimeType) => {
                 const videoMimeType = {
                     video: 'video/webm; codecs="vp9"'
                 };
@@ -114,7 +203,7 @@ class StorageHelper {
                     if (!downloadRequestUuid['video']) {
                         downloadRequestUuid['video'] = requestUuid;
                     }
-                    createHistory();
+                    createHistory({ video: 'video/webm; codecs="vp9"', audio: 'audio/webm; codecs="opus"' });
                     if (!totalSize['video']['total']) {
                         totalSize['video']['total'] = parseInt(com.totalLength.toString());
                     }
@@ -148,7 +237,7 @@ class StorageHelper {
                     if (!downloadRequestUuid['audio']) {
                         downloadRequestUuid['audio'] = requestUuid;
                     }
-                    createHistory();
+                    createHistory({ video: 'video/webm; codecs="vp9"', audio: 'audio/webm; codecs="opus"' });
                     if (!totalSize['audio']['total']) {
                         totalSize['audio']['total'] = parseInt(com.totalLength.toString());
                     }
