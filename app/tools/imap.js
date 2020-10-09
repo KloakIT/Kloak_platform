@@ -27,7 +27,7 @@ const Crypto = require("crypto");
 const timers_1 = require("timers");
 const buffer_1 = require("buffer");
 const MAX_INT = 9007199254740992;
-const debug = false;
+const debug = true;
 const NoopLoopWaitingTime = 1000 * 1;
 exports.saveLog = (log, _console = true) => {
     const data = `${new Date().toUTCString()}: ${log}\r\n`;
