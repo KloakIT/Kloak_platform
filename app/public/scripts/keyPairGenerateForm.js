@@ -83,6 +83,7 @@ class keyPairGenerateForm {
         this.NickNameError = ko.observable(false);
         this.passwordError = ko.observable(false);
         this.SystemAdministratorNickName = ko.observable('');
+        this.bio = ko.observable('');
         this.systemSetup_systemPassword = ko.observable('');
         this.showKeyPairPorcess = ko.observable(false);
         this.delete_btn_view = ko.observable(false);
@@ -93,6 +94,13 @@ class keyPairGenerateForm {
         this.message_keyPairGenerateSuccess = ko.observable(false);
         this.showKeyPairForm = ko.observable(true);
         this.showKeyInfomation = ko.observable(false);
+        this.avatarImage = ko.observable('');
+        this.SystemAdministratorNickNameEdit = ko.observable(false);
+        this.SystemAdministratorEmailAddressEdit = ko.observable(false);
+        this.bioEdit = ko.observable(false);
+        this.boiPlaceholder = [
+            '自我介绍', '自己紹介', 'Bio', '自我介紹'
+        ];
         const self = this;
         this.SystemAdministratorEmailAddress.subscribe(function (newValue) {
             return self.checkEmailAddress(newValue);
@@ -153,10 +161,14 @@ class keyPairGenerateForm {
         this.showKeyPairPorcess(true);
         this.showKeyPairForm(false);
         const email = this.SystemAdministratorEmailAddress();
+        const array = {
+            nickName: this.SystemAdministratorNickName(),
+            bio: this.bio()
+        };
         const sendData = {
             password: this.systemSetup_systemPassword(),
             nikeName: this.SystemAdministratorNickName(),
-            email: email
+            email: this.SystemAdministratorEmailAddress()
         };
         let percent = 1;
         $('.keyPairProcessBar').progress('reset');
@@ -181,10 +193,65 @@ class keyPairGenerateForm {
             console.dir(data);
             return _view.sharedMainWorker.getKeyPairInfo(data, (err, _data) => {
                 _data.publicKeyID = _data.publicKeyID.substr(24);
+                const daggr = {
+                    keyInfo: {
+                        nikeName: this.SystemAdministratorNickName(),
+                        bio: this.bio(),
+                        image: this.avatarImage(),
+                        email: this.SystemAdministratorEmailAddress(),
+                        keyID: _data.publicKeyID
+                    },
+                    contacts: []
+                };
+                _data.email = this.SystemAdministratorEmailAddress();
+                _data['daggr'] = daggr;
                 return self.exit(_data);
             });
         });
         return doingProcessBar();
+    }
+    SystemAdministratorNickNameEditClick() {
+        this.SystemAdministratorNickNameEdit(true);
+        this.SystemAdministratorEmailAddressEdit(false);
+        this.bioEdit(false);
+    }
+    SystemAdministratorEmailAddressEditClick() {
+        this.SystemAdministratorEmailAddressEdit(true);
+        this.SystemAdministratorNickNameEdit(false);
+        this.bioEdit(false);
+    }
+    bioEditClick() {
+        this.bioEdit(true);
+        this.SystemAdministratorEmailAddressEdit(false);
+        this.SystemAdministratorNickNameEdit(false);
+    }
+    endEdit() {
+        this.bioEdit(false);
+        this.SystemAdministratorEmailAddressEdit(false);
+        this.SystemAdministratorNickNameEdit(false);
+    }
+    inputClick() {
+        return;
+    }
+    imageInput(ee) {
+        if (!ee?.files?.length) {
+            return;
+        }
+        const file = ee.files[0];
+        if (!file || !file.type.match(/^image.(png$|jpg$|jpeg$|gif$)/)) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const rawData = reader.result.toString();
+            return _view.getPictureBase64MaxSize_mediaData(rawData, 80, 80, (err, data) => {
+                if (err) {
+                    return console.log(err);
+                }
+                this.avatarImage(`data:image/png;base64,${data.rawData}`);
+            });
+        };
+        return reader.readAsDataURL(file);
     }
     CloseKeyPairGenerateFormMessage() {
         this.message_cancel(false);

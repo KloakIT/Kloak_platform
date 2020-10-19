@@ -167,6 +167,7 @@ const InitKeyPair = function () {
         verified: false,
         publicKeyID: null,
         _password: null,
+        image: null
     };
     return keyPair;
 };

@@ -42,7 +42,8 @@ const InitKeyPair = () => {
         passwordOK: false,
         verified: false,
         publicKeyID: null,
-        _password: null
+        _password: null,
+        image: null
     };
     return keyPair;
 };
@@ -404,6 +405,7 @@ const _smtpVerify = (imapData, CallBack) => {
         debug: true
     };
     const transporter = Nodemailer.createTransport(option);
+    console.dir(transporter);
     return transporter.verify(CallBack);
 };
 exports.smtpVerify = (imapData, CallBack) => {
@@ -528,7 +530,7 @@ const sendMailAccount = {
     clientIpAddress: null,
     requestPortNumber: null
 };
-exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) => {
+exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);
     const imapData = (/^smtp\-mail\.outlook\.com$/i.test(_imapData.smtpServer) ? sendMailAccount : _imapData);
     return Async.waterfall([
@@ -546,7 +548,7 @@ exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) =
                 connectionTimeout: (1000 * 15).toString(),
                 tls: !imapData.smtpSsl ? {
                     rejectUnauthorized: imapData.smtpIgnoreCertificate,
-                    ciphers: imapData.ciphers
+                    ciphers: imapData["ciphers"]
                 } : null,
                 debug: true
             };
@@ -555,7 +557,7 @@ exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, CallBack) =
             const mailOptions = {
                 from: imapData.smtpUserName,
                 to: toEmail,
-                subject: 'node',
+                subject: subject,
                 attachments: [{
                         content: message
                     }]

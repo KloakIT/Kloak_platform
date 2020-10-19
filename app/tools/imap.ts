@@ -45,8 +45,8 @@ const debugOut = ( text: string, isIn: boolean, serialID: string ) => {
 
 const idleInterval = 1000 * 30      // 3 mins
 
-
 class ImapServerSwitchStream extends Stream.Transform {
+
     public commandProcess ( text: string, cmdArray: string[], next, callback ) {}
     public name: string
     public _buffer = Buffer.alloc (0)
@@ -57,6 +57,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 		}
             
     }
+
     public Tag: string = null
     public cmd: string = null
     public callback = false
@@ -96,9 +97,9 @@ class ImapServerSwitchStream extends Stream.Transform {
          */
 		return this.imapServer.destroyAll ( null )
 		
-	}
-
-    constructor ( public imapServer: qtGateImap, private exitWithDeleteBox: boolean, public debug: boolean ) {
+    }
+    
+    constructor ( public imapServer, private exitWithDeleteBox: boolean, public debug: boolean  ) {
         super ()
     }
 
@@ -316,7 +317,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
 
     public doNewMail ( UID = '' ) {
-        
+
         this.reNewCount --
                
         this.runningCommand = 'doNewMail'
@@ -324,7 +325,8 @@ class ImapServerSwitchStream extends Stream.Transform {
             if ( err ) {
                 this.runningCommand = null
                 return this.imapServer.destroyAll ( err )
-			}
+            }
+            
 			let haveMoreNewMail = false
 			const getNewMail = ( _fatchID, CallBack ) => {
             
@@ -338,26 +340,25 @@ class ImapServerSwitchStream extends Stream.Transform {
 						return this.expunge ( next )
 					}
 				], CallBack )
-			}
-			
+            }
+            
             if ( newMailIds || ( newMailIds = UID )) {
-
                 const uids = newMailIds.split(',')
-                //console.log (`doNewMail newMailIds = 【${ newMailIds }】`)
-				return Async.eachSeries ( uids, ( n: string ,next ) => {
-					const _uid = parseInt ( n )
+                return Async.eachSeries ( uids, ( n: string ,next ) => {
+                    const _uid = parseInt ( n )
 					if ( _uid > 0 ) {
 						return getNewMail ( _uid, next )
 					}
 					return next ()
-				}, err => {
-					this.runningCommand = null
+                }, err => {
+                    this.runningCommand = null
 					if ( err ) {
                         
-                        debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err.message }]`) : null
+                        debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err }]`) : null
                         
 						return this.imapServer.destroyAll ( err )
                     }
+
                     if ( this.needLoginout ) {
                         return this.idleNoop ( )
                     }
@@ -368,19 +369,14 @@ class ImapServerSwitchStream extends Stream.Transform {
                     }
                     
 					return this.idleNoop ( )
-				})
-                
-			}
+                })
+            }
 
-			this.runningCommand = null
+            this.runningCommand = null
 			this.imapServer.emit ( 'ready' )
 			return this.idleNoop()
-			
-            
         })
-        
     }
-
 
     private idleNoop () {
         if ( this.needLoginout ) {
@@ -1075,9 +1071,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
 }
 
-
 const connectTimeOut = 10 * 1000
-
 export class qtGateImap extends Event.EventEmitter {
     public socket: Net.Socket
     public imapStream: ImapServerSwitchStream = new ImapServerSwitchStream ( this, this.deleteBoxWhenEnd, this.debug )
@@ -1191,6 +1185,7 @@ export class qtGateImap extends Event.EventEmitter {
 
 }
 
+
 export const seneMessageToFolder = ( IMapConnect: imapConnect, writeFolder: string, message: string, subject: string, createFolder: boolean, CallBack ) => {
 	const wImap = new qtGateImap ( IMapConnect, null, false, writeFolder, debug, null )
 	let _callback = false 
@@ -1289,7 +1284,7 @@ export const imapAccountTest = ( IMapConnect: imapConnect, CallBack ) => {
     const doCallBack = ( err?, ret? ) => {
         if ( ! callbackCall ) {
             
-            //saveLog (`imapAccountTest doing callback err [${ err && err.message ? err.message : `undefine `}] ret [${ ret ? ret : 'undefine'}]`)
+            saveLog (`imapAccountTest doing callback err [${ err && err.message ? err.message : `undefine `}] ret [${ ret ? ret : 'undefine'}]`)
             callbackCall = true
             clearTimeout ( timeout )
             return CallBack ( err, ret )
@@ -1337,6 +1332,7 @@ interface mailPool {
 	mail: Buffer
 	uuid: string
 }
+
 const resetConnectTimeLength = 1000 * 60 * 15
 
 export class imapPeer extends Event.EventEmitter {
@@ -1571,3 +1567,4 @@ export class imapPeer extends Event.EventEmitter {
 	}
 
 }
+

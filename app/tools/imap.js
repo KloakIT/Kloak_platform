@@ -282,7 +282,6 @@ class ImapServerSwitchStream extends Stream.Transform {
             };
             if (newMailIds || (newMailIds = UID)) {
                 const uids = newMailIds.split(',');
-                //console.log (`doNewMail newMailIds = 【${ newMailIds }】`)
                 return Async.eachSeries(uids, (n, next) => {
                     const _uid = parseInt(n);
                     if (_uid > 0) {
@@ -292,7 +291,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                 }, err => {
                     this.runningCommand = null;
                     if (err) {
-                        debug ? exports.saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err.message}]`) : null;
+                        debug ? exports.saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err}]`) : null;
                         return this.imapServer.destroyAll(err);
                     }
                     if (this.needLoginout) {
@@ -1029,7 +1028,7 @@ exports.imapAccountTest = (IMapConnect, CallBack) => {
     let timeout = null;
     const doCallBack = (err, ret) => {
         if (!callbackCall) {
-            //saveLog (`imapAccountTest doing callback err [${ err && err.message ? err.message : `undefine `}] ret [${ ret ? ret : 'undefine'}]`)
+            exports.saveLog(`imapAccountTest doing callback err [${err && err.message ? err.message : `undefine `}] ret [${ret ? ret : 'undefine'}]`);
             callbackCall = true;
             timers_1.clearTimeout(timeout);
             return CallBack(err, ret);

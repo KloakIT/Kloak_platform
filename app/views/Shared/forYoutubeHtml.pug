@@ -1,5 +1,6 @@
 #forYoutube
 	<!-- ko with: appScript -->
+
 		<!-- ko if : topMenu -->
 		.ui.top.fixed.menu.borderless
 			<!-- ko if : showTopMenuHomeButton -->
@@ -12,11 +13,11 @@
 					form.ui.form( data-bind="event: { 'submit': search_form } " style = "width: 100%; padding-right: 10rem;" )
 						.field.ui.fluid.input.big( data-bind = "css: { 'action': !searchInputText_searching(), 'loading icon disabled': searchInputText_searching(), error: searchInputTextError }" style = "width: 100%;" )
 							input( type = "text" data-bind = "value: searchInputText, attr: { placeholder: infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" style = "color: rgba ( 0,0,0,0.5 );" )
-							<!-- ko ifnot : searchInputText_searching() -->
+							<!-- ko ifnot : searchInputText_searching () -->
 								button.ui.youtube.button( type="submit" )
 									i.icon.search.large
 							<!-- /ko  -->
-							<!-- ko if : searchInputText_searching() -->
+							<!-- ko if : searchInputText_searching () -->
 								i.icon.search( data-bind = "css: {'icon-background-response-local-server': searchInputText_searching() === 2, 'icon-background-response-Kloak-server': searchInputText_searching() === 3 }")
 							<!-- /ko  -->
 						<!-- ko if : searchInputTextError -->

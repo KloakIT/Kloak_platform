@@ -38,7 +38,8 @@ const NewKeyPair = (ports, cmd) => {
             privateKey: out.privateKeyArmored,
             passwordOK: true,
             _password: uu.password,
-            verified: false
+            verified: false,
+            image: null
         };
         cmd.args = keypair;
         return returnCommand(ports, cmd);
@@ -60,7 +61,8 @@ const InitKeyPairV = function () {
         verified: false,
         publicKeyID: null,
         _password: null,
-        localserverPublicKey: null
+        localserverPublicKey: null,
+        image: null
     };
     return keyPair;
 };

@@ -14,108 +14,6 @@
  * limitations under the License.
  */
 
-interface ReadonlyArray<T> {
-	/**
-	 * Returns the value of the first element in the array where predicate is true, and undefined
-	 * otherwise.
-	 * @param predicate find calls predicate once for each element of the array, in ascending
-	 * order, until it finds one where predicate returns true. If such an element is found, find
-	 * immediately returns that element value. Otherwise, find returns undefined.
-	 * @param thisArg If provided, it will be used as the this value for each invocation of
-	 * predicate. If it is not provided, undefined is used instead.
-	 */
-	find<S extends T>(
-		predicate: (
-			this: void,
-			value: T,
-			index: number,
-			obj: ReadonlyArray<T>
-		) => value is S,
-		thisArg?: any
-	): S | undefined
-	find(
-		predicate: (value: T, index: number, obj: ReadonlyArray<T>) => boolean,
-		thisArg?: any
-	): T | undefined
-
-	/**
-	 * Returns the index of the first element in the array where predicate is true, and -1
-	 * otherwise.
-	 * @param predicate find calls predicate once for each element of the array, in ascending
-	 * order, until it finds one where predicate returns true. If such an element is found,
-	 * findIndex immediately returns that element index. Otherwise, findIndex returns -1.
-	 * @param thisArg If provided, it will be used as the this value for each invocation of
-	 * predicate. If it is not provided, undefined is used instead.
-	 */
-	findIndex(
-		predicate: (value: T, index: number, obj: ReadonlyArray<T>) => boolean,
-		thisArg?: any
-	): number
-}
-
-interface Map<K, V> {
-	clear(): void
-	delete(key: K): boolean
-	forEach(
-		callbackfn: (value: V, key: K, map: Map<K, V>) => void,
-		thisArg?: any
-	): void
-	get(key: K): V | undefined
-	has(key: K): boolean
-	set(key: K, value: V): this
-	readonly size: number
-}
-
-interface MapConstructor {
-	new (): Map<any, any>
-	new <K, V>(entries?: ReadonlyArray<[K, V]>): Map<K, V>
-	readonly prototype: Map<any, any>
-}
-declare var Map: MapConstructor
-
-interface ReadonlyMap<K, V> {
-	forEach(
-		callbackfn: (value: V, key: K, map: ReadonlyMap<K, V>) => void,
-		thisArg?: any
-	): void
-	get(key: K): V | undefined
-	has(key: K): boolean
-	readonly size: number
-}
-
-interface WeakMap<K extends object, V> {
-	delete(key: K): boolean
-	get(key: K): V | undefined
-	has(key: K): boolean
-	set(key: K, value: V): this
-}
-
-interface WeakMapConstructor {
-	new (): WeakMap<object, any>
-	new <K extends object, V>(entries?: ReadonlyArray<[K, V]>): WeakMap<K, V>
-	readonly prototype: WeakMap<object, any>
-}
-declare var WeakMap: WeakMapConstructor
-
-interface Set<T> {
-	add(value: T): this
-	clear(): void
-	delete(value: T): boolean
-	forEach(
-		callbackfn: (value: T, value2: T, set: Set<T>) => void,
-		thisArg?: any
-	): void
-	has(value: T): boolean
-	readonly size: number
-}
-
-interface SetConstructor {
-	new (): Set<any>
-	new <T>(values?: ReadonlyArray<T>): Set<T>
-	readonly prototype: Set<any>
-}
-declare var Set: SetConstructor
-
 interface ReadonlySet<T> {
 	forEach(
 		callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void,
@@ -167,6 +65,7 @@ interface keypair {
 	localserverPublicKey?: string
 	keyPairPassword?: KnockoutObservable<keyPairPassword>
 	showDeleteKeyPairNoite?: KnockoutObservable<boolean>
+	image: string
 }
 
 interface StringValidator {
@@ -317,6 +216,11 @@ interface QTGateCommand {
 	error: Error
 	callback: any
 	publicKey: string
+	image?: string
+	bio?: string
+	nickName?: string
+	email?: string
+	
 }
 
 interface IQTGateRegionsSetup {

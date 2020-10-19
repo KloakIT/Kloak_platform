@@ -94,6 +94,7 @@ class keyPairGenerateForm {
 	public NickNameError = ko.observable ( false )
 	public passwordError = ko.observable ( false )
 	public SystemAdministratorNickName = ko.observable ('')
+	public bio = ko.observable ('')
 	public systemSetup_systemPassword = ko.observable ('')
 	public showKeyPairPorcess = ko.observable ( false )
 	public delete_btn_view = ko.observable ( false )
@@ -104,6 +105,15 @@ class keyPairGenerateForm {
 	public message_keyPairGenerateSuccess = ko.observable ( false )
 	public showKeyPairForm = ko.observable ( true )
 	public showKeyInfomation = ko.observable ( false )
+	public avatarImage = ko.observable ('')
+	public SystemAdministratorNickNameEdit = ko.observable ( false )
+	public SystemAdministratorEmailAddressEdit = ko.observable ( false )
+	public bioEdit = ko.observable ( false )
+
+
+	public boiPlaceholder = [
+		'自我介绍','自己紹介','Bio','自我介紹'
+	]
 	
 	private checkEmailAddress ( email: string ) {
 		$ ('.ui.checkbox').checkbox()
@@ -180,10 +190,14 @@ class keyPairGenerateForm {
 		this.showKeyPairPorcess ( true )
 		this.showKeyPairForm ( false )
 		const email = this.SystemAdministratorEmailAddress ()
+		const array = {
+			nickName: this.SystemAdministratorNickName (),
+			bio: this.bio()
+		}
 		const sendData: INewKeyPair = {
 			password: this.systemSetup_systemPassword (),
 			nikeName: this.SystemAdministratorNickName (),
-			email: email
+			email: this.SystemAdministratorEmailAddress()
 		}
 		let percent = 1
 		$('.keyPairProcessBar').progress ('reset')
@@ -212,7 +226,21 @@ class keyPairGenerateForm {
 			console.dir ( data )
 			return _view.sharedMainWorker.getKeyPairInfo ( data, ( err, _data ) => {
 				
-				_data.publicKeyID = _data.publicKeyID.substr (24)
+				_data.publicKeyID = _data.publicKeyID.substr ( 24 )
+
+				const daggr: daggr_preperences = {
+					keyInfo: {
+						nikeName: this.SystemAdministratorNickName (),
+						bio: this.bio(),
+						image: this.avatarImage(),
+						email: this.SystemAdministratorEmailAddress(),
+						keyID: _data.publicKeyID
+					},
+					contacts: []
+				}
+				_data.email = this.SystemAdministratorEmailAddress()
+
+				_data ['daggr'] = daggr
 				return self.exit ( _data )
 			})
 			
@@ -221,6 +249,63 @@ class keyPairGenerateForm {
 		return doingProcessBar ()
 	}
 
+	public SystemAdministratorNickNameEditClick () {
+		this.SystemAdministratorNickNameEdit ( true )
+		this.SystemAdministratorEmailAddressEdit ( false )
+		this.bioEdit ( false )
+	}
+
+	public SystemAdministratorEmailAddressEditClick () {
+		this.SystemAdministratorEmailAddressEdit ( true )
+		this.SystemAdministratorNickNameEdit ( false )
+		this.bioEdit ( false )
+	}
+
+	public bioEditClick () {
+		this.bioEdit ( true )
+		this.SystemAdministratorEmailAddressEdit ( false )
+		this.SystemAdministratorNickNameEdit ( false )
+		
+	}
+
+	public endEdit () {
+		this.bioEdit ( false )
+		this.SystemAdministratorEmailAddressEdit ( false )
+		this.SystemAdministratorNickNameEdit ( false )
+	}
+
+	public inputClick () {
+		return
+	}
+
+	public imageInput( ee ) {
+
+		if ( ! ee?.files?.length ) {
+			return
+		}
+
+		const file = ee.files[0]
+
+		if (! file || ! file.type.match ( /^image.(png$|jpg$|jpeg$|gif$)/ )) {
+			return
+		}
+		const reader = new FileReader()
+
+		reader.onload = e => {
+			const rawData = reader.result.toString()
+			
+			return _view.getPictureBase64MaxSize_mediaData ( rawData, 80, 80, ( err, data ) => {
+					if ( err ) {
+						return console.log ( err )
+					}
+					this.avatarImage ( `data:image/png;base64,${data.rawData}` )
+					
+				}
+			)
+		}
+
+		return reader.readAsDataURL ( file )
+	}
 
 
 	public CloseKeyPairGenerateFormMessage () {

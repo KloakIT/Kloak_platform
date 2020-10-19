@@ -25,9 +25,6 @@ import * as Uuid from 'node-uuid'
 import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
 import * as mime from 'mime-types'
-import * as Https from 'https'
-import { Stream } from 'stream'
-import streamUrl from './tools/stramUrl'
 var CSR = require('@root/csr')
 var PEM = require('@root/pem/packer')
 var Keypairs = require('@root/keypairs')
@@ -116,20 +113,21 @@ export default class localServer {
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
-		// /console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
+		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
+		
 		const socket = this.requestPool.get ( uuid )
 
-		if ( !socket ) {
+		if ( ! socket ) {
 
 			const nameSpace = this.socketServer.of ( uuid  )
 
 			return nameSpace.clients (( err, clients ) => {
 				if ( err ) {
 					console.log ( err )
-					return //console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
+					return console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
 				}
 				if ( !clients.length ) {
-					return //console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
+					return console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
 				}
 				nameSpace.emit ( uuid, mail )
 				
@@ -277,6 +275,8 @@ export default class localServer {
 		})
 
 		socket.on ( 'doingRequest', ( request_uuid, request, CallBack1 ) => {
+
+			
 			const uuid = checkSocketKeypair ( socket, CallBack1 )
 			if ( !uuid ) {
 				return 
@@ -363,7 +363,7 @@ export default class localServer {
 				if ( userConnect ) {
 					userConnect.Ping ( true )
 				}
-				return Tool.sendCoNETConnectRequestEmail ( data.imapData, data.toMail, data.message, err => {
+				return Tool.sendCoNETConnectRequestEmail ( data.imapData, data.toMail, data.message, data.subject, err => {
 					if ( err ) {
 						console.log ( err )
 					}

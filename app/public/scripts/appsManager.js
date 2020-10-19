@@ -1,6 +1,6 @@
 const _mainMenuObj111 = {
     nodeName: ['Kloak官方节点', 'Kloak公式パブリックノード', 'Kloak official public node', 'Kloak官方節點'],
-    nodeAddress: 'node@Kloak.APP',
+    nodeAddress: 'nodeTest@Kloak.APP',
     mainMenuItem: [
         /*
         , {

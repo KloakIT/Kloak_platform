@@ -170,17 +170,17 @@ class localServer {
         });
     }
     catchCmd(mail, uuid) {
-        // /console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
+        console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
         const socket = this.requestPool.get(uuid);
         if (!socket) {
             const nameSpace = this.socketServer.of(uuid);
             return nameSpace.clients((err, clients) => {
                 if (err) {
                     console.log(err);
-                    return; //console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
+                    return console.dir(`catchCmd nameSpace.clients [${uuid}] get Error`);
                 }
                 if (!clients.length) {
-                    return; //console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
+                    return console.dir(`catchCmd nameSpace.clients request [${uuid}] have not client!`);
                 }
                 nameSpace.emit(uuid, mail);
             });
@@ -349,7 +349,7 @@ class localServer {
                 if (userConnect) {
                     userConnect.Ping(true);
                 }
-                return Tool.sendCoNETConnectRequestEmail(data.imapData, data.toMail, data.message, err => {
+                return Tool.sendCoNETConnectRequestEmail(data.imapData, data.toMail, data.message, data.subject, err => {
                     if (err) {
                         console.log(err);
                     }

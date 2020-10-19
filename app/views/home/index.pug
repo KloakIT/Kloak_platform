@@ -108,6 +108,9 @@ block jumbotron1
 						.card( style = "background-color: rgba(0,0,0,0);box-shadow: none;")
 							a( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
 								.svg( data-bind = "html: img ")
+								<!-- ko if: notice() > 0 -->
+									.floating.ui.red.circular.label( data-bind = "text: notice()")
+								<!-- /ko -->
 							.content( style="border-top: none;padding-top: 0;")
 								.header( data-bind = "text: header[ $root.languageIndex() ]" style="color:white;")
 							//-.content( style = "padding: 0.5rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);")
@@ -131,7 +134,7 @@ block jumbotron1
 	
 
 	<!-- ko if: sectionLogin() -->
-		.CoContent.content( data-bind = "style: { 'margin-top': middleY() / 1.25 }")
+		.CoContent.content( data-bind = "style: { 'margin-top': middleY() / 1.8 }")
 			.ui.cards.loginCards
 				<!-- ko if: keyPair  -->
 				<!-- ko with: keyPair -->
@@ -179,6 +182,8 @@ block jumbotron1
 					.keyPairGenerateForm
 						
 						form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
+							.hideInput( style="position: absolute;")
+								input#imageInput1( onchange = "_view.keyPairGenerateForm().imageInput ( this )" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0;width: 0px;height: 0px;" )
 							.field
 								H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
 							.field.required( data-bind = " css: { error: passwordError ()}")
@@ -186,19 +191,66 @@ block jumbotron1
 									i.icon.privacy
 									input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
 							.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
-							.field( data-bind = "css: { error: EmailAddressError() }" )
-								.ui.input.focus.left.icon.big
-									i.icon.spy
-									input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
-								.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
-									i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
-									span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
+							.field
+								.ui.card( data-bind = " click: endEdit " style = "width: 100%;")
+									.content
+										.center.aligned.header
+											
+											<!-- ko ifnot: SystemAdministratorNickNameEdit -->
+												span( data-bind = "click:  SystemAdministratorNickNameEditClick, clickBubble: false, text: SystemAdministratorNickName() ? SystemAdministratorNickName() : infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName ")
+											<!-- /ko -->
+											<!-- ko if: SystemAdministratorNickNameEdit -->
+												.ui.input.focus.left.icon( data-bind = "click: inputClick, clickBubble: false")
+													i.icon.student
+													input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
+											<!-- /ko -->
+										.center.aligned.description
+											<!-- ko ifnot: SystemAdministratorEmailAddressEdit -->
+												<!-- ko if: EmailAddressError -->
+													span
+														i.icon.red.exclamation.triangle
+												<!-- /ko -->
+												span( data-bind = "click: SystemAdministratorEmailAddressEditClick, clickBubble: false, text: SystemAdministratorEmailAddress() ? SystemAdministratorEmailAddress() : infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, css: { 'red': EmailAddressError()} ")
+											<!-- /ko -->
+											<!-- ko if: SystemAdministratorEmailAddressEdit -->
+												.ui.input.focus.left.icon
+													i.icon.spy
+													input( type = "email", z-index = "2", data-bind = "click: inputClick, clickBubble: false, value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
+											<!-- /ko -->
+										.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false ")
+											<!-- ko ifnot: bioEdit -->
+												textarea( data-bind = "  value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; overflow: hidden; color: grey; border: none;text-align-last: center;" )
+											<!-- /ko -->
+											<!-- ko if: bioEdit -->
+												textarea( data-bind = " click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" style = " width: 100%; resize: none; padding: 0.5rem; overflow: hidden; color: grey;text-align-last: center;" )
+											<!-- /ko -->
+									.extra.content
+										.center.aligned.author
+											
+											<!-- ko if: avatarImage -->
+												img.ui.circular.tiny.image( data-bind = " attr: { src: avatarImage()}, click: function (){ document.getElementById('imageInput1').click() } ")
+												
+											<!-- /ko -->
+											<!-- ko ifnot: avatarImage -->
+												button.circular.ui.icon.button( data-bind = "click: function (){ document.getElementById('imageInput1').click() }, clickBubble: false ")
+													i.icon.user.plus
+											<!-- /ko -->
 							
-							.field( data-bind = " css: { error: NickNameError ()}")
-								.ui.input.focus.left.icon.big
-									i.icon.student
-									input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
-							
+							//-.template
+								.field( data-bind = "css: { error: EmailAddressError() }" )
+									.ui.input.focus.left.icon.big
+										i.icon.spy
+										input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
+									.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
+										i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
+										span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
+								
+								.field( data-bind = " css: { error: NickNameError ()}")
+									.ui.input.focus.left.icon.big
+										i.icon.student
+										input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
+								.field( data-bind = "" )
+									textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" )
 							
 							button.ui.green.basic.large.button( type = "submit" data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
 				.card.centered.raised( data-bind = "if: showKeyPairPorcess, visible: showKeyPairPorcess" style = "width: 100%;padding: 2em;")
@@ -257,7 +309,7 @@ block jumbotron1
 									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.infomation --><!-- /ko -->
 									a.ui.label.teal.link.big( data-bind = " click: useCoNetTempAccount, text: infoDefine [ $root.languageIndex() ].imapInformation.coNetTempAccount ")
 									
-							form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick ")
+							form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick " style = "padding-top: 1rem;" )
 								.two.fields
 									.field( data-bind = " css: { error: emailAddressShowError ()}")
 										.ui.left.icon.input.huge

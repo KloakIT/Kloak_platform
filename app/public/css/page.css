@@ -1043,12 +1043,24 @@ play-btn {
 	background-color: #88b4c6 !important;
 }
 
+.kloak_background_lightPlusGrey {
+	background-color: #e6e6e6 !important;
+}
+
+
 .kloak_background_PrimaryTeal {
 	background-color: #93afb4 !important;
 }
+
+
 .kloak_background_DarkBlue {
 	background-color: #0f2850 !important;
 }
+
+.kloak_background_DarkBlue_waiting {
+	background-color: #0f285080 !important;
+}
+
 .kloak_background_LightGrey {
 	background-color: #dbdbdb !important;
 }
@@ -1068,7 +1080,7 @@ play-btn {
 .daggrInputTextarea {
 	resize: none;
 	border-color: #eceef7;
-	overflow: auto;
+	overflow-y:hidden;
 	width: 100%;
 	margin-right: 4rem;
 }
@@ -1105,6 +1117,10 @@ ANDY - MASONARY IMAGES
 .image-text {
 	color: ghostwhite;
 	margin: 0;
+}
+
+.link {
+	
 }
 
 .image-link {

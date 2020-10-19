@@ -89,6 +89,28 @@ class forYoutube extends sharedAppClass {
         })
     }
 
+    public searchItemList_build ( com, first: boolean ) {
+		const args = com.Args
+		this.returnSearchResultItemsInit ( args )
+		this.moreButton_link_url ( args.nextPage )
+		if ( first ) {
+			
+			this.searchItemsArray ( args.Result )
+
+			args.totalResults = args.totalResults.replace ( /\B(?=(\d{3})+(?!\d))/g, ',' )
+			this.totalSearchItems ( args.totalResults )
+			this.showSearchItemResult ( true )
+			this.showTopMenuInputField ( true )
+		} else {
+			this.searchItemsArray( this.searchItemsArray().concat( args.Result ))
+		}
+
+		if ( typeof this.search_form_response === 'function' ) {
+			return this.search_form_response ( com )
+		}
+		
+	}
+
 
     public _exit () {
         return this.exit ()

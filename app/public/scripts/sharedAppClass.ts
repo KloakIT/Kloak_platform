@@ -30,6 +30,9 @@ class sharedAppClass {
 	public search_form_request: QTGateAPIRequestCommand
 	public search_form_item_request: QTGateAPIRequestCommand
 	public search_form_next_request: QTGateAPIRequestCommand
+	public searchItemList_build ( com: QTGateAPIRequestCommand, first: boolean ) {
+
+	}
 
 	/**
 	 * 		
@@ -104,28 +107,6 @@ class sharedAppClass {
 		})
 	}
 
-	public searchItemList_build ( com, first: boolean ) {
-		const args = com.Args
-		this.returnSearchResultItemsInit ( args )
-		this.moreButton_link_url ( args.nextPage )
-		if ( first ) {
-			
-			this.searchItemsArray ( args.Result )
-
-			args.totalResults = args.totalResults.replace ( /\B(?=(\d{3})+(?!\d))/g, ',' )
-			this.totalSearchItems ( args.totalResults )
-			this.showSearchItemResult ( true )
-			this.showTopMenuInputField ( true )
-		} else {
-			this.searchItemsArray( this.searchItemsArray().concat( args.Result ))
-		}
-
-		if ( typeof this.search_form_response === 'function' ) {
-			return this.search_form_response ( com )
-		}
-		
-	}
-
 	public search_form () {
 		try {
 			this.search_form_request.Args = [ this.searchInputText() ]
@@ -134,6 +115,9 @@ class sharedAppClass {
 		}
 		this.search_form_request.requestSerial = uuid_generate()
 		this.search_form_request ['startTime'] = new Date().getTime()
+		
+		this.searchInputText_searching ( false )
+		
 		const youtube_search_response = ( err, com: QTGateAPIRequestCommand ) => {
 
             if ( err ) {
@@ -148,6 +132,8 @@ class sharedAppClass {
             if ( com.error === -1 ) {
                 return this.searchInputText_searching ( 3 )
 			}
+			this.searchInputText('')
+
 			this.searchInputText_searching ( false )
 			const totoalTime = new Date().getTime() - com['startTime']
 			console.log (`total time [${ totoalTime/1000 }]`)

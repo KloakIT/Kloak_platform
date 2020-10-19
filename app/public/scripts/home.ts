@@ -164,108 +164,110 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 
 module view_layout {
 	export class view {
-		public connectInformationMessage: connectInformationMessage = null
-		public sectionLogin = ko.observable(false)
-		public sectionAgreement = ko.observable(false)
-		public sectionWelcome = ko.observable(true)
-		public isFreeUser = ko.observable(true)
-		public QTTransferData = ko.observable(false)
-		public LocalLanguage = 'up'
-		public menu = Menu
-		public modalContent = ko.observable('')
-		public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
-		public tLang = ko.observable(initLanguageCookie())
-		public languageIndex = ko.observable(lang[this.tLang()])
-		public localServerConfig = ko.observable()
-		public keyPair: KnockoutObservable<keypair> = ko.observable(InitKeyPair())
-		public hacked = ko.observable(false)
-		public imapSetup: KnockoutObservable<imapForm> = ko.observable()
-		public connectToCoNET = ko.observable(false)
-		public connectedCoNET = ko.observable(false)
-		public showKeyPair = ko.observable(false)
-		public CoNETConnectClass: CoNETConnect = null
-		public imapFormClass: imapForm = null
-		public CoNETConnect: KnockoutObservable<CoNETConnect> = ko.observable(null)
-		public historyData = ko.observableArray()
-		public bodyBlue = ko.observable(true)
-		public CanadaBackground = ko.observable(false)
-		public password = null
-		public KloakTL = gsap.timeline()
-		public secondTitle = ko.observable(false)
-		public titleAnimationStep = ko.observable(0)
-		public sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js')
-		public welcomeTitle = ko.observable(true)
-		public showMainPage = ko.observable(false)
-		public showStartupVideo = ko.observable(true)
-		public daggrHtml = ko.observable(false)
-		public showFileStorage = ko.observable(false)
-		public showGeneralSpalding = ko.observable(false)
-		public showCanada = ko.observable(false)
-		public muteHtml = ko.observable ( false )
-		public forTwitterHtml = ko.observable ( false )
-		public forYoutubeHtml = ko.observable ( false )
-		public storageHelper = new StorageHelper()
-		public localServerConnected = ko.observable(false)
-		public showLocalServerDisconnect = ko.observable(false)
-		public displayMedia = ko.observable(null)
-		public mediaViewer: MediaViewer = null
-		/*
-        public worker = new workerManager ([
-            'mHtml2Html'
-        ])
-		*/
+		//--   define
+			public connectInformationMessage: connectInformationMessage = null
+			public sectionLogin = ko.observable(false)
+			public sectionAgreement = ko.observable(false)
+			public sectionWelcome = ko.observable(true)
+			public isFreeUser = ko.observable(true)
+			public QTTransferData = ko.observable(false)
+			public LocalLanguage = 'up'
+			public menu = Menu
+			public modalContent = ko.observable('')
+			public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
+			public tLang = ko.observable(initLanguageCookie())
+			public languageIndex = ko.observable(lang[this.tLang()])
+			public localServerConfig = ko.observable()
+			public keyPair: KnockoutObservable<keypair> = ko.observable(InitKeyPair())
+			public hacked = ko.observable(false)
+			public imapSetup: KnockoutObservable<imapForm> = ko.observable()
+			public connectToCoNET = ko.observable(false)
+			public connectedCoNET = ko.observable(false)
+			public showKeyPair = ko.observable(false)
+			public CoNETConnectClass: CoNETConnect = null
+			public imapFormClass: imapForm = null
+			public CoNETConnect: KnockoutObservable<CoNETConnect> = ko.observable(null)
+			public historyData = ko.observableArray()
+			public bodyBlue = ko.observable(true)
+			public CanadaBackground = ko.observable(false)
+			public password = null
+			public KloakTL = gsap.timeline()
+			public secondTitle = ko.observable(false)
+			public titleAnimationStep = ko.observable(0)
+			public sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js')
+			public welcomeTitle = ko.observable(true)
+			public showMainPage = ko.observable(false)
+			public showStartupVideo = ko.observable(true)
+			public daggrHtml = ko.observable(false)
+			public showFileStorage = ko.observable(false)
+			public showGeneralSpalding = ko.observable(false)
+			public showCanada = ko.observable(false)
+			public muteHtml = ko.observable ( false )
+			public forTwitterHtml = ko.observable ( false )
+			public forYoutubeHtml = ko.observable ( false )
+			public storageHelper = new StorageHelper()
+			public localServerConnected = ko.observable(false)
+			public showLocalServerDisconnect = ko.observable(false)
+			public displayMedia = ko.observable(null)
+			public mediaViewer: MediaViewer = null
+			private dagge: daggr_preperences = null
+			/*
+			public worker = new workerManager ([
+				'mHtml2Html'
+			])
+			*/
 
-		public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
-		public AppList = ko.observable(false)
-		public LocalServerUrl = window.location.href
-			.split(/https?\:\/\//i)[1]
-			.split(/\//)[0]
-		public imapData = ko.observable(null)
-		public newVersion = ko.observable(null)
-		public showLanguageSelect = ko.observable(true)
-		private demoTimeout = null
-		private demoMainElm
-		/**
-		 * 	showSnapshop
-		 */
-		public showSnapshop = ko.observable ( null )
-		
-		public networkSetupHeader = [
-			'网络通讯线路设定',
-			'ネットワーク通信設定',
-			'Network connection setup',
-			'網絡通訊線路設定',
-		]
-		public networkSetupDescription = [
-			'指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码',
-			'ローカールネットワークモージュルとCoNet通信用メールアカウント設定',
-			'Local network module and the mail informationthe for connect to CoNet network',
-			'指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼',
-		]
-		public networkSetupConnectShow = [
-			'连接节点',
-			'ノードへ接続',
-			'Connect to node',
-			'連接結點',
-		]
-		public networkDisconnect = [
-			'解除连接',
-			'接続を解除',
-			'Disconnect',
-			'解除連結',
-		]
-		public networkConnect: KnockoutObservable<number | boolean> = ko.observable(
-			false
-		)
-		public mainManuItems = ko.observableArray( mainMenuArray )
-		public tempAppHtml = ko.observable(false)
-		public appScript = ko.observable()
-		public middleX = ko.observable(window.innerWidth / 2)
-		public middleY = ko.observable(window.innerHeight / 2)
-		/*** */
+			public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
+			public AppList = ko.observable(false)
+			public LocalServerUrl = window.location.href
+				.split(/https?\:\/\//i)[1]
+				.split(/\//)[0]
+			public imapData = ko.observable(null)
+			public newVersion = ko.observable(null)
+			public showLanguageSelect = ko.observable(true)
+			private demoTimeout = null
+			private demoMainElm
+			/**
+			 * 	showSnapshop
+			 */
+			public showSnapshop = ko.observable ( null )
+			
+			public networkSetupHeader = [
+				'网络通讯线路设定',
+				'ネットワーク通信設定',
+				'Network connection setup',
+				'網絡通訊線路設定',
+			]
+			public networkSetupDescription = [
+				'指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码',
+				'ローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+				'Local network module and the mail informationthe for connect to CoNet network',
+				'指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼',
+			]
+			public networkSetupConnectShow = [
+				'连接节点',
+				'ノードへ接続',
+				'Connect to node',
+				'連接結點',
+			]
+			public networkDisconnect = [
+				'解除连接',
+				'接続を解除',
+				'Disconnect',
+				'解除連結',
+			]
+
+
+			public networkConnect: KnockoutObservable<number | boolean> = ko.observable(false)
+			public mainManuItems = ko.observableArray( mainMenuArray )
+			public tempAppHtml = ko.observable(false)
+			public appScript = ko.observable()
+			public middleX = ko.observable(window.innerWidth / 2)
+			public middleY = ko.observable(window.innerHeight / 2)
+		//-
 
 		private afterInitConfig() {
-			this.keyPair(this.localServerConfig().keypair)
+			this.keyPair( this.localServerConfig().keypair )
 
 			if (
 				this.keyPair() &&
@@ -277,21 +279,77 @@ module view_layout {
 			}
 		}
 
-		private initConfig(config) {
-			const self = this
 
-			if (config && config.keypair && config.keypair.publicKeyID) {
+	public getPictureBase64MaxSize_mediaData ( mediaData: string, imageMaxWidth: number, imageMaxHeight: number, CallBack ) {
+		const media = mediaData.split(',')
+		const type = media[0].split(';')[0].split(':')[1]
+		const _media = Buffer.from( media[1], 'base64' )
+
+		const ret: twitter_mediaData = {
+			total_bytes: media[1].length,
+			media_type: 'image/png',
+			rawData: media[1],
+			media_id_string: null,
+		}
+
+		//if ( mediaData.length > maxImageLength) {
+		const exportImage = ( _type, img ) => {
+			return img.getBuffer( _type, ( err, _buf: Buffer ) => {
+				if ( err ) {
+					return CallBack ( err )
+				}
+				ret.rawData = _buf.toString ('base64')
+				ret.total_bytes = _buf.length
+
+				return CallBack ( null, ret )
+			})
+		}
+
+		return Jimp.read ( _media, ( err, image ) => {
+			if ( err ) {
+				return CallBack ( err )
+			}
+			const uu = image.bitmap
+			const isSameWH = imageMaxHeight === imageMaxWidth
+			
+			if ( uu.height + uu.width > imageMaxHeight + imageMaxWidth ) {
+				if ( uu.height > uu.widt ) {
+					image.resize ( isSameWH ? imageMaxWidth : Jimp.AUTO, imageMaxHeight )
+				} else {
+					image.resize ( imageMaxWidth, isSameWH ? imageMaxWidth: Jimp.AUTO )
+				}
+			}
+			//		to PNG
+
+			return image.deflateStrategy ( 2, () => {
+				return exportImage ( ret.media_type, image )
+			})
+		})
+		//}
+
+		//return CallBack ( null, ret )
+	}
+
+
+		private initConfig( config ) {
+			const self = this
+			if ( !config?.daggerUUID ) {
+				config[ 'daggerUUID' ] = uuid_generate ()
+				localStorage.setItem ( 'config', JSON.stringify ( config ))
+			}
+
+			if ( config?.keypair?.publicKeyID ) {
 				/**
 				 *
 				 *      Key pair ready
 				 *
 				 */
 
-				makeKeyPairData(this, config.keypair)
-				if (!config.keypair.passwordOK) {
-					config.keypair.showLoginPasswordField(true)
+				makeKeyPairData ( this, config.keypair )
+				if ( !config.keypair.passwordOK ) {
+					config.keypair.showLoginPasswordField ( true )
 				}
-				this.localServerConfig(config)
+				this.localServerConfig( config )
 				return this.afterInitConfig()
 
 				//this.keyPairGenerateForm ( _keyPairGenerateForm )
@@ -304,44 +362,49 @@ module view_layout {
 			 */
 			this.svgDemo_showLanguage()
 			config['account'] = config['keypair'] = null
-
-			let _keyPairGenerateForm = new keyPairGenerateForm(
-				(_keyPair: keypair) => {
-					self.keyPairGenerateForm((_keyPairGenerateForm = null))
+			
+			let _keyPairGenerateForm = new keyPairGenerateForm (( _keyPair: keypair ) => {
+					self.keyPairGenerateForm (( _keyPairGenerateForm = null ))
 					/**
 					 *      key pair ready
 					 */
 
 					self.password = _keyPair._password
 					_keyPair._password = null
-					config.account = _keyPair.email || _keyPair.publicKeyID
+					config.account =  _keyPair.publicKeyID
+
+					this.dagge = JSON.parse ( JSON.stringify ( _keyPair ['daggr']))
+
+					_keyPair ['daggr'] = null
+
 					config.keypair = _keyPair
-					localStorage.setItem('config', JSON.stringify(config))
+					localStorage.setItem ( 'config', JSON.stringify ( config ))
 					_keyPair.passwordOK = true
 					_keyPair._password = self.password
 					//self.localServerConfig ( config )
-					self.keyPair(_keyPair)
-					self.showMain()
+					self.keyPair ( _keyPair )
+					self.showMain ()
 				}
 			)
-			this.localServerConfig(config)
-			this.afterInitConfig()
-			this.keyPairGenerateForm(_keyPairGenerateForm)
+
+			this.localServerConfig ( config )
+			this.afterInitConfig ()
+			this.keyPairGenerateForm ( _keyPairGenerateForm )
 		}
 
 		private getConfigFromLocalStorage() {
-			const configStr = localStorage.getItem('config')
-			if (!configStr) {
+			const configStr = localStorage.getItem ( 'config' )
+			if (! configStr ) {
 				return this.initConfig({})
 			}
 			let config = null
 			try {
-				config = JSON.parse(configStr)
-			} catch (ex) {
+				config = JSON.parse( configStr )
+			} catch ( ex ) {
 				return this.initConfig({})
 			}
 
-			return this.initConfig(config)
+			return this.initConfig( config )
 		}
 
 		public initWelcomeView() {
@@ -360,7 +423,7 @@ module view_layout {
 		}
 
 		constructor() {
-			this.getConfigFromLocalStorage()
+			this.getConfigFromLocalStorage ()
 			this.CanadaBackground.subscribe((val) => {
 				if (val) {
 					$.ajax({
@@ -469,12 +532,12 @@ module view_layout {
 			const self = this
 			this.hideMainPage ()
 			this.sectionLogin ( true )
-			return this.imapSetup( this.imapFormClass = new imapForm ( this.keyPair().publicKeyID, this.imapData (), ( imapData: IinputData ) => {
+			return this.imapSetup ( this.imapFormClass = new imapForm ( this.keyPair().publicKeyID, this.imapData (), ( imapData: IinputData ) => {
 				self.imapSetup( self.imapFormClass = null )
 				self.sectionLogin ( false )
 				self.imapData( imapData )
 				return self.sharedMainWorker.saveImapIInputData ( imapData, ( err, data ) => {
-					return self.showMain()
+					return self.showMain ()
 				})
 			}))
 		}
@@ -623,20 +686,105 @@ module view_layout {
 		}
 
 		public deleteKey() {
-			localStorage.setItem('config', JSON.stringify({}))
-			_view.localServerConfig(null)
-			_view.connectedCoNET(false)
-			_view.connectToCoNET(false)
-			_view.CoNETConnect((_view.CoNETConnectClass = null))
-			_view.imapSetup((_view.imapFormClass = null))
-			localStorage.clear()
-			return _view.reFreshLocalServer()
+			localStorage.setItem ('config', JSON.stringify({}))
+			_view.localServerConfig ( null )
+			_view.connectedCoNET ( false )
+			_view.connectToCoNET ( false )
+			_view.CoNETConnect (_view.CoNETConnectClass = null )
+			_view.imapSetup ( _view.imapFormClass = null )
+			localStorage.clear ()
+			return _view.reFreshLocalServer ()
 		}
 
 		public showMain() {
 			this.sectionWelcome ( false )
 			this.showStartupVideo ( false )
 			this.afterPasswordReady ()
+		}
+
+		public storeDaggrNotice ( obj: QTGateAPIRequestCommand ) {
+			
+			const index = mainMenuArray.findIndex ( n => n.name === 'daggr')
+			const daggr = mainMenuArray[ index ]
+
+			if ( index > 0 ) {
+				const sender = obj.account
+
+				const message: messageContent = obj.Args[1]
+				message.isSelf = false
+				return _view.storageHelper.decryptLoad ( this.localServerConfig ()['daggerUUID'], ( err, data ) => {
+					if ( err ) {
+						return _view.connectInformationMessage.showErrorMessage ( err )
+					}
+	
+					let userData: daggr_preperences = null
+					try {
+						userData = JSON.parse ( Buffer.from ( data ).toString () )
+					} catch ( ex ) {
+						return console.log ( ex )
+					}
+					
+					const index = userData.contacts.findIndex ( n => n.id === sender )
+					const contact =  userData.contacts[ index ]
+					contact._notice += 1
+					daggr.notice ( daggr.notice () + 1 )
+					return _view.storageHelper.encryptSave ( this.localServerConfig ()['daggerUUID'], JSON.stringify ( userData ), err => {
+						if ( err ) {
+							return _view.connectInformationMessage.showErrorMessage ( err )
+						}
+
+						return _view.storageHelper.decryptLoad ( contact.chatDataUUID, ( err, data ) => {
+							if ( err ) {
+								return _view.connectInformationMessage.showErrorMessage ( err )
+							}
+							let userData: messageContent[] = null
+							try {
+								userData = JSON.parse ( Buffer.from ( data ).toString () )
+							} catch ( ex ) {
+								return _view.connectInformationMessage.showErrorMessage ( err )
+							}
+							userData.unshift ( message )
+							return _view.storageHelper.encryptSave ( contact.chatDataUUID, JSON.stringify ( userData ), err => {
+								if ( err ) {
+									return _view.connectInformationMessage.showErrorMessage ( err )
+								}
+							})
+						})
+					} )
+					
+
+				})
+			}
+			
+		}
+
+		private getDaggrNotice () {
+			const index = mainMenuArray.findIndex ( n => n.name === 'daggr')
+			if ( index > 0 ) {
+				const daggr = mainMenuArray[ index ]
+				_view.storageHelper.decryptLoad ( this.localServerConfig ()['daggerUUID'], ( err, data ) => {
+					if ( err ) {
+						return _view.connectInformationMessage.showErrorMessage ( err )
+					}
+	
+					let userData: daggr_preperences = null
+					try {
+						userData = JSON.parse ( Buffer.from ( data ).toString () )
+					} catch ( ex ) {
+						return console.log ( ex )
+					}
+					let notice = 0
+
+					userData.contacts.forEach ( n => {
+						notice += n._notice
+					})
+
+					if ( notice > 0 ) {
+						daggr.notice ( notice )
+					}
+				})
+			}
+			
 		}
 
 		public afterPasswordReady () {
@@ -649,12 +797,22 @@ module view_layout {
 				if ( err ) {
 					return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
 				}
-				if ( data['imapData']) {
-					self.imapData( data['imapData'] )
+				if ( data ['imapData']) {
+					self.imapData ( data['imapData'] )
 				}
+
 				self.connectInformationMessage.socketListening ( this.LocalServerUrl )
 				
+				if ( this.dagge ) {
+					_view.storageHelper.encryptSave ( self.localServerConfig ()['daggerUUID'], JSON.stringify ( this.dagge ), err => {
+						if ( err ) {
+							return _view.connectInformationMessage.showErrorMessage ( err )
+						}
+					})
+				}
+
 				if ( this.imapData ()) {
+					this.getDaggrNotice ()
 					return this.showMainPage ( true )
 				}
 
@@ -777,6 +935,7 @@ const mainMenuArray = [
 		click: appScript,
 		online: true,
 		htmlTemp: 'tempAppHtml',
+		notice: ko.observable ( 0 )
 	},
 	{
 		name: 'fortress',
@@ -792,9 +951,11 @@ const mainMenuArray = [
 		click: fileStorage,
 		htmlTemp: 'showFileStorage',
 		online: false,
+		notice: ko.observable ( 0 )
 	},
-	/*
+	
 	{
+		name: 'daggr',
 		img: Kloak_Daggr,
 		header: ['大哥', 'ダク', 'Daggr', '大哥'],
 		description: [
@@ -807,8 +968,9 @@ const mainMenuArray = [
 		click: daggr,
 		htmlTemp: 'daggrHtml',
 		online: false,
+		notice: ko.observable ( 0 )
 	},
-	*/
+	
 	{
 		name: 'Kloak_youtube',
 		img: Kloak_youtube,
@@ -822,7 +984,8 @@ const mainMenuArray = [
 		extra: null,
 		click: forYoutube,
 		online: true,
-		htmlTemp: 'forYoutubeHtml'
+		htmlTemp: 'forYoutubeHtml',
+		notice: ko.observable ( 0 )
 	},
 	/*
 	{
@@ -838,7 +1001,8 @@ const mainMenuArray = [
 		extra: null,
 		click: forTwitter,
 		online: true,
-		htmlTemp: 'forTwitterHtml'
+		htmlTemp: 'forTwitterHtml',
+		notice: ko.observable ( 0 )
 	},
 	/*
 	{
@@ -855,6 +1019,7 @@ const mainMenuArray = [
 		click: mute,
 		online: false,
 		htmlTemp: 'muteHtml',
+		notice: ko.observable ( 0 )
 	},
 	/*,
 	{
@@ -870,6 +1035,7 @@ const mainMenuArray = [
 		extra: null,
 		click: null,
 		online: true,
+		notice: ko.observable ( 0 )
 	}
 	*/
 	
@@ -891,8 +1057,9 @@ const mainMenuArray = [
 		click: genSpalding,
 		online: false,
 		htmlTemp: 'showGeneralSpalding',
+		notice: ko.observable ( 0 )
 	},
-	
+	/*
 	{
 		name: 'canada',
 		img: canadaGov,
@@ -906,15 +1073,14 @@ const mainMenuArray = [
 		extra: null,
 		click: Canada,
 		online: false,
-		htmlTemp: 'showCanada'
+		htmlTemp: 'showCanada',
+		notice: ko.observable ( 0 )
 	},
+	/** */
 ]
 
-
-
 const _view = new view_layout.view ()
-
-ko.applyBindings(_view, document.getElementById('body'))
+ko.applyBindings( _view, document.getElementById('body'))
 
 $(`.${_view.tLang()}`).addClass('active')
 window[`${'indexedDB'}`] =

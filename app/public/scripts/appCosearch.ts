@@ -1066,60 +1066,6 @@ const appScript = {
 		return self.showResultItems ( self, self.videoItemsArray ())
 	},
 
-	getPictureBase64MaxSize_mediaData: (
-		mediaData: string,
-		imageMaxWidth: number,
-		imageMaxHeight: number,
-		CallBack
-	) => {
-		const media = mediaData.split(',')
-		const type = media[0].split(';')[0].split(':')[1]
-		const _media = Buffer.from(media[1], 'base64')
-
-		const ret: twitter_mediaData = {
-			total_bytes: media[1].length,
-			media_type: 'image/png',
-			rawData: media[1],
-			media_id_string: null,
-		}
-
-		//if ( mediaData.length > maxImageLength) {
-		const exportImage = (_type, img) => {
-			return img.getBuffer(_type, (err, _buf: Buffer) => {
-				if (err) {
-					return CallBack(err)
-				}
-				ret.rawData = _buf.toString('base64')
-				ret.total_bytes = _buf.length
-
-				return CallBack(null, ret)
-			})
-		}
-
-		return Jimp.read(_media, (err, image) => {
-			if (err) {
-				return CallBack(err)
-			}
-			const uu = image.bitmap
-
-			if (uu.height + uu.width > imageMaxHeight + imageMaxWidth) {
-				if (uu.height > uu.widt) {
-					image.resize(Jimp.AUTO, imageMaxHeight)
-				} else {
-					image.resize(imageMaxWidth, Jimp.AUTO)
-				}
-			}
-			//		to PNG
-
-			return image.deflateStrategy(2, () => {
-				return exportImage(ret.media_type, image)
-			})
-		})
-		//}
-
-		//return CallBack ( null, ret )
-	},
-
 	imageSearch: (ee) => {
 		const self = _view.appsManager().appScript()
 
@@ -1158,7 +1104,7 @@ const appScript = {
 
 			self.searchItemList([])
 
-			return self.getPictureBase64MaxSize_mediaData(
+			return _view.getPictureBase64MaxSize_mediaData(
 				rawData,
 				1024,
 				1024,

@@ -122,6 +122,7 @@ var view_layout;
 (function (view_layout) {
     class view {
         constructor() {
+            //--   define
             this.connectInformationMessage = null;
             this.sectionLogin = ko.observable(false);
             this.sectionAgreement = ko.observable(false);
@@ -167,6 +168,7 @@ var view_layout;
             this.showLocalServerDisconnect = ko.observable(false);
             this.displayMedia = ko.observable(null);
             this.mediaViewer = null;
+            this.dagge = null;
             /*
             public worker = new workerManager ([
                 'mHtml2Html'
@@ -228,7 +230,7 @@ var view_layout;
             this.InitKloakLogoTimeLine();
             this.initWelcomeView();
         }
-        /*** */
+        //-
         afterInitConfig() {
             this.keyPair(this.localServerConfig().keypair);
             if (this.keyPair() &&
@@ -238,9 +240,56 @@ var view_layout;
                 this.sectionLogin(false);
             }
         }
+        getPictureBase64MaxSize_mediaData(mediaData, imageMaxWidth, imageMaxHeight, CallBack) {
+            const media = mediaData.split(',');
+            const type = media[0].split(';')[0].split(':')[1];
+            const _media = Buffer.from(media[1], 'base64');
+            const ret = {
+                total_bytes: media[1].length,
+                media_type: 'image/png',
+                rawData: media[1],
+                media_id_string: null,
+            };
+            //if ( mediaData.length > maxImageLength) {
+            const exportImage = (_type, img) => {
+                return img.getBuffer(_type, (err, _buf) => {
+                    if (err) {
+                        return CallBack(err);
+                    }
+                    ret.rawData = _buf.toString('base64');
+                    ret.total_bytes = _buf.length;
+                    return CallBack(null, ret);
+                });
+            };
+            return Jimp.read(_media, (err, image) => {
+                if (err) {
+                    return CallBack(err);
+                }
+                const uu = image.bitmap;
+                const isSameWH = imageMaxHeight === imageMaxWidth;
+                if (uu.height + uu.width > imageMaxHeight + imageMaxWidth) {
+                    if (uu.height > uu.widt) {
+                        image.resize(isSameWH ? imageMaxWidth : Jimp.AUTO, imageMaxHeight);
+                    }
+                    else {
+                        image.resize(imageMaxWidth, isSameWH ? imageMaxWidth : Jimp.AUTO);
+                    }
+                }
+                //		to PNG
+                return image.deflateStrategy(2, () => {
+                    return exportImage(ret.media_type, image);
+                });
+            });
+            //}
+            //return CallBack ( null, ret )
+        }
         initConfig(config) {
             const self = this;
-            if (config && config.keypair && config.keypair.publicKeyID) {
+            if (!config?.daggerUUID) {
+                config['daggerUUID'] = uuid_generate();
+                localStorage.setItem('config', JSON.stringify(config));
+            }
+            if (config?.keypair?.publicKeyID) {
                 /**
                  *
                  *      Key pair ready
@@ -268,7 +317,9 @@ var view_layout;
                  */
                 self.password = _keyPair._password;
                 _keyPair._password = null;
-                config.account = _keyPair.email || _keyPair.publicKeyID;
+                config.account = _keyPair.publicKeyID;
+                this.dagge = JSON.parse(JSON.stringify(_keyPair['daggr']));
+                _keyPair['daggr'] = null;
                 config.keypair = _keyPair;
                 localStorage.setItem('config', JSON.stringify(config));
                 _keyPair.passwordOK = true;
@@ -511,8 +562,8 @@ var view_layout;
             _view.localServerConfig(null);
             _view.connectedCoNET(false);
             _view.connectToCoNET(false);
-            _view.CoNETConnect((_view.CoNETConnectClass = null));
-            _view.imapSetup((_view.imapFormClass = null));
+            _view.CoNETConnect(_view.CoNETConnectClass = null);
+            _view.imapSetup(_view.imapFormClass = null);
             localStorage.clear();
             return _view.reFreshLocalServer();
         }
@@ -520,6 +571,79 @@ var view_layout;
             this.sectionWelcome(false);
             this.showStartupVideo(false);
             this.afterPasswordReady();
+        }
+        storeDaggrNotice(obj) {
+            const index = mainMenuArray.findIndex(n => n.name === 'daggr');
+            const daggr = mainMenuArray[index];
+            if (index > 0) {
+                const sender = obj.account;
+                const message = obj.Args[1];
+                message.isSelf = false;
+                return _view.storageHelper.decryptLoad(this.localServerConfig()['daggerUUID'], (err, data) => {
+                    if (err) {
+                        return _view.connectInformationMessage.showErrorMessage(err);
+                    }
+                    let userData = null;
+                    try {
+                        userData = JSON.parse(Buffer.from(data).toString());
+                    }
+                    catch (ex) {
+                        return console.log(ex);
+                    }
+                    const index = userData.contacts.findIndex(n => n.id === sender);
+                    const contact = userData.contacts[index];
+                    contact._notice += 1;
+                    daggr.notice(daggr.notice() + 1);
+                    return _view.storageHelper.encryptSave(this.localServerConfig()['daggerUUID'], JSON.stringify(userData), err => {
+                        if (err) {
+                            return _view.connectInformationMessage.showErrorMessage(err);
+                        }
+                        return _view.storageHelper.decryptLoad(contact.chatDataUUID, (err, data) => {
+                            if (err) {
+                                return _view.connectInformationMessage.showErrorMessage(err);
+                            }
+                            let userData = null;
+                            try {
+                                userData = JSON.parse(Buffer.from(data).toString());
+                            }
+                            catch (ex) {
+                                return _view.connectInformationMessage.showErrorMessage(err);
+                            }
+                            userData.unshift(message);
+                            return _view.storageHelper.encryptSave(contact.chatDataUUID, JSON.stringify(userData), err => {
+                                if (err) {
+                                    return _view.connectInformationMessage.showErrorMessage(err);
+                                }
+                            });
+                        });
+                    });
+                });
+            }
+        }
+        getDaggrNotice() {
+            const index = mainMenuArray.findIndex(n => n.name === 'daggr');
+            if (index > 0) {
+                const daggr = mainMenuArray[index];
+                _view.storageHelper.decryptLoad(this.localServerConfig()['daggerUUID'], (err, data) => {
+                    if (err) {
+                        return _view.connectInformationMessage.showErrorMessage(err);
+                    }
+                    let userData = null;
+                    try {
+                        userData = JSON.parse(Buffer.from(data).toString());
+                    }
+                    catch (ex) {
+                        return console.log(ex);
+                    }
+                    let notice = 0;
+                    userData.contacts.forEach(n => {
+                        notice += n._notice;
+                    });
+                    if (notice > 0) {
+                        daggr.notice(notice);
+                    }
+                });
+            }
         }
         afterPasswordReady() {
             const self = this;
@@ -534,7 +658,15 @@ var view_layout;
                     self.imapData(data['imapData']);
                 }
                 self.connectInformationMessage.socketListening(this.LocalServerUrl);
+                if (this.dagge) {
+                    _view.storageHelper.encryptSave(self.localServerConfig()['daggerUUID'], JSON.stringify(this.dagge), err => {
+                        if (err) {
+                            return _view.connectInformationMessage.showErrorMessage(err);
+                        }
+                    });
+                }
                 if (this.imapData()) {
+                    this.getDaggrNotice();
                     return this.showMainPage(true);
                 }
                 return this.showImapSetup();
@@ -638,6 +770,7 @@ const mainMenuArray = [
         click: appScript,
         online: true,
         htmlTemp: 'tempAppHtml',
+        notice: ko.observable(0)
     },
     {
         name: 'fortress',
@@ -653,9 +786,10 @@ const mainMenuArray = [
         click: fileStorage,
         htmlTemp: 'showFileStorage',
         online: false,
+        notice: ko.observable(0)
     },
-    /*
     {
+        name: 'daggr',
         img: Kloak_Daggr,
         header: ['大哥', 'ダク', 'Daggr', '大哥'],
         description: [
@@ -668,8 +802,8 @@ const mainMenuArray = [
         click: daggr,
         htmlTemp: 'daggrHtml',
         online: false,
+        notice: ko.observable(0)
     },
-    */
     {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
@@ -683,7 +817,8 @@ const mainMenuArray = [
         extra: null,
         click: forYoutube,
         online: true,
-        htmlTemp: 'forYoutubeHtml'
+        htmlTemp: 'forYoutubeHtml',
+        notice: ko.observable(0)
     },
     /*
     {
@@ -699,7 +834,8 @@ const mainMenuArray = [
         extra: null,
         click: forTwitter,
         online: true,
-        htmlTemp: 'forTwitterHtml'
+        htmlTemp: 'forTwitterHtml',
+        notice: ko.observable ( 0 )
     },
     /*
     {
@@ -716,6 +852,7 @@ const mainMenuArray = [
         click: mute,
         online: false,
         htmlTemp: 'muteHtml',
+        notice: ko.observable ( 0 )
     },
     /*,
     {
@@ -731,6 +868,7 @@ const mainMenuArray = [
         extra: null,
         click: null,
         online: true,
+        notice: ko.observable ( 0 )
     }
     */
     {
@@ -751,21 +889,7 @@ const mainMenuArray = [
         click: genSpalding,
         online: false,
         htmlTemp: 'showGeneralSpalding',
-    },
-    {
-        name: 'canada',
-        img: canadaGov,
-        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
-        description: [
-            '加拿大政府',
-            'カナダ政府',
-            'For Canada',
-            '加拿大政府',
-        ],
-        extra: null,
-        click: Canada,
-        online: false,
-        htmlTemp: 'showCanada'
+        notice: ko.observable(0)
     },
 ];
 const _view = new view_layout.view();

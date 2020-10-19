@@ -43,7 +43,8 @@ const InitKeyPair = () => {
 		passwordOK: false,
 		verified: false,
 		publicKeyID: null,
-		_password: null
+		_password: null,
+		image: null
 		
 	}
 	return keyPair
@@ -464,7 +465,7 @@ const _smtpVerify = ( imapData: IinputData, CallBack: ( err?: Error, success?: a
 	}
 	
 	const transporter = Nodemailer.createTransport ( option )
-	
+	console.dir (transporter)
 	return transporter.verify ( CallBack )
 }
 
@@ -565,7 +566,7 @@ export async function decryptoMessage ( keyObject: localServerKeyPair, publickey
 	})
 }
 
-const testSmtpAndSendMail = ( imapData: IinputData, CallBack ) => {
+const testSmtpAndSendMail = ( imapData, CallBack ) => {
 	let first = false
 	if ( typeof imapData === 'object' ) {
 		first = true
@@ -581,6 +582,7 @@ const testSmtpAndSendMail = ( imapData: IinputData, CallBack ) => {
 		return CallBack ()
 	})
 }
+
 const sendMailAccount = {
 	imapPortNumber: '993',
     smtpPortNumber: [ 465, 587, 994 ],
@@ -606,7 +608,7 @@ const sendMailAccount = {
     requestPortNumber: null
 }
 
-export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: string, message: string, CallBack ) => {
+export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: string, message: string, subject: string, CallBack ) => {
 	console.dir (`sendCoNETConnectRequestEmail`)
 	const imapData = ( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
 
@@ -625,7 +627,7 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 				connectionTimeout: ( 1000 * 15 ).toString (),
 				tls: !imapData.smtpSsl ? {
 					rejectUnauthorized: imapData.smtpIgnoreCertificate,
-					ciphers: imapData.ciphers
+					ciphers: imapData["ciphers"]
 				} : null,
 				debug: true
 			}
@@ -635,7 +637,7 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 			const mailOptions = {
 				from: imapData.smtpUserName,
 				to: toEmail,
-				subject: 'node',
+				subject: subject,
 				attachments: [{
 					content: message
 				}]
@@ -646,4 +648,5 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 	], CallBack )
 
 }
+
 

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 interface connectInfo {
 	text: KnockoutObservable < string >
 	err: KnockoutObservable < boolean >
@@ -34,7 +35,7 @@ class CoNETConnect {
 	public infoTextArray: KnockoutObservableArray < connectInfo > = ko.observableArray ([])
 	public keyPairSign: KnockoutObservable< keyPairSign > = ko.observable ( null )
 	private imapData: IinputData = this.view.imapData()
-	public nodeEmail = "node@Kloak.app"
+	public nodeEmail = "nodeTest@Kloak.app"
 	private inSendMail = false
 	private pingTimeOut () {
 		return this.listingConnectStage ( null, 0, null )
@@ -175,31 +176,50 @@ class CoNETConnect {
 		this.showTryAgain ( false )
 		this.showSendConnectMail ( false )
 		const self = this
-		const qtgateCommand: QTGateCommand = {
-			account: _view.imapData().account,
-			QTGateVersion: CoNET_version,
-			imapData: _view.imapData(),
-			command: 'connect',
-			error: null,
-			callback: null,
-			language: _view.imapData().language,
-			publicKey: this.view.keyPair().publicKey
-		}
+		return _view.storageHelper.decryptLoad ( _view.localServerConfig ()['daggerUUID'], ( err, data ) => {
+			let userData: daggr_preperences = null
+			try {
+				userData = JSON.parse ( Buffer.from ( data ).toString () )
+			} catch ( ex ) {
+				console.log (`_view.storageHelper.decryptLoad ['daggerUUID']  JSON.parse(data) error`, Buffer.from ( data ).toString () )
+			}
 
-		return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
-			if ( err ) {
-				return self.listingConnectStage ( null, -1, "" )
-			}
-			const localCommand = {
-				message: data, 
+			const qtgateCommand: QTGateCommand = {
+				account: _view.imapData().account,
+				QTGateVersion: CoNET_version,
 				imapData: _view.imapData(),
-				toMail: self.nodeEmail
-			}
-			
-			return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
+				command: 'connect',
+				error: null,
+				callback: null,
+				language: _view.imapData().language,
+				publicKey: this.view.keyPair().publicKey,
+				image: userData?.keyInfo?.image,
+				nickName: userData?.keyInfo?.nikeName,
+				bio: userData?.keyInfo?.bio,
+				email: userData?.keyInfo?.email
 				
+			}
+	
+			return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
+				if ( err ) {
+					return self.listingConnectStage ( null, -1, "" )
+				}
+				const localCommand = {
+					message: data, 
+					imapData: _view.imapData(),
+					toMail: self.nodeEmail,
+					subject: 'nodeTest'
+				}
+				
+				return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
+					
+				})
 			})
+
+			
+
 		})
+		
 
 		
 	}

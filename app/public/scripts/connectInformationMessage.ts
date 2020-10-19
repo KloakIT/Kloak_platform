@@ -219,7 +219,12 @@ class connectInformationMessage {
 			console.dir ( err )
 			//return self.showErrorMessage ( err )
 		})
+		/**
+		 * 
+		 * 				From Kloak server information
+		 */
 
+		
 		this.socketIo.on ( this.keyID, encryptoText => {
 			return this._view.sharedMainWorker.decryptJsonWithAPKey ( encryptoText, ( err, obj: QTGateAPIRequestCommand ) => {
 
@@ -229,15 +234,31 @@ class connectInformationMessage {
 				
 				switch ( obj.command ) {
 					case 'daggr': {
-						if ( this._view.appScript() && typeof this._view.appScript().getMessage === 'function' ) {
-							
-							return this._view.appScript().getMessage ( obj )
+						switch ( obj.subCom ) {
+							case 'sendMessage': {
+								if ( this._view.appScript() && typeof this._view.appScript().getMessage === 'function' ) {
+									return this._view.appScript().getMessage ( obj )
+								}
+								return _view.storeDaggrNotice ( obj )
+							}
+							case 'typing' :{
+								if ( this._view.appScript() && typeof this._view.appScript().getTyping === 'function' ) {
+									return this._view.appScript().getTyping ( obj )
+								}
+								return
+							}
+							default: {
+								return self.showErrorMessage ( `unknow command from node! daggr-obj.subCom [${ obj.subCom }]` )
+							}
 						}
+						
 
 					}
 
+					
+
 					default: {
-						self.showErrorMessage ( 'unknow command from node!' )
+						return self.showErrorMessage ( `unknow command from node! obj.command [${ obj.subCom }] subCom [${ obj.subCom }]` )
 					}
 				}
 				
@@ -281,6 +302,8 @@ class connectInformationMessage {
 	private onDoingRequest = async ( encryptoText: string, uuid: string ) => {
 		const self = this
 		const request = this.requestPool.get ( uuid )
+
+		
 		if ( !request ) {
 			return console.dir ( `onDoingRequest have no uuid ${ uuid }`)
 		}
