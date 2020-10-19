@@ -83,7 +83,7 @@
 								.description
 									textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "3" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; overflow: auto; color: grey; border: none;text-align-last: center;background-color: white;" )
 								<!-- ko if: notice -->
-									.floating.ui.red.circular.label( data-bind = "text: notice()")
+									.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
 								<!-- /ko  -->
 
 					<!-- /ko  -->
@@ -124,7 +124,9 @@
 							<!-- ko foreach: chatData -->
 							.item( data-bind = "css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem;")
 								<!-- ko if: textContent -->
-								textarea( data-bind = " attr: { 'id': uuid }, text: textContent, style: { 'height': rows, 'color': isSelf ? 'white' : 'black'}, css: { kloak_background_DarkBlue_waiting: isSelf && !delivered(), kloak_background_lightPlusGrey: !isSelf, kloak_background_DarkBlue: isSelf && delivered() }" style = " border-radius: 1rem; resize: none; padding: 1rem; overflow: hidden;border-width: 0; width:100%;" readOnly disabled )
+								.textArea
+									textarea( data-bind = " attr: { 'id': uuid }, text: textContent, style: { 'height': rows, 'color': isSelf ? 'white' : 'black'}, css: { kloak_background_DarkBlue_waiting: isSelf && !delivered(), kloak_background_lightPlusGrey: !isSelf, kloak_background_DarkBlue: isSelf && delivered() }" style = " border-radius: 1rem; resize: none; padding: 1rem; overflow: hidden;border-width: 0; width:100%;" readOnly disabled )
+									
 								//-.ui.segment.inverted( data-bind = " css: { kloak_background_blue: isSelf, kloak_background_teal: !isSelf }" style = "border-radius: 1rem;")
 									p.AppListHeader( data-bind = "text: textContent " style = "padding-bottom: 1rem;" )
 								<!-- /ko -->

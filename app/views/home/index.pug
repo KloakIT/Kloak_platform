@@ -96,7 +96,7 @@ block jumbotron1
 								
 							<!-- /ko -->
 							<!-- ko if: !localServerConnected() -->
-								button.circular.ui.icon.button.kloak_background_BrightBlue.kloak_color_lightGrey( data-bind = " click: connectLocalServer")
+								button.circular.ui.icon.button.kloak_background_BrightBlue.kloak_color_lightGrey( data-bind = " click: connectLocalServer" )
 									i.icon.plane
 							<!-- /ko -->
 						<!-- /ko -->
@@ -109,7 +109,7 @@ block jumbotron1
 							a( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
 								.svg( data-bind = "html: img ")
 								<!-- ko if: notice() > 0 -->
-									.floating.ui.red.circular.label( data-bind = "text: notice()")
+									.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
 								<!-- /ko -->
 							.content( style="border-top: none;padding-top: 0;")
 								.header( data-bind = "text: header[ $root.languageIndex() ]" style="color:white;")

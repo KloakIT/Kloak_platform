@@ -233,9 +233,7 @@ var view_layout;
         //-
         afterInitConfig() {
             this.keyPair(this.localServerConfig().keypair);
-            if (this.keyPair() &&
-                this.keyPair().keyPairPassword() &&
-                typeof this.keyPair().keyPairPassword().inputFocus === 'function') {
+            if (this.keyPair() && this.keyPair().keyPairPassword() && typeof this.keyPair().keyPairPassword().inputFocus === 'function') {
                 this.keyPair().keyPairPassword().inputFocus(true);
                 this.sectionLogin(false);
             }

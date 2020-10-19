@@ -627,7 +627,7 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 				connectionTimeout: ( 1000 * 15 ).toString (),
 				tls: !imapData.smtpSsl ? {
 					rejectUnauthorized: imapData.smtpIgnoreCertificate,
-					ciphers: imapData["ciphers"]
+					ciphers: imapData[ "ciphers" ]
 				} : null,
 				debug: true
 			}

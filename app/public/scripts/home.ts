@@ -269,12 +269,8 @@ module view_layout {
 		private afterInitConfig() {
 			this.keyPair( this.localServerConfig().keypair )
 
-			if (
-				this.keyPair() &&
-				this.keyPair().keyPairPassword() &&
-				typeof this.keyPair().keyPairPassword().inputFocus === 'function'
-			) {
-				this.keyPair().keyPairPassword().inputFocus(true)
+			if ( this.keyPair() && this.keyPair().keyPairPassword() && typeof this.keyPair().keyPairPassword().inputFocus === 'function' ) {
+				this.keyPair().keyPairPassword().inputFocus( true )
 				this.sectionLogin(false)
 			}
 		}
@@ -349,7 +345,7 @@ module view_layout {
 				if ( !config.keypair.passwordOK ) {
 					config.keypair.showLoginPasswordField ( true )
 				}
-				this.localServerConfig( config )
+				this.localServerConfig ( config )
 				return this.afterInitConfig()
 
 				//this.keyPairGenerateForm ( _keyPairGenerateForm )

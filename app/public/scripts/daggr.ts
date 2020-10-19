@@ -52,6 +52,7 @@ class daggr extends sharedAppClass {
 	public myKeyID = _view.keyPair().publicKeyID
 	public getFocus = ko.observable ()
 	public typing = ko.observable ( false )
+	public sentTyping = false
 
 	public search_form_request = {
         command: 'daggr',
@@ -107,7 +108,7 @@ class daggr extends sharedAppClass {
 		user['typing'] = ko.observable ( false )
 		user['_notice']  = 0
 		user['notice'] = ko.observable ( 0 )
-		this.currentUser.push ( user )
+		this.currentUser.unshift ( user )
 		this.saveDaggrPreperences ( )
 	}
 
@@ -144,9 +145,15 @@ class daggr extends sharedAppClass {
 			user.chatData = ko.observableArray ( user.chatDataArray )
 
 			this.currentChat ( user )
-			
-			window.scrollTo ( 0, window.outerHeight * 2 )
+			const height = Math.max(
+				document.body.scrollHeight, document.documentElement.scrollHeight,
+				document.body.offsetHeight, document.documentElement.offsetHeight,
+				document.body.clientHeight, document.documentElement.clientHeight
+			)
+			window.scrollTo ( 0, height )
+			this.getFocus ( true )
 			this.saveDaggrPreperences ()
+
 		})
 		
 	}
@@ -160,6 +167,10 @@ class daggr extends sharedAppClass {
 		})
 
 		this.getFocus.subscribe ( value => {
+			if ( this.sentTyping === value ) {
+				return
+			}
+			this.sentTyping = value
 			const user = this.currentChat ()
 			const com: QTGateAPIRequestCommand = {
 				command: 'daggr',
@@ -255,26 +266,38 @@ class daggr extends sharedAppClass {
 		this.textInput ('')
 		document.getElementById( "daggrInput" ).style.height = '48px'
 		this.textInputHeightRun ( document.getElementById( `${ message.uuid }` ) )
-		window.scrollTo ( 0, window.outerHeight * 2 )
+
+
+
+		const height = Math.max(
+			document.body.scrollHeight, document.documentElement.scrollHeight,
+			document.body.offsetHeight, document.documentElement.offsetHeight,
+			document.body.clientHeight, document.documentElement.clientHeight
+		)
+		window.scrollTo ( 0, height )
 		
-		this.saveChatData ()
+		message.rows =  document.getElementById( user.chatData()[ 0 ].uuid ).style.height
+
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 			if ( err ) {
+				console.log ( `_view.connectInformationMessage.emitRequest Error`, err )
 				return this.errorProcess ( err )
 			}
 
 			if ( !com ) {
+				console.log ( `_view.connectInformationMessage.emitRequest !com` )
 				return message.create = ko.observable ( null )
 			}
 
 			if ( com.error === -1 ) {
-				
+				console.log ( `_view.connectInformationMessage.emitRequest com.error === -1` )
 				const now = new Date()
 				message.delivered ( now )
 				message._delivered = now.toISOString ()
 				this.saveChatData ()
 				return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
 			}
+			console.log ( `_view.connectInformationMessage.emitRequest com = `, com.Args )
 		})
 
 	}
@@ -300,18 +323,30 @@ class daggr extends sharedAppClass {
 			return
 		}
 		const typing = obj.Args[1]
-		return this.currentChat().typing ( typing )
+		this.currentChat().typing ( typing )
+		const height = Math.max (
+			document.body.scrollHeight, document.documentElement.scrollHeight,
+			document.body.offsetHeight, document.documentElement.offsetHeight,
+			document.body.clientHeight, document.documentElement.clientHeight
+		)
+		window.scrollTo ( 0, height )
 	}
 
 	public getMessage ( obj: QTGateAPIRequestCommand ) {
 		const messageUserID = obj.account
 		const message: messageContent = obj.Args[1]
 		message.isSelf = false
-
+		console.log ( `getMessage\n`, obj.Args )
 		if ( this.currentChat () && this.currentChat ().id === messageUserID ) {
 			message['create'] = ko.observable ( new Date ( message._create ))
 
 			this.currentChat ().chatData.unshift ( message )
+			const height = Math.max(
+				document.body.scrollHeight, document.documentElement.scrollHeight,
+				document.body.offsetHeight, document.documentElement.offsetHeight,
+				document.body.clientHeight, document.documentElement.clientHeight
+			)
+			window.scrollTo ( 0, height )
 			return this.saveChatData ()
 		}
 
@@ -343,8 +378,9 @@ class daggr extends sharedAppClass {
 			
 			user.chatDataArray.unshift ( message )
 			
+
 			return _view.storageHelper.encryptSave ( user.chatDataUUID, JSON.stringify ( user.chatDataArray ), err => {
-				window.scrollTo ( 0, window.outerHeight * 2 )
+				
 				if ( err ) {
 					return _view.connectInformationMessage.showErrorMessage ( err )
 				}
