@@ -209,6 +209,7 @@ module view_layout {
 			public localServerConnected = ko.observable(false)
 			public showLocalServerDisconnect = ko.observable(false)
 			public displayMedia = ko.observable(null)
+			public videoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
 			public mediaViewer: MediaViewer = null
 			private dagge: daggr_preperences = null
 			/*
@@ -1055,7 +1056,6 @@ const mainMenuArray = [
 		htmlTemp: 'showGeneralSpalding',
 		notice: ko.observable ( 0 )
 	},
-	/*
 	{
 		name: 'canada',
 		img: canadaGov,
@@ -1072,7 +1072,6 @@ const mainMenuArray = [
 		htmlTemp: 'showCanada',
 		notice: ko.observable ( 0 )
 	},
-	/** */
 ]
 
 const _view = new view_layout.view ()

@@ -167,6 +167,7 @@ var view_layout;
             this.localServerConnected = ko.observable(false);
             this.showLocalServerDisconnect = ko.observable(false);
             this.displayMedia = ko.observable(null);
+            this.videoPlayer = ko.observable(null);
             this.mediaViewer = null;
             this.dagge = null;
             /*
@@ -887,6 +888,22 @@ const mainMenuArray = [
         click: genSpalding,
         online: false,
         htmlTemp: 'showGeneralSpalding',
+        notice: ko.observable(0)
+    },
+    {
+        name: 'canada',
+        img: canadaGov,
+        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
+        description: [
+            '加拿大政府',
+            'カナダ政府',
+            'For Canada',
+            '加拿大政府',
+        ],
+        extra: null,
+        click: Canada,
+        online: false,
+        htmlTemp: 'showCanada',
         notice: ko.observable(0)
     },
 ];

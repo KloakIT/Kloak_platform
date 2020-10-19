@@ -1,89 +1,78 @@
 #genSpalding
 	<!-- ko with: appScript -->
-		i.chevron.left.icon.spaldingHomeButton(data-bind="click: () => {backToMain()}")
-		.spaldingMobileHeader
-			.spaldingMobileUpper
-				.spaldingMobileMenu
-					<!-- ko if: mobileOpen -->
-					img.spaldingMobileIcon(src="./images/spalding/close_menu.svg" data-bind="click: () => {mobileOpen(false)}")
-					<!-- /ko -->
-					<!-- ko ifnot: mobileOpen -->
-					img.spaldingMobileIcon(src="./images/spalding/menu.svg" data-bind="click: () => {mobileOpen(true)}")
-					<!-- /ko -->
-				img.spaldingLogo(src="./images/spalding/spalding_logo.png")
-		.spaldingMobileNavigation(data-bind="foreach: ['HOME','ABOUT','WATCH','LISTEN','READ'], style: {'transform': mobileOpen() ? 'scaleY(1)' : 'scaleY(0)'}")
-			.spaldingMobileLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'}); $parent.mobileOpen(false)}, style: {'background-color': $parent.selectedPage() === $data ? 'rgb(15, 14, 23)' : 'ghostwhite', 'color': $parent.selectedPage() === $data ? 'ghostwhite' : 'rgb(15, 14, 23)'}")
-		.spaldingDesktopHeader
-			img.spaldingLogo(src="/images/spalding/spalding_logo.png")
-			.spaldingNavigation
-				<!-- ko foreach: ['HOME', 'ABOUT', 'WATCH', 'READ'] -->
-				.spaldingLink(data-bind="text: $data, click: () => {$parent.selectedPage($data); document.getElementById($data).scrollIntoView({behavior: 'smooth'})}, style: {'border': $parent.selectedPage() === $data ? '3px solid white' : '3px solid transparent'}")
-				<!-- /ko -->
-		section.spaldingHome#HOME
-			.spaldingHomeContent
-				img.spaldingBook(src="./images/spalding/stealth_war.jpg")
-				.spaldingBookDesc
-					p="\"China expert Robert Spalding reveals the shocking success China has had infiltrating American institutions and compromising our national security.\""
-				img.generalSpalding(src='./images/spalding/robert_spalding.png')
-		section.spaldingAbout#ABOUT
-			.spaldingAboutInner
-				.spaldingAboutLeft
-					h2.spaldingAboutText()="\"I AM A NATIONAL SECURITY EXPERT AND PATRIOT ENTREPRENEUR IDENTIFYING THREATS TO OUR SECURITY, ECONOMY, AND WAY OF LIFE."
-					h2.spaldingAboutText(style="font-size: 1.2rem;")="I AM COMMITTED TO BRINGING JOBS BACK TO THE USA BY RESTORING AMERICAN MANUFACTURING AND SECURING OUR MOST CRITICAL RESOURCE - DATA.\""
-					h2.spaldingAboutText(style="font-size: 1.2rem;")="-GENERAL SPALDING"
-					h2.spaldingAboutText.spaldingAboutTitle="ABOUT"
-					p.spaldingAboutDesc="General Spalding has served in senior positions of strategy and diplomacy within the Defense and State Departments for more than 26 years, retiring as a brigadier general. He was the chief architect for the Trump Administration’s widely praised National Security Strategy (NSS), and the Senior Director for Strategy to the President at the National Security Council."
-				.spaldingAboutRight
-					img.spaldingAsSeenOn(src="./images/spalding/spalding_asSeenOn.png")
+		//- i.chevron.left.icon.spaldingHomeButton(data-bind="click: () => {backToMain()}")
+		.spaldingBackgroundImage()
+		.spaldingPageContent
+			section.spaldingHomeSection#spaldingHome
+				.spaldingBackButtonContainer(style="display: flex; align-items: center;")
+					.spaldingBackButton(data-bind="click: () => {backToMain()}")
+						i.chevron.left.icon(style="margin: 0 !important; height: 1.18em")
+						p()="Back to Kloak"
+				.spaldingHeaderBar
+					.spaldingHeaderLogo
+						img.spaldingHeaderLogoImage(src="./images/spalding/spalding_logo.png")
+					.spaldingHeaderNavigation
+						a(href="#spaldingHome").spaldingNavItem="HOME"
+						a(href="#spaldingAbout").spaldingNavItem="ABOUT"
+						a(href="#spaldingWatch").spaldingNavItem="WATCH"
+						a(href="#spaldingContact").spaldingNavItem="CONTACT"
+					.spaldingHeaderBuyBook
+				.spaldingHomeContent
+					p(style="font-size: 18px;")="GENERAL ROB SPALDING"
+					h1.spaldingHomeTitle(style="font-size: 5rem")="Take Back Our Country"
+					h1.spaldingHomeTitle(style="font-size: 5rem")="and Defend Our People..."
+					h3.spaldingHomeSubtitle="Insight and Advice for America's Future"
+					.spaldingHomeButtons
+						button.spaldingHomeCTAButton="WATCH OUR VIDEO"
+						button.spaldingHomeCTAButton(style="margin-left: 25px; background-color: #A6181B")="FREE CHAPTER"
+				.spaldingHomeOffer
+					.spaldingColumn(style="flex: 1;")
+						h3(style="font-weight: 300; font-size: 2.5rem; line-height: 3.5rem; padding-left: 3rem") GET THE FIRST
+							br
+							| CHAPTER OF STEALTH
+							br
+							| WAR
+							span(style="color: #A6181B")=' FREE'
+					.spaldingColumn(style="flex: 1.2;")
+						.spaldingHomeOfferInputs(style="display: flex; margin-bottom: 20px;")
+							input.spaldingHomeOfferInput(type="text" placeholder="FIRST NAME")
+							input.spaldingHomeOfferInput(type="text" style="margin-left: 20px;" placeholder="EMAIL *")
+						button.spaldingHomeOfferSubmit="SEND ME THE FREE CHAPTER"
+			section.spaldingAboutSection#spaldingAbout(style="padding: 10rem 0;")
+				.spaldingColumn(style="flex: 1; display: flex; justify-content: center")
+					img.spaldingImage(src="./images/spalding/spalding.png")
+				.spaldingColumn(style="flex: 1; color: white; padding: 0 10% 0 5%;")
+					h2(style="font-size: 2.75rem; letter-spacing: 5px")="ABOUT"
+					p(style="font-size: 1.5rem; font-weight: bold")="GENERAL SPALDING"
+					p(style="font-size: 1.3rem;") General Spalding has served in senior positions of strategy and diplomacy within the Defense and State Departments for more than 26 years, retiring as a brigadier general.
+						br
+						|He was the chief architect for the Trump Administration’s widely praised National Security Strategy (NSS), and the Senior Director for Strategy to the President at the National Security Council.
+					p(style="font-size: 1.3rem; letter-spacing: 5px")="NOTE FROM THE GENERAL"
+					p(style="font-size: 1.3rem;") "I am a national security expert and patriot entrepreneur identifying threats to our security, economy, and way of life. I am committed to bringing jobs back to the USA by restoring American manufacturing and securing our most critical resource...data."
+					p(style="font-size: 1.3rem; font-style: italic")="General Spalding"
+			section.spaldingSocialMedia#spaldingSocialMedia(style="background-color: black; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10rem 0")
+				h2.spaldingSocialMediaTitle(style="font-size: 4.5rem; font-weight: 700; color: white;")="SOCIAL MEDIA"
+				.spaldingTwitterContainer(style="max-width: 800px; width: 100%")
 					<!-- ko if: showTwitterObjResult() -->
-					.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem; width: 100%; margin-top: 1rem" data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
-					<!-- /ko -->
-					<!-- ko if: !showTwitterObjResult() -->
-					.ui.segment(style="height: 30rem !important; width: 100% !important; margin-top: 1rem !important;")
-						.ui.active.dimmer
-							.ui.text.loader='Fetching Twitter...'
-						p
-					<!-- /ko -->
-		section.spaldingWatch#WATCH
-			.spaldingSectionContent
-				h2.spaldingSectionTitle="Watch"
-				.spaldingVideoContainer
-					ul.videoCarouselMain(data-bind="foreach: videoList")
-						li.spaldingSelectedItemWrapper
-							img.spaldingSelectedVideo(data-bind="attr: {'src': './images/spalding/video/' + $data.image, 'id': $data.image}")
-					.videoCarouselNavigation
-						i.play.circle.outline.icon(style="cursor: pointer; color: rgba(200,200,200,0.75); position: absolute; top: 0; left: 0; bottom: 0; right: 0; font-size: 5rem; margin: auto !important;" data-bind="click: (data, event) => {videoClick(data, event)}")
-						img.carouselNavigation(src="./images/spalding/left-arrow.svg" data-bind="click: () => {navigateCarousel('previous')}")
-						img.carouselNavigation(src="./images/spalding/right-arrow.svg" data-bind="click: () => {navigateCarousel('next')}")
-						.ui.active.dimmer(data-bind="style: {'z-index': mediaLoading() ? '9999' : '-100', 'display': mediaLoading() && !videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0")
-							.ui.text.loader="Loading..."
-						video#videoPlayer(data-bind="style: {'display': videoCanPlay() ? 'flex' : 'none'}" style="position: absolute; width: 100%; height: 100%; left: 0; background-color: black" controls autoplay)
-					<!-- ko ifnot: videoCanPlay() -->
-					.videoDownloadSelection(style="z-index: 100")
-						<!-- ko if: videoList()[selectedIndex()].audio -->
-							span( data-bind = "template: { name: 'ajaxLableButton', data: videoList()[selectedIndex()].audio }")
+						.twitterTimeObj(style="background-color: ghostwhite; padding: 0 20px; flex: 1; overflow: auto; height: 30rem; max-height: 30rem; width: 100%; margin-top: 1rem" data-bind = "template: { name: 'twitterAccountObj', data: twitterObj }")
 						<!-- /ko -->
-						<!-- ko if: videoList()[selectedIndex()].video480 -->
-							span( data-bind = "template: { name: 'ajaxLableButton', data: videoList()[selectedIndex()].video480 }")
-						<!-- /ko -->
-
-						<!-- ko if: videoList()[selectedIndex()].video720 -->
-							span( data-bind = "template: { name: 'ajaxLableButton', data: videoList()[selectedIndex()].video720 }")
-						<!-- /ko -->
+						<!-- ko if: !showTwitterObjResult() -->
+						.ui.segment(style="height: 30rem !important; width: 100% !important; margin-top: 1rem !important;")
+							.ui.active.dimmer
+								.ui.text.loader='Fetching Twitter...'
+							p
 					<!-- /ko -->
-				ul.videoCarousel(data-bind="foreach: videoList()")
-					li.videoCarouselItem(data-bind="attr: {'id': 'carouselItem ' + $index()},click: () => {$parent.selectedIndex($index())}")
-						img.videoCarouselItemImage(data-bind="attr: {'src': './images/spalding/video/' + $data.image}")
-		//- section.spaldingListen#LISTEN
-		//- 	.spaldingSectionContent
-		//- 		h2.spaldingSectionTitle="Listen"
-		section.spaldingRead#READ
-			.spaldingSectionContent
-				h2.spaldingSectionTitle="Read"
-				img.spaldingReadBanner(src="./images/spalding/read_banner.png")
-		footer.spaldingFooter
-			p="Copyright © 2020 General Spalding. All rights reserved."
-			.spaldingKloak
-				img.spaldingKloakLogo(src="./images/spalding/kloak_logo.svg")
-				p(style="margin-left: 10px;")="Hosted on Kloak Platform."
+			section.spaldingWatchSection#spaldingWatch(style="background-color: rgb(20, 20, 20); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10rem 0")
+				h2.spaldingWatchTitle(style="font-size: 4.5rem; font-weight: 700; color: white;")="APPEARANCES"
+				.spaldingVideoCollection(data-bind="foreach: {data: videoShowMore() ? videoList : videoList.slice(0,6), as: 'video'}")
+					.spaldingVideoItem(data-bind="click: () => { $parent.playVideo(video) }, clickBubble: false" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer;")
+						img(data-bind="attr: {src: `./images/spalding/videoThumbnails/${video.image}`}" style="width: 100%; height: 100%")
+						i.play.circle.outline.icon(style="color: rgba(150, 150, 150, 0.75); margin: auto !important; font-size: 40px; position: absolute; top: 0; bottom: 0; left: 0; right: 0;")
+						<!-- ko if: $parent.selectedVideo() === video.url -->
+						<!-- ko template: { name: 'kloakVideoPlayer', data: $parent.videoPlayer}  --><!-- /ko -->
+						<!-- /ko -->
+				button.spaldingVideoShowMore(data-bind="text: videoShowMore() ? 'HIDE VIDEOS' : 'SHOW MORE', click: () => {videoShowMore(!videoShowMore())}, clickBubble: false" style="background-color: #A6181B")
+			section.spaldingFooter(style="display: flex; justify-content: center; align-items: center; height: 6rem; color: white; background-color: black")
+				.spaldingFooterBottom
+					p="Hosted on Kloak Platform © 2020 All Rights Reserved | General Spalding"
 	<!-- /ko -->

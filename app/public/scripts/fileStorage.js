@@ -14,14 +14,14 @@ class fileStorage {
         this.showFileInfo = ko.observable(null);
         this.showEditFilename = ko.observable(false);
         this.showDownloads = ko.observable(false);
-        this.selectedVideo = ko.observable(null);
+        this.selectedVideo = ko.observable('');
         this.searchKey = ko.observable();
         this.selectedFile = ko.observable(null);
         this.editFilenameInput = ko.observable("");
         this.addTagInput = ko.observable("");
         this.selectedInfoFile = ko.observable();
         this.isRecording = ko.observable(false);
-        this.mediaViewer = null;
+        this.videoPlayer = ko.observable(null);
         this.recorder = ko.observable();
         this.videoPlaying = ko.observable(false);
         this.colorOptions = [
@@ -309,9 +309,9 @@ class fileStorage {
             this.selectedInfoFile(null);
             this.showFileOptions(null);
             this.selectedVideo(null);
-            if (this.mediaViewer) {
-                this.mediaViewer.terminate();
-                this.mediaViewer = null;
+            if (this.videoPlayer()) {
+                this.videoPlayer().terminate();
+                this.videoPlayer(null);
             }
             return;
         };
@@ -352,7 +352,7 @@ class fileStorage {
                     const videoPlayer = document.getElementById("videoPlayer");
                     URL.revokeObjectURL(videoPlayer['src']);
                     videoPlayer['src'] = null;
-                    this.mediaViewer = null;
+                    this.videoPlayer(null);
                     break;
                 case 'editFilename':
                     if (this.editFilenameInput().trim() !== "") {
@@ -385,30 +385,34 @@ class fileStorage {
                 case "play":
                     if (this.selectedVideo() === fileData['uuid'].filter(uuid => uuid !== null)[0]) {
                         this.selectedVideo(null);
-                        console.log(this.mediaViewer);
-                        this.mediaViewer.terminate(() => {
-                            this.mediaViewer = null;
-                        });
+                        console.log(this.videoPlayer);
+                        this.videoPlayer().terminate();
                         return;
                     }
                     this.selectedVideo(fileData['uuid'].filter(uuid => uuid !== null)[0]);
-                    this.mediaViewer = new MediaViewer({ player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, canPlay, playing) => {
-                        if (err) {
-                            return console.log(err);
-                        }
-                        this.videoPlaying(playing);
-                    }, () => { });
+                    this.videoPlayer(new VideoPlayer('fileStorageYoutubePlayer', () => { }, () => { }));
+                    console.log(fileData);
                     if (fileData.youtube) {
-                        if (fileData.uuid.length > 1) {
-                            this.mediaViewer.downloadedYoutube(fileData.uuid, fileData['youtube'].mimeType, fileData['youtube'].duration, fileData['youtube']['thumbnail']);
-                        }
-                        else {
-                            this.mediaViewer.streamedYoutube(fileData.uuid[0], fileData['youtube'].mimeType, fileData['youtube'].duration, fileData.size, fileData['youtube'].id);
-                        }
+                        this.videoPlayer().downloadedYoutube(fileData);
                     }
-                    else {
-                        this.mediaViewer.uploadedVideo(fileData.uuid, fileData['videoData'].mimeType, fileData['videoData'].duration, fileData['videoData'].fastStart);
+                    if (fileData.videoData) {
+                        this.videoPlayer().uploadedVideo(fileData);
                     }
+                    // this.mediaViewer = new MediaViewer({player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, canPlay, playing) => {
+                    // 	if (err) {
+                    // 		return console.log(err)
+                    // 	}
+                    // 	this.videoPlaying(playing)
+                    // }, () => {})
+                    // if (fileData.youtube) {
+                    // 	if (fileData.uuid.length > 1) {
+                    // 		this.mediaViewer.downloadedYoutube(fileData.uuid, fileData['youtube'].mimeType, fileData['youtube'].duration, fileData['youtube']['thumbnail'])
+                    // 	} else {
+                    // 		this.mediaViewer.streamedYoutube(fileData.uuid[0], fileData['youtube'].mimeType, fileData['youtube'].duration, fileData.size, fileData['youtube'].id)
+                    // 	}
+                    // } else {
+                    // 	this.mediaViewer.uploadedVideo(fileData.uuid, fileData['videoData'].mimeType, fileData['videoData'].duration, fileData['videoData'].fastStart)
+                    // }
                     updateLastViewed();
                 // const type = fileData.tag().filter(tag => tag === 'webm' || tag === 'mp4' || tag === 'mp3')
                 // const isRecording = fileData.tag().includes('recording')

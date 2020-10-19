@@ -43,6 +43,13 @@
 							<!-- /ko -->
 						<!-- /ko -->
 				.fileStorageInner(data-bind="click: () => { }, clickBubble: false")
+					.fileStorageVideoContainer(style="width: 100%; height: auto; display: flex; justify-content: center; position: relative;")
+						<!-- ko if: selectedVideo()-->
+						.videoWrapper(style="position: relative; max-width: 686px; width: 100%; margin-top: 30px;")
+							<!-- ko if: videoPlayer() -->
+							<!-- ko template: { 'name': 'kloakVideoPlayer', 'data': videoPlayer } --><!-- /ko -->
+							<!-- /ko -->
+						<!-- /ko -->
 					.fileStorageGlobalActions
 						<!-- ko if: showDownloads() -->
 						h3="Downloads"
@@ -192,33 +199,31 @@
 								.fsAddTag(data-bind="style: {display: $parent.selectedInfoFile() == $index() ? 'flex' : 'none'}")
 									input.fsAddTagInput(placeholder="Add tag(s)..." data-bind="textInput: $parent.addTagInput, click: () => {}, clickBubble: false")
 									i.check.circle.icon.fsAddTagSubmit(data-bind="click: (data, event) => {$parent.fileAction(data, event, 'addTag')}, clickBubble: false")
-							<!-- ko if: $parent.selectedVideo() == file['uuid'].filter(uuid => uuid !== null)[0] -->
-							.videoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'].filter(uuid => uuid !== null)[0] ? 'auto' : '0rem'}" style="position: relative; width: 100%")
-								video.fsVideoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'].filter(uuid => uuid !== null)[0] ? '30rem' : '0rem'}, attr: {'id' : file['uuid'].filter(uuid => uuid !== null)[0]}" style="width: 100%; background-color: black; transition: height 150ms ease-in-out" autoplay)
-								.videoControlOverlay(data-bind="click: () => {}, clickBubble: false")
-									.videoControls(data-bind="style: {display: $parent.selectedVideo() === file['uuid'].filter(uuid => uuid !== null)[0] ? 'flex' : 'none'}" style="")
-										.videoControlTop
-											.videoSeekBar(style="flex-grow: 1; cursor: pointer")
-												.fullBar#fullBar(style="width: 100%; height: 8px; position: relative; background-color: rgba(125, 125, 125, 1);")
-													.bufferedBar#bufferedBar(style="height: 8px; position: absolute; content: ''; background-color: rgba(200, 200, 200, 0.75); transition: width 100ms ease-in-out;")
-													.currentTimeBar#currentTimeBar(style="height: 8px; position: absolute; content: ''; background-color: red; transition: width 100ms ease-in-out;")
-										.videoControlBottom#videoControlBottom(data-bind="click: () => {}, clickBubble: false" style="align-items: center; justify-content: space-between;")
-											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-start")
-												button.videoActionButton#videoPlayButton
-													<!-- ko if: $parent.videoPlaying() -->
-													i.pause.icon
-													<!-- /ko -->
-													<!-- ko if: !$parent.videoPlaying() -->
-													i.play.icon
-													<!-- /ko -->
-												button.videoActionButton#videoStopButton
-													i.stop.icon
-												.videoDuration(style="height: 100%; display: flex; align-items: center; margin-left: 5px")
-													p#durationText(style="color: white; font-size: 12px")="00:00 / 00:00"
-											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-end")
-												button.videoActionButton#videoFullScreenButton
-													i.expand.icon
-							<!-- /ko -->
+										//- .videoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'].filter(uuid => uuid !== null)[0] ? 'auto' : '0rem'}" style="position: relative; width: 100%")
+										//- 	video.fsVideoPlayer(data-bind="style: {height: $parent.selectedVideo() == file['uuid'].filter(uuid => uuid !== null)[0] ? '30rem' : '0rem'}, attr: {'id' : file['uuid'].filter(uuid => uuid !== null)[0]}" style="width: 100%; background-color: black; transition: height 150ms ease-in-out" autoplay)
+										//- 	.videoControlOverlay(data-bind="click: () => {}, clickBubble: false")
+										//- 		.videoControls(data-bind="style: {display: $parent.selectedVideo() === file['uuid'].filter(uuid => uuid !== null)[0] ? 'flex' : 'none'}" style="")
+										//- 			.videoControlTop
+										//- 				.videoSeekBar(style="flex-grow: 1; cursor: pointer")
+										//- 					.fullBar#fullBar(style="width: 100%; height: 8px; position: relative; background-color: rgba(125, 125, 125, 1);")
+										//- 						.bufferedBar#bufferedBar(style="height: 8px; position: absolute; content: ''; background-color: rgba(200, 200, 200, 0.75); transition: width 100ms ease-in-out;")
+										//- 						.currentTimeBar#currentTimeBar(style="height: 8px; position: absolute; content: ''; background-color: red; transition: width 100ms ease-in-out;")
+										//- 			.videoControlBottom#videoControlBottom(data-bind="click: () => {}, clickBubble: false" style="align-items: center; justify-content: space-between;")
+										//- 				.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-start")
+										//- 					button.videoActionButton#videoPlayButton
+										//- 						<!-- ko if: $parent.videoPlaying() -->
+										//- 						i.pause.icon
+										//- 						<!-- /ko -->
+										//- 						<!-- ko if: !$parent.videoPlaying() -->
+										//- 						i.play.icon
+										//- 						<!-- /ko -->
+										//- 					button.videoActionButton#videoStopButton
+										//- 						i.stop.icon
+										//- 					.videoDuration(style="height: 100%; display: flex; align-items: center; margin-left: 5px")
+										//- 						p#durationText(style="color: white; font-size: 12px")="00:00 / 00:00"
+										//- 				.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-end")
+										//- 					button.videoActionButton#videoFullScreenButton
+										//- 						i.expand.icon
 							<!-- ko if: $root.storageHelper.currentAssembly()[file.uuid] -->
 							.fileStorageProgressBar
 								.fsProgressBarUncomplete

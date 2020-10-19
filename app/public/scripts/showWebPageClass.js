@@ -26,39 +26,34 @@ class buttonStatusClass {
         console.log(_self);
         if (this.loading() === 5) {
             _view.storageHelper.decryptLoad('history', (err, data) => {
-                if (err) {
-                    return;
-                }
-                if (_view.mediaViewer) {
-                    _view.mediaViewer.terminate();
-                    _view.appScript().view.videoCanStart(false);
-                }
-                let histories = JSON.parse(Buffer.from(data).toString()).reverse();
-                for (let i = 0; i < histories.length; i++) {
-                    if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
-                        if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
-                            _view.mediaViewer = new MediaViewer({ player: document.getElementById("youtubePlayer"), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, canPlay, playing) => {
-                                if (err) {
-                                    console.log(err);
-                                    return;
+                _view.storageHelper.decryptLoad('history', (err, data) => {
+                    if (err) {
+                        return;
+                    }
+                    if (_view.videoPlayer()) {
+                        _view.videoPlayer().terminate();
+                        _view.appScript().view.videoCanStart(false);
+                    }
+                    let histories = JSON.parse(Buffer.from(data).toString()).reverse();
+                    for (let i = 0; i < histories.length; i++) {
+                        if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
+                            if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
+                                _view.videoPlayer(new VideoPlayer("", () => { }, () => { }));
+                                if (_self.cmd.Args[1] === 'audio') {
+                                    return _view.videoPlayer().downloadedYoutube(histories[i]);
                                 }
-                                _view.appScript()['view']?.videoPlaying(playing);
-                                _view.appScript()['view']?.videoCanStart(canPlay);
-                                _view.appScript()['view']?.skipAdvertisement(true);
-                                // _view.mediaViewer.play()
-                            }, () => {
-                            });
-                            // if (_self.cmd.Args[1] === 'audio') {
-                            // 	_view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i].youtube.mimeType,histories[i].youtube.duration)
-                            // } else {
-                            if (_self.cmd.Args[1] === '480' || _self.cmd.Args[1] === '720') {
-                                return _view.mediaViewer.streamedYoutube(histories[i].uuid[0], histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i].size, histories[i]['youtube'].id);
+                                else {
+                                    if (_self.cmd.Args[1] === '480' || _self.cmd.Args[1] === '720') {
+                                        _view.videoPlayer(new VideoPlayer("", () => { }, () => { }));
+                                        return _view.videoPlayer().downloadedYoutube(histories[i]);
+                                    }
+                                    // return _view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i]['youtube']['thumbnail'])
+                                    // }
+                                }
                             }
-                            return _view.mediaViewer.downloadedYoutube(histories[i].uuid, histories[i]['youtube'].mimeType, histories[i]['youtube'].duration, histories[i]['youtube']['thumbnail']);
-                            // }
                         }
                     }
-                }
+                });
             });
         }
         if (this.error()) {
@@ -353,6 +348,10 @@ class showWebPageClass {
         this.showErrorMessage(true);
     }
     close() {
+        if (_view.videoPlayer()) {
+            _view.videoPlayer().terminate();
+            _view.videoPlayer(null);
+        }
         this.showImgPage(false);
         this.showHtmlCodePage(false);
         this.png(null);

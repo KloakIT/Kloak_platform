@@ -668,7 +668,6 @@ ul.plan-features {
 	overflow: hidden;
 	padding: 2em;
 	position: relative;
-	translate: ;
 }
 
 .loaderCoNET-div {
@@ -1119,10 +1118,6 @@ ANDY - MASONARY IMAGES
 	margin: 0;
 }
 
-.link {
-	
-}
-
 .image-link {
 	color: #cacad0;
 	text-decoration: underline;
@@ -1399,6 +1394,7 @@ ANDY - DOWNLOADER
 	background-color: #33e46d;
 	transition: width 500ms ease-in-out;
 }
+
 
 /* ====================================================================================================================
 ANDY - FILE STORAGE
@@ -2306,548 +2302,169 @@ ANDY - FILE STORAGE
 GENERAL SPALDING
 ======================================================================================================================= */
 
-@font-face {
-	font-family: "Rajdhani-Regular";
-	src: url("../images/spalding/Rajdhani-Regular.ttf");
-}
-
-@font-face {
-	font-family: "Rajdhani-SemiBold";
-	src: url("../images/spalding/Rajdhani-SemiBold.ttf");
-}
-
-@font-face {
-	font-family: "Rajdhani-Bold";
-	src: url("../images/spalding/Rajdhani-Bold.ttf");
-}
-
-* {
-	padding: 0;
-	margin: 0;
-	box-sizing: border-box;
-}
-
-body {
-	width: 100%;
-}
-
-.spaldingHome {
-	z-index: 50;
-	width: 100%;
-	height: 80vh;
-	background-color: rgb(15, 14, 23);;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-end;
-	border-bottom: 1px solid rgba(200,200,200,0.35);
-}
-
-.spaldingDesktopHeader, .spaldingMobileHeader {
-	background-color: rgb(15, 14, 23);
-	width: 100%;
-	height: 5rem;
-	border-bottom: 2.5px solid red;
+.spaldingBackButton {
+	color: white;
+	transition: all 150ms ease-in-out;
+	background-color: transparent;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	padding: 0 60px;
-}
-
-.spaldingMobileHeader {
-	display: none;
-	padding: 0 30px;
-}
-
-.spaldingMobileUpper {
-	width: 100%;
 	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.spaldingMobileMenu {
-	width: 2.25rem;
-	height: 2.25rem;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	padding: 5px;
-	border-radius: 15px;
-}
-
-.spaldingMobileMenu:focus {
-	outline: 10px solid blue
-}
-
-.spaldingMobileIcon {
-	width: 100%;
-	height: 100%;
-}
-
-.spaldingNavigation {
-	display: flex;
-	align-items: center;
-}
-
-.spaldingMobileNavigation {
-	width: 100%;
-	transition: transform 150ms ease-in-out;
-	transform-origin: top center;
-	display: none;
-	position: absolute;
-}
-
-.spaldingLink, .spaldingMobileLink {
-	color: ghostwhite;
-	font-family: "Rajdhani-Bold";
-	padding: 8px 35px;
+	padding: 10px 20px;
 	cursor: pointer;
 }
 
-.spaldingMobileLink {
+.spaldingBackButton:hover {
+	color: black;
+	background-color: ghostwhite;
+}
+
+.spaldingBackgroundImage {
+	background-image: url(../images/spalding/background_img.jpg);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: bottom;
+	content: "";
+	height: 100vh;
+	width: 100%;
+	position: fixed;
+}
+
+.spaldingPageContent {
+	position: absolute;
+	top: 0;
+	left: 0;
+	content: '';
+	width: 100%;
+	height: auto;
+}
+
+.spaldingHeaderBar {
+	height: 8rem;
+	display: flex;
+	align-items: center;
+	padding: 0 3rem;
+}
+
+.spaldingHeaderLogo, .spaldingHeaderNavigation, .spaldingHeaderBuyBook {
+	flex: 1;
+}
+
+.spaldingHeaderLogoImage {
+	height: 4.25rem;
+	width: auto;
+}
+
+.spaldingHeaderNavigation {
+	flex-grow: .75;
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+}
+
+.spaldingNavItem {
+	margin: 0 5px;
+	font-size: 14px;
+	font-weight: 300;
+	color: white;
+	cursor: pointer;
+}
+
+.spaldingNavItem:hover {
+	color: white;
+}
+
+.spaldingNavItem:visited {
+	color: white;
+}
+
+.spaldingHomeSection {
+	background-color: rgba(0,0,0,0.75);
+	height: auto;
 	width: 100%;
 }
 
 .spaldingHomeContent {
-	width: 1140px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 	height: 70vh;
-	background-color: rgb(15, 14, 23);
-	display: flex;
-	align-items: flex-end;
-	justify-content: center;
-}
-
-.spaldingBook {
-	padding: 20px 0;
-	height: 50%;
-	width: auto;
-}
-
-.spaldingBookDesc {
 	color: white;
-	height: 50%;
-	display: flex;
-	align-items: center;
-	margin: 0 30px;
-	font-size: 26px;
-	font-style: italic;
-	font-family: "Rajdhani-Bold";
 }
 
-.generalSpalding {
-	height: 66vh;
+.spaldingHomeTitle {
+	line-height: 4rem;
 }
 
-.spaldingAbout {
-	background-color: rgb(15, 14, 23);
-	padding: 50px 10px;
-	width: 100%;
+.spaldingHomeSubtitle {
+	font-weight: 300;
+	font-size: 2.5rem;
+}
+
+.spaldingHomeCTAButton, .spaldingVideoShowMore {
+	margin-top: 20px;
+	color: ghostwhite;
+	padding: 20px 50px;
+	background-color: transparent;
+	border: 1px solid white;
+	font-weight: 700;
+}
+
+.spaldingHomeOffer {
+	background-color: black;
+	color: white;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	padding: 3rem 25% 3rem 15%;
 }
 
-.spaldingAboutInner {
-	width: 1140px;
-	display: flex;
-	align-items: top;
-}
-
-.spaldingAboutLeft {
-	background-color: ghostwhite;
-	height: 100%;
+.spaldingHomeOfferInput, .spaldingHomeOfferSubmit {
 	flex: 1;
-	padding: 50px 35px;
-	font-family: "Rajdhani-Regular";
-}
-
-.spaldingAboutText {
-	font-family: "Rajdhani-SemiBold";
-	margin-bottom: 24px;
-	font-size: 1.6rem;
-	letter-spacing: 0px;
-}
-
-.spaldingAboutTitle {
-	font-family: "Rajdhani-SemiBold";
-	font-size: 2rem;
-	margin-bottom: 20px;
-}
-
-.spaldingAboutDesc {
-	color: grey;
-	font-size: 16px;
-	font-weight: 500;
-	line-height: 25px;
-	margin-bottom: 24px;
-}
-
-.spaldingAboutRight {
-	margin-left: 25px;
-	flex: 1;
-	height: 100%;
-	padding: 20px 0 0 0;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.spaldingAsSeenOn {
-	width: 100%;
-	flex: 1;
-}
-
-.spaldingTwitter {
-	background-color: ghostwhite;
-	width: 100%;
-	margin-top: 1rem;
+	height: 3.5rem;
+	border: none;
 	border-radius: 5px;
-	font-family: "Rajdhani-Regular";
-	flex: 4;
-	overflow-y: scroll;
-}
-
-.spaldingTwitterHeader {
-	width: 100%;
-	display: flex;
-	align-items: flex-end;
 	padding: 10px;
-	font-family: "Rajdhani-Regular";
 }
 
-.spaldingTwitterTweets {
-	display: flex;
-	flex-direction: column;
-}
-
-.spaldingTweets {
-	display: flex;
+.spaldingHomeOfferSubmit, .spaldingHomeOfferSubmit {
 	width: 100%;
-	padding: 10px;
-	border-top: 1px solid rgba(0, 0, 0, 0.15);
+	background-color: #A6181B;
+	font-weight: 700;
+	color: white;
 }
 
-.spaldingTwitterProfile {
-	border-radius: 50%;
-	object-fit: contain;
-	height: 2rem;
-	width: auto;
-}
-
-.spaldingTwitterContent {
-	display: flex;
-	flex-direction: column;
-	padding: 0 10px;
-}
-
-.spaldingTwitterText {
-	margin-top: 10px;
-}
-
-.spaldingWatch,
-.spaldingListen,
-.spaldingRead {
-	background-color: rgb(15, 14, 23);
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	padding: 0 10px;
-}
-
-.spaldingSectionContent {
-	background-color: rgb(15, 14, 23);
-	margin: 50px;
-	padding: 0px 30px 20px 30px;
-	border: 1px solid #36454F;
-	max-width: 1140px;
-}
-
-.spaldingSelectedItemWrapper {
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.spaldingSelectedVideo {
-	height: 55rem;
-	object-fit: contain;
-	position: relative;
-	z-index: 50;
-}
-
-.spaldingPlayIcon:hover {
-	background-color: rgba(255, 255, 255, 0.35);
-	opacity: 1;
-}
-
-.spaldingVideoContainer {
-	position: relative;
-}
-
-.videoCarouselMain {
-	height: 35rem;
-	overflow: hidden;
-	width: 100%;
-	position: relative;
+.spaldingAboutSection {
+	background-image: linear-gradient(450deg,#000 34%,#585858);
 	display: flex;
 	align-items: center;
 }
 
-.videoCarousel {
-	display: flex;
-	align-items: center;
-	width: auto;
-	overflow: hidden;
-	height: 8rem;
-	margin-top: 10px;
+.spaldingImage {
+	height: 60vh;
 }
 
-.videoCarouselNavigation {
+.spaldingVideoCollection {
+	background-color: rgb(100,100,100);
+	padding: 20px;
+	width: 60%;
+	display: grid;
+	grid-gap: 20px;
+	grid-template-columns: repeat(3, 1fr);
+	grid-auto-rows: minmax(100px, 150px);
+}
+
+.spaldingVideoShowMore:focus {
+	outline: none;
+}
+
+.spaldingVideoCss {
 	position: absolute;
+	height: 100%;
 	width: 100%;
-	height: 100%;
-	padding: 0 15px;
 	top: 0;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	content: "";
-	z-index: 100;
-}
-
-.carouselNavigation {
-	width: 1.35rem;
-	height: 1.35rem;
-	cursor: pointer;
-}
-
-.videoDownloadSelection {
-	position: relative;
-	z-index: 101;
-}
-
-.videoCarouselItem {
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.videoCarouselItem:nth-of-type(even) {
-	margin: 0px 10px;
-}
-
-.videoCarouselItemImage {
-	height: 100%;
-	object-fit: cover;
-}
-
-.spaldingReadBanner {
-	width: 100%;
-	padding: 0 20px;
-	height: auto;
-}
-
-.spaldingSectionTitle {
-	color: ghostwhite;
-	font-family: "Rajdhani-Bold";
-	letter-spacing: 2px;
-	background-color: #dd1115;
-	padding: 5px 25px;
-	width: 15rem;
-	font-size: 50px;
-	transform: translateY(-50%);
-	margin-left: 5px;
-}
-
-.spaldingFooter {
-	border-top: 1px solid rgba(200,200,200,0.35);
-	background-color: rgb(15, 14, 23);
-	font-family: "Rajdhani-Regular";
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	color: ghostwhite;
-	padding: 50px 0;
-	font-size: 18px;
-}
-
-.spaldingKloak {
-	display: flex;
-	align-items: center;
-	margin-top: 10px;
-}
-
-.spaldingKloakLogo {
-	background-color: ghostwhite;
-	width: 3rem;
-	height: 3rem;
-	border-radius: 50%;
-}
-
-.spaldingHomeButton {
-	width: 2.25rem !important;
-	height: 2.25rem !important;
-	font-size: 1.5rem !important;
-	color: grey;
-	position: absolute;
-	top: 1.5rem;
-	left: 1.5rem;
-	display: flex !important;
-	justify-content: center;
-	align-items: center;
-	padding: 5px;
-	border-radius: 50%;
-	color: rgba(200,200,200,0.5);
-	transition: all 150ms ease-in-out;
-	cursor: pointer;
-}
-
-.spaldingHomeButton:hover {
-	color: rgba(200,200,200,1);
-}
-
-.displayMediaOverlay {
-	widtH: 100vw;
-	height: 100vh;
-	transition: all 250ms ease-in-out;
-	background-color: rgba(0,0,0,0.75);
-	display: none;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	position: fixed;
-	top: 0;
-	z-index: 9999;
-}
-
-.imageViewer {
-	object-fit: contain;
-	max-width: 75%;
-	max-height: 75%;
-}
-
-@media screen and (max-width: 1200px) {
-	.spaldingHome {
-		height: auto
-	}
-
-	.spaldingHomeContent {
-		width: 100%;
-		height: 50vh;
-		padding: 0 50px;
-	}
-
-	.spaldingBookDesc {
-		font-size: 20px;
-	}
-
-	.generalSpalding {
-		height: 75%
-	}
-}
-
-@media screen and (max-width: 1025px) {
-	.spaldingDesktopHeader {
-		display: none
-	}
-
-	.spaldingMobileHeader {
-		display: flex
-	}
-
-	.spaldingMobileNavigation {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.spaldingAboutInner {
-		flex-direction: column;
-		align-items: center;
-		width: 90%;
-	}
-
-	.spaldingAboutRight {
-		margin: 0px;
-	}
-
-	.spaldingSectionContent {
-		width: 90%;
-	}
-}
-
-@media screen and (max-width: 800px) { 
-	.spaldingBook {
-		height: 50%;
-	}
-
-	.spaldingBookDesc {
-		font-size: .7rem;
-	}
-
-	.spaldingBookDesc {
-		font-size: 1rem;
-		/* display: none; */
-	}
-
-	.spaldingHomeContent {
-		justify-content: space-between;
-		height: 50vh;
-	}
-
-	.generalSpalding {
-		height: 75%;
-	}
-
-	.videoCarouselMain {
-		height: 25rem;
-	}
-
-	.spaldingSelectedVideo {
-		height: 25rem
-	}
-}
-
-@media screen and (max-width: 600px) {
-	.spaldingHomeContent {
-		justify-content: space-between;
-		height: 30vh;
-	}
-
-	.spaldingBookDesc {
-		font-size: .5rem;
-	}
-
-	.spaldingSectionContent {
-		width: 95%;
-	}
-}
-
-@media screen and (max-width: 450px) {
-	.spaldingHomeContent {
-		justify-content: space-between;
-		height: 30vh;
-	}
-
-	.spaldingBook {
-		height: 75%;
-	}
-
-	.spaldingBookDesc {
-		display: none;
-	}
-
-	.videoCarouselMain {
-		height: 20rem;
-	}
-
-	.spaldingSelectedVideo {
-		height: 20rem
-	}
+	left: 0;
 }
 
 /* VIDEO PLAYER */
@@ -2902,12 +2519,27 @@ body {
 	background-color: rgba(248, 248, 255, 0.75)
 }
 
-
-
-
-
-
 /* VIDEO PLAYER CSS */
+
+.youtubePlayer {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	width: 100%;
+}
+
+.fileStorageYoutubePlayer {
+	width: 100%;
+	height: 30rem;
+	box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.3)
+}
+
+.genSpaldingYoutubePlayer {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	left: 0;
+}
 
 .videoActionButton {
 	background-color: transparent;
@@ -2953,12 +2585,21 @@ body {
 	transition: opacity 200ms ease-in-out
 }
 
-.videoControlBottom {
+.kloakControls {
 	display: none;
 }
 
-.videoControlOverlay:hover #videoControlBottom {
+.kloakVideoOverlay:hover #kloakControls {
 	display: flex
+}
+
+.kloakFullBar {
+	height: 4px;
+	transition: height 150ms ease-in-out
+}
+
+.kloakVideoSeekBar:hover #kloakFullBar {
+	height: 100%;
 }
 
 .videoControls:hover {
@@ -2966,14 +2607,10 @@ body {
 }
 
 .skipAdButton {
-	background-color: rgba(0,0,0,0.75); 
-	position: absolute; 
-	right: 0; 
-	bottom: 0;
+	background-color: rgba(0,0,0,0.75);
 	border: 1px solid ghostwhite; 
 	border-right: none; 
 	color: ghostwhite; 
-	z-index: 101; 
 	margin-bottom: 15px;
 	padding: 10px 25px;
 }

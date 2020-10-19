@@ -49,27 +49,17 @@ class forYoutube extends sharedAppClass {
         this.view = new showWebPageClass(url, null, multimediaObj, () => {
             exit();
             this.view = null;
-            if (_view.mediaViewer) {
-                _view.mediaViewer.terminate();
+            if (_view.videoPlayer()) {
+                _view.videoPlayer().terminate();
             }
         }, item => {
             // const uu = item
             console.log(item);
             if (item) {
-                console.time("STARTING VIDEO PLAY REQUEST");
-                _view.mediaViewer = new MediaViewer({ player: document.getElementById('youtubePlayer'), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText") }, (err, canPlay, playing) => {
-                    if (err) {
-                        return err;
-                    }
-                    if (canPlay) {
-                        if (!this['view']?.videoCanStart()) {
-                            this['view']?.videoCanStart(canPlay);
-                        }
-                    }
-                    this['view']?.videoPlaying(playing);
-                }, () => {
-                });
-                _view.mediaViewer.youtube(item);
+                _view.videoPlayer(new VideoPlayer('youtubePlayer', () => { }, () => { }));
+                // const uu = item
+                console.log(item);
+                _view.videoPlayer().youtubePlayer(item);
             }
             else {
                 this.view.videoUnablePlay(true);

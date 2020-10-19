@@ -235,54 +235,11 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 					<!-- ko if: thumbnails -->
 						a.ui.fluid.image( data-bind ="click: () => { $parent.videoCanStart() || $parent.multimediaLoading() || $parent.videoUnablePlay() ? null : $parent.ClickPlay() }" href ="#" )
 							img( data-bind = " attr: { src: thumbnails[ thumbnails.length - 1 ].url }")
-							//- .ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
-							//- 	button.ui.icon.youtube.button.huge.circular
-							//- 		i.icon.large.youtube
-							<!-- ko if: $parent.multimediaLoading() || !$parent.videoCanStart() || $parent.videoUnablePlay() -->
-							.ui.active.dimmer(data-bind="style: {'background-color': $parent.multimediaLoading() ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,.01)', display: $parent.skipAdvertisement() && $parent.videoPlaying() ? 'none' : 'flex'}" style="padding: 0 !important; z-index: 100 !important")
-								<!-- ko if: $parent.multimediaLoading() && !$parent.skipAdvertisement()-->
-								.adContainer(style="width: 100%; height: 100%;")
-									.advertiseOverlay(style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; background-color: transparent; content: ''")
-										.advertiseHeader(style="width: 100%; background-color: rgba(0,0,0,0.5); display: flex; padding: 3px 5px; justify-content: flex-start")
-											p(style="font-size: 12px; color: ghostwhite;")="Ads by Kloak"
-										<!-- ko if: $parent.videoCanStart() -->
-										button.skipAdButton(data-bind="click: () => {$parent.skipAdvertisement(true); _view.mediaViewer.play()}, clickBubble: false" style="cursor: pointer;")="Skip Ad"
-										<!-- /ko -->
-									video.adPlayer#adPlayer(style="width: 100%; height: 100%; background-color: black")
-								<!-- /ko -->
-								<!-- ko if: !$parent.videoUnablePlay() && !$parent.multimediaLoading()-->
-								i.icon.big.play.white
-								<!-- /ko -->
-								<!-- ko if: $parent.videoUnablePlay() -->
-								i.exclamation.triangle.icon(style="color: white; font-size: 40px;")
-								p(style="margin-top: 10px; color: white; font-weight: bold")="Unable to play video!"
-								<!-- /ko -->
+							.ui.active.dimmer( style = "background-color: rgba(0,0,0,0);z-index: 10")
+								i.icon.big.play.white(style="font-size: 5rem")
+							<!-- ko if: _view.videoPlayer() -->
+							<!-- ko template: { name: 'kloakVideoPlayer', data: _view.videoPlayer} --><!-- /ko -->
 							<!-- /ko -->
-							.videoPlayer(data-bind="style: {'visibility': $parent.skipAdvertisement() ? 'visible' : 'hidden', 'z-index': $parent.skipAdvertisement() ? '100' : '-100' }" style="position: absolute; top: 0; height: 100%; width: 100%")
-								video.fsVideoPlayer#youtubePlayer(style="width: 100%; background-color: black; height: 100%")
-								.videoControlOverlay(data-bind="click: () => {}, clickBubble: false")
-									.videoControls
-										.videoControlTop
-											.videoSeekBar(style="flex-grow: 1; cursor: pointer")
-												.fullBar#fullBar(style="width: 100%; height: 8px; position: relative; background-color: rgba(125, 125, 125, 1);")
-													.bufferedBar#bufferedBar(style="height: 8px; position: absolute; content: ''; background-color: rgba(200, 200, 200, 0.75); transition: width 100ms ease-in-out;")
-													.currentTimeBar#currentTimeBar(style="height: 8px; position: absolute; content: ''; background-color: red; transition: width 100ms ease-in-out;")
-										.videoControlBottom#videoControlBottom(data-bind="click: () => {}, clickBubble: false" style="align-items: center; justify-content: space-between;")
-											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-start")
-												button.videoActionButton#videoPlayButton
-													<!-- ko if: $parent.videoPlaying() -->
-													i.pause.icon
-													<!-- /ko -->
-													<!-- ko if: !$parent.videoPlaying() -->
-													i.play.icon
-													<!-- /ko -->
-												button.videoActionButton#videoStopButton
-													i.stop.icon
-												.videoDuration(style="height: 100%; display: flex; align-items: center; margin-left: 5px")
-													p#durationText(style="color: white; font-size: 12px")="00:00 / 00:00"
-											.videoActions(style="display: flex; align-items: center; flex: 1; justify-content: flex-end")
-												button.videoActionButton#videoFullScreenButton
-													i.expand.icon
 						.content( style = "margin-top: 1rem;")
 							.extra( style = "margin-top: 1rem;")
 								<!-- ko if: audio -->
@@ -407,3 +364,44 @@ script#twitterAccountObj.CoContent( type = "text/html" style = "margin: 1em; mar
 
 <!-- /ko -->
 //- End of Screenshot shared template
+
+// VIDEO PLAYER
+
+script#kloakVideoPlayer( type = "text/html" )
+	.kloakVideoContainer(data-bind="css: customCss")
+		<!-- ko if: loading() -->
+		.ui.segment(style="width: 100%; height: 100%; position: absolute;")
+			.ui.active.dimmer(style="background-color: black")
+				.ui.loader
+		<!-- /ko -->
+		<!-- ko if: !skipAdvertisements() -->
+		video.kloakAdPlayer#kloakAdPlayer(style="background-color: black; width: 100%; height: 100%; position: relative; z-index: 101;")
+		.kloakAdPlayerOverlay#kloakAdPlayerOverlay(style="width: 100%; height: 100%; content: ''; position: absolute; top: 0; z-index: 101; display: flex; flex-direction: column; align-items: flex-end")
+			.kloakAdPlayerHeader#kloakAdPlayerHeader(style="height: auto; width: 100%; background-color: rgba(0, 0, 0, 0.8); padding: 2px 5px; color: ghostwhite;")
+				p(style="font-size: 11px;")="Ads by Kloak"
+			.kloakAdPlayerContent(style="flex-grow: 1; display: flex; align-items: flex-end")
+				button.skipAdButton(data-bind="style: {'display': canPlay() ? 'initial' : 'none'}, click: () => { skipAd() }, clickBubble: false" style="cursor: pointer; font-size: 11px" href="#")="Skip Ad"
+		<!-- /ko -->
+		
+		video.kloakVideo#kloakVideo(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="background-color: black; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100")
+		.kloakVideoOverlay(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="display: flex; align-items: flex-end; width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; z-index: 101;")
+			.kloakVideoControls(style="width: 100%; position: absolute; z-index:102; bottom: 0;")
+				.kloakVideoSeekBar#kloakVideoSeekBar(style="width: 100%; height: 8px; display: flex; align-items: flex-end; cursor: pointer")
+					.kloakFullBar#kloakFullBar(style="width: 100%; position: relative; background-color: rgba(120,120,120,1)")
+						.kloakBufferedBar#kloakBufferedBar(style="height: 100%; background-color: rgba(200,200,200,1)")
+						.kloakCurrentTimeBar#kloakCurrentTimeBar(style="position: absolute; top:0; height: 100%; background-color: red;")
+				.kloakControls#kloakControls(style="height: 20%; width: 100%; align-items: center; justify-content: space-between; background-color: rgba(0,0,0,0.75)")
+					.kloakControlSection(style="display: flex; align-items: center;")
+						.kloakVideoButton#kloakVideoPlay(style="height: 100%; padding: 10px 12px; cursor: pointer")
+							<!-- ko if: !isPlaying() -->
+							i.play.icon(style="margin: 0 !important; color: whitesmoke")
+							<!-- /ko -->
+							<!-- ko if: isPlaying() -->
+							i.pause.icon(style="margin: 0 !important; color: whitesmoke")
+							<!-- /ko -->
+						.kloakVideoButton#kloakVideoStop(style="margin-right: 3px; height: 100%; padding: 8px; cursor: pointer")
+							i.stop.icon(style="margin: 0 !important; color: whitesmoke")
+						p.kloakVideoDuration#kloakVideoDuration(style="font-size: 11px; color: white; padding: 8px;")="00:00 / 00:00"
+					.kloakControlSection()
+						.kloakVideoButton#kloakVideoExpand(style="height: 100%; padding: 8px; cursor: pointer")
+							i.expand.icon(style="margin: 0 !important; color: whitesmoke")
