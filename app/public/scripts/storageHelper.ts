@@ -409,6 +409,15 @@ class StorageHelper {
 		return this.databaseWorker.saveHistory(history, callback ? callback : null)
 	}
 
+	public getFileHistory = (callback?: Function) => {
+		return this.databaseWorker.decryptLoad("history", (err, data) => {
+			if (err) {
+				return callback(err, null)
+			}
+			return callback(null, JSON.parse(Buffer.from(data).toString()))
+		})
+	} 
+
 	public decryptLoad = (uuid: string | number, callback: Function) => {
 		return this.databaseWorker.decryptLoad(uuid, callback)
 	}

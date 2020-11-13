@@ -26,40 +26,24 @@ class genSpalding {
             _view.sectionLogin(true);
             _view.appScript(null);
         };
+        // const cmd = {
+        // 	command: 'CoSearch',
+        // 	Args: [videoData.url],
+        // 	error: null,
+        // 	subCom: 'getSnapshop',
+        // 	requestSerial: uuid_generate()
+        // }
         this.playVideo = (videoData) => {
             if (videoData.url === this.selectedVideo()) {
                 return;
             }
-            const cmd = {
-                command: 'CoSearch',
-                Args: [videoData.url],
-                error: null,
-                subCom: 'getSnapshop',
-                requestSerial: uuid_generate()
-            };
             if (this.videoPlayer) {
                 this.videoPlayer.terminate();
                 this.videoPlayer = null;
             }
             this.videoPlayer = new VideoPlayer("spaldingVideoCss", (err) => { }, () => { });
             this.selectedVideo(videoData.url);
-            return _view.connectInformationMessage.emitRequest(cmd, (err, com) => {
-                if (err) {
-                    return console.log(err);
-                }
-                if (!com) {
-                    return console.log(!com);
-                }
-                if (com.error === -1) {
-                    return console.log(com.error);
-                }
-                if (com.error) {
-                    return console.log(com.error);
-                }
-                if (com) {
-                    return this.videoPlayer.youtubePlayer(com.Args);
-                }
-            });
+            this.videoPlayer.youtubePlayer(null, videoData.url);
         };
         this.showTwitter = (self, twitterObj, twitterHref, serialNumber, showAccount) => {
             self.twitterObj = new twitter(twitterObj, twitterHref, serialNumber, showAccount, () => {
