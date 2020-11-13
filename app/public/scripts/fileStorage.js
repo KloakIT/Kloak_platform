@@ -392,11 +392,14 @@ class fileStorage {
                     this.selectedVideo(fileData['uuid'].filter(uuid => uuid !== null)[0]);
                     this.videoPlayer(new VideoPlayer('fileStorageYoutubePlayer', () => { }, () => { }));
                     console.log(fileData);
+                    if (fileData.tag().includes('recording')) {
+                        return this.videoPlayer().recording(fileData);
+                    }
                     if (fileData.youtube) {
-                        this.videoPlayer().downloadedYoutube(fileData);
+                        return this.videoPlayer().downloadedYoutube(fileData);
                     }
                     if (fileData.videoData) {
-                        this.videoPlayer().uploadedVideo(fileData);
+                        return this.videoPlayer().uploadedVideo(fileData);
                     }
                     // this.mediaViewer = new MediaViewer({player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, canPlay, playing) => {
                     // 	if (err) {

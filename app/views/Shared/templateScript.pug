@@ -383,10 +383,10 @@ script#kloakVideoPlayer( type = "text/html" )
 				button.skipAdButton(data-bind="style: {'display': canPlay() ? 'initial' : 'none'}, click: () => { skipAd() }, clickBubble: false" style="cursor: pointer; font-size: 11px" href="#")="Skip Ad"
 		<!-- /ko -->
 		
-		video.kloakVideo#kloakVideo(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="background-color: black; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100")
+		video.kloakVideo#kloakVideo(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="background-color: black; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100" preload)
 		.kloakVideoOverlay(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="display: flex; align-items: flex-end; width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; z-index: 101;")
 			.kloakVideoControls(style="width: 100%; position: absolute; z-index:102; bottom: 0;")
-				.kloakVideoSeekBar#kloakVideoSeekBar(style="width: 100%; height: 8px; display: flex; align-items: flex-end; cursor: pointer")
+				.kloakVideoSeekBar#kloakVideoSeekBar(style="width: 100%; height: 5px; display: flex; align-items: flex-end; cursor: pointer")
 					.kloakFullBar#kloakFullBar(style="width: 100%; position: relative; background-color: rgba(120,120,120,1)")
 						.kloakBufferedBar#kloakBufferedBar(style="height: 100%; background-color: rgba(200,200,200,1)")
 						.kloakCurrentTimeBar#kloakCurrentTimeBar(style="position: absolute; top:0; height: 100%; background-color: red;")
@@ -401,7 +401,10 @@ script#kloakVideoPlayer( type = "text/html" )
 							<!-- /ko -->
 						.kloakVideoButton#kloakVideoStop(style="margin-right: 3px; height: 100%; padding: 8px; cursor: pointer")
 							i.stop.icon(style="margin: 0 !important; color: whitesmoke")
-						p.kloakVideoDuration#kloakVideoDuration(style="font-size: 11px; color: white; padding: 8px;")="00:00 / 00:00"
+						.kloakVideoButton#kloakFastForward(style="margin-right: 3px; height: 100%; padding: 8px; cursor: pointer")
+							i.fast.forward.icon(style="margin: 0 !important; color: whitesmoke")
+						p.kloakVideoDuration#kloakVideoSpeed(style="font-size: 11px; color: white; padding: 8px; margin: 0 !important")="1x"
+						p.kloakVideoDuration#kloakVideoDuration(style="font-size: 11px; color: white; padding: 8px; margin: 0 !important")="00:00 / 00:00"
 					.kloakControlSection()
 						.kloakVideoButton#kloakVideoExpand(style="height: 100%; padding: 8px; cursor: pointer")
 							i.expand.icon(style="margin: 0 !important; color: whitesmoke")

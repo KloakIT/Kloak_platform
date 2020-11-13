@@ -260,7 +260,7 @@
 					i.info.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Get information"
 				<!-- ko if: selectedFile() !== null -->
-				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('audio') || ( fileStorageData()[selectedFile()].tag().includes('video') && (fileStorageData()[selectedFile()].videoData && fileStorageData()[selectedFile()].videoData.fastStart)) || fileStorageData()[selectedFile()].tag().includes('media') || fileStorageData()[selectedFile()].tag().includes('youtube') -->
+				<!-- ko if: fileStorageData()[selectedFile()].tag().includes('audio') || ( fileStorageData()[selectedFile()].tag().includes('video') && (fileStorageData()[selectedFile()].videoData && fileStorageData()[selectedFile()].videoData.fastStart)) || fileStorageData()[selectedFile()].tag().includes('media') || fileStorageData()[selectedFile()].tag().includes('youtube') || fileStorageData()[selectedFile()].tag().includes('recording') -->
 				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'play'), selectedFile(null)}")
 					i.play.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Play"
@@ -270,7 +270,7 @@
 					i.eye.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="View"
 				<!-- /ko -->
-				<!-- ko if: file.uuid.length === 1 -->
+				<!-- ko if: fileStorageData()[selectedFile()].uuid.length === 1 -->
 				.mobileOptionItem(data-bind="click: (data, event) => {fileAction(fileStorageData()[selectedFile()], event, 'download'), closeAll()}")
 					i.download.icon.mobileOptionIcon(style="margin: 0 !important")
 					p.mobileOptionText="Download"

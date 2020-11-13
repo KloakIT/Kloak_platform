@@ -710,7 +710,7 @@ interface kloakIndex {
 	fileExtension: string
 	totalLength: number
 	contentType: string
-	pieces: Array<string>
+	pieces: Array<string> | {[offset:number]: string}
 	finished: boolean
 }
 
@@ -762,9 +762,10 @@ interface fileHistory {
 	youtube?: {
 		id?: string,
 		mimeType?: {video?: string, audio?: string},
-		duration?: number,
+		duration?: number | string,
 		type?: 'video' | 'audio',
 		quality?: string,
+		bitrate?: number,
 		thumbnail?: {
 			data: string,
 			mime: string
