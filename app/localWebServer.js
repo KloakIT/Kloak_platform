@@ -136,7 +136,9 @@ class localServer {
                 }
                 console.dir(`range = 【${range} 】`);
                 res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${rangeEnd - rangeStart + 1}`, 'Content-Range': `bytes ${rangeStart} - ${rangeEnd} / ${_length}`, 'Connection': 'close' });
-                socket['currectRange'] = range;
+                res['currectRange'] = socket['currectRange'] = range;
+                res['rawHeaders'] = socket['rawHeaders'] = req.rawHeaders;
+                socket['urlSocket'] = res;
                 if (rangeStart !== 0) {
                     socket.emit(socket['requestStreamUrlUUID'], range);
                 }
@@ -444,6 +446,15 @@ class localServer {
                 //		Destory Buffer Url
                 CallBack1(__uuid);
                 const urlSocket = socket['urlSocket'];
+                if (!urlSocket['closeListenning']) {
+                    urlSocket['closeListenning'] = true;
+                    urlSocket.once('close', () => {
+                        if (socket['rawHeaders'] === urlSocket['rawHeaders']) {
+                            console.log(`urlSocket on close destory ${_uuid} listenning `);
+                            socket.removeListener(_uuid, listenChunk);
+                        }
+                    });
+                }
                 if (!urlSocket) {
                     const message = `have no request uuid as ${_uuid}`;
                     socket.emit(__uuid, message);
@@ -460,7 +471,14 @@ class localServer {
                 const uuu = Buffer.from(buffer, 'base64');
                 console.dir(`socket.on 【${_uuid}】buffer length = [${uuu.length}]`);
                 //console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
-                urlSocket.write(uuu);
+                if (!urlSocket.write(uuu)) {
+                    console.log(`res [${_uuid}] need pause!!!`);
+                    socket.emit(_uuid, socket['currectRange'], 'pause');
+                    urlSocket.once('drain', () => {
+                        console.log(`res [${_uuid}] on drain, emit resume`);
+                        socket.emit(`${_uuid}-resume`, socket['currectRange'], 'resume');
+                    });
+                }
             };
             socket['requestStreamUrlUUID'] = _uuid;
             socket['requestStreamTotalLength'] = _length;
