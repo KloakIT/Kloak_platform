@@ -18,7 +18,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Express = require("express");
 const Path = require("path");
 const HTTP = require("http");
-const SocketIo = require("socket.io");
 const Tool = require("./tools/initSystem");
 const Async = require("async");
 const Fs = require("fs");
@@ -78,7 +77,7 @@ class localServer {
     constructor(postNumber = 3000, folderName = '') {
         this.expressServer = Express();
         this.httpServer = HTTP.createServer(this.expressServer);
-        this.socketServer = SocketIo(this.httpServer);
+        this.socketServer = require('socket.io')(this.httpServer);
         this.config = null;
         this.savedPasswrod = '';
         this.localConnected = new Map();
@@ -88,7 +87,7 @@ class localServer {
         this.imapConnectPool = new Map();
         this.destoryConnectTimePool = new Map();
         this.lengthPool = new Map();
-        this.streamUrlPool = new Map();
+        this.requestStreamUrlSocketPool = new Map();
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
         Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
@@ -120,26 +119,32 @@ class localServer {
             if (!uuid) {
                 return errRespon();
             }
-            const length = this.lengthPool.get(uuid);
-            if (!length) {
+            const socket = this.requestStreamUrlSocketPool.get(uuid);
+            if (!socket) {
                 return errRespon();
             }
             console.dir(req.headers, { depth: 4 });
             const range = req.header('range').toLocaleLowerCase();
-            const fangeEnd = range.split('bytes=0-')[1];
-            if (range && fangeEnd) {
-                if (/bytes\=0\-1/.test(range)) {
+            const _length = socket['requestStreamTotalLength'];
+            if (range) {
+                const rangeEnd = parseInt(range.split('bytes=0-')[1]);
+                const rangeStart = parseInt(range.split('bytes=')[1].split('-')[0]);
+                if (/^bytes\=0\-1$/.test(range)) {
                     console.dir(req.rawHeaders);
-                    res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${length}`, 'Connection': 'close' });
+                    res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${_length}`, 'Connection': 'close' });
                     return res.end(Buffer.alloc(2, 0));
                 }
                 console.dir(`range = 【${range} 】`);
-                res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length, 'Content-Range': `bytes 0-${length}/${length}`, 'Connection': 'close' });
+                res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${rangeEnd - rangeStart + 1}`, 'Content-Range': `bytes ${rangeStart} - ${rangeEnd} / ${_length}`, 'Connection': 'close' });
+                socket['currectRange'] = range;
+                if (rangeStart !== 0) {
+                    socket.emit(socket['requestStreamUrlUUID'], range);
+                }
             }
             else {
                 res.writeHead(200, { 'Content-Type': 'video/mp4', 'status': 200, 'accept-ranges': 'bytes' });
             }
-            this.streamUrlPool.set(uuid, res);
+            return res.end();
         });
         workspaces.on('connection', socket => {
             return this.listenAfterPassword(socket);
@@ -430,17 +435,25 @@ class localServer {
                 }
             });
         });
-        socket.on('requestStreamUrl', (length, CallBack1) => {
+        socket.on('requestStreamUrl', (_length, CallBack1) => {
             const _uuid = Uuid.v4();
             CallBack1(_uuid);
-            console.dir(`socket.on ( 'requestStreamUrl' ) length = ${length}`);
-            const listenChunk = (buffer, CallBack1) => {
+            console.dir(`socket.on ( 'requestStreamUrl' ) length = ${_length}`);
+            const listenChunk = (range, buffer, CallBack1) => {
                 const __uuid = Uuid.v4();
                 //		Destory Buffer Url
                 CallBack1(__uuid);
-                const urlSocket = this.streamUrlPool.get(_uuid);
+                const urlSocket = socket['urlSocket'];
                 if (!urlSocket) {
-                    return console.dir(`【have no URL uuid as ${_uuid}】`);
+                    const message = `have no request uuid as ${_uuid}`;
+                    socket.emit(__uuid, message);
+                    return console.dir(message);
+                }
+                const currectRange = socket['currectRange'];
+                if (currectRange !== range) {
+                    const message = `${_uuid} range updated to [${currectRange}]`;
+                    socket.emit(__uuid, message);
+                    return console.dir(message);
                 }
                 //console.dir (`stream.write`)
                 //console.log ( Buffer.from ( buffer.substr (0, 100),'base64').toString ('hex'))
@@ -449,7 +462,10 @@ class localServer {
                 //console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
                 urlSocket.write(uuu);
             };
-            this.lengthPool.set(_uuid, length);
+            socket['requestStreamUrlUUID'] = _uuid;
+            socket['requestStreamTotalLength'] = _length;
+            socket['currectRange'] = `0-${_length}`;
+            this.requestStreamUrlSocketPool.set(_uuid, socket);
             socket.on(_uuid, listenChunk);
             socket.emit(_uuid, _uuid);
         });

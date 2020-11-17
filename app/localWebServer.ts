@@ -17,7 +17,7 @@
 import * as Express from 'express'
 import * as Path from 'path'
 import * as HTTP from 'http'
-import * as SocketIo from 'socket.io'
+
 import * as Tool from './tools/initSystem'
 import * as Async from 'async'
 import * as Fs from 'fs'
@@ -98,7 +98,7 @@ const resetConnectTimeLength = 1000 * 60 * 1
 export default class localServer {
 	private expressServer = Express()
 	private httpServer = HTTP.createServer ( this.expressServer )
-	private socketServer = SocketIo ( this.httpServer )
+	private socketServer = require ('socket.io')( this.httpServer )
 	public config: install_config  = null
 
 	public savedPasswrod: string = ''
@@ -108,8 +108,8 @@ export default class localServer {
 	private requestPool: Map < string, SocketIO.Socket > = new Map()
 	private imapConnectPool: Map <string, CoNETConnectCalss > = new Map()
 	private destoryConnectTimePool: Map <string, any > = new Map ()
-	private lengthPool: Map <string, string > = new Map()
-	private streamUrlPool = new Map ()
+	private lengthPool: Map <any, number > = new Map()
+	private requestStreamUrlSocketPool = new Map ()
 
 	private catchCmd ( mail: string, uuid: string ) {
 		
@@ -471,23 +471,30 @@ export default class localServer {
 			
 		})
 
-		socket.on ( 'requestStreamUrl', ( length, CallBack1 )=> {
+		socket.on ( 'requestStreamUrl', ( _length, CallBack1 )=> {
 			const _uuid = Uuid.v4()
 			CallBack1( _uuid )
-			console.dir ( `socket.on ( 'requestStreamUrl' ) length = ${ length }`)
+			console.dir ( `socket.on ( 'requestStreamUrl' ) length = ${ _length }`)
 
-			const listenChunk = ( buffer: string, CallBack1 ) => {
+			const listenChunk = ( range: string, buffer: string, CallBack1 ) => {
 				const __uuid = Uuid.v4()
 				//		Destory Buffer Url
 				CallBack1 ( __uuid )
-
+				
+				const urlSocket = socket['urlSocket']
 				
 
-				const urlSocket = this.streamUrlPool.get ( _uuid )
 				if ( !urlSocket ) {
-					return console.dir (`【have no URL uuid as ${ _uuid }】`)
+					const message = `have no request uuid as ${ _uuid }`
+					socket.emit ( __uuid, message )
+					return console.dir ( message)
 				}
-
+				const currectRange = socket['currectRange']
+				if ( currectRange !== range ) {
+					const message = `${ _uuid } range updated to [${ currectRange }]`
+					socket.emit ( __uuid, message )
+					return console.dir ( message )
+				}
 
 				//console.dir (`stream.write`)
 				//console.log ( Buffer.from ( buffer.substr (0, 100),'base64').toString ('hex'))
@@ -496,11 +503,12 @@ export default class localServer {
 				//console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
 
 				urlSocket.write ( uuu )
-
 				
 			}
-
-			this.lengthPool.set ( _uuid, length )
+			socket['requestStreamUrlUUID'] = _uuid
+			socket['requestStreamTotalLength'] = _length
+			socket['currectRange'] = `0-${ _length }`
+			this.requestStreamUrlSocketPool.set ( _uuid, socket )
 
 			socket.on ( _uuid, listenChunk )
 			socket.emit ( _uuid, _uuid )
@@ -596,38 +604,46 @@ export default class localServer {
 				return res.end ()
 			}
 			
-			const uuid = req.query['uuid']
+			const uuid = req.query ['uuid']
 			console.dir (`ON ${ folderName }/streamUrl typeof UUID = ${ typeof uuid } UUID= [${ uuid }]`)
 
 			if ( !uuid ) {
 				return errRespon ()
 			}
 
-			const length = this.lengthPool.get ( uuid )
-			if ( !length ) {
+			const socket = this.requestStreamUrlSocketPool.get ( uuid )
+			if ( !socket ) {
 				return errRespon ()
 			}
 			
 			console.dir ( req.headers , { depth: 4 })
-			const range = req.header('range').toLocaleLowerCase()
-			const fangeEnd = range.split ('bytes=0-')[1]
-			if ( range && fangeEnd ) {
+			const range = req.header ('range').toLocaleLowerCase()
+			const _length = socket['requestStreamTotalLength']
+
+			if ( range ) {
+				const rangeEnd = parseInt( range.split ('bytes=0-')[1] )
+				const rangeStart = parseInt ( range.split ( 'bytes=' )[1].split ('-')[0] )
 				
-				if ( /bytes\=0\-1/.test (range)) {
+				if ( /^bytes\=0\-1$/.test ( range )) {
 					console.dir ( req.rawHeaders )
-					res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${ length }`,'Connection':'close' })
-					return res.end ( Buffer.alloc( 2, 0))
+					res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${ _length }`,'Connection':'close' })
+					return res.end ( Buffer.alloc( 2, 0 ))
+				}
+				
+				console.dir (`range = 【${ range } 】`)
+				
+				res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${ rangeEnd - rangeStart + 1 }` , 'Content-Range': `bytes ${ rangeStart } - ${ rangeEnd } / ${ _length }`, 'Connection': 'close' })
+				socket['currectRange'] = range
+				if ( rangeStart !== 0 ) {
+					
+					socket.emit ( socket['requestStreamUrlUUID'], range )
 				}
 
-				console.dir (`range = 【${ range } 】`)
-				res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': length, 'Content-Range': `bytes 0-${ length }/${ length }`,'Connection':'close' })
-				
 			} else {
 				res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes' })
 			}
-			
-			
-			this.streamUrlPool.set ( uuid, res )
+
+			return res.end ()
             
 		})
 
