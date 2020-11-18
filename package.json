@@ -37,7 +37,7 @@
 		"knockout": "^3.5.1",
 		"mhtml2html": "^3.0.0",
 		"snapsvg": "^0.5.1",
-		"socket.io-client": "^3.0.1"
+		"socket.io-client": "^3.0.2"
 	},
 	"build": {
 		"appId": "com.Kloak.Platform",
@@ -103,7 +103,7 @@
 		"openpgp": "4.10.8",
 		"pug": "^3.0.0",
 		"snyk": "^1.416.0",
-		"socket.io": "^3.0.1"
+		"socket.io": "^3.0.2"
 	},
 	"snyk": true,
 	"bin": {
