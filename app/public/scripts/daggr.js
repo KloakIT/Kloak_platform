@@ -1,4 +1,20 @@
 const marginOfTextarea = 20;
+const sentTypingTimeout = 1000 * 60 * 1;
+const showTypingKeepTimes = 1000 * 60 * 0.5;
+const resizeInputTextArea = () => {
+    const elm = document.getElementById('daggrInput');
+    if (elm) {
+        elm.style.height = '0px';
+        elm.style.height = elm.scrollHeight + 'px';
+    }
+    const elm1 = document.getElementById('chatArea');
+    elm1.style.paddingTop = document.getElementById('daggr_bottomInputArea').clientHeight + 30 + 'px';
+    scrollTop();
+};
+const scrollTop = () => {
+    const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
+    window.scrollTo(0, height);
+};
 class daggr extends sharedAppClass {
     constructor(exit) {
         super(exit);
@@ -13,12 +29,26 @@ class daggr extends sharedAppClass {
         this.myKeyID = _view.keyPair().publicKeyID;
         this.getFocus = ko.observable();
         this.typing = ko.observable(false);
-        this.sentTyping = false;
+        this.lastSenttypingTime = null;
+        this.altEnter = false;
+        this.showSendBottom = ko.observable(false);
+        this.imageSource = ko.observable('');
+        this.showInputMenu = ko.observable(false);
+        this.inputHtmlData = ko.observable('');
+        this.showYoutube = ko.observable(false);
+        this.textInput = ko.observable('');
         this.search_form_request = {
             command: 'daggr',
             Args: [],
             error: null,
             subCom: 'user_search',
+            requestSerial: null
+        };
+        this.search_form_next_request = {
+            command: 'CoSearch',
+            Args: [],
+            error: null,
+            subCom: 'youtube_search_next',
             requestSerial: null
         };
         this.searchInputPlaceholder = [
@@ -34,20 +64,33 @@ class daggr extends sharedAppClass {
         this.errorProcess = (err) => {
             return console.log(err);
         };
-        this.textInput = ko.observable();
         this.textInputHeight = ko.observable();
-        this.textInput.subscribe(newValue => {
-            this.textInputHeightRun(document.getElementById("daggrInput"));
+        this.ad_video_random = ko.computed(() => {
+            const ads = ['coronavirus-ad.mp4', 'ipad-ad.mp4', 'nike-ad.mp4'];
+            return `/videos/ads/${ads[Math.round(Math.random() * 2)]}`;
+        });
+        this.textInput.subscribe((newValue) => {
+            if (newValue && newValue.length) {
+                this.showSendBottom(true);
+            }
+            else {
+                this.showSendBottom(false);
+            }
+            resizeInputTextArea();
         });
         this.getFocus.subscribe(value => {
-            if (this.sentTyping === value) {
+            const now = new Date();
+            if (!value) {
                 return;
             }
-            this.sentTyping = value;
+            if (this.lastSenttypingTime && now.getTime() - this.lastSenttypingTime.getTime() < sentTypingTimeout) {
+                return;
+            }
+            this.lastSenttypingTime = now;
             const user = this.currentChat();
             const com = {
                 command: 'daggr',
-                Args: [user.id, value],
+                Args: [user.id, true],
                 error: null,
                 subCom: 'typing',
                 requestSerial: uuid_generate()
@@ -81,18 +124,50 @@ class daggr extends sharedAppClass {
             });
             this.currentUser(this.userData().contacts);
         });
+        this.currentChat.subscribe(data => {
+            if (!data) {
+                $(window).off('resize', resizeInputTextArea);
+            }
+        });
+        this.searchInputText.subscribe(val => {
+            this.searchInputTextError(false);
+        });
     }
     //     Result of search a user
     searchItemList_build(com, first) {
-        this.searchResultUsers([com.Args[0]]);
-        const self = this;
-        this.showUserInfor(true);
-        return setTimeout(() => {
-            const elms = $('.searchResultUsersTextarea');
-            elms.each(index => {
-                self.textInputHeightRun(elms[index]);
-            });
-        }, 100);
+        switch (com.command) {
+            case 'daggr': {
+                this.searchResultUsers([com.Args[0]]);
+                const self = this;
+                return this.showUserInfor(true);
+            }
+            case 'CoSearch': {
+                const args = com.Args;
+                if (!args?.Result) {
+                    return;
+                }
+                this.returnSearchResultItemsInit(args);
+                this.moreButton_link_url(args.nextPage);
+                const arr = args.Result.filter(n => {
+                    return n.imageInfo['videoTime'];
+                });
+                if (first) {
+                    this.searchItemsArray(arr);
+                    args.totalResults = args.totalResults.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    this.totalSearchItems(args.totalResults);
+                    this.showSearchItemResult(true);
+                    this.showTopMenuInputField(true);
+                }
+                else {
+                    this.searchItemsArray(this.searchItemsArray().concat(arr));
+                }
+                resizeInputTextArea();
+                if (typeof this.search_form_response === 'function') {
+                    return this.search_form_response(com);
+                }
+                return;
+            }
+        }
     }
     saveDaggrPreperences() {
         return _view.storageHelper.encryptSave(this.daggr_preperences_save_UUID, JSON.stringify(this.userData()), err => {
@@ -132,9 +207,16 @@ class daggr extends sharedAppClass {
                 return user.chatDataArray = null;
             }
             user.chatDataArray.forEach(n => {
+                n.textContent = n.textContent || '';
                 n.create = ko.observable(new Date(n._create));
                 n.readTimestamp = ko.observable(n._readTimestamp ? new Date(n._readTimestamp) : null);
                 n.delivered = ko.observable(n._delivered ? new Date(n._delivered) : null);
+                n['mediaData'] = n.mediaData || '';
+                n['youtubeObj'] = n['youtubeObj'] || null;
+                if (n?.youtubeObj) {
+                    n.youtubeObj['showLoading'] = ko.observable(0);
+                    n.youtubeObj['showError'] = ko.observable(false);
+                }
             });
             const index = mainMenuArray.findIndex(n => n.name === 'daggr');
             const daggr = mainMenuArray[index];
@@ -142,10 +224,26 @@ class daggr extends sharedAppClass {
             user.notice(user._notice = 0);
             user.chatData = ko.observableArray(user.chatDataArray);
             this.currentChat(user);
-            const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
-            window.scrollTo(0, height);
             this.getFocus(true);
             this.saveDaggrPreperences();
+            $(window).on('resize', resizeInputTextArea);
+            document.getElementById('daggrInput').onkeydown = event => {
+                if (event.defaultPrevented) {
+                    return true;
+                }
+                var handled = false;
+                if (event.key !== undefined) {
+                    if (event.key === 'Enter' && event.altKey) {
+                        this.altEnter = true;
+                        return true;
+                    }
+                }
+                if (handled) {
+                    event.preventDefault();
+                }
+                return true;
+            };
+            this.showSendBottom(false);
         });
     }
     saveChatData() {
@@ -157,6 +255,28 @@ class daggr extends sharedAppClass {
             }
         });
     }
+    imageSearch(ee) {
+        if (!ee || !ee.files || !ee.files.length) {
+            return;
+        }
+        const file = ee.files[0];
+        if (!file || !file.type.match(/^image.(png$|jpg$|jpeg$|gif$)/)) {
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const rawData = reader.result.toString();
+            return _view.getPictureBase64MaxSize_mediaData(rawData, 2048, 2048, (err, data) => {
+                if (err) {
+                    return console.log(err);
+                }
+                this.imageSource(data.rawData);
+                this.showSendBottom(true);
+                resizeInputTextArea();
+            });
+        };
+        return reader.readAsDataURL(file);
+    }
     snedMessage() {
         const user = this.currentChat();
         const now = new Date();
@@ -164,14 +284,15 @@ class daggr extends sharedAppClass {
             uuid: uuid_generate(),
             _create: now.toISOString(),
             create: ko.observable(now),
-            textContent: this.textInput(),
+            textContent: this.textInput() || '',
+            mediaData: this.imageSource() || '',
             readTimestamp: ko.observable(null),
             _readTimestamp: null,
             attachedFile: null,
             delivered: ko.observable(null),
             isSelf: true,
-            _delivered: null,
-            rows: document.getElementById("daggrInput").style.height
+            youtubeObj: null,
+            _delivered: null
         };
         const com = {
             command: 'daggr',
@@ -181,13 +302,14 @@ class daggr extends sharedAppClass {
             requestSerial: uuid_generate()
         };
         user.chatData.unshift(message);
+        this.lastSenttypingTime = null;
         this.saveChatData();
         this.textInput('');
-        document.getElementById("daggrInput").style.height = '48px';
-        this.textInputHeightRun(document.getElementById(`${message.uuid}`));
-        const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
-        window.scrollTo(0, height);
-        message.rows = document.getElementById(user.chatData()[0].uuid).style.height;
+        this.imageSource('');
+        //document.getElementById( "daggrInput" ).style.height = '48px'
+        //this.textInputHeightRun ( document.getElementById( `${ message.uuid }` ) )
+        this.showSendBottom(false);
+        resizeInputTextArea();
         return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
                 console.log(`_view.connectInformationMessage.emitRequest Error`, err);
@@ -208,35 +330,34 @@ class daggr extends sharedAppClass {
             console.log(`_view.connectInformationMessage.emitRequest com = `, com.Args);
         });
     }
-    textInputHeightRun(elm) {
-        const d = elm;
-        const outerHeight = parseInt(window.getComputedStyle(d).height, 10);
-        //const diff = outerHeight - d.clientHeight
-        const high = Math.max(48, d.scrollHeight);
-        return d.style.height = high + 'px';
-    }
-    getHeight(uuid) {
-        this.textInputHeightRun(document.getElementById(uuid));
-    }
     getTyping(obj) {
         if (!this.currentChat() || this.currentChat().id !== obj.account) {
             return;
         }
-        const typing = obj.Args[1];
-        this.currentChat().typing(typing);
-        const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
-        window.scrollTo(0, height);
+        this.currentChat().typing(true);
+        scrollTop();
+        setTimeout(() => {
+            this.currentChat().typing(false);
+        }, showTypingKeepTimes);
+    }
+    showAddedAction(index) {
+        const item = this.currentChat().chatData()[index];
     }
     getMessage(obj) {
         const messageUserID = obj.account;
         const message = obj.Args[1];
         message.isSelf = false;
         console.log(`getMessage\n`, obj.Args);
+        message['youtubeObj'] = message['youtubeObj'] || null;
+        if (message?.youtubeObj) {
+            message.youtubeObj['showLoading'] = ko.observable(0);
+            message.youtubeObj['showError'] = ko.observable(false);
+        }
         if (this.currentChat() && this.currentChat().id === messageUserID) {
             message['create'] = ko.observable(new Date(message._create));
             this.currentChat().chatData.unshift(message);
-            const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
-            window.scrollTo(0, height);
+            this.currentChat().typing(false);
+            scrollTop();
             return this.saveChatData();
         }
         const index = this.currentUser().findIndex(n => n.id === messageUserID);
@@ -267,5 +388,81 @@ class daggr extends sharedAppClass {
                 }
             });
         });
+    }
+    youtubeSearch() {
+        _view.appScript().search_form_request = {
+            command: 'CoSearch',
+            Args: [],
+            error: null,
+            subCom: 'youtube_search',
+            requestSerial: null
+        };
+        _view.appScript().search_form();
+    }
+    getLinkClick(index) {
+        const currentItem = this.searchItemsArray()[index];
+        if (currentItem['showError']()) {
+            currentItem['showLoading'](0);
+            return currentItem['showError'](false);
+        }
+        const url = currentItem['url'];
+        const youtubeObj = {
+            url: url,
+            img: currentItem['imageInfo']['img'],
+            title: currentItem['title'],
+            time: currentItem['imageInfo']['videoTime'],
+            description: currentItem['description'],
+            showLoading: ko.observable(0),
+            showError: ko.observable(false)
+        };
+        this.resetYoutubeSearchData();
+        const now = new Date();
+        const message = {
+            uuid: uuid_generate(),
+            _create: now.toISOString(),
+            create: ko.observable(now),
+            textContent: url,
+            youtubeObj: youtubeObj,
+            mediaData: this.imageSource() || '',
+            readTimestamp: ko.observable(null),
+            _readTimestamp: null,
+            attachedFile: null,
+            delivered: ko.observable(null),
+            isSelf: true,
+            _delivered: null,
+        };
+        const user = this.currentChat();
+        user.chatData.unshift(message);
+        setTimeout(() => {
+            resizeInputTextArea();
+        }, 500);
+    }
+    resetYoutubeSearchData() {
+        this.searchItemsArray([]);
+        this.showSearchItemResult(false);
+        this.showInputMenu(false);
+        this.showYoutube(false);
+        resizeInputTextArea();
+    }
+    youtubePlayClick(index) {
+        const currentItem = this.currentChat().chatData()[index];
+        currentItem.youtubeObj.showLoading(1);
+        /**
+         * 			start downloadQuere
+         */
+        const downloadQuere = new getYoutubeMp4Queue(currentItem.youtubeObj.url, currentItem.youtubeObj.title, localServerUUID => {
+            /**
+             * 		can skip Ad
+             */
+            //		show SKIP buttom
+            currentItem.youtubeObj.showLoading(3);
+            currentItem['blobUUID'] = localServerUUID;
+        });
+    }
+    skipAdclick(index) {
+        const currentItem = this.currentChat().chatData()[index];
+        currentItem.youtubeObj.showLoading(4);
+        console.log(`Skip Ad click video url = /streamUrl?uuid=${currentItem['blobUUID']}`);
+        $(`#${currentItem.uuid}_videoPlay`).attr('src', `/streamUrl?uuid=${currentItem['blobUUID']}`);
     }
 }

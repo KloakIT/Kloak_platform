@@ -41,8 +41,12 @@ export default class extends Imap.imapPeer {
 	public checkSocketConnectTime = null
 
 	public exit1 ( err ) {
+		let nameSpace: SocketIO.Namespace | SocketIO.Socket = this.socket.nsp
+		if ( typeof nameSpace.emit !== 'function') {
+			nameSpace = this.socket
+		}
 		console.trace (`imapPeer doing exit! this.sockerServer.emit ( 'tryConnectCoNETStage', null, -1 )`)
-		this.roomEmit.emit ( 'tryConnectCoNETStage', null, -1 )
+		nameSpace.emit ( 'tryConnectCoNETStage', null, -1 )
 		if ( !this.alreadyExit ) {
 			this.alreadyExit = true
 			console.log (`CoNETConnect class exit1 doing this._exit() success!`)
@@ -52,13 +56,23 @@ export default class extends Imap.imapPeer {
 	}
 
 	public setTimeWaitAfterSentrequestMail () {
+		let nameSpace: SocketIO.Namespace | SocketIO.Socket = this.socket.nsp
+		if ( typeof nameSpace.emit !== 'function') {
+			nameSpace = this.socket
+		}
 		this.timeoutWaitAfterSentrequestMail = setTimeout (() => {
-			return this.roomEmit.emit ( 'tryConnectCoNETStage', null, 0 )
+			return nameSpace.emit ( 'tryConnectCoNETStage', null, 0 )
 		}, requestTimeOut * 2 )
 	}
-
+	/*
 	private checkSocketConnect () {
-		return this.roomEmit.clients (( err, n ) => {
+		let nameSpace: SocketIO.Namespace | SocketIO.Socket = this.socket.nsp
+
+		if ( typeof nameSpace.clients !== 'function') {
+			return this.destroy ( 0 )
+		}
+
+		return nameSpace.clients (( err, n ) => {
 			if ( err ) {
 				return console.log (`checkSocketConnect roomEmit.clients error!!!`, err )
 			}
@@ -75,17 +89,24 @@ export default class extends Imap.imapPeer {
 			}, requestTimeOut )
 		})
 	}
-
-	constructor ( public keyID, public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket, public roomEmit: SocketIO.Namespace,
+	*/
+	constructor ( public keyID, public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket,
 		private cmdResponse: ( mail: string, hashCode: string ) => void, public _exit: ( err ) => void ) {
+			
 		super ( imapData, imapData.clientFolder, imapData.serverFolder, err => {
 			console.debug ( `imapPeer doing exit! err =`, err )
-			this.roomEmit.emit ( 'tryConnectCoNETStage', null, -2 )
+
+			nameSpace.emit ( 'tryConnectCoNETStage', null, -2 )
 			return this.exit1 ( err )
 		})
 
+		let nameSpace: SocketIO.Namespace | SocketIO.Socket = socket.nsp
+		if ( typeof nameSpace.emit !== 'function') {
+			nameSpace = socket
+		}
+
 		saveLog (`=====================================  new CoNET connect()`, true )
-		this.roomEmit.emit ( 'tryConnectCoNETStage', null, 5 )
+		nameSpace.emit ( 'tryConnectCoNETStage', null, 5 )
 		
 		this.newMail = ( mail: string, hashCode: string ) => {
 			return this.cmdResponse ( mail, hashCode )
@@ -99,22 +120,21 @@ export default class extends Imap.imapPeer {
 			clearTimeout ( this.timeoutWaitAfterSentrequestMail )
 			this.connectStage = 4
 			
-			this.roomEmit.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
-			socket.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
-			return this.checkSocketConnect ()
+			return nameSpace.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
+
 		})
 
 		this.on ( 'pingTimeOut', () => {
 
 			console.log ( `class CoNETConnect on pingTimeOut` )
 			
-			return this.roomEmit.emit ( 'pingTimeOut' )
+			return nameSpace.emit ( 'pingTimeOut' )
 			
 
 		})
 
 		this.on ( 'ping', () => {
-			this.roomEmit.emit ( 'tryConnectCoNETStage', null, 2 )
+			nameSpace.emit ( 'tryConnectCoNETStage', null, 2 )
 			//this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
 		})
 

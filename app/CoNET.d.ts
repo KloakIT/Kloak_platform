@@ -772,3 +772,54 @@ interface fileHistory {
 		}
 	}
 }
+
+interface currentUser {
+	bio: string
+	chatDataUUID: string
+	chatData: KnockoutObservableArray < messageContent >
+	chatDataArray: messageContent []
+	id: string
+	title: string
+	image: string
+	email: string
+	nickName: string
+	notice: KnockoutObservable < number >
+	_notice: number
+	typing: KnockoutObservable < boolean >
+}
+
+interface messageYoutubeObj {
+	url: string
+	img: string
+	title: string
+	time: string
+	description: string
+	showLoading: KnockoutObservable <number>
+	showError: KnockoutObservable <boolean>
+}
+
+interface messageContent {
+	create: KnockoutObservable < Date >
+	_create: string
+	textContent: string
+	readTimestamp?: KnockoutObservable < Date >
+	_readTimestamp: string
+	attachedFile: any
+	isSelf: boolean
+	uuid: string
+	_delivered: string
+	delivered?: KnockoutObservable < Date >
+	mediaData: string
+	youtubeObj: messageYoutubeObj
+}
+
+interface daggr_preperences {
+	keyInfo: {
+		keyID: string
+		bio: string
+		image: string
+		nikeName: string
+		email: string
+	}
+	contacts: currentUser []
+}

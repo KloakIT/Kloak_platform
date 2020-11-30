@@ -262,8 +262,9 @@ class ImapServerSwitchStream extends Stream.Transform {
     doNewMail(UID = '') {
         this.reNewCount--;
         this.runningCommand = 'doNewMail';
-        this.seachUnseen((err, newMailIds, havemore) => {
+        return this.seachUnseen((err, newMailIds, havemore) => {
             if (err) {
+                console.log(`===============> seachUnseen got error. destore imap connect!`, err);
                 this.runningCommand = null;
                 return this.imapServer.destroyAll(err);
             }
@@ -289,12 +290,15 @@ class ImapServerSwitchStream extends Stream.Transform {
                     }
                     return next();
                 }, err => {
+                    console.log(`doNewMail Async.eachSeries getNewMail callback!`);
                     this.runningCommand = null;
                     if (err) {
+                        console.log(`doNewMail Async.eachSeries getNewMail error`, err);
                         debug ? exports.saveLog(`ImapServerSwitchStream [${this.imapServer.listenFolder || this.imapServer.imapSerialID}] doNewMail ERROR! [${err}]`) : null;
                         return this.imapServer.destroyAll(err);
                     }
                     if (this.needLoginout) {
+                        console.log(`this.needLoginout === true!`);
                         return this.idleNoop();
                     }
                     if (haveMoreNewMail || havemore || this.newSwitchRet) {
@@ -541,7 +545,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         if (this.writable) {
             this.appendWaitResponsrTimeOut = timers_1.setTimeout(() => {
                 return CallBack();
-            }, 1000 * 10);
+            }, 1000 * 30);
             return this.push(this.cmd + '\r\n');
         }
         if (CallBack && typeof CallBack === 'function') {
@@ -709,7 +713,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     }
     fetch(fetchNum, callback) {
         this.doCommandCallback = (err) => {
-            //console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }], err [${ err }]`)
+            console.log(`ImapServerSwitchStream doing doCommandCallback [${this.newSwitchRet}], err [${err}]`);
             return callback(err, this.newSwitchRet);
         };
         this.newSwitchRet = false;
@@ -739,7 +743,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.appendWaitResponsrTimeOut = timers_1.setTimeout(() => {
             //this.imapServer.emit ( 'error', new Error (`${ this.cmd } timeout!`))
             return this.doCommandCallback(new Error(`${this.cmd} timeout!`));
-        }, this.imapServer.fetching + 1000 * 60);
+        }, this.imapServer.fetching + 1000 * 120);
         if (this.writable) {
             return this.push(this.cmd + '\r\n');
         }
@@ -1085,12 +1089,15 @@ class imapPeer extends Event.EventEmitter {
         if (this.rImap_restart) {
             return;
         }
+        console.log(`restart_rImap!`);
+        console.trace();
         this.rImap_restart = true;
         if (this.makeRImap) {
+            console.log(`this.makeRImap = true STOP rImap_restart!`);
             return;
         }
         return this.rImap.imapStream.loginoutWithCheck(() => {
-            console.dir(`restart_rImap`);
+            console.dir(`doing restart_rImap`);
             this.rImap.emit('end');
             return this.newReadImap();
         });
@@ -1208,6 +1215,8 @@ class imapPeer extends Event.EventEmitter {
         timers_1.clearTimeout(this.waitingReplyTimeOut);
         timers_1.clearTimeout(this.needPingTimeOut);
         timers_1.clearTimeout(this.checkSocketConnectTime);
+        console.log(`destroy IMAP!`);
+        console.trace();
         if (this.doingDestroy) {
             return console.log(`destroy but this.doingDestroy = ture`);
         }

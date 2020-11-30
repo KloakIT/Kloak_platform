@@ -31,7 +31,6 @@ class sharedAppClass {
 	public search_form_item_request: QTGateAPIRequestCommand
 	public search_form_next_request: QTGateAPIRequestCommand
 	public searchItemList_build ( com: QTGateAPIRequestCommand, first: boolean ) {
-
 	}
 
 	/**
@@ -43,7 +42,9 @@ class sharedAppClass {
 
 	public item_request_get_response ( currentItem, data: QTGateAPIRequestCommand ) { return true }
 
-	constructor ( public exit: () => void ) {}
+	constructor ( public exit: () => void ) {
+
+	}
 	
 	
 	public showInputTextAreaError ( err ) {
@@ -108,11 +109,12 @@ class sharedAppClass {
 	}
 
 	public search_form () {
-		try {
-			this.search_form_request.Args = [ this.searchInputText() ]
-		} catch ( ex ) {
-			return console.log ( ex )
+		if ( !this.searchInputText()?.length || !this.search_form_request || !this.search_form_request.command ) {
+			return
 		}
+
+		this.search_form_request.Args = [ this.searchInputText() ]
+		
 		this.search_form_request.requestSerial = uuid_generate()
 		this.search_form_request ['startTime'] = new Date().getTime()
 		

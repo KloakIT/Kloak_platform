@@ -40,6 +40,7 @@ class sharedWorkerManager {
 				return this.catchReturn ( e.data )
 			}
 		}
+		
 	}
 
 	private emitCommand ( cmd: sharedWorkerCommand, CallBack ) {

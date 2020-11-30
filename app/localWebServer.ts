@@ -25,10 +25,7 @@ import * as Uuid from 'node-uuid'
 import * as Imap from './tools/imap'
 import CoNETConnectCalss from './tools/coNETConnect'
 import * as mime from 'mime-types'
-var CSR = require('@root/csr')
-var PEM = require('@root/pem/packer')
-var Keypairs = require('@root/keypairs')
-
+import * as bodyParser from 'body-parser'
 const Package = require ( '../package.json' )
 
 interface localConnect {
@@ -111,7 +108,7 @@ export default class localServer {
 	private lengthPool: Map <any, number > = new Map()
 	private requestStreamUrlSocketPool = new Map ()
 
-	private catchCmd ( mail: string, uuid: string ) {
+	private async catchCmd ( mail: string, uuid: string ) {
 		
 		console.log ( `Get response from CoNET uuid [${ uuid }] length [${ mail.length }]`)
 		
@@ -119,19 +116,20 @@ export default class localServer {
 
 		if ( ! socket ) {
 
-			const nameSpace = this.socketServer.of ( uuid  )
+			const nameSpace = this.socketServer.of ( uuid )
 
-			return nameSpace.clients (( err, clients ) => {
-				if ( err ) {
-					console.log ( err )
-					return console.dir (`catchCmd nameSpace.clients [${ uuid }] get Error` )
-				}
-				if ( !clients.length ) {
-					return console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
-				}
-				nameSpace.emit ( uuid, mail )
-				
-			})
+			const clients = await nameSpace.allSockets ()
+
+			console.dir ( clients )
+			const keys = Object.keys ( clients )
+			
+
+			if ( !keys ) {
+				return console.dir (`catchCmd nameSpace.clients request [${ uuid }] have not client!`)
+			}
+
+			return nameSpace.emit ( uuid, mail )
+
 			
 		}
 
@@ -139,7 +137,7 @@ export default class localServer {
 	}
 
 	
-	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean, nameSpace: SocketIO.Namespace ) {
+	private tryConnectCoNET ( socket: SocketIO.Socket, imapData: IinputData, sendMail: boolean ) {
 		
 		//		have CoGate connect
 		const keyID = socket['keyID']
@@ -155,8 +153,16 @@ export default class localServer {
 
 
 		
-		const _exitFunction = err => {
-			console.trace ( `makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err )
+		const _exitFunction = async err => {
+			console.log ( `makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err )
+			const allSockets = socket.nsp
+			const uuu = await allSockets.allSockets()
+
+			console.log ( typeof uuu,'\n\n', uuu.size )
+
+			if ( uuu.size ) {
+				return makeConnect ()
+			}
 			/*
 			if ( err && err.message ) {
 				
@@ -172,27 +178,17 @@ export default class localServer {
 			}
 			*/
 			
-			if ( typeof ConnectCalss.destroy === 'function' ) {
-				ConnectCalss.destroy ()
-			}
-			
 			//makeConnect ()
 				
-			this.imapConnectPool.delete ( keyID )
-			return nameSpace.clients (( err, n ) => {
-				if ( err ) {
-					return console.log (`_exitFunction nameSpace.clients get error`, err )
-				}
-				console.log (`nameSpace.clients = [${ n.length }]`)
-				if ( n && n.length > 0 ) {
-					return makeConnect ()
-				}
-			})
+
+			//return makeConnect ()
+			
+			
 			
 		}
 
 		const makeConnect = () => {
-			ConnectCalss = new CoNETConnectCalss ( keyID, imapData, this.socketServer, socket, nameSpace, ( mail, uuid ) => {
+			ConnectCalss = new CoNETConnectCalss ( keyID, imapData, this.socketServer, socket, ( mail, uuid ) => {
 				return this.catchCmd ( mail, uuid )
 			}, _exitFunction )
 			
@@ -267,7 +263,7 @@ export default class localServer {
 				} catch ( ex ) {
 					return socket.emit ( uuid, 'system' )
 				}
-				return this.tryConnectCoNET ( socket, data, sendMail, workspace )
+				return this.tryConnectCoNET ( socket, data, sendMail )
 			})
 
 			
@@ -282,6 +278,7 @@ export default class localServer {
 				return 
 			}
 			const _callBack = ( ...data ) => {
+				console.log (`+++++++++++++++ doingRequest got response from AP!`)
 				socket.emit ( uuid, ...data )
 			}
 
@@ -295,7 +292,7 @@ export default class localServer {
 				return socket.emit ( uuid, new Error ('have no connect to node'))
 			}
 			
-			console.dir (`on doingRequest request_uuid [${ request_uuid }]`)
+			console.dir ( request )
 			userConnet.requestCoNET_v1 ( request_uuid, request, _callBack )
 
 		})
@@ -436,7 +433,7 @@ export default class localServer {
 			
 		})
 
-		socket.once ( 'disconnect', () => {
+		socket.once ( 'disconnect', async () => {
 
 			const keypair: localServerKeyPair = socket[ 'keypair' ]
 
@@ -445,17 +442,28 @@ export default class localServer {
 			}
 			const keyID = socket ["keyID"]
 			const adminNamespace = this.socketServer.of ( `/${ keyID }` )
-			return adminNamespace.clients (( err, clients ) => {
-				if ( err ) {
-					return console.log ( err )
-				}
+
+			if ( typeof adminNamespace.allSockets !== 'function') {
+				return console.log (`socket.once ( 'disconnect') but adminNamespace.allSockets have not working, STOP !!`)
+			}
+
+			const clients = await adminNamespace.allSockets ()
+
+			
 				const client = clients.length
+
+
 				console.dir (`socket.once ( 'disconnect') total clients of room [/${ keyID }] = [${ clients.length }]`)
+
+
 				if ( !client ) {
 					const connect = this.imapConnectPool.get ( keyID )
 					this.imapConnectPool.delete ( keyID )
+					
 					if ( connect ) {
+
 						if ( connect.rImap && typeof connect.rImap.logout === 'function') {
+
 							return connect.rImap.logout (() => {
 								console.dir (`CoNet connect [${ keyID }] destroy`)
 							})
@@ -467,23 +475,23 @@ export default class localServer {
 
 				}
 				
-			})
+			
 			
 		})
 
 		socket.on ( 'requestStreamUrl', ( _length, CallBack1 )=> {
 			const _uuid = Uuid.v4()
-			CallBack1( _uuid )
+			CallBack1 ( _uuid )
 			console.dir ( `socket.on ( 'requestStreamUrl' ) length = ${ _length }`)
 
-			const listenChunk = ( range: string, buffer: string, CallBack1 ) => {
-				const __uuid = Uuid.v4()
+			const listenChunk = ( buffer: string, CallBack2 ) => {
 				
 				//		Destory Buffer Url
-				CallBack1 ( __uuid )
+				
 				
 				const urlSocket = socket['urlSocket']
-				
+
+				console.dir (`socket.on ( 'listenChunk') buffer.length = [${ buffer.length }]`)
 				if ( !urlSocket['closeListenning']) {
 
 					urlSocket['closeListenning'] = true
@@ -500,35 +508,34 @@ export default class localServer {
 
 				if ( !urlSocket ) {
 					const message = `have no request uuid as ${ _uuid }`
-					socket.emit ( __uuid, message )
+					CallBack2 ( message )
 					return console.dir ( message)
 				}
 				
 				const currectRange = socket['currectRange']
 
-				
+				/*
 				if ( currectRange !== range ) {
 					const message = `${ _uuid } range updated to [${ currectRange }]`
 					socket.emit ( __uuid, message )
 					return console.dir ( message )
 				}
-
+				*/
 				//console.dir (`stream.write`)
 				//console.log ( Buffer.from ( buffer.substr (0, 100),'base64').toString ('hex'))
 				const uuu = Buffer.from ( buffer, 'base64')
-				console.dir ( `socket.on 【${ _uuid }】buffer length = [${ uuu.length }]`)
+				console.dir ( `socket.on 【${ _uuid }】buffer length = [${ uuu.length }] write urlSocket now!`)
 				//console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
 
 				if ( !urlSocket.write ( uuu )) {
 					console.log (`res [${ _uuid }] need pause!!!`)
-					socket.emit ( _uuid,  socket['currectRange'], 'pause' )
 
 					urlSocket.once ( 'drain', () => {
-						console.log (`res [${ _uuid }] on drain, emit resume`)
-						socket.emit ( `${_uuid}-resume`,  socket['currectRange'], 'resume' )
+						console.log (`res [${ _uuid }] on drain, emit resume emit CallBack`)
+						return CallBack2 ( )
 					})
 				}
-
+				return CallBack2 ( )
 				
 				
 			}
@@ -538,7 +545,7 @@ export default class localServer {
 			socket['currectRange'] = `0-${ _length }`
 			this.requestStreamUrlSocketPool.set ( _uuid, socket )
 
-			socket.on ( _uuid, listenChunk )
+			//socket.on ( _uuid, listenChunk )
 			socket.emit ( _uuid, _uuid )
 
 		})
@@ -590,6 +597,12 @@ export default class localServer {
 
 	}
 
+	/**
+	 *  Init server OpenPGP key
+	 * 
+	 * @param CallBack 
+	 * 
+	 */
 	private newKeyPair ( CallBack ) {
 		return Tool.newKeyPair ( "admin@Localhost.local", "admin", this.serverKeyPassword, async ( err, data: localServerKeyPair ) => {
 			if ( err ) {
@@ -610,9 +623,12 @@ export default class localServer {
 		this.expressServer.use ( Express.static ( Tool.QTGateFolder ))
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'public' )))
 		this.expressServer.use ( Express.static ( Path.join ( __dirname, 'html' )))
+		this.expressServer.use ( bodyParser.urlencoded({ limit: '10mb', extended: true }))
+		this.expressServer.use ( bodyParser.json({ limit: '10mb' }))
+		this.expressServer.use ( bodyParser.raw())
 		const localPath = `/${ folderName }`
 		const workspaces = this.socketServer.of(/^\/\w+$/)
-
+		const responseArray = new Map ()
 		this.expressServer.get ( localPath, ( req, res ) => {
             res.render( 'home', { title: 'home', proxyErr: false  })
 		})
@@ -641,16 +657,18 @@ export default class localServer {
 
 			const socket = this.requestStreamUrlSocketPool.get ( uuid )
 			if ( !socket ) {
+				console.log (`UUID= [${ uuid }] have no socket!! STOP!`)
 				return errRespon ()
 			}
 			
 			console.dir ( req.headers , { depth: 4 })
-			const range = req.header ('range').toLocaleLowerCase()
+			const range = req.header ('range')?.toLocaleLowerCase()
 			const _length = socket['requestStreamTotalLength']
-
-			if ( range ) {
-				const rangeEnd = parseInt( range.split ('bytes=0-')[1] )
-				const rangeStart = parseInt ( range.split ( 'bytes=' )[1].split ('-')[0] )
+			const rangeEnd = parseInt( range.split ('bytes=0-')[1] )
+			const rangeStart = parseInt ( range.split ( 'bytes=' )[1].split ('-')[0] )
+			responseArray.set ( uuid, res )
+			if ( rangeStart && rangeEnd ) {
+				
 				
 				if ( /^bytes\=0\-1$/.test ( range )) {
 					console.dir ( req.rawHeaders )
@@ -659,38 +677,82 @@ export default class localServer {
 				}
 				
 				console.dir (`range = 【${ range } 】`)
-				
-				res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${ rangeEnd - rangeStart + 1 }` , 'Content-Range': `bytes ${ rangeStart } - ${ rangeEnd } / ${ _length }`, 'Connection': 'close' })
+				const resHeader = { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${ rangeEnd - rangeStart + 1 }` , 'Content-Range': `bytes=${ rangeStart }-${ rangeEnd }/${ _length }`, 'Connection': 'close' }
+				res.writeHead ( 206, resHeader )
 				
 				res['currectRange'] = socket['currectRange'] = range
 				res['rawHeaders'] = socket['rawHeaders'] = req.rawHeaders
 
 				socket['urlSocket'] = res
+				console.dir ( resHeader )
+				const uuid = socket['requestStreamUrlUUID']
 				
-				if ( rangeStart !== 0 ) {
-					
-					socket.emit ( socket['requestStreamUrlUUID'], range )
+				const doingGetData = () => {
+
+					socket.emit ( uuid, range )
+					/*
+					socket.emit ( uuid, range, ( chunk: string ) => {
+						const uuu = Buffer.from ( chunk, 'base64')
+						console.dir ( `socket【${ uuid }】buffer length = [${ uuu.length }] write urlSocket now!`)
+						//console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
+
+						if ( !res.socket.write ( uuu )) {
+							console.log (`res [${ uuid }] need pause!!!`)
+
+							res.socket.once ( 'drain', () => {
+								console.log (`res [${ uuid }] on drain, emit resume emit CallBack`)
+								return doingGetData ( )
+							})
+						}
+						return doingGetData ( )
+					})
+					*/
 				}
-
-
 				
-
-			} else {
-				res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes' })
+				
+				return doingGetData ()
 			}
 
-
-
-			
-
-			return res.end ()
+			res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes', 'Content-Length': `${ _length }`})
+			socket.emit ( uuid, range )
             
 		})
 
-		
+		this.expressServer.post ( `${ folderName }/streamUrl`, ( req, res ) => {
+			const body = req.body
+			const uuid = body.uuid
+			console.log (`this.expressServer.post ( ${ folderName }/streamUrl`)
+			console.dir ( body.uuid, body.buffer.length )
 
+			const errRespon = () => {
+				res.status ( 404 )
+				return res.end ()
+			}
+			if ( !uuid ) {
 
-		workspaces.on ( 'connection', socket => {
+				return errRespon ()
+			}
+
+			
+
+			const response = responseArray.get ( uuid )
+			const uuu = Buffer.from ( body.buffer, 'base64')
+			res.writeHead (200)
+
+			if ( !response.write ( uuu )) {
+				console.log (`res [${ uuid }] need pause!!!`)
+
+				response.socket.once ( 'drain', () => {
+					console.log (`res [${ uuid }] on drain, emit resume emit CallBack`)
+					return res.end ()
+				})
+			}
+
+			return res.end ()
+		})
+
+	
+		workspaces.on ( 'connection', ( socket: SocketIO.Socket ) => {
 			
 			return this.listenAfterPassword ( socket )
 			

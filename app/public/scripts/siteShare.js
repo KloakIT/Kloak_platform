@@ -4548,6 +4548,97 @@ const Kloak_Daggr = `
 
 
 `;
+const kloak_voa = `
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">
+<style type="text/css">
+	.st00_00_002{fill:url(#SVGID_1_kloak_voa);}
+	.st11_11_11002{filter:url(#Adobe_OpacityMaskFilter);}
+	.st22_22_22002{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st33_333_33002{mask:url(#mask-2_2_);fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st44_44_44002{filter:url(#Adobe_OpacityMaskFilter_1_);}
+	.st55_55_0002{mask:url(#mask-4_2_);fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+</style>
+
+	<linearGradient id="SVGID_1_kloak_voa" gradientUnits="userSpaceOnUse" x1="4.0144" y1="75.9856" x2="75.0832" y2="4.9168">
+		<stop  offset="0" style="stop-color:#3B79B7"/>
+		<stop  offset="0.1463" style="stop-color:#4F84B5"/>
+		<stop  offset="0.3748" style="stop-color:#6B92B2"/>
+		<stop  offset="0.9912" style="stop-color:#3B79B7"/>
+	</linearGradient>
+
+	<path class="st00_00_002" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)"/>
+	<g filter = "url(#cosearch_Filter3)">
+		<g id="Group-9">
+			<g id="Group-3">
+				<g id="Clip-2">
+				</g>
+				<defs>
+					<filter id="Adobe_OpacityMaskFilter" filterUnits="userSpaceOnUse" x="6.3" y="25.5" width="30.2" height="27">
+						<feColorMatrix  type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+					</filter>
+				</defs>
+				<mask maskUnits="userSpaceOnUse" x="6.3" y="25.5" width="30.2" height="27" id="mask-2_2_">
+					<g class="st11_11_11002">
+						<polygon id="path-1_2_" class="st22_22_22002" points="6.3,25.5 36.4,25.5 36.4,52.5 6.3,52.5 						"/>
+					</g>
+				</mask>
+				<path id="Fill-1" class="st33_333_33002" d="M26.1,39c0-6.5,4.4-11.9,10.3-13.5l0,0H24.7l-4.3,16l-4.3-16H6.3l9.8,27h10.5l2-5.5
+					C27,44.7,26.1,42,26.1,39"/>
+			</g>
+			<path id="Fill-4" class="st22_22_22002" d="M40,32.4c-3.7,0-6.7,3-6.7,6.7c0,3.7,3,6.7,6.7,6.7c3.7,0,6.7-3,6.7-6.7
+				C46.7,35.4,43.7,32.4,40,32.4"/>
+			<g id="Group-8" transform="translate(141.000000, 0.000000)">
+				<g id="Clip-7">
+				</g>
+				<defs>
+					<filter id="Adobe_OpacityMaskFilter_1_" filterUnits="userSpaceOnUse" x="-97.4" y="25.5" width="30.2" height="27">
+						<feColorMatrix  type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+					</filter>
+				</defs>
+				<mask maskUnits="userSpaceOnUse" x="-97.4" y="25.5" width="30.2" height="27" id="mask-4_2_">
+					<g class="st44_44_44002">
+						<polygon id="path-3_2_" class="st22_22_22002" points="-97.4,25.5 -67.3,25.5 -67.3,52.5 -97.4,52.5 						"/>
+					</g>
+				</mask>
+				<path id="Fill-6" class="st55_55_0002" d="M-87.1,39c0,6.5-4.4,11.9-10.3,13.5l0,0h11.7l4.3-16l4.3,16h9.9l-9.8-27h-10.5l-2,5.5
+					C-88,33.3-87.1,36-87.1,39"/>
+			</g>
+		</g>
+	</g>
+
+</svg>
+`;
+const kloak_rfa = `
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">
+<style type="text/css">
+	.st000_000{fill:url(#SVGID_1_st000_000);}
+	.st12112_001{fill:#00AA4F;}
+	.st222_000223{fill:#FFFFFF;}
+</style>
+
+	<linearGradient id="SVGID_1_st000_000" gradientUnits="userSpaceOnUse" x1="4.0144" y1="75.9856" x2="75.0832" y2="4.9168">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.1192" style="stop-color:#CBE0D4"/>
+		<stop  offset="0.2935" style="stop-color:#84B699"/>
+		<stop  offset="0.3748" style="stop-color:#68A582"/>
+		<stop  offset="0.9899" style="stop-color:#FFFFFF"/>
+	</linearGradient>
+	
+	<path class="st000_000" d="M68.5,77.5h-57c-5,0-9-4-9-9v-57c0-5,4-9,9-9h57c5,0,9,4,9,9v57C77.5,73.5,73.5,77.5,68.5,77.5z" filter = "url(#cosearch_Filter3)" />
+	<path class="st12112_001" d="M67.3,40.3c0,14.9-12.2,27-27.3,27s-27.3-12.1-27.3-27c0-14.9,12.2-27.5,27.3-27.5S67.3,25.4,67.3,40.3z"/>
+	<g filter = "url(#cosearch_Filter3)" >
+		<polygon class="st222_000223" points="24.6,31.3 36.8,31.3 36.8,35 30.1,35 30.1,38.9 36.8,38.9 36.8,42.6 30.1,42.6 30.1,48.8 24.6,48.8 	
+			"/>
+		<path class="st222_000223" d="M41,48.8H35l6.7-17.5H48l6.6,17.5h-6l-0.8-2.4h-6.1L41,48.8z M42.9,42.6h3.9l-1.9-6.3L42.9,42.6z"/>
+		<g>
+			<path class="st222_000223" d="M16.8,31.2c1.4,0.1,2.8,0.2,3.7,0.6c2.1,1,2.9,3.3,2.9,4.8c0,2.8-1.6,4.4-3.6,5.1l4.3,7.1h-6.2l-3.4-6.2h-1.7
+				c-0.2-0.4-0.1-3.4-0.1-3.6h2.4c0.9,0,2.7,0,2.7-2c0-2-1.7-2.1-2.7-2.1h-1.9c-0.1-0.2,0.8-3.4,1-3.6L16.8,31.2z"/>
+		</g>
+	</g>
+</svg>
+`;
 const Kloak_generalspalding = `
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 80 80" style="enable-background:new 0 0 80 80;" xml:space="preserve">

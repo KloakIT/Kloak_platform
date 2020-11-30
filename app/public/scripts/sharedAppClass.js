@@ -79,12 +79,10 @@ class sharedAppClass {
         });
     }
     search_form() {
-        try {
-            this.search_form_request.Args = [this.searchInputText()];
+        if (!this.searchInputText()?.length || !this.search_form_request || !this.search_form_request.command) {
+            return;
         }
-        catch (ex) {
-            return console.log(ex);
-        }
+        this.search_form_request.Args = [this.searchInputText()];
         this.search_form_request.requestSerial = uuid_generate();
         this.search_form_request['startTime'] = new Date().getTime();
         this.searchInputText_searching(false);

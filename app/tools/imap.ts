@@ -22,10 +22,9 @@ import * as Event from 'events'
 import * as Uuid from 'node-uuid'
 import * as Async from 'async'
 import * as Crypto from 'crypto'
-import { join } from 'path'
 import { setTimeout, clearTimeout } from 'timers';
 import { Buffer } from 'buffer'
-import * as Tool from './initSystem'
+
 
 const MAX_INT = 9007199254740992
 const debug = true
@@ -321,13 +320,15 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.reNewCount --
                
         this.runningCommand = 'doNewMail'
-        this.seachUnseen (( err, newMailIds, havemore ) => {
+        return this.seachUnseen (( err, newMailIds, havemore ) => {
             if ( err ) {
+                console.log (`===============> seachUnseen got error. destore imap connect!`, err )
                 this.runningCommand = null
                 return this.imapServer.destroyAll ( err )
             }
             
-			let haveMoreNewMail = false
+            let haveMoreNewMail = false
+            
 			const getNewMail = ( _fatchID, CallBack ) => {
             
 				return Async.waterfall ([
@@ -351,15 +352,17 @@ class ImapServerSwitchStream extends Stream.Transform {
 					}
 					return next ()
                 }, err => {
+                    console.log (`doNewMail Async.eachSeries getNewMail callback!`)
                     this.runningCommand = null
 					if ( err ) {
-                        
+                        console.log (`doNewMail Async.eachSeries getNewMail error`, err )
                         debug ? saveLog ( `ImapServerSwitchStream [${ this.imapServer.listenFolder || this.imapServer.imapSerialID }] doNewMail ERROR! [${ err }]`) : null
                         
 						return this.imapServer.destroyAll ( err )
                     }
 
                     if ( this.needLoginout ) {
+                        console.log (`this.needLoginout === true!`)
                         return this.idleNoop ( )
                     }
 
@@ -671,7 +674,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 			this.appendWaitResponsrTimeOut = setTimeout (() => {
 				
 				return CallBack ()
-			}, 1000 * 10 )
+			}, 1000 * 30 )
 
             return this.push ( this.cmd + '\r\n')
         }
@@ -887,7 +890,7 @@ class ImapServerSwitchStream extends Stream.Transform {
     public fetch ( fetchNum, callback ) {
 
         this.doCommandCallback = ( err ) => {
-            //console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }], err [${ err }]`)
+            console.log (`ImapServerSwitchStream doing doCommandCallback [${ this.newSwitchRet }], err [${ err }]`)
             return callback ( err, this.newSwitchRet )
         }
         
@@ -927,7 +930,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.appendWaitResponsrTimeOut = setTimeout (() => {
             //this.imapServer.emit ( 'error', new Error (`${ this.cmd } timeout!`))
             return this.doCommandCallback ( new Error (`${ this.cmd } timeout!`))
-        }, this.imapServer.fetching + 1000 * 60 )
+        }, this.imapServer.fetching + 1000 * 120 )
 
         if ( this.writable ) {
 			
@@ -957,6 +960,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 
             return CallBack ( err )
         }
+
         this.commandProcess = ( text1: string, cmdArray: string[], next, _callback ) => {
             return _callback ()
         }
@@ -1354,20 +1358,22 @@ export class imapPeer extends Event.EventEmitter {
     public checkSocketConnectTime = null
 
     private restart_rImap () {
-
+        
 
         if ( this.rImap_restart ) {
             return 
         }
-
+        console.log (`restart_rImap!`)
+        console.trace ()
         this.rImap_restart = true
 
         if ( this.makeRImap ) {
+            console.log (`this.makeRImap = true STOP rImap_restart!`)
             return
         }
         
         return this.rImap.imapStream.loginoutWithCheck (() => {
-            console.dir (`restart_rImap`)
+            console.dir (`doing restart_rImap`)
             this.rImap.emit ('end')
             return this.newReadImap ()
         })
@@ -1539,6 +1545,8 @@ export class imapPeer extends Event.EventEmitter {
         clearTimeout ( this.waitingReplyTimeOut )
         clearTimeout ( this.needPingTimeOut )
         clearTimeout ( this.checkSocketConnectTime )
+        console.log (`destroy IMAP!`)
+        console.trace ()
         if ( this.doingDestroy ) {
             return console.log (`destroy but this.doingDestroy = ture`)
         }

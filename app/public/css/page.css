@@ -58,6 +58,9 @@
 	z-index: 999;
 	opacity: 0.5;
 }
+.skipSVG {
+	full: rgba(255, 255, 255, 0.5);
+}
 
 .languageItem {
 	cursor: pointer;
@@ -1057,7 +1060,7 @@ play-btn {
 }
 
 .kloak_background_DarkBlue_waiting {
-	background-color: #0f285080 !important;
+	background-color: #667183 !important;
 }
 
 .kloak_background_LightGrey {
@@ -1095,6 +1098,56 @@ play-btn {
 .icon-background-response-Kloak-server:after {
 	border-color: #4ea00e transparent transparent!important;;
 }
+
+.daggerMessageLeftPoint:before {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	width: 35px;
+	height: 20px;
+	z-index: -1;
+	background-color: inherit;
+	left: -30px;
+	border-radius: 0 0 50% 0;
+}
+
+.daggerMessageLeftPoint:after {
+	content: '';
+	position: absolute;
+	width: 35px;
+	height: 40px;
+	z-index: -1;
+	left: -35px;
+	bottom: -1px;
+	border-radius: 0 0 50% 0;
+	background-color: white;
+}
+
+.daggerMessageRightPoint:before {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	width: 35px;
+	height: 20px;
+	z-index: -1;
+	background-color: inherit;
+	right: -30px;
+	border-radius: 0 0 0 50%;
+	
+}
+
+.daggerMessageRightPoint:after {
+	content: '';
+	position: absolute;
+	width: 35px;
+	height: 40px;
+	z-index: -1;
+	right: -35px;
+	border-radius: 0 0 0 50%;
+	bottom: -1px;
+	background-color: white;
+}
+
 /* ====================================================================================================================
 ANDY - MASONARY IMAGES
 ======================================================================================================================= */

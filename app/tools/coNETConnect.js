@@ -28,17 +28,42 @@ const timeOutWhenSendConnectRequestMail = 1000 * 60;
 const commandRequestTimeOutTime = 1000 * 10;
 const requestTimeOut = 1000 * 60;
 class default_1 extends Imap.imapPeer {
-    constructor(keyID, imapData, server, socket, roomEmit, cmdResponse, _exit) {
+    /*
+    private checkSocketConnect () {
+        let nameSpace: SocketIO.Namespace | SocketIO.Socket = this.socket.nsp
+
+        if ( typeof nameSpace.clients !== 'function') {
+            return this.destroy ( 0 )
+        }
+
+        return nameSpace.clients (( err, n ) => {
+            if ( err ) {
+                return console.log (`checkSocketConnect roomEmit.clients error!!!`, err )
+            }
+            console.log (`\n\n`)
+            console.dir (`checkSocketConnect roomEmit.clients [${ n.length }]`)
+            console.log (`\n\n`)
+
+            if ( !n || !n.length ) {
+                return this.destroy ( 0 )
+            }
+
+            this.checkSocketConnectTime = setTimeout (() => {
+                return this.checkSocketConnect ()
+            }, requestTimeOut )
+        })
+    }
+    */
+    constructor(keyID, imapData, server, socket, cmdResponse, _exit) {
         super(imapData, imapData.clientFolder, imapData.serverFolder, err => {
             console.debug(`imapPeer doing exit! err =`, err);
-            this.roomEmit.emit('tryConnectCoNETStage', null, -2);
+            nameSpace.emit('tryConnectCoNETStage', null, -2);
             return this.exit1(err);
         });
         this.keyID = keyID;
         this.imapData = imapData;
         this.server = server;
         this.socket = socket;
-        this.roomEmit = roomEmit;
         this.cmdResponse = cmdResponse;
         this._exit = _exit;
         this.CoNETConnectReady = false;
@@ -48,8 +73,12 @@ class default_1 extends Imap.imapPeer {
         this.timeoutCount = {};
         this.socketPool = [];
         this.checkSocketConnectTime = null;
+        let nameSpace = socket.nsp;
+        if (typeof nameSpace.emit !== 'function') {
+            nameSpace = socket;
+        }
         saveLog(`=====================================  new CoNET connect()`, true);
-        this.roomEmit.emit('tryConnectCoNETStage', null, 5);
+        nameSpace.emit('tryConnectCoNETStage', null, 5);
         this.newMail = (mail, hashCode) => {
             return this.cmdResponse(mail, hashCode);
         };
@@ -59,16 +88,14 @@ class default_1 extends Imap.imapPeer {
             //console.log ( publicKey )
             clearTimeout(this.timeoutWaitAfterSentrequestMail);
             this.connectStage = 4;
-            this.roomEmit.emit('tryConnectCoNETStage', null, 4, publicKey);
-            socket.emit('tryConnectCoNETStage', null, 4, publicKey);
-            return this.checkSocketConnect();
+            return nameSpace.emit('tryConnectCoNETStage', null, 4, publicKey);
         });
         this.on('pingTimeOut', () => {
             console.log(`class CoNETConnect on pingTimeOut`);
-            return this.roomEmit.emit('pingTimeOut');
+            return nameSpace.emit('pingTimeOut');
         });
         this.on('ping', () => {
-            this.roomEmit.emit('tryConnectCoNETStage', null, 2);
+            nameSpace.emit('tryConnectCoNETStage', null, 2);
             //this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
         });
         this.socketPool.push(socket);
@@ -82,8 +109,12 @@ class default_1 extends Imap.imapPeer {
         });
     }
     exit1(err) {
+        let nameSpace = this.socket.nsp;
+        if (typeof nameSpace.emit !== 'function') {
+            nameSpace = this.socket;
+        }
         console.trace(`imapPeer doing exit! this.sockerServer.emit ( 'tryConnectCoNETStage', null, -1 )`);
-        this.roomEmit.emit('tryConnectCoNETStage', null, -1);
+        nameSpace.emit('tryConnectCoNETStage', null, -1);
         if (!this.alreadyExit) {
             this.alreadyExit = true;
             console.log(`CoNETConnect class exit1 doing this._exit() success!`);
@@ -92,25 +123,13 @@ class default_1 extends Imap.imapPeer {
         console.log(`exit1 cancel already Exit [${err}]`);
     }
     setTimeWaitAfterSentrequestMail() {
+        let nameSpace = this.socket.nsp;
+        if (typeof nameSpace.emit !== 'function') {
+            nameSpace = this.socket;
+        }
         this.timeoutWaitAfterSentrequestMail = setTimeout(() => {
-            return this.roomEmit.emit('tryConnectCoNETStage', null, 0);
+            return nameSpace.emit('tryConnectCoNETStage', null, 0);
         }, requestTimeOut * 2);
-    }
-    checkSocketConnect() {
-        return this.roomEmit.clients((err, n) => {
-            if (err) {
-                return console.log(`checkSocketConnect roomEmit.clients error!!!`, err);
-            }
-            console.log(`\n\n`);
-            console.dir(`checkSocketConnect roomEmit.clients [${n.length}]`);
-            console.log(`\n\n`);
-            if (!n || !n.length) {
-                return this.destroy(0);
-            }
-            this.checkSocketConnectTime = setTimeout(() => {
-                return this.checkSocketConnect();
-            }, requestTimeOut);
-        });
     }
     requestCoNET_v1(uuid, text, CallBack) {
         this.checklastAccessTime();

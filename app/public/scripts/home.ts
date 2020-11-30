@@ -284,7 +284,7 @@ module view_layout {
 
 		const ret: twitter_mediaData = {
 			total_bytes: media[1].length,
-			media_type: 'image/png',
+			media_type: 'image/jpeg',//png',
 			rawData: media[1],
 			media_id_string: null,
 		}
@@ -316,11 +316,24 @@ module view_layout {
 					image.resize ( imageMaxWidth, isSameWH ? imageMaxWidth: Jimp.AUTO )
 				}
 			}
+			
+			return image.quality ( 70, () => {
+				return image.getBase64 ( ret.media_type, ( err, buf ) => {
+					if ( err ) {
+						return CallBack ( err )
+					}
+					ret.rawData = buf
+					ret.total_bytes = buf.length
+					return CallBack ( null, ret )
+				})
+			})
+			
 			//		to PNG
-
+			/*
 			return image.deflateStrategy ( 2, () => {
 				return exportImage ( ret.media_type, image )
 			})
+			*/
 		})
 		//}
 
@@ -986,6 +999,39 @@ const mainMenuArray = [
 	},
 	/*
 	{
+		name: 'voa',
+		img: kloak_voa,
+		header: ['VOA', 'VOA', 'VOA', 'VOA'],
+		description: [
+			'强安全私密无痕离线浏览器存储。文件打碎并加密保存在浏览器内部，整体系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
+			'プライバシーと安全な離線ブラウザストレージ。ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
+			'Offline file and media storage which divides the file into multiple, encrypted, and ordered parts and stores them locally in the browser.  When the user wants to access the file for editing for example , these parts will be reassembled together in the designated order. However for media files, they can be played from the browser without needing reassembly of the media.',
+			'強安全私密無痕離線瀏覽器存储。文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放',
+		],
+		extra: null,
+		click: fileStorage,
+		htmlTemp: 'showFileStorage',
+		online: false,
+		notice: ko.observable ( 0 )
+	},
+	{
+		name: 'rfa',
+		img: kloak_rfa,
+		header: ['RFA', 'RFA', 'RFA', 'RFA'],
+		description: [
+			'强安全私密无痕离线浏览器存储。文件打碎并加密保存在浏览器内部，整体系统扫描都无法发现文件痕迹，恢复时解密拼装复原后可保存到本地，流媒体无需复原浏览器直接播放',
+			'プライバシーと安全な離線ブラウザストレージ。ファイルを破片化して暗号化でブラウザに保存します、ほしい時復元してローカルストレッジへ保存、マルチメディアファイルはブラウザ内で直接プレーできます',
+			'Offline file and media storage which divides the file into multiple, encrypted, and ordered parts and stores them locally in the browser.  When the user wants to access the file for editing for example , these parts will be reassembled together in the designated order. However for media files, they can be played from the browser without needing reassembly of the media.',
+			'強安全私密無痕離線瀏覽器存储。文件打碎並加密保存在瀏覽器內部，系統掃描都無法發現文件痕跡，恢復時解密拼裝復原後可保存到本地，流媒體無需複原瀏覽器直接播放',
+		],
+		extra: null,
+		click: fileStorage,
+		htmlTemp: 'showFileStorage',
+		online: false,
+		notice: ko.observable ( 0 )
+	},
+	/*
+	{
 		name: 'tw',
 		img: Kloak_twitter,
 		header: ['推特客户端', 'Kloak for Twitter', 'Kloak for Twitter', 'Kloak for Twitter'],
@@ -1056,6 +1102,7 @@ const mainMenuArray = [
 		htmlTemp: 'showGeneralSpalding',
 		notice: ko.observable ( 0 )
 	},
+	/*
 	{
 		name: 'canada',
 		img: canadaGov,
@@ -1072,6 +1119,7 @@ const mainMenuArray = [
 		htmlTemp: 'showCanada',
 		notice: ko.observable ( 0 )
 	},
+	*/
 ]
 
 const _view = new view_layout.view ()

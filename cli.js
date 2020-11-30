@@ -37,3 +37,4 @@ const localWebServer_1 = require("./app/localWebServer");
 const folderName = process.argv[3] || '';
 const portNumber = parseInt(process.argv[2]) || 3000;
 new localWebServer_1.default(portNumber, folderName);
+console.log(__dirname);

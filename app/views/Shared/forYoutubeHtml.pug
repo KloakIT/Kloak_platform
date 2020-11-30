@@ -37,7 +37,7 @@
 							span.totalResults1( data-bind = " text: info.totalResults[ $root.languageIndex() ]" )
 							span.totalResults2( data-bind = " text: totalSearchItems()" style="margin: 0.5em;" )
 							span.totalResults3( data-bind = " text: info.totalResults1[ $root.languageIndex() ]" )
-				.ui.items( style = "margin-top: 1rem;" )
+				.ui.items.unstackable( style = "margin-top: 1rem;" )
 					<!-- ko foreach: searchItemsArray -->
 						.item( style=" margin-bottom: 2rem;" )
 							.videoElm
