@@ -42,6 +42,9 @@ class daggr extends sharedAppClass {
 	public inputHtmlData = ko.observable ('')
 	public showYoutube = ko.observable ( false )
 	public textInput = ko.observable ('')
+	/**** test unit */
+	private currentYoutubeObj = null
+	/** test unit end */
 
 	public search_form_request = {
         command: 'daggr',
@@ -573,6 +576,16 @@ class daggr extends sharedAppClass {
 		})
 	}
 
+	public youtubePlayClick1 ( index ) {
+		const currentItem = this.currentChat ().chatData()[ index ]
+		currentItem.youtubeObj.showLoading ( 1 )
+		this.currentYoutubeObj = currentItem
+		/**
+		 * 			start downloadQuere
+		 */
+		document.getElementById( 'video_Input' ).click()
+	}
+
 	public ad_video_random = ko.computed (() => {
 		const ads = ['coronavirus-ad.mp4', 'ipad-ad.mp4', 'nike-ad.mp4']
 		return `/videos/ads/${ ads[ Math.round ( Math.random() * 2)]}`
@@ -585,5 +598,42 @@ class daggr extends sharedAppClass {
 		console.log (`Skip Ad click video url = /streamUrl?uuid=${ currentItem ['blobUUID']}`)
 		$(`#${ currentItem.uuid }_videoPlay`).attr ( 'src', `/streamUrl?uuid=${ currentItem ['blobUUID']}`)
 	}
+
+	public videoInput ( ee ) {
+		if ( !ee || !ee.files || !ee.files.length ) {
+			return
+		}
+
+		const file = ee.files[0]
+		const reader = new FileReader()
+
+
+		reader.onload = e => {
+			const currentItem = this.currentYoutubeObj
+			const rawData = Buffer.from ( reader.result )
+			const kk = new Mp4LocalServerUrl ( rawData.length, uuid => {
+				currentItem ['blobUUID'] = uuid
+				currentItem.youtubeObj.showLoading ( 3 )
+				let point = 0
+				const bufferLength = 1024 * 1024
+				const setTime = () => {
+					kk.BufferArray = Buffer.from ( Buffer.from( kk.BufferArray ).toString ('base64') + rawData.slice ( point, point + bufferLength - 1 ).toString ('base64'), 'base64')
+					kk.transferData ()
+					point += bufferLength
+					if ( point < rawData.length ) {
+						return setTimeout (()=> { setTime ()}, 100 )
+					}
+					console.log ( `all rawData success to buffer!`)
+					
+				}
+				setTime ()
+			})
+			
+		}
+
+		return reader.readAsArrayBuffer ( file )
+	}
+
+
 
 }

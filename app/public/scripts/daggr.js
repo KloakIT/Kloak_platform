@@ -37,6 +37,9 @@ class daggr extends sharedAppClass {
         this.inputHtmlData = ko.observable('');
         this.showYoutube = ko.observable(false);
         this.textInput = ko.observable('');
+        /**** test unit */
+        this.currentYoutubeObj = null;
+        /** test unit end */
         this.search_form_request = {
             command: 'daggr',
             Args: [],
@@ -459,10 +462,47 @@ class daggr extends sharedAppClass {
             currentItem['blobUUID'] = localServerUUID;
         });
     }
+    youtubePlayClick1(index) {
+        const currentItem = this.currentChat().chatData()[index];
+        currentItem.youtubeObj.showLoading(1);
+        this.currentYoutubeObj = currentItem;
+        /**
+         * 			start downloadQuere
+         */
+        document.getElementById('video_Input').click();
+    }
     skipAdclick(index) {
         const currentItem = this.currentChat().chatData()[index];
         currentItem.youtubeObj.showLoading(4);
         console.log(`Skip Ad click video url = /streamUrl?uuid=${currentItem['blobUUID']}`);
         $(`#${currentItem.uuid}_videoPlay`).attr('src', `/streamUrl?uuid=${currentItem['blobUUID']}`);
+    }
+    videoInput(ee) {
+        if (!ee || !ee.files || !ee.files.length) {
+            return;
+        }
+        const file = ee.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+            const currentItem = this.currentYoutubeObj;
+            const rawData = Buffer.from(reader.result);
+            const kk = new Mp4LocalServerUrl(rawData.length, uuid => {
+                currentItem['blobUUID'] = uuid;
+                currentItem.youtubeObj.showLoading(3);
+                let point = 0;
+                const bufferLength = 1024 * 1024;
+                const setTime = () => {
+                    kk.BufferArray = Buffer.from(Buffer.from(kk.BufferArray).toString('base64') + rawData.slice(point, point + bufferLength - 1).toString('base64'), 'base64');
+                    kk.transferData();
+                    point += bufferLength;
+                    if (point < rawData.length) {
+                        return setTimeout(() => { setTime(); }, 100);
+                    }
+                    console.log(`all rawData success to buffer!`);
+                };
+                setTime();
+            });
+        };
+        return reader.readAsArrayBuffer(file);
     }
 }

@@ -248,7 +248,7 @@ class keyPairGenerateForm {
                 if (err) {
                     return console.log(err);
                 }
-                this.avatarImage(`data:image/png;base64,${data.rawData}`);
+                this.avatarImage(`${data.rawData}`);
             });
         };
         return reader.readAsDataURL(file);

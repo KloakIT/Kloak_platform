@@ -300,44 +300,69 @@ class DownloadQueue {
     }
 }
 class Mp4LocalServerUrl {
-    constructor(length, BufferArray, callBack) {
-        this.length = length;
-        this.BufferArray = BufferArray;
+    constructor(bufferTotalLength, callBack) {
+        this.bufferTotalLength = bufferTotalLength;
         this.uuid = '';
         this.readyTransfer = false;
         this.postUrl = '/streamUrl';
-        _view.connectInformationMessage.sockEmit('requestStreamUrl', length, uuid => {
+        this.posting = false;
+        this.transferBufferLength = 1024 * 1024;
+        this.currentStartPoint = 0;
+        this.currentEndPoint = 0;
+        this.BufferArray = Buffer.alloc(0);
+        _view.connectInformationMessage.sockEmit('requestStreamUrl', bufferTotalLength, uuid => {
             this.uuid = uuid;
-            _view.connectInformationMessage.socketIo.on(uuid, range => {
-                console.log(`Start transfer Buffer!`);
+            _view.connectInformationMessage.socketIo.on(uuid, (range) => {
+                console.log(`Start transfer Buffer!range = [${range}] `);
                 this.readyTransfer = true;
+                if (range) {
+                    const _range = range.split('=')[1];
+                    this.currentStartPoint = parseInt(_range.split('-')[0]) || 0;
+                    this.currentEndPoint = parseInt(_range.split('-')[1]) || this.bufferTotalLength;
+                    if (this.posting) {
+                        console.log(`Already posting! reset to new range!`);
+                        this.posting = false;
+                    }
+                }
                 this.transferData();
             });
-            /*
-            _view.connectInformationMessage.socketIo.on ( uuid, ( range, CallBack ) => {
-                console.log (`connectInformationMessage.socketIo.on ${ range }`)
-                this.readyTransfer = true
-                this.pushData ( CallBack )
-            })
-            */
             return callBack(uuid);
         });
     }
     transferData() {
-        if (!this.readyTransfer) {
+        if (!this.readyTransfer || this.posting) {
             return console.log(`this.readyTransfer have not ready!`);
         }
-        const buffer = this.BufferArray.shift();
-        if (!buffer) {
+        if (this.currentStartPoint > this.bufferTotalLength) {
+            return console.log(`All buffer had transfer`);
+        }
+        if (this.BufferArray.length < this.currentStartPoint) {
+            return console.log(`Request part have over buffer!`);
+        }
+        this.posting = true;
+        let endPoint = this.currentStartPoint + this.transferBufferLength;
+        endPoint = endPoint > this.bufferTotalLength - 1 ? this.bufferTotalLength - 1 : endPoint;
+        if (this.BufferArray.length < endPoint) {
+            this.posting = false;
+            return console.log(`this.BufferArray.length < endPoint STOP this.BufferArray.length [${this.BufferArray.length}] [${this.currentStartPoint}-${endPoint}]`);
+        }
+        const buffer = this.BufferArray.slice(this.currentStartPoint, endPoint);
+        if (!buffer || !buffer.length) {
+            this.posting = false;
             return console.log(`BufferArray.shift () null stop transferData!`);
         }
-        const uuu = Buffer.from(buffer).toString('base64');
-        return $.post(this.postUrl, { uuid: this.uuid, buffer: uuu })
+        console.log(`POST buffer [${this.currentStartPoint}-${endPoint}] length [${buffer.length}]`);
+        this.currentStartPoint = endPoint;
+        const uuu = Buffer.from(buffer);
+        console.log(uuu.slice(0, 100).toString('base64'));
+        return $.post(this.postUrl, { uuid: this.uuid, buffer: uuu.toString('base64') })
             .done(() => {
             console.log(`transferData post data success, do again!`);
+            this.posting = false;
             return this.transferData();
         })
             .fail(() => {
+            this.posting = false;
             return console.log(`transferData post data fail!!!`);
         });
     }
@@ -389,7 +414,7 @@ class getYoutubeMp4Queue {
                 const downloadObj = com.Args[0];
                 this.totalLength = downloadObj.totalLength;
                 if (!this.mp4Url) {
-                    this.mp4Url = new Mp4LocalServerUrl(this.totalLength, this.streamData, urlUUid => {
+                    this.mp4Url = new Mp4LocalServerUrl(this.totalLength, urlUUid => {
                         this.LocalMp4ServerUUID = urlUUid;
                         //	test
                         this.skipSwitch(this.LocalMp4ServerUUID);
@@ -419,7 +444,7 @@ class getYoutubeMp4Queue {
             console.log(com);
             return this.stopProcess(message);
         };
-        _view.connectInformationMessage.emitRequest(cmd, _CallBack);
+        //_view.connectInformationMessage.emitRequest ( cmd, _CallBack )
     }
     Log(...args) {
         const now = new Date();
@@ -465,7 +490,6 @@ class getYoutubeMp4Queue {
                  * 				save to Fortress
                  */
                 console.log(`downloadObj [${com.downloadUuid}] completed, decrypt now !`);
-                this.skipSwitch(this.LocalMp4ServerUUID);
                 return _view.sharedMainWorker.decryptStreamWithoutPublicKey(Buffer.from(data.data).toString(), (err, _data) => {
                     if (err) {
                         const err = `Unable to decrypt file ORDER [${com.order}]`;
