@@ -52,10 +52,9 @@ class StorageHelper {
 				last_viewed: date,
 				path: "",
 				url: `YouTube`,
-				domain: "https://www.youtube.com",
-				tag: ['youtube', 'mp4', 'video'],
-				color: null,
+				tags: ['youtube', 'mp4', 'video'],
 				size: totalSize.total,
+				favorite: false,
 				youtube: {
 					id: youtubeId,
 					mimeType: {
@@ -66,7 +65,7 @@ class StorageHelper {
 				}
 			}
 
-			_view.storageHelper.saveHistory(history, (err, data) => {
+			_view.storageHelper.saveFileHistory(history, (err, data) => {
 				if (err) {
 					return console.log(err)
 				}
@@ -345,16 +344,15 @@ class StorageHelper {
 
 	public youtubeHistory = (requestUUIDs: Array<string>, youtubeId: string, title: string, extraTags: Array<string>,  mimeType: {video?: string, audio?: string}, duration?: number | string, quality?: string, thumbnail: string = null ) => {
 		const date = new Date()
-		const history: fileHistory = {
+		const file: fileHistory = {
 			uuid: requestUUIDs,
 			filename: title,
 			time_stamp: date,
 			last_viewed: date,
 			path: "",
 			url: 'YouTube',
-			domain: 'YouTube',
-			tag: [...extraTags, 'upload', 'local'],
-			color: null,
+			favorite: false,
+			tags: [...extraTags, 'upload', 'local'].filter(tag => tag),
 			youtube: {
 				id: youtubeId,
 				mimeType,
@@ -363,7 +361,7 @@ class StorageHelper {
 		}
 
 		if (duration) {
-			history.youtube.duration = parseInt(duration.toString())
+			file.youtube.duration = parseInt(duration.toString())
 		}
 
 		if (thumbnail) {
@@ -373,9 +371,7 @@ class StorageHelper {
 				mime: mime
 			}
 		}
-
-		history.tag = history.tag.filter(tag => tag !== null)
-		_view.storageHelper.saveHistory(history, (err, data) => {
+		_view.storageHelper.saveFileHistory(file, (err, data) => {
 
 		})
 	}
@@ -401,15 +397,15 @@ class StorageHelper {
 		return this.databaseWorker.encryptSave(uuid, data, callback)
 	}
 
-	public replaceHistory = (histories: Array<fileHistory>, callback?: Function) => {
-		return this.databaseWorker.replaceHistory(histories, callback ? callback : null)
+	public replaceHistory = (files: history, callback?: Function) => {
+		return this.databaseWorker.replaceHistory(files, callback ? callback : null)
 	}
 
-	public saveHistory = (history: fileHistory, callback?: Function) => {
-		return this.databaseWorker.saveHistory(history, callback ? callback : null)
+	public saveFileHistory = (file: fileHistory, callback?: Function) => {
+		return this.databaseWorker.saveFileHistory(file, callback ? callback : null)
 	}
 
-	public getFileHistory = (callback?: Function) => {
+	public getHistory = (callback?: Function) => {
 		return this.databaseWorker.decryptLoad("history", (err, data) => {
 			if (err) {
 				return callback(err, null)
@@ -423,7 +419,9 @@ class StorageHelper {
 	}
 
 	public getIndex = (uuid: string, callback: Function) => {
-		return this.databaseWorker.decryptLoad(uuid, callback)
+		return this.databaseWorker.decryptLoad(uuid, (err, data) => {
+			callback(null, JSON.parse(Buffer.from(data).toString()))
+		})
 	}
 
 	public getDownloader = (requestUuid: string) => {

@@ -2,7 +2,7 @@ class Assembler {
 	private requestUuid: string
 	private downloadIndex: kloakIndex
 	private progressIndicator = null
-	private filePieces = []
+	private filePieces = null
 	private totalPieces: number = null
 	private assembler: Worker
 	private magicNumber: string
@@ -25,7 +25,7 @@ class Assembler {
 			}
 			try {
 				this.log(`File: ${this.requestUuid} got index.`)
-				this.downloadIndex = JSON.parse(Buffer.from(data).toString())
+				this.downloadIndex = data
 				this.filePieces = this.downloadIndex.pieces
 				this.totalPieces = this.filePieces.length
 				this.updateProgress()
@@ -135,6 +135,7 @@ class Assembler {
 					contentType = this.downloadIndex.contentType
 				}
 				this.log(`File: ${this.requestUuid} assembly complete.`)
+				this.terminate()
 				this.callback(null, {filename, contentType, extension, buffer: payload.buffer})
 				break
 			default:

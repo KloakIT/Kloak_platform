@@ -119,7 +119,7 @@ class DatabaseWorker {
 						this.time += t1 - t0
 					})
 				} else {
-					callback(null, Buffer.from(JSON.stringify([])).buffer)
+					callback(null, Buffer.from(JSON.stringify(null)).buffer)
 				}
 			}
 		}).catch(e => {
@@ -153,8 +153,8 @@ class DatabaseWorker {
 	}
 	*/
 
-	public replaceHistory(histories: Array<fileHistory>, callback?: Function) {
-		const buffer = Buffer.from(JSON.stringify(histories))
+	public replaceHistory(history: history, callback?: Function) {
+		const buffer = Buffer.from(JSON.stringify(history))
 		_view.sharedMainWorker.encryptStream_withMyPublicKey(buffer, (err, data) => {
 			if (err) {
 				callback(err, null)
@@ -164,15 +164,16 @@ class DatabaseWorker {
 		})
 	}
 
-	public async saveHistory(history: fileHistory, callback?: Function) {
+	public async saveFileHistory(file: fileHistory, callback?: Function) {
 		this.decryptLoad('history', (err, data) => {
-			let temp = []
+			let history = {}
 			if (data) {
-				temp = JSON.parse(Buffer.from(data).toString())
-				console.log(temp)
+				const json = JSON.parse(Buffer.from(data).toString())
+				history = json ? json : {}
 			}
-			temp.push(history)
-			const buffer = Buffer.from(JSON.stringify(temp))
+			history['files'] ? history['files'].push(file) : history['files'] = [file]
+			console.log(Array.isArray(history) )
+			const buffer = Buffer.from(JSON.stringify(history))
 			_view.sharedMainWorker.encryptStream_withMyPublicKey(buffer, (err, data) => {
 				if (err) {
 					callback(err, null)

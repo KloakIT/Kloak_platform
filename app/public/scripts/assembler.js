@@ -1,7 +1,7 @@
 class Assembler {
     constructor(requestUuid, progressIndicator, callback) {
         this.progressIndicator = null;
-        this.filePieces = [];
+        this.filePieces = null;
         this.totalPieces = null;
         this.getIndex = (uuid) => {
             _view.storageHelper.getIndex(uuid, (err, data) => {
@@ -12,7 +12,7 @@ class Assembler {
                 }
                 try {
                     this.log(`File: ${this.requestUuid} got index.`);
-                    this.downloadIndex = JSON.parse(Buffer.from(data).toString());
+                    this.downloadIndex = data;
                     this.filePieces = this.downloadIndex.pieces;
                     this.totalPieces = this.filePieces.length;
                     this.updateProgress();
@@ -115,6 +115,7 @@ class Assembler {
                         contentType = this.downloadIndex.contentType;
                     }
                     this.log(`File: ${this.requestUuid} assembly complete.`);
+                    this.terminate();
                     this.callback(null, { filename, contentType, extension, buffer: payload.buffer });
                     break;
                 default:

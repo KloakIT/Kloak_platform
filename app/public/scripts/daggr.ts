@@ -42,9 +42,7 @@ class daggr extends sharedAppClass {
 	public inputHtmlData = ko.observable ('')
 	public showYoutube = ko.observable ( false )
 	public textInput = ko.observable ('')
-	/**** test unit */
-	private currentYoutubeObj = null
-	/** test unit end */
+	private videoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
 
 	public search_form_request = {
         command: 'daggr',
@@ -161,7 +159,7 @@ class daggr extends sharedAppClass {
 				return user.chatDataArray = null
 			}
 
-			user.chatDataArray.forEach ( n => {
+			user.chatDataArray?.forEach ( n => {
 				n.textContent = n.textContent || ''
 				n.create = ko.observable ( new Date( n._create )) 
 				n.readTimestamp = ko.observable ( n._readTimestamp ? new Date( n._readTimestamp ): null )
@@ -511,7 +509,7 @@ class daggr extends sharedAppClass {
 
 	public getLinkClick ( index ) {
 		const currentItem = this.searchItemsArray()[ index ]
-
+		console.log(currentItem)
 		if ( currentItem ['showError']()) {
 			currentItem ['showLoading'](0)
 			return currentItem ['showError']( false )
@@ -561,29 +559,27 @@ class daggr extends sharedAppClass {
 
 	public youtubePlayClick ( index ) {
 		const currentItem = this.currentChat ().chatData()[ index ]
-		currentItem.youtubeObj.showLoading ( 1 )
-		/**
-		 * 			start downloadQuere
-		 */
-		const downloadQuere = new getYoutubeMp4Queue ( currentItem.youtubeObj.url, currentItem.youtubeObj.title, localServerUUID => {
-			/**
-			 * 		can skip Ad
-			 */
-			//		show SKIP buttom
-			currentItem.youtubeObj.showLoading ( 3 )
+		currentItem.youtubeObj.showLoading ( 5 )
+		console.log(currentItem)
+		const url = currentItem['textContent']
+		// if (this.videoPlayer()) {
+		// 	this.videoPlayer(null)
+		// }
+		// this.videoPlayer(new VideoPlayer("", () => {}, () => {}))
+		// this.videoPlayer().youtubePlayer(null, url)
+		// currentItem.youtubeObj.showLoading ( 1 )
+		// /**
+		//  * 			start downloadQuere
+		//  */
+		// const downloadQuere = new getYoutubeMp4Queue ( currentItem.youtubeObj.url, currentItem.youtubeObj.title, localServerUUID => {
+		// 	/**
+		// 	 * 		can skip Ad
+		// 	 */
+		// 	//		show SKIP buttom
+		// 	currentItem.youtubeObj.showLoading ( 3 )
 
-			currentItem ['blobUUID'] = localServerUUID
-		})
-	}
-
-	public youtubePlayClick1 ( index ) {
-		const currentItem = this.currentChat ().chatData()[ index ]
-		currentItem.youtubeObj.showLoading ( 1 )
-		this.currentYoutubeObj = currentItem
-		/**
-		 * 			start downloadQuere
-		 */
-		document.getElementById( 'video_Input' ).click()
+		// 	currentItem ['blobUUID'] = localServerUUID
+		// })
 	}
 
 	public ad_video_random = ko.computed (() => {
@@ -598,42 +594,5 @@ class daggr extends sharedAppClass {
 		console.log (`Skip Ad click video url = /streamUrl?uuid=${ currentItem ['blobUUID']}`)
 		$(`#${ currentItem.uuid }_videoPlay`).attr ( 'src', `/streamUrl?uuid=${ currentItem ['blobUUID']}`)
 	}
-
-	public videoInput ( ee ) {
-		if ( !ee || !ee.files || !ee.files.length ) {
-			return
-		}
-
-		const file = ee.files[0]
-		const reader = new FileReader()
-
-
-		reader.onload = e => {
-			const currentItem = this.currentYoutubeObj
-			const rawData = Buffer.from ( reader.result )
-			const kk = new Mp4LocalServerUrl ( rawData.length, uuid => {
-				currentItem ['blobUUID'] = uuid
-				currentItem.youtubeObj.showLoading ( 3 )
-				let point = 0
-				const bufferLength = 1024 * 1024
-				const setTime = () => {
-					kk.BufferArray = Buffer.from ( Buffer.from( kk.BufferArray ).toString ('base64') + rawData.slice ( point, point + bufferLength - 1 ).toString ('base64'), 'base64')
-					kk.transferData ()
-					point += bufferLength
-					if ( point < rawData.length ) {
-						return setTimeout (()=> { setTime ()}, 100 )
-					}
-					console.log ( `all rawData success to buffer!`)
-					
-				}
-				setTime ()
-			})
-			
-		}
-
-		return reader.readAsArrayBuffer ( file )
-	}
-
-
 
 }

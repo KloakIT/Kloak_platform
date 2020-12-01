@@ -741,19 +741,27 @@ interface finishedDownload {
 	url: string
 }
 
+interface history {
+	files?: Array<fileHistory>,
+	playlists?: Array<playlist>
+}
 
+interface playlist {
+	name: string
+	date_created: Date
+	list?: Array<string>
+}
 
 interface fileHistory {
 	uuid: Array<string>
 	filename: string
-	time_stamp: Date
-	last_viewed: any
-	path: string
-	url: string
-	domain: string
-	tag: string[]
-	color: number
+	time_stamp?: Date
+	last_viewed?: Date | any
+	path?: string
+	url?: string
+	tags?: string[]
 	size?: number
+	favorite?: boolean
 	videoData?: {
 		duration: string | number,
 		mimeType: string,

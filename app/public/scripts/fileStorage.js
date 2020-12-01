@@ -2,18 +2,43 @@ class fileStorage {
     constructor() {
         this.isMobile = null;
         this.checkedFiles = ko.observableArray([]);
+        this.currentProcessFile = ko.observable("");
+        this.currentPage = ko.observable(["files"]);
+        this.allHistory = ko.observable({});
+        this.allFiles = ko.observableArray([]);
+        this.allPlaylists = ko.observableArray([]);
+        this.favoriteFiles = ko.observableArray([]);
+        this.displayedFiles = ko.observableArray([]);
+        this.displayedPlaylists = ko.observableArray([]);
+        this.playableFiles = ko.observableArray([]);
+        this.showSublist = {
+            favorites: ko.observable(true)
+        };
         this.fileStorageData = ko.observableArray([]);
         this.allFileStorageData = ko.observableArray([]);
         this.usageQuota = ko.observable(null);
-        this.suggestedTags = ko.observableArray([]);
+        this.searchSuggestions = ko.observableArray([]);
         this.availableTags = [];
+        this.previewLoading = ko.observable(false);
+        this.isDraggedOver = ko.observable(false);
+        this.isRightPanelOpen = ko.observable(false);
         this.sortOption = ko.observableArray([null, null]);
         this.showSearchInput = ko.observable(false);
         this.showSuggestions = ko.observable(true);
+        this.showEditTag = ko.observable(false);
+        this.currentEditTags = ko.observable("");
+        this.showCreatePlaylist = ko.observable(false);
+        this.newPlaylistName = ko.observable("");
+        this.selectedPlaylist = ko.observable(null);
         this.showCameraOptions = ko.observable(false);
         this.showFileInfo = ko.observable(null);
         this.showEditFilename = ko.observable(false);
         this.showDownloads = ko.observable(false);
+        this.showCheckboxSelection = ko.observable(false);
+        this.createPlaylistName = ko.observable("");
+        this.editPlaylist = ko.observable("");
+        this.currentPlaylistList = ko.observableArray([]);
+        this.availablePlaylistFiles = ko.observableArray([]);
         this.selectedVideo = ko.observable('');
         this.searchKey = ko.observable();
         this.selectedFile = ko.observable(null);
@@ -22,6 +47,7 @@ class fileStorage {
         this.selectedInfoFile = ko.observable();
         this.isRecording = ko.observable(false);
         this.videoPlayer = ko.observable(null);
+        this.playlistPlayer = ko.observable(null);
         this.recorder = ko.observable();
         this.videoPlaying = ko.observable(false);
         this.colorOptions = [
@@ -64,6 +90,109 @@ class fileStorage {
             return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)
                 || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test((a.substr(0, 4))));
         };
+        this.fileType = (filename) => {
+            let ext = null;
+            if (typeof filename === 'function') {
+                ext = filename().split(".").pop();
+            }
+            else {
+                ext = filename.split(".").pop();
+            }
+            switch (ext) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'gif':
+                case 'tiff':
+                case 'bmp':
+                    return "image";
+                case 'webm':
+                case 'mkv':
+                case 'flv':
+                case 'avi':
+                case 'mov':
+                case 'mp4':
+                case 'mpg':
+                case 'mpeg':
+                case '3gp':
+                case 'wmv':
+                case 'ogg':
+                    return "video";
+                case 'aac':
+                case 'flac':
+                case 'm4a':
+                case 'mp3':
+                case 'opus':
+                case 'wma':
+                case 'webm':
+                case 'wav':
+                    return "audio";
+                case 'ppt':
+                case 'pptx':
+                    return "powerpoint";
+                case 'xlsx':
+                case 'xlsm':
+                case 'xlsb':
+                case 'xltx':
+                case 'xls':
+                    return "excel";
+                case 'doc':
+                case 'docx':
+                    return "word";
+                case 'pdf':
+                    return "pdf";
+                case 'tar':
+                case 'gz':
+                case '7z':
+                case 's7z':
+                case 'apk':
+                case 'dmg':
+                case 'jar':
+                case 'zip':
+                case 'zipx':
+                case 'rar':
+                    return "archive";
+                default:
+                    return "";
+            }
+        };
+        this.getExtension = (filename) => {
+            return filename.split('.').pop();
+        };
+        this.getPreview = (file, type) => {
+            this.previewLoading(true);
+            const uuid = file.uuid[0];
+            const getFile = (uuid, callback) => {
+                new Assembler(uuid, null, (err, data) => {
+                    callback(_view.storageHelper.createBlob(data.buffer, data.contentType));
+                });
+            };
+            switch (type) {
+                case 'image':
+                    getFile(uuid, url => {
+                        const previewImage = document.getElementById("previewImage");
+                        previewImage['src'] ? URL.revokeObjectURL(previewImage['src']) : null;
+                        previewImage['src'] = url;
+                        this.previewLoading(false);
+                    });
+                    break;
+                case 'pdf':
+                    getFile(uuid, url => {
+                        const previewPdf = document.getElementById("previewPdf");
+                        previewPdf['src'] ? URL.revokeObjectURL(previewPdf['src']) : null;
+                        previewPdf['src'] = `${url}#toolbar=0`;
+                        this.previewLoading(false);
+                    });
+                    break;
+                case 'youtube':
+                    this.previewLoading(false);
+                    const { data, mime } = file.youtube.thumbnail;
+                    return `data:${mime};base64,${data}`;
+                    break;
+                default:
+                    break;
+            }
+        };
         this.backToMain = () => {
             this.closeAll();
             _view.showFileStorage(false);
@@ -84,13 +213,19 @@ class fileStorage {
         this.numberWithCommas = (x) => {
             return x.toString().replace(/.(?=(?:.{3})+$)/g, '$&,');
         };
+        this.formatDetailSize = (size) => {
+            let s = parseInt(size);
+            const sizes = ['TB', 'GB', 'MB', 'KB', 'Bytes'].reverse();
+            const formatted = this.formatBytes(s);
+            return `${formatted.shift()} ${sizes[formatted.length]} ( ${this.numberWithCommas(size)} Bytes )`;
+        };
         this.formatUsageQuota = (usage, quota) => {
             let sizes = ['TB', 'GB', 'MB', 'KB', 'Bytes'];
             let n = this.formatBytes(usage);
             let m = this.formatBytes(quota);
             while (m.length > n.length) {
                 let c = m.shift();
-                m[0] = m[0] + (c * 1024);
+                m[0] = m[0] + (c * 1000);
             }
             sizes = sizes.slice(-n.length);
             const usageText = n.map((size, index) => `${this.numberWithCommas(size)}`);
@@ -105,21 +240,21 @@ class fileStorage {
             let gb = null;
             let tb = null;
             b = bytes;
-            if (b > 1024) {
-                kb = Math.floor(b / 1024);
-                b = b % 1024;
+            if (b > 1000) {
+                kb = Math.floor(b / 1000);
+                b = b % 1000;
             }
-            if (kb > 1024) {
-                mb = Math.floor(kb / 1024);
-                kb = kb % 1024;
+            if (kb > 1000) {
+                mb = Math.floor(kb / 1000);
+                kb = kb % 1000;
             }
-            if (mb > 1024) {
-                gb = Math.floor(mb / 1024);
-                mb = mb % 1024;
+            if (mb > 1000) {
+                gb = Math.floor(mb / 1000);
+                mb = mb % 1000;
             }
-            if (gb > 1024) {
-                tb = Math.floor(gb / 1024);
-                gb = gb % 1024;
+            if (gb > 1000) {
+                tb = Math.floor(gb / 1000);
+                gb = gb % 1000;
             }
             const result = [tb, gb, mb, kb, b].map(size => {
                 return size;
@@ -147,32 +282,20 @@ class fileStorage {
                     break;
             }
         };
-        this.getFileIndex = (uuid, callback) => {
-            let req = window.indexedDB.open("kloak-index", 1);
-            req.onsuccess = (e) => {
-                const db = e.target['result'];
-                db
-                    .transaction("kloak-index", "readwrite")
-                    .objectStore("kloak-index")
-                    .delete(uuid).onsuccess = (e) => {
-                    callback();
-                };
-            };
-        };
         this.filterFromTag = (tag) => {
             this.searchKey(`#${tag}`);
             this.showSuggestions(false);
-            this.fileStorageData(this.allFileStorageData().filter((file) => file['tag']().includes(tag)));
+            this.displayedFiles(this.allFiles().filter((file) => file['tags']().includes(tag)));
             return;
         };
-        this.setTags = (fileStorageData) => {
+        this.setTags = (files) => {
             const temp = new Set();
-            if (fileStorageData.length === 0) {
+            if (files.length === 0) {
                 this.availableTags = [];
                 return;
             }
-            fileStorageData.map(file => {
-                file.tag().map(tag => {
+            files.map(file => {
+                file.tags().map(tag => {
                     if (tag) {
                         temp.add(tag.toLowerCase());
                     }
@@ -181,23 +304,33 @@ class fileStorage {
             this.availableTags = [...temp];
         };
         this.getHistory = () => {
-            _view.storageHelper.decryptLoad('history', (err, data) => {
-                if (err) {
-                    return;
+            _view.storageHelper.getHistory((err, data) => {
+                console.log(data);
+                if (data) {
+                    this.allHistory(data);
+                    let playlists = data['playlists'] ? data['playlists'].reverse() : [];
+                    let files = data['files'] ? data['files'].reverse() : [];
+                    let temp = [];
+                    files.forEach((file) => {
+                        file['filename'] = ko.observable(file['filename']);
+                        file['time_stamp'] = ko.observable(file['time_stamp']);
+                        file['last_viewed'] = ko.observable(file['last_viewed']);
+                        file['color'] = ko.observable(file['color']);
+                        file['tags'] = ko.observableArray(file['tags']);
+                        file['favorite'] = ko.observable(file['favorite'] ? file['favorite'] : false);
+                        temp.push(file);
+                    });
+                    playlists.forEach((playlist) => {
+                        playlist['name'] = ko.observable(playlist['name']);
+                        playlist['list'] = ko.observable(playlist['list'] || []);
+                    });
+                    this.allPlaylists(playlists);
+                    this.allFiles(temp);
+                    this.favoriteFiles(this.allFiles().filter((file) => file.favorite()));
+                    this.displayedFiles(this.allFiles());
+                    this.displayedPlaylists(this.allPlaylists());
+                    this.setTags(this.allFiles());
                 }
-                let histories = JSON.parse(Buffer.from(data).toString()).reverse();
-                let temp = [];
-                histories.forEach((history) => {
-                    history['filename'] = ko.observable(history['filename']);
-                    history['time_stamp'] = ko.observable(history['time_stamp']);
-                    history['last_viewed'] = ko.observable(history['last_viewed']);
-                    history['color'] = ko.observable(history['color']);
-                    history['tag'] = ko.observableArray(history['tag']);
-                    temp.push(history);
-                });
-                this.allFileStorageData(temp);
-                this.fileStorageData(temp);
-                this.setTags(this.allFileStorageData());
             });
         };
         this.searchSuggestionClick = (data, event) => {
@@ -205,54 +338,76 @@ class fileStorage {
             const temp = this.allFileStorageData().filter((file) => file === data);
             this.fileStorageData(temp);
         };
-        this.updateHistory = (uuid) => {
-            const histories = this.allFileStorageData().filter((file) => file.uuid !== uuid);
-            const temp = [];
-            histories.map((history) => {
-                const n = {};
-                n['uuid'] = history['uuid'];
-                n['filename'] = history['filename']();
-                n['time_stamp'] = history['time_stamp']();
-                n['last_viewed'] = history['last_viewed']();
-                n['path'] = history['path'];
-                n['url'] = history['url'];
-                n['domain'] = history['domain'];
-                n['tag'] = history['tag']();
-                n['color'] = history['color']();
-                n['size'] = history['size'] ? history['size'] : null;
-                n['videoData'] = history['videoData'] || null;
-                n['youtube'] = history['youtube'] || null;
-                temp.push(n);
-            });
-            this.fileStorageData(histories);
-            this.allFileStorageData(histories);
-            _view.storageHelper.replaceHistory(temp, null);
-            this.fileStorageData.valueHasMutated();
-            this.selectedFile(null);
-            this.detectStorageUsage();
+        this.updateHistory = (uuid, action) => {
+            let files = this.allFiles();
+            let playlists = this.allPlaylists();
+            switch (action) {
+                case 'delete':
+                    if (!uuid) {
+                        return;
+                    }
+                    this.allPlaylists().map((playlist) => playlist.list(playlist.list().filter(item => item !== uuid)));
+                    files = this.allFiles().filter((file) => file.uuid[0] !== uuid);
+                case 'update':
+                    const temp = {
+                        files: [],
+                        playlists: []
+                    };
+                    files.map((file) => {
+                        const n = {};
+                        const keys = Object.keys(file);
+                        keys.map(key => {
+                            if (typeof file[key] === 'function') {
+                                n[key] = file[key]();
+                            }
+                            else {
+                                n[key] = file[key];
+                            }
+                        });
+                        temp['files'].push(n);
+                    });
+                    playlists.map((playlist) => {
+                        const n = {};
+                        const keys = Object.keys(playlist);
+                        keys.map(key => {
+                            if (typeof playlist[key] === 'function') {
+                                n[key] = playlist[key]();
+                            }
+                            else {
+                                n[key] = playlist[key];
+                            }
+                        });
+                        temp['playlists'].push(n);
+                    });
+                    temp.playlists.reverse();
+                    temp.files.reverse();
+                    _view.storageHelper.replaceHistory(temp, () => {
+                        this.getHistory();
+                    });
+                    // this.allFiles.valueHasMutated()
+                    this.selectedFile(null);
+                    this.detectStorageUsage();
+                    break;
+            }
         };
         this.deleteFile = (uuid, callback) => {
-            if (!uuid.length) {
-                return;
-            }
             let pieces = null;
-            let count = 0;
-            const u = uuid.shift();
-            _view.storageHelper.getIndex(u, (err, data) => {
-                pieces = JSON.parse(Buffer.from(data).toString()).pieces;
-                pieces.forEach(piece => {
-                    _view.storageHelper.delete(piece, (err, data) => {
-                        count++;
-                        if (count === pieces.length) {
-                            _view.storageHelper.delete(u, (err, data) => {
-                                callback(err, data);
-                            });
+            this.currentProcessFile(uuid);
+            _view.storageHelper.getIndex(uuid, (err, index) => {
+                pieces = index.pieces;
+                const del = () => {
+                    _view.storageHelper.delete(pieces.shift(), (err, data) => {
+                        if (pieces.length) {
+                            return del();
                         }
+                        _view.storageHelper.delete(uuid, (err, data) => {
+                            this.updateHistory(uuid, "delete");
+                            this.currentProcessFile("");
+                            callback ? callback(true) : null;
+                        });
                     });
-                });
-                if (uuid.length) {
-                    this.deleteFile(uuid, callback);
-                }
+                };
+                del();
             });
         };
         this.sortHistory = (type, direction) => {
@@ -301,7 +456,7 @@ class fileStorage {
             this.showEditFilename(false);
             this.showFileInfo(null);
             this.showCameraOptions(false);
-            this.suggestedTags([]);
+            // this.suggestedTags([])
             this.showSuggestions(false);
             this.searchKey();
             this.showSearchInput(false);
@@ -315,36 +470,49 @@ class fileStorage {
             }
             return;
         };
-        this.replaceHistory = () => {
-            const temp = this.allFileStorageData().map((history) => {
-                const n = {};
-                n['uuid'] = history['uuid'];
-                n['filename'] = history['filename']();
-                n['time_stamp'] = history['time_stamp']();
-                n['last_viewed'] = history['last_viewed']();
-                n['path'] = history['path'];
-                n['url'] = history['url'];
-                n['domain'] = history['domain'];
-                n['tag'] = history['tag']();
-                n['color'] = history['color']();
-                n['size'] = history['size'] || null;
-                n['videoData'] = history['videoData'] || null;
-                n['youtube'] = history['youtube'] || null;
-                return n;
-            });
-            console.log('REPLACE HISTORY', temp);
-            _view.storageHelper.replaceHistory(temp.reverse(), (err, data) => {
-            });
+        this.toggleSelection = () => {
+            if (this.showCheckboxSelection()) {
+                this.showCheckboxSelection(false);
+                this.checkedFiles([]);
+                return;
+            }
+            this.showCheckboxSelection(true);
         };
-        this.fileAction = (fileData, event, action) => {
+        // createPlaylist = () => {
+        // 	const playlistHistory: fileHistory = {
+        // 		uuid: [uuid_generate()],
+        // 		filename: this.createPlaylistName(),
+        // 		time_stamp: new Date(),
+        // 		playlist: {
+        // 			list: []
+        // 		}
+        // 	}
+        // 	this.allFileStorageData.push(playlistHistory)
+        // 	this.replaceHistory(() => {
+        // 		this.getHistory()
+        // 		this.showCreatePlaylist(false)
+        // 		this.createPlaylistName("")
+        // 	})
+        // }
+        this.retrieveFromAllFileHistory = (uuid, type) => {
+            for (let i = 0; i < this.allHistory()['files'].length; i++) {
+                if (this.allHistory()['files'][i].uuid.includes(uuid)) {
+                    return this.allHistory()['files'][i][type];
+                }
+            }
+        };
+        this.uncheckFile = (uuid) => {
+            return this.checkedFiles(this.checkedFiles().filter(checkedUuid => checkedUuid !== uuid));
+        };
+        this.actionHandler = (currentFile, event, action) => {
             const updateLastViewed = () => {
                 let currentTime = new Date();
-                fileData.last_viewed(currentTime);
-                const sorted = this.fileStorageData().sort((a, b) => {
+                currentFile.last_viewed(currentTime);
+                const sorted = this.allFiles().sort((a, b) => {
                     return Date.parse(b['last_viewed']()) - Date.parse(a['last_viewed']());
                 });
-                this.fileStorageData(sorted);
-                this.replaceHistory();
+                this.allFiles(sorted);
+                this.updateHistory(null, 'update');
             };
             switch (action) {
                 case 'close':
@@ -354,52 +522,189 @@ class fileStorage {
                     videoPlayer['src'] = null;
                     this.videoPlayer(null);
                     break;
+                case 'favorite':
+                    currentFile.favorite(!currentFile.favorite());
+                    this.updateHistory(null, 'update');
+                    break;
+                case 'checked':
+                    if (this.checkedFiles().includes(currentFile['uuid'][0])) {
+                        this.checkedFiles(this.checkedFiles().filter(uuid => uuid !== currentFile['uuid'][0]));
+                    }
+                    else {
+                        this.checkedFiles.push(currentFile['uuid'][0]);
+                    }
+                    this.checkedFiles.valueHasMutated();
+                    console.log(this.checkedFiles());
+                    break;
+                case 'selectAll':
+                    if (this.checkedFiles().length === this.allFiles().length) {
+                        return this.checkedFiles([]);
+                    }
+                    this.checkedFiles(this.allFiles().map(file => file.uuid[0]));
+                    break;
                 case 'editFilename':
                     if (this.editFilenameInput().trim() !== "") {
-                        fileData['filename'](this.editFilenameInput());
-                        this.replaceHistory();
+                        currentFile['filename'](this.editFilenameInput());
+                        this.updateHistory(null, 'update');
                     }
                     this.editFilenameInput("");
                     this.showEditFilename(false);
                     break;
                 case "delete":
-                    this.closeAll();
-                    const callback = () => {
-                        this.updateHistory(fileData['uuid']);
+                    // this.closeAll()
+                    this.selectedFile(null);
+                    this.deleteFile(currentFile.uuid[0]);
+                    break;
+                case "downloadAll":
+                    const download = (files, callback) => {
+                        if (files.length) {
+                            const uuid = files.shift();
+                            this.uncheckFile(uuid);
+                            new Assembler(uuid, null, (err, data) => {
+                                if (data) {
+                                    callback(null, data, false);
+                                    download(files, callback);
+                                }
+                            });
+                        }
+                        else {
+                            callback(null, null, true);
+                        }
                     };
-                    this.deleteFile(fileData.uuid, callback);
+                    if (this.checkedFiles().length === 1) {
+                        return download(this.checkedFiles(), (err, data, finish) => {
+                            if (data) {
+                                const url = _view.storageHelper.createBlob(data.buffer, data.filename);
+                                _view.storageHelper.downloadBlob(url, data.filename);
+                            }
+                        });
+                    }
+                    if (window.confirm(`Confirm the download of ${this.checkedFiles().length} files?`)) {
+                        const zip = new JSZip();
+                        download(this.checkedFiles(), (err, data, finish) => {
+                            if (data) {
+                                zip.file(data.filename, data.buffer);
+                            }
+                            if (finish) {
+                                zip.generateAsync({ type: 'arraybuffer' }).then(arrbuffer => {
+                                    const url = _view.storageHelper.createBlob(arrbuffer, 'application/zip');
+                                    _view.storageHelper.downloadBlob(url, `download_${new Date().toLocaleString()}.zip`);
+                                    this.showCheckboxSelection(false);
+                                });
+                            }
+                        });
+                    }
+                    break;
+                case "deleteAll":
+                    console.log("delete");
+                    const del = () => {
+                        if (!this.checkedFiles().length) {
+                            this.showCheckboxSelection(false);
+                            return;
+                        }
+                        const uuid = this.checkedFiles().shift();
+                        this.deleteFile(uuid, done => {
+                            this.uncheckFile(uuid);
+                            return del();
+                        });
+                    };
+                    if (window.confirm(`Are you sure you want to delete ${this.checkedFiles().length} file(s)?`)) {
+                        del();
+                    }
+                    break;
+                case 'updateTags':
+                    const tags = this.currentEditTags().split(',');
+                    this.showEditTag(false);
+                    this.currentEditTags("");
+                    currentFile.tags(tags);
+                    this.setTags(this.allFiles());
+                    this.updateHistory(null, 'update');
+                    break;
+                case 'deleteMultiple':
+                    // switch (true) {
+                    // 	case !this.showCheckboxSelection():
+                    // 		this.showCheckboxSelection(true)
+                    // 		break;
+                    // 	case this.showCheckboxSelection() && !this.checkedFiles.length:
+                    // 		this.showCheckboxSelection(false)
+                    // 		break;
+                    // 	case this.showCheckboxSelection() && !!this.checkedFiles.length:
+                    // 		console.log("should delete")
+                    // 		break;
+                    // }
+                    break;
+                case 'createPlaylist':
+                    const newPlaylist = {
+                        name: this.newPlaylistName(),
+                        date_created: new Date(),
+                        list: []
+                    };
+                    const temp = this.allPlaylists().reverse();
+                    temp.push(newPlaylist);
+                    this.updateHistory(null, "update");
+                    this.showCreatePlaylist(false);
+                    this.newPlaylistName("");
+                    break;
+                case 'savePlaylist':
+                    this.selectedPlaylist().list(this.checkedFiles());
+                    this.updateHistory(null, "update");
+                    this.currentPage(['playlists']);
+                    break;
+                case 'editPlaylist':
+                    if (this.currentPage().length === 1) {
+                        this.currentPage([...this.currentPage(), 'edit']);
+                    }
+                    else {
+                        this.actionHandler(null, null, 'savePlaylist');
+                    }
+                    break;
+                case 'playPlaylist':
+                    if (this.playlistPlayer() && this.playlistPlayer().currentPlaylist.playlistName === this.selectedPlaylist().name()) {
+                        return this.playlistPlayer().currentPlaylist.mode('normal');
+                    }
+                    this.videoPlayer(null);
+                    this.playlistPlayer(new VideoPlayer('', () => { }, () => { }));
+                    this.playlistPlayer().playlistPlayer(this.selectedPlaylist().name(), this.selectedPlaylist().list());
+                    break;
+                case 'shufflePlaylist':
+                    if (this.playlistPlayer() && this.playlistPlayer().currentPlaylist.playlistName === this.selectedPlaylist().name()) {
+                        return this.playlistPlayer().currentPlaylist.mode('shuffle');
+                    }
+                    this.videoPlayer(null);
+                    this.playlistPlayer(new VideoPlayer('', () => { }, () => { }));
+                    this.playlistPlayer().playlistPlayer(this.selectedPlaylist().name(), this.selectedPlaylist().list(), "shuffle");
                     break;
                 case "download":
-                    this.selectedFile(null);
-                    return _view.storageHelper.createAssembler(fileData.uuid[0], (err, data) => {
+                    return _view.storageHelper.createAssembler(currentFile.uuid[0], (err, data) => {
                         if (err) {
                             console.log(err);
                             return;
                         }
                         const url = _view.storageHelper.createBlob(data.buffer, data.contentType);
-                        const filename = fileData.filename().split('.').pop().includes(data.extension) ? fileData.filename() : `${fileData.filename()}.${data.extension}`;
+                        const filename = currentFile.filename().split('.').pop().includes(data.extension) ? currentFile.filename() : `${currentFile.filename()}.${data.extension}`;
                         _view.storageHelper.downloadBlob(url, filename);
                         updateLastViewed();
                     });
-                    break;
-                case "play":
-                    if (this.selectedVideo() === fileData['uuid'].filter(uuid => uuid !== null)[0]) {
+                case "playVideo":
+                    this.videoPlayer(null);
+                    this.playlistPlayer(null);
+                    if (this.selectedVideo() === currentFile['uuid'].filter(uuid => uuid !== null)[0]) {
                         this.selectedVideo(null);
                         console.log(this.videoPlayer);
                         this.videoPlayer().terminate();
                         return;
                     }
-                    this.selectedVideo(fileData['uuid'].filter(uuid => uuid !== null)[0]);
-                    this.videoPlayer(new VideoPlayer('fileStorageYoutubePlayer', () => { }, () => { }));
-                    console.log(fileData);
-                    if (fileData.tag().includes('recording')) {
-                        return this.videoPlayer().recording(fileData);
+                    this.selectedVideo(currentFile['uuid'].filter(uuid => uuid !== null)[0]);
+                    this.videoPlayer(new VideoPlayer('', () => { }, () => { }));
+                    console.log(currentFile);
+                    if (currentFile.tags().includes('recording')) {
+                        return this.videoPlayer().recording(currentFile);
                     }
-                    if (fileData.youtube) {
-                        return this.videoPlayer().downloadedYoutube(fileData);
+                    if (currentFile.youtube) {
+                        return this.videoPlayer().downloadedYoutube(currentFile);
                     }
-                    if (fileData.videoData) {
-                        return this.videoPlayer().uploadedVideo(fileData);
+                    if (currentFile.videoData) {
+                        return this.videoPlayer().uploadedVideo(currentFile);
                     }
                     // this.mediaViewer = new MediaViewer({player: document.getElementById(fileData['uuid'].filter(uuid => uuid !== null)[0]), fullBar: document.getElementById("fullBar"), bufferBar: document.getElementById('bufferedBar'), currentTimeBar: document.getElementById("currentTimeBar"), playButton: document.getElementById("videoPlayButton"), stopButton: document.getElementById("videoStopButton"), fullscreenButton: document.getElementById("videoFullScreenButton"), durationText: document.getElementById("durationText")}, (err, canPlay, playing) => {
                     // 	if (err) {
@@ -430,26 +735,26 @@ class fileStorage {
                     // updateLastViewed()
                     break;
                 case 'view':
-                    if (fileData.tag().includes('snapshot')) {
+                    if (currentFile.tag().includes('snapshot')) {
                         _view.showFileStorage(false);
-                        new showWebPageClass(fileData.filename, fileData.uuid[0], null, () => {
+                        new showWebPageClass(currentFile.filename, currentFile.uuid[0], null, () => {
                             _view.showFileStorage(true);
                         }, () => { });
                         updateLastViewed();
                         return;
                     }
-                    return _view.storageHelper.createAssembler(fileData.uuid[0], (err, data) => {
+                    return _view.storageHelper.createAssembler(currentFile.uuid[0], (err, data) => {
                         if (err) {
                             console.log(err);
                             return;
                         }
                         switch (true) {
-                            case fileData.tag().includes('image'):
+                            case currentFile.tag().includes('image'):
                                 _view.displayMedia('image');
                                 const imageViewer = document.getElementById('imageViewer');
                                 imageViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType);
                                 break;
-                            case fileData.tag().includes('pdf'):
+                            case currentFile.tag().includes('pdf'):
                                 _view.displayMedia('pdf');
                                 const pdfViewer = document.getElementById('pdfViewer');
                                 pdfViewer['src'] = _view.storageHelper.createBlob(data.buffer, data.contentType);
@@ -457,31 +762,13 @@ class fileStorage {
                         }
                         updateLastViewed();
                     });
-                case 'deleteMultiple':
-                    const uuid = this.checkedFiles.shift();
-                    this.deleteFile(uuid, () => {
-                        this.updateHistory(uuid);
-                        if (this.checkedFiles().length > 0) {
-                            this.fileAction(fileData, event, 'deleteMultiple');
-                        }
-                    });
-                    break;
                 case 'stopDownload':
                     if (confirm("Stop and remove download?")) {
                         this.getHistory();
-                        _view.storageHelper.downloadPool()[fileData].instance['stop']();
-                        _view.storageHelper.removeFromPool(_view.storageHelper.downloadPool, fileData);
-                        this.fileAction({ uuid: fileData }, null, 'delete');
+                        _view.storageHelper.downloadPool()[currentFile].instance['stop']();
+                        _view.storageHelper.removeFromPool(_view.storageHelper.downloadPool, currentFile);
+                        this.actionHandler({ uuid: currentFile }, null, 'delete');
                     }
-                    break;
-                case 'addTag':
-                    if (!this.addTagInput().trim()) {
-                        return;
-                    }
-                    fileData['tag'].push(this.addTagInput().trim());
-                    this.addTagInput("");
-                    this.setTags(this.allFileStorageData());
-                    this.replaceHistory();
                     break;
                 default:
                     break;
@@ -650,10 +937,7 @@ class fileStorage {
             }
         };
         this.ondrop = (e, data) => {
-            const fileDragOverlay = document.getElementById("fileDragOverlay");
-            fileDragOverlay.style.visibility = "hidden";
-            this.selectedFile(null);
-            this.closeAll();
+            this.isDraggedOver(false);
             const items = e.originalEvent.dataTransfer.items;
             const length = e.originalEvent.dataTransfer.items.length;
             for (let i = 0; i < length; i++) {
@@ -665,13 +949,10 @@ class fileStorage {
         };
         this.dragover = (e) => {
             e.preventDefault();
-            this.selectedFile(null);
-            const fileDragOverlay = document.getElementById("fileDragOverlay");
-            fileDragOverlay.style.visibility = "initial";
+            this.isDraggedOver(true);
         };
         this.dragleave = (e) => {
-            const fileDragOverlay = document.getElementById("fileDragOverlay");
-            fileDragOverlay.style.visibility = "hidden";
+            this.isDraggedOver(false);
         };
         this.uploadFileClick = (e) => {
             const hiddenInput = document.getElementById("hiddenInput");
@@ -689,7 +970,6 @@ class fileStorage {
                     }
                     this.detectStorageUsage();
                 });
-                hiddenInput.removeEventListener("change", fileHandler);
             };
             hiddenInput.addEventListener("change", fileHandler);
             hiddenInput.click();
@@ -750,43 +1030,59 @@ class fileStorage {
             this.getHistory();
         });
         this.searchKey.subscribe((val) => {
+            console.log(val);
             val = val.trim().toLowerCase();
             if (val.length > 0) {
-                if (val.startsWith('#')) {
-                    val = val.slice(1);
-                    if (!val) {
-                        this.suggestedTags(this.availableTags);
-                        return;
-                    }
-                    this.suggestedTags(this.availableTags.filter(tag => tag.includes(val)));
-                    return;
-                }
-                else {
-                    this.suggestedTags([]);
-                    const temp = this.allFileStorageData().filter((file) => {
-                        if (file['filename']) {
-                            return file['filename']().toLowerCase().includes(val);
+                switch (this.currentPage()[0]) {
+                    case 'files':
+                        console.log("files");
+                        if (val.startsWith('#')) {
+                            val = val.slice(1);
+                            if (!val) {
+                                this.searchSuggestions(this.availableTags);
+                                return;
+                            }
+                            this.searchSuggestions(this.availableTags.filter(tag => tag.includes(val)));
                         }
-                        if (file['url']) {
-                            return file['url'].toLowerCase().includes(val);
+                        else {
+                            this.searchSuggestions([]);
+                            const temp = this.allFiles().filter((file) => {
+                                return file['filename']().toLowerCase().includes(val);
+                            });
+                            this.displayedFiles(temp);
                         }
-                        if (file['domain']) {
-                            return file['domain'].toLowerCase().includes(val);
-                        }
-                        if (file['detail']) {
-                            return file['domain'].toLowerCase().includes(val);
-                        }
-                        if (file['path']) {
-                            return file['path'].toLowerCase().includes(val);
-                        }
-                    });
-                    this.fileStorageData(temp);
+                        break;
+                    case 'playlists':
+                        break;
+                    case 'downloads':
+                        break;
                 }
             }
             else {
-                this.fileStorageData(this.allFileStorageData());
-                this.suggestedTags([]);
+                this.displayedFiles(this.allFiles());
+                this.searchSuggestions([]);
             }
+        });
+        this.createPlaylistName.subscribe(val => {
+            const btn = document.getElementById("createPlaylistConfirm");
+            if (val.length >= 5) {
+                return btn['disabled'] = false;
+            }
+            return btn ? btn['disabled'] = true : null;
+        });
+        this.currentPage.subscribe(pages => {
+            if (pages[0] !== 'files') {
+                this.showCheckboxSelection(false);
+            }
+            if (pages.length === 1) {
+                return;
+            }
+            if (pages[0] === 'playlists' && pages[1] === 'edit') {
+                const playable = ['mp3', 'webm'];
+                const temp = this.allFiles().filter((file) => playable.includes(this.getExtension(file.filename())));
+                this.playableFiles(temp);
+            }
+            this.checkedFiles([...this.selectedPlaylist().list()]);
         });
         // this.showSearchInput.subscribe(visible => {
         // 	const input = document.getElementById('searchInput')

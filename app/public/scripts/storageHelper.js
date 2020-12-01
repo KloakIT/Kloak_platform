@@ -48,10 +48,9 @@ class StorageHelper {
                     last_viewed: date,
                     path: "",
                     url: `YouTube`,
-                    domain: "https://www.youtube.com",
-                    tag: ['youtube', 'mp4', 'video'],
-                    color: null,
+                    tags: ['youtube', 'mp4', 'video'],
                     size: totalSize.total,
+                    favorite: false,
                     youtube: {
                         id: youtubeId,
                         mimeType: {
@@ -61,7 +60,7 @@ class StorageHelper {
                         duration: parseInt(duration.toString())
                     }
                 };
-                _view.storageHelper.saveHistory(history, (err, data) => {
+                _view.storageHelper.saveFileHistory(history, (err, data) => {
                     if (err) {
                         return console.log(err);
                     }
@@ -315,16 +314,15 @@ class StorageHelper {
         };
         this.youtubeHistory = (requestUUIDs, youtubeId, title, extraTags, mimeType, duration, quality, thumbnail = null) => {
             const date = new Date();
-            const history = {
+            const file = {
                 uuid: requestUUIDs,
                 filename: title,
                 time_stamp: date,
                 last_viewed: date,
                 path: "",
                 url: 'YouTube',
-                domain: 'YouTube',
-                tag: [...extraTags, 'upload', 'local'],
-                color: null,
+                favorite: false,
+                tags: [...extraTags, 'upload', 'local'].filter(tag => tag),
                 youtube: {
                     id: youtubeId,
                     mimeType,
@@ -332,7 +330,7 @@ class StorageHelper {
                 }
             };
             if (duration) {
-                history.youtube.duration = parseInt(duration.toString());
+                file.youtube.duration = parseInt(duration.toString());
             }
             if (thumbnail) {
                 const arr = thumbnail.split(','), mime = arr[0].match(/:(.*?);/)[1];
@@ -341,8 +339,7 @@ class StorageHelper {
                     mime: mime
                 };
             }
-            history.tag = history.tag.filter(tag => tag !== null);
-            _view.storageHelper.saveHistory(history, (err, data) => {
+            _view.storageHelper.saveFileHistory(file, (err, data) => {
             });
         };
         this.dataURItoBlob = (base64, mime) => {
@@ -361,13 +358,13 @@ class StorageHelper {
         this.encryptSave = (uuid, data, callback) => {
             return this.databaseWorker.encryptSave(uuid, data, callback);
         };
-        this.replaceHistory = (histories, callback) => {
-            return this.databaseWorker.replaceHistory(histories, callback ? callback : null);
+        this.replaceHistory = (files, callback) => {
+            return this.databaseWorker.replaceHistory(files, callback ? callback : null);
         };
-        this.saveHistory = (history, callback) => {
-            return this.databaseWorker.saveHistory(history, callback ? callback : null);
+        this.saveFileHistory = (file, callback) => {
+            return this.databaseWorker.saveFileHistory(file, callback ? callback : null);
         };
-        this.getFileHistory = (callback) => {
+        this.getHistory = (callback) => {
             return this.databaseWorker.decryptLoad("history", (err, data) => {
                 if (err) {
                     return callback(err, null);
@@ -379,7 +376,9 @@ class StorageHelper {
             return this.databaseWorker.decryptLoad(uuid, callback);
         };
         this.getIndex = (uuid, callback) => {
-            return this.databaseWorker.decryptLoad(uuid, callback);
+            return this.databaseWorker.decryptLoad(uuid, (err, data) => {
+                callback(null, JSON.parse(Buffer.from(data).toString()));
+            });
         };
         this.getDownloader = (requestUuid) => {
             return this.downloadPool[requestUuid].instance;

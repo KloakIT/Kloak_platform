@@ -129,20 +129,17 @@ class localServer {
             console.dir(req.headers, { depth: 4 });
             const range = req.header('range')?.toLocaleLowerCase();
             const _length = socket['requestStreamTotalLength'];
+            const rangeEnd = parseInt(range.split('bytes=0-')[1]);
             const rangeStart = parseInt(range.split('bytes=')[1].split('-')[0]);
             responseArray.set(uuid, res);
-            if (range) {
-                const _range = range.split('=')[1];
-                const rangeStart = parseInt(_range.split('-')[0]) || 0;
-                const rangeEnd = parseInt(_range.split('-')[1]) || _length - 1;
-                console.dir(`rangeStart [${rangeStart}] rangeEnd [${rangeEnd}]`);
+            if (rangeStart && rangeEnd) {
                 if (/^bytes\=0\-1$/.test(range)) {
                     console.dir(req.rawHeaders);
                     res.writeHead(206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${_length}`, 'Connection': 'close' });
                     return res.end(Buffer.alloc(2, 0));
                 }
-                console.dir(`range = 【${range} 】rangeEnd [${rangeEnd}]`);
-                const resHeader = { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${rangeEnd - rangeStart + 1}`, 'Content-Range': `bytes ${rangeStart}-${rangeEnd}/${_length}`, 'Connection': 'Keep-Alive', 'Cache-Control': 'private, max-age=0' };
+                console.dir(`range = 【${range} 】`);
+                const resHeader = { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${rangeEnd - rangeStart + 1}`, 'Content-Range': `bytes=${rangeStart}-${rangeEnd}/${_length}`, 'Connection': 'close' };
                 res.writeHead(206, resHeader);
                 res['currectRange'] = socket['currectRange'] = range;
                 res['rawHeaders'] = socket['rawHeaders'] = req.rawHeaders;
@@ -171,10 +168,8 @@ class localServer {
                 };
                 return doingGetData();
             }
-            //res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes', 'Content-Range': `bytes=${ rangeStart }-${ rangeEnd }/${ _length }`, 'Content-Length': `${ _length }`})
-            //socket.emit ( uuid, range )
-            console.log(`request have not range`);
-            res.end();
+            res.writeHead(200, { 'Content-Type': 'video/mp4', 'status': 200, 'accept-ranges': 'bytes', 'Content-Length': `${_length}` });
+            socket.emit(uuid, range);
         });
         this.expressServer.post(`${folderName}/streamUrl`, (req, res) => {
             const body = req.body;
@@ -190,16 +185,14 @@ class localServer {
             }
             const response = responseArray.get(uuid);
             const uuu = Buffer.from(body.buffer, 'base64');
-            console.log(`uuu length [${uuu.length}]`, uuu.slice(0, 100).toString('base64'));
             res.writeHead(200);
             if (!response.write(uuu)) {
                 console.log(`res [${uuid}] need pause!!!`);
-                return response.once('drain', () => {
+                response.socket.once('drain', () => {
                     console.log(`res [${uuid}] on drain, emit resume emit CallBack`);
                     return res.end();
                 });
             }
-            console.dir(`response.write success res.end ()`);
             return res.end();
         });
         workspaces.on('connection', (socket) => {

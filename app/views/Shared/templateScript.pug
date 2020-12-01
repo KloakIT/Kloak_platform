@@ -408,3 +408,33 @@ script#kloakVideoPlayer( type = "text/html" )
 					.kloakControlSection()
 						.kloakVideoButton#kloakVideoExpand(style="height: 100%; padding: 8px; cursor: pointer")
 							i.expand.icon(style="margin: 0 !important; color: whitesmoke")
+
+
+// FORTRESS PLAYLIST PLAYER
+script#fileStoragePlaylistPlayer( type = "text/html" )
+	.fileStorageCurrentPlayingContainer
+		audio.fileStorageAudioPlayer#fileStorageAudioPlayer
+		.fileStoragePlayingInformation
+			.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder.placeholderGradient(style="height: 10rem; width: 10rem")
+			p.fileStoragePlayingText#audioPlayingText
+		.fileStoragePlayingControls
+			<!-- ko if: loading() -->
+			.ui.active.centered.inline.loader
+			<!-- /ko -->
+			<!-- ko if: !loading() -->
+			.fileStoragePlayingControl#audioPlayingPrevious
+				i.step.backward.icon
+			.fileStoragePlayingControl.fileStoragePlayButton#audioPausePlay
+				<!-- ko if: !isPlaying() -->
+				i.play.icon(style="transform: translateX(3px); font-size: 1.75rem !important; margin: 0 15px !important;")
+				<!-- /ko -->
+				<!-- ko if: isPlaying() -->
+				i.pause.icon(style="transform: translateX(3px); font-size: 1.75rem !important; margin: 0 15px !important;")
+				<!-- /ko -->
+			.fileStoragePlayingControl#audioPlayingNext
+				i.step.forward.icon
+			<!-- /ko -->
+		<!-- ko if: !loading() -->
+		.fileStoragePlayingProgressBar#audioPlayingProgress
+			.fileStoragePlayingCompleteBar#audioPlayingProcessComplete
+		<!-- /ko -->

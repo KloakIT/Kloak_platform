@@ -5,11 +5,19 @@ class VideoPlayer {
         this.exit = exit;
         this.mediaSource = null;
         this.downloadQueue = null;
+        this.currentPlaylist = {
+            playlistName: "",
+            playlist: ko.observableArray([]),
+            current: ko.observable(0),
+            next: ko.observable(1),
+            mode: ko.observable("normal"),
+            lastShuffle: null
+        };
         this.isPlaying = ko.observable(false);
         this.canPlay = ko.observable(false);
         this.skipAdvertisements = ko.observable(false);
         this.adPlaying = ko.observable(false);
-        this.loading = ko.observable(false);
+        this.loading = ko.observable(true);
         this.playbackSpeed = ko.observable(1);
         this.needBufferEvent = new Event("needBuffer");
         this.sourceBuffers = {
@@ -17,6 +25,15 @@ class VideoPlayer {
             audio: null
         };
         this.playerElements = {};
+        this.playlistPlayerElements = {
+            audio: null,
+            playBtn: null,
+            prevBtn: null,
+            nextBtn: null,
+            textDisplay: null,
+            progressBar: null,
+            progressCompleteBar: null
+        };
         this.terminate = () => {
             this.playerElements['kloakVideo'].removeEventListener("timeupdate", this.timeUpdateEvent);
             this.playerElements['kloakVideo'].removeEventListener("progress", this.progressUpdateEvent);
@@ -150,12 +167,14 @@ class VideoPlayer {
             }
         };
         this.endOfStream = () => {
-            if (this.sourceBuffers['video']?.updating || this.sourceBuffers['audio']?.updating) {
-                return setTimeout(() => {
-                    this.endOfStream();
-                }, 250);
+            if (this.mediaSource.readyState === 'open') {
+                if (this.sourceBuffers['video']?.updating || this.sourceBuffers['audio']?.updating) {
+                    return setTimeout(() => {
+                        this.endOfStream();
+                    }, 250);
+                }
+                this.mediaSource.endOfStream();
             }
-            this.mediaSource.endOfStream();
         };
         this.defaultSeekBarEvent = (e) => {
             const x = e?.['layerX'];
@@ -202,27 +221,32 @@ class VideoPlayer {
                 callback(JSON.parse(Buffer.from(data).toString()));
             });
         };
-        this.checkFileExistence = (youtubeId, callback) => {
-            _view.storageHelper.getFileHistory((err, data) => {
-                if (err) {
-                    return err;
-                }
-                for (let i = 0; i < data.length; i++) {
-                    if (data[i]['youtube']['id'] === youtubeId) {
-                        return callback(data[i].uuid);
-                    }
-                }
-                return callback(null);
-            });
-        };
+        // checkFileExistence = (youtubeId: string, callback: Function) => {
+        // 	_view.storageHelper.getFileHistory((err, data: Array<fileHistory>) => {
+        // 		if (err) {
+        // 			return err
+        // 		}
+        // 		for(let i = 0; i < data.length; i++) {
+        // 			if (data[i]['youtube']['id'] === youtubeId) {
+        // 				return callback(data[i].uuid)
+        // 			}
+        // 		}
+        // 		return callback(null)
+        // 	})
+        // }
         // streamingData object from ytplayer.config.args
         this.youtubePlayer = (streamingData, watchUrl) => {
             let youtubeId = null;
             let format = {};
             let duration = null;
             let extension = null;
+            let thumbnail = {
+                data: null,
+                mime: null
+            };
             let url = null;
             let offset = 0;
+            console.log(streamingData);
             this.retrievePlayerElements(() => {
                 this.loading(false);
                 if (!this.adPlaying()) {
@@ -235,8 +259,14 @@ class VideoPlayer {
                     duration = streamingData['duration'] || parseInt(format['approxDurationMs'].toString()) / 1000 || null;
                     extension = format['mimeType'].split(" ")[0].replace(";", "").split("/")[1];
                     url = format['url'];
+                    const n = streamingData['thumbnails'][streamingData['thumbnails'].length - 1]['url'].split(';');
+                    const mime = n[0].replace('data:', '');
+                    const base64 = n[1].replace('base64,', '');
+                    thumbnail['data'] = base64;
+                    thumbnail['mime'] = mime;
                 }
                 if (watchUrl) {
+                    url = watchUrl;
                     youtubeId = watchUrl.replace("https://www.youtube.com/watch?v=", "");
                 }
                 let downloadedPieces = {};
@@ -257,7 +287,7 @@ class VideoPlayer {
                     // appendNext(timestamps, index.pieces, this.sourceBuffers['video'])
                 });
                 const beginDownloadQueue = (url, range, callback) => {
-                    console.log(URL, range);
+                    console.log(url, range);
                     this.downloadQueue = new DownloadQueue(url, 'video', (err, data) => {
                         if (err) {
                             return console.log(err);
@@ -349,27 +379,27 @@ class VideoPlayer {
                 };
                 const createHistory = (requestUuid, com, bitrate) => {
                     const date = new Date();
-                    const history = {
+                    const file = {
                         uuid: [requestUuid],
                         filename: streamingData ? `${streamingData['videoDetails']['title']}.mp4` : watchUrl,
                         time_stamp: date,
                         last_viewed: date,
                         path: "",
                         url: streamingData ? `https://www.youtube.com/watch?v=${streamingData['videoDetails']['videoId']}` : "",
-                        domain: "https://www.youtube.com",
-                        tag: ['youtube', extension, 'video'],
-                        color: null,
+                        tags: ['youtube', extension, 'video'],
                         size: com.totalLength ? com.totalLength : null,
+                        favorite: false,
                         youtube: {
                             id: youtubeId || "",
                             mimeType: {
                                 video: format['mimeType'] || `video/mp4; codecs="avc1.64001F, mp4a.40.2"`,
                             },
+                            thumbnail,
                             bitrate,
                             duration
                         }
                     };
-                    _view.storageHelper.saveHistory(history, (err, data) => {
+                    _view.storageHelper.saveFileHistory(file, (err, data) => {
                         if (err) {
                             return console.log(err);
                         }
@@ -517,7 +547,7 @@ class VideoPlayer {
                                 return;
                             }
                             if (data) {
-                                index = JSON.parse(Buffer.from(data).toString());
+                                index = data;
                                 this.setupMediaSource(fileHistory['youtube'].mimeType, () => {
                                     this.mediaSource.duration = fileHistory['youtube'].duration;
                                     this.setupPlayer();
@@ -593,7 +623,6 @@ class VideoPlayer {
                     const percent = (x / full);
                     const currentTime = percent * this.mediaSource.duration;
                     this.playerElements['kloakVideo']['currentTime'] = currentTime;
-                    this.sourceBuffers['video'].abort();
                     console.log(index.pieces);
                     // FIX HEREEEEE
                     // appendNext()
@@ -605,15 +634,183 @@ class VideoPlayer {
                         return;
                     }
                     if (data) {
-                        index = JSON.parse(Buffer.from(data).toString());
+                        index = data;
                         this.setupMediaSource({ video: fileHistory['videoData'].mimeType, audio: null }, () => {
                             this.mediaSource.duration = fileHistory['videoData'].duration;
-                            this.setupPlayer();
+                            this.setupPlayer(() => {
+                                if (fileHistory['videoData'].mimeType.split("/")[0] === "audio") {
+                                    this.playerElements.kloakVideo.classList.add("placeholderGradient");
+                                    this.playerElements.kloakVideo.style.opacity = "1";
+                                }
+                            });
                             this.isPlaying(true);
                             this.appendNext(index.pieces, this.sourceBuffers['video']);
                         });
                     }
                 });
+            });
+        };
+        this.playlistPlayer = (playlistName, playlistItems, mode) => {
+            this.currentPlaylist.playlistName = playlistName;
+            if (mode) {
+                this.currentPlaylist.mode(mode);
+            }
+            const random = () => {
+                const num = Math.floor(Math.random() * (this.currentPlaylist.playlist().length)) + 1;
+                if (this.currentPlaylist.lastShuffle === num) {
+                    console.log("should return");
+                    return random();
+                }
+                this.currentPlaylist.lastShuffle = num;
+                return num;
+            };
+            this.loading(true);
+            let duration = 0;
+            let files = [];
+            const setupPlayer = (callback) => {
+                this.playlistPlayerElements = {
+                    audio: document.getElementById("fileStorageAudioPlayer"),
+                    playBtn: document.getElementById("audioPausePlay"),
+                    prevBtn: document.getElementById("audioPlayingPrevious"),
+                    nextBtn: document.getElementById("audioPlayingNext"),
+                    textDisplay: document.getElementById("audioPlayingText"),
+                    progressBar: document.getElementById("audioPlayingProgress"),
+                    progressCompleteBar: document.getElementById("audioPlayingProcessComplete")
+                };
+                this.playlistPlayerElements.playBtn.addEventListener("click", () => {
+                    this.isPlaying(!this.isPlaying());
+                });
+                this.playlistPlayerElements.prevBtn.addEventListener("click", () => {
+                    getTrackFile('previous');
+                });
+                this.playlistPlayerElements.nextBtn.addEventListener("click", () => {
+                    getTrackFile('next');
+                });
+                this.playlistPlayerElements.audio.addEventListener('paused', () => {
+                    this.isPlaying(false);
+                    console.log("PAUSED");
+                });
+                this.playlistPlayerElements.audio.addEventListener('play', () => {
+                    this.isPlaying(true);
+                });
+                this.playlistPlayerElements.audio['preload'] = 'metadata';
+                this.playlistPlayerElements.audio.onloadedmetadata = () => {
+                    duration = this.playlistPlayerElements.audio['duration'];
+                };
+                this.playlistPlayerElements.audio.addEventListener("timeupdate", e => {
+                    const formatTime = (seconds) => {
+                        let date = new Date(null);
+                        let s = parseInt(seconds.toString(), 10);
+                        date.setSeconds(s);
+                        let time = date.toISOString().substr(11, 8).split(":");
+                        if (time[0] === '00') {
+                            return [time[1], time[2]].join(":");
+                        }
+                        else {
+                            return time.join(":");
+                        }
+                    };
+                    try {
+                        const currentTime = this.playlistPlayerElements.audio['currentTime'];
+                        // this.playerElements.kloakDurationText.textContent = `${formatTime(currentTime)} / ${formatTime(this.mediaSource.duration)}`
+                        this.playlistPlayerElements.progressCompleteBar.style.width = `${(currentTime / duration) * 100}%`;
+                    }
+                    catch (e) {
+                        return;
+                    }
+                });
+                this.playlistPlayerElements.progressBar.addEventListener("click", (e) => {
+                    const x = e?.['offsetX'];
+                    const full = this.playlistPlayerElements.progressBar.clientWidth;
+                    console.log(e);
+                    const percent = (x / full);
+                    const currentTime = percent * duration;
+                    this.playlistPlayerElements.audio['currentTime'] = currentTime;
+                });
+                this.playlistPlayerElements.audio.onended = () => {
+                    getTrackFile("next");
+                };
+                callback();
+            };
+            const init = (callback) => {
+                _view.storageHelper.getHistory((err, data) => {
+                    const temp = data['files'].filter(file => playlistItems.includes(file['uuid'][0]));
+                    playlistItems.forEach(item => {
+                        files.push(...temp.filter(file => file['uuid'][0] === item));
+                    });
+                    callback(files);
+                });
+            };
+            const getTrackFile = (direction) => {
+                this.playlistPlayerElements.audio ? URL.revokeObjectURL(this.playlistPlayerElements.audio['src']) : null;
+                this.playlistPlayerElements.textDisplay ? this.playlistPlayerElements.textDisplay.textContent = "" : null;
+                if (this.currentPlaylist.mode() === 'shuffle') {
+                    const num = random();
+                    this.currentPlaylist.current(num);
+                }
+                else {
+                    switch (direction) {
+                        case 'next':
+                            if (this.currentPlaylist.current() === this.currentPlaylist.playlist().length) {
+                                this.currentPlaylist.current(1);
+                                this.currentPlaylist.next(2);
+                            }
+                            else {
+                                this.currentPlaylist.current(this.currentPlaylist.next());
+                                this.currentPlaylist.next(this.currentPlaylist.next() + 1);
+                            }
+                            break;
+                        case 'previous':
+                            if (this.currentPlaylist.current() === 1) {
+                                this.currentPlaylist.current(this.currentPlaylist.playlist().length);
+                                this.currentPlaylist.next(1);
+                            }
+                            else {
+                                this.currentPlaylist.next(this.currentPlaylist.current());
+                                this.currentPlaylist.current(this.currentPlaylist.current() - 1);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                this.loading(true);
+                this.isPlaying(false);
+                this.currentPlaylist.lastShuffle = this.currentPlaylist.current();
+                const track = this.currentPlaylist.playlist()[this.currentPlaylist.current() - 1];
+                new Assembler(track['uuid'][0], null, (err, data) => {
+                    let url = _view.storageHelper.createBlob(data['buffer'], data['contentType']);
+                    this.loading(false);
+                    console.log("should setup?");
+                    setupPlayer(() => {
+                        this.playlistPlayerElements.audio['src'] = url;
+                        this.playlistPlayerElements.textDisplay.textContent = track.filename;
+                    });
+                    this.isPlaying(true);
+                });
+                // _view.storageHelper.createAssembler(track['uuid'][0], (err, data) => {
+                // 	let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
+                // 	this.loading(false)
+                // 		console.log("should setup?")
+                // 		setupPlayer(() => {
+                // 			this.playlistPlayerElements.audio['src'] = url
+                // 			this.playlistPlayerElements.textDisplay.textContent = track.filename
+                // 		})
+                // 	this.isPlaying(true)
+                // })
+            };
+            init((playlist) => {
+                this.currentPlaylist.playlist(playlist);
+                getTrackFile("next");
+                // getNextFile(track['uuid'][0], (url) => {
+                // 	this.loading(false)
+                // 	setupPlayer(() => {
+                // 		this.playlistPlayerElements.audio['src'] = url
+                // 		this.playlistPlayerElements.textDisplay.textContent = track.filename
+                // 		console.log(this.playlistPlayerElements.audio['duration'])
+                // 		this.isPlaying(true)
+                // 	})
+                // })
             });
         };
         this.recording = (fileHistory) => {
@@ -639,7 +836,12 @@ class VideoPlayer {
             });
         };
         this.isPlaying.subscribe(playing => {
-            playing ? this.playerElements?.kloakVideo['play']() : this.playerElements?.kloakVideo['pause']();
+            if (this.playerElements?.kloakVideo) {
+                playing ? this.playerElements?.kloakVideo['play']() : this.playerElements?.kloakVideo['pause']();
+            }
+            if (this.playlistPlayerElements?.audio) {
+                playing ? this.playlistPlayerElements?.audio['play']() : this.playlistPlayerElements?.audio['pause']();
+            }
         });
         this.playbackSpeed.subscribe(speed => {
             this.playerElements['kloakVideo']['playbackRate'] = speed;
@@ -655,7 +857,6 @@ class VideoPlayer {
             // 		break;
             // 	}
         });
-        this.loading(true);
     }
     hmsToSecondsOnly(hms) {
         if (typeof hms !== 'string') {

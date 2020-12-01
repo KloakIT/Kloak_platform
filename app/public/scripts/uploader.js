@@ -12,6 +12,17 @@ class Uploader {
         };
         this.MP4BoxFile = null;
         this.callback = null;
+        this.getMetadata = (callback) => {
+            const _self = this;
+            const video = document.createElement("video");
+            video.preload = 'metadata';
+            video['src'] = URL.createObjectURL(this.file);
+            video.onloadedmetadata = function () {
+                URL.revokeObjectURL(video.src);
+                _self.videoData.duration = Math.round(video.duration);
+                callback();
+            };
+        };
         this.getVideoData = (callback) => {
             const _self = this;
             this.MP4BoxFile = MP4Box.createFile();
@@ -26,14 +37,7 @@ class Uploader {
                 this.disassemblyWorker = this.getWorker(this.callback);
                 this.disassemblyWorker.postMessage({ cmd: 'START', payload: { arrayBuffer: this.arrayBuffer } }, [this.arrayBuffer]);
             };
-            const video = document.createElement("video");
-            video.preload = 'metadata';
-            video['src'] = URL.createObjectURL(this.file);
-            video.onloadedmetadata = function () {
-                URL.revokeObjectURL(video.src);
-                _self.videoData.duration = Math.round(video.duration);
-                callback();
-            };
+            this.getMetadata(callback);
         };
         this.log = (message) => {
             console.log(`<${new Date().toLocaleString()}> ${message}`);
@@ -83,21 +87,19 @@ class Uploader {
         };
         this.createHistory = () => {
             const date = new Date();
-            const history = {
+            const file = {
                 uuid: [this.uuid],
                 filename: this.file.name,
                 time_stamp: date,
                 last_viewed: date,
                 path: this.path,
                 url: 'Upload',
-                domain: 'Upload',
-                tag: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'],
-                color: null,
+                tags: [this.file.type.split('/')[0], this.file.type.split('/')[1], ...this.extraTags, 'upload', 'local'].filter(tag => tag),
                 size: this.fileSize,
+                favorite: false,
                 videoData: this.videoData
             };
-            history.tag = history.tag.filter(tag => tag !== null);
-            _view.storageHelper.saveHistory(history, this.callback);
+            _view.storageHelper.saveFileHistory(file, this.callback);
         };
         this.createIndex = () => {
             const index = {
@@ -194,6 +196,13 @@ class Uploader {
         this.callback = callback;
         if (file.type === 'video/mp4') {
             this.getVideoData(() => {
+                this.generateOffsetUUID();
+            });
+        }
+        else if (file.type === 'audio/mpeg') {
+            this.getMetadata(() => {
+                this.videoData.mimeType = 'audio/mpeg';
+                this.videoData.fastStart = true;
                 this.generateOffsetUUID();
             });
         }
