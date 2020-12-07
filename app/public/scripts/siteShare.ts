@@ -174,7 +174,7 @@ const InitKeyPair = function () {
 		publicKey: null,
 		privateKey: null,
 		keyLength: null,
-		nikeName: null,
+		nickname: null,
 		createDate: null,
 		email: null,
 		passwordOK: false,
@@ -185,6 +185,7 @@ const InitKeyPair = function () {
 	}
 	return keyPair
 }
+
 const conetImapAccount = /^qtgate_test\d\d?@icloud.com$/i
 
 const isElectronRender = typeof process === 'object'
@@ -192,6 +193,8 @@ const isElectronRender = typeof process === 'object'
 const cookieName = 'langEH'
 const passwdCookieName = 'CoNET'
 const EmailRegexp = /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))$/i
+
+
 const Menu = {
 	zh: [
 		{
@@ -829,7 +832,8 @@ const infoDefine = [
 		imapInformation: {
 			title: '通讯专用Email邮箱设置',
 			tempImapAccount: `申请临时邮箱有困难？您可以暂时使用<a href="#" style = "margin-left: 0.5em;" class="ui label teal" onclick="return linkClick ('https://github.com/QTGate/QTGate-Desktop-Client/wiki/IMAP%E8%87%A8%E6%99%82%E5%B8%B3%E6%88%B6')">CoNET提供的临时IMAP帐号供各位测试使用</a>`,
-			infomation: `请设置网络通讯用邮箱、或 `,
+			infomation: `请设置网络通讯用邮箱。`,
+			infomation1: `如果设置邮箱有困难，您可以暂时`,
 			coNetTempAccount: '使用CoNet提供的临时邮箱',
 			serverDetail: '详细设定：',
 			imapServer: 'IMAP服务器设定',
@@ -913,11 +917,12 @@ const infoDefine = [
 			localIpAddress: '本机',
 			nextPage: '下一页',
 			agree: '同意协议并继续',
-			emailAddress: 'Email地址',
+			emailAddress: 'Email地址（选项，可不填）',
 			systemAdministratorEmail: 'RSA密钥生成',
-			SystemAdministratorNickName: '昵称',
+			SystemAdministratorNickName: '昵称（选项，可不填）',
 			systemPassword: 'CoNET客户端密码设定',
 			creatKeyPair: '创建密钥对...',
+			publishDaggrProfile: '公开您的个人资料',
 			imapEmailAddress: '邮箱账户名',
 			cancel: '放弃操作',
 			stopCreateKeyPair: '停止生成密钥对',
@@ -926,12 +931,14 @@ const infoDefine = [
 			keyPairGenerateSuccess: '完成生成密钥对',
 			continueCreateKeyPair: '继续生成',
 			newVersionInstallLoading: '更新中请稍候',
+			phoneNumber: '手机号码（选项，可不填）',
 			KeypairLength:
 				'请选择加密通讯用密钥对长度：这个数字越大，通讯越难被破解，但会增加通讯量和运算时间。',
 			GenerateKeypair:
 				'<em>系统正在生成用于通讯和签名的RSA加密密钥对，计算机需要运行产生大量的随机数字有，可能需要几分钟时间，尤其是长度为4096的密钥对，需要特别长的时间，请耐心等待。关于RSA加密算法的机制和原理，您可以访问维基百科：' +
 				`<a href='https://zh.wikipedia.org/wiki/RSA加密演算法' target="_blank" onclick="return linkClick ('https://zh.wikipedia.org/wiki/RSA加密演算法')" >https://zh.wikipedia.org/wiki/RSA加密演算法</a></em>`,
 			inputEmail: '加密通讯用钥匙(curve25519)生成',
+			daggrUserTitle: '编辑您的个人资料，以便您的朋友找到您',
 			accountEmailInfo:
 				'由于CoNET域名在某些国家和地区被防火墙屏蔽，而不能正常收发Email，如果您是处于防火墙内的用户，建议使用防火墙外部的邮件服务商。',
 			dividertext: '选项（可不填）',
@@ -2012,7 +2019,8 @@ const infoDefine = [
 		imapInformation: {
 			title: '通信専用Emailアカウントを登録',
 			tempImapAccount: `IMAP設定に困るなら、<a href="#" style = "margin-left: 0.5em;" class="ui label teal" onclick="return linkClick ('https://github.com/QTGate/QTGate-Desktop-Client/wiki/IMAP%E9%80%9A%E4%BF%A1%E5%B0%82%E7%94%A8%E4%B8%80%E6%99%82%E7%9A%84%E3%81%AA%E3%82%A2%E3%82%AB%E3%83%B3%E3%82%A6%E3%83%88')">CoNETご提供している一時アカンウトをテストのご利用いただけます。</a>`,
-			infomation: `通信専用Emailアカウントを設置してください。面倒見ていれば　`,
+			infomation: `通信専用Emailアカウントを設置してください。`,
+			infomation1: `ご面倒をおかけするようでしたら`,
 			coNetTempAccount: 'CoNet提供している一時的なEmailアカウント',
 			serverDetail: '詳細設定：',
 			imapServer: 'IMAP設定',
@@ -2119,24 +2127,25 @@ const infoDefine = [
 			nextPage: '次へ',
 			agree: '協議を合意し、次へ',
 			imapEmailAddress: 'Emailアカウト名',
-			emailAddress: 'Email',
-			SystemAdministratorNickName: 'ニックネーム',
+			emailAddress: 'Email（非必須）',
+			SystemAdministratorNickName: 'ニックネーム（非必須）',
 			creatKeyPair: '暗号鍵ペアを生成...',
+			publishDaggrProfile: 'プロファイルを公開する',
 			keyPairCancel: '暗号鍵ペアの生成をキャンセルしました',
-			keyPairGenerateError:
-				'暗号鍵ペアの生成にエラーが発生しました、後ほどもう一回してみて下さい',
+			keyPairGenerateError: '暗号鍵ペアの生成にエラーが発生しました、後ほどもう一回してみて下さい',
 			keyPairGenerateSuccess: '暗号鍵ペアの生成は完了しました',
 			systemPassword: 'CoNET端末パスワードの設定',
 			stopCreateKeyPair: '暗号鍵ペア生成をキャンセル',
 			cancel: '操作停止',
 			continueCreateKeyPair: '生成を続きします',
-			KeypairLength:
-				'RSA暗号鍵ペアの長度を選んでください。この数字が長ければ、長いほど秘匿性によいですが、スピードが遅くなります。',
+			phoneNumber: 'セルフォン番号（非必須）',
+			KeypairLength:'RSA暗号鍵ペアの長度を選んでください。この数字が長ければ、長いほど秘匿性によいですが、スピードが遅くなります。',
 			systemAdministratorEmail: 'RSA暗号鍵ペア生成',
 			GenerateKeypair:
 				'<em>強秘匿性通信するのために、RSA暗号鍵ペアを生成中、大量なランダム数字が発生し、数分かかる場合もあります、4096ビットの場合、特に時間がかかります、しばらくお待ち下さい。RSA暗号技術について、ウィキペディア百科辞典を参考してください：' +
 				`<a href='https://ja.wikipedia.org/wiki/RSA暗号' target="_blank" onclick="return linkClick ('https://ja.wikipedia.org/wiki/RSA暗号')">https://ja.wikipedia.org/wiki/RSA暗号</a></em>`,
 			inputEmail: '暗号化通信の鍵(curve25519)を生成',
+			daggrUserTitle: '公開するプロフィールを完成してください',
 			accountEmailInfo:
 				'CoNETドメイン名は、ファイヤウォールがある場合はブラックリストに入っている可能性がありますから、CoNETシステムへ登録完了することができません。その場合はファイヤウォール外側のEmailシステムを利用してください。',
 			dividertext: 'オプション',
@@ -3063,7 +3072,8 @@ const infoDefine = [
 		imapInformation: {
 			title: 'IMAP account settings.',
 			tempImapAccount: `Have problem with your IMAP enabled email account? <a href="#" style = "margin-left: 0.5em;" class="ui label teal" onclick="return linkClick ('https://github.com/QTGate/QTGate-Desktop-Client/wiki/IMAP-temporary-account')"> Get temporary account.</a>`,
-			infomation: `Setup Email account which is for CoNet network communication, or `,
+			infomation: `Setup Email account which is for CoNet network communication.`,
+			infomation1: `Or `,
 			coNetTempAccount: 'use the temporary mailbox provided by CoNet.',
 			serverDetail: 'settings:',
 			imapServer: 'IMAP server setup',
@@ -3169,6 +3179,7 @@ const infoDefine = [
 		},
 
 		home_index_view: {
+			daggrUserTitle: 'Edit your profile. Your profile will be search by other users.',
 			newVersion: 'A new version is ready to install.',
 			newVersionInstallLoading: 'Updateing...',
 			localIpAddress: 'Local',
@@ -3177,9 +3188,10 @@ const infoDefine = [
 			showing: 'Status',
 			nextPage: 'next',
 			agree: 'I AGREE & CONTINUE',
-			emailAddress: 'Email Address',
+			emailAddress: 'Email Address ( Option )',
 			imapEmailAddress: 'Email Account Name',
 			creatKeyPair: 'Generate key pair...',
+			publishDaggrProfile: 'Publish your profile',
 			cancel: 'Cancel',
 			clickInstall: 'Install',
 			keyPairCancel: 'Generate key pair was canceled.',
@@ -3190,7 +3202,8 @@ const infoDefine = [
 			stopCreateKeyPair: 'Cancel generate key pair',
 			KeypairLength:
 				'Select the bit length of your key pair. Larger bit lengths are stronger and harder for a hacker to crack but may result in slower network transfer speeds.',
-			SystemAdministratorNickName: 'Nick name',
+			SystemAdministratorNickName: 'Nickname ( Option )',
+			phoneNumber: 'Cellphone number ( Option )',
 			systemAdministratorEmail: 'Generate RSA Key pair',
 			GenerateKeypair:
 				'<em>Generating RSA Key pair. Please wait, as it may take a few minutes. More time will be needed if you selected 4096 bit key length. Information about RSA keypair system can be found here:' +
@@ -4032,7 +4045,8 @@ const infoDefine = [
 		imapInformation: {
 			title: '通訊專用Email郵箱設置',
 			tempImapAccount: `臨時郵箱申請有困難？您可以暫時使用<a href="#" style = "margin-left: 0.5em;" class="ui label teal" onclick="return linkClick ('https://github.com/QTGate/QTGate-Desktop-Client/wiki/IMAP%E8%87%A8%E6%99%82%E5%B8%B3%E6%88%B6')">CoNET網絡提供的臨時IMAP帳號供各位測試</a>`,
-			infomation: `請設置網絡通訊用郵箱、或 `,
+			infomation: `請設置網絡通訊用郵箱。`,
+			infomation1: `如果郵箱設置有困難，您可暫時`,
 			coNetTempAccount: '使用CoNet提供的臨時郵箱',
 			serverDetail: '詳細設定：',
 			imapServer: 'IMAP伺服器設定',
@@ -4137,16 +4151,18 @@ const infoDefine = [
 			nextPage: '下一頁',
 			agree: '同意協議並繼續',
 			imapEmailAddress: '郵箱帳戶名',
-			emailAddress: 'Email地址',
+			emailAddress: 'Email地址（選項，可不填）',
 			stopCreateKeyPair: '停止生成密鑰對',
 			creatKeyPair: '創建密鑰對..',
+			publishDaggrProfile: '公開您的個人資料',
 			keyPairCancel: '生成密鑰對被中止',
 			keyPairGenerateError: '生成密鑰對發生系統錯誤，請重試！ ',
 			keyPairGenerateSuccess: '完成生成密鑰對',
 			cancel: '放棄操作',
 			systemPassword: 'CoNET客戶端密碼設置',
 			continueCreateKeyPair: '繼續生成',
-			SystemAdministratorNickName: '暱稱',
+			SystemAdministratorNickName: '暱稱（選項，可不填）',
+			phoneNumber: '手機號碼（選項，可不填）',
 			KeypairLength:
 				'請選擇加密通訊用密鑰對長度：這個數字越大，通訊越難被破解，但會增加通訊量和運算時間。',
 			systemAdministratorEmail: 'RSA密鑰生成',
@@ -4156,6 +4172,7 @@ const infoDefine = [
 			inputEmail: '加密通訊用(curve25519)鑰匙生成',
 			accountEmailInfo: `由於CoNET域名在某些國家和地區被防火牆屏蔽，而不能正常收發CoNET的Email，如果您是處於防火牆內的用戶，建議使用防火牆外部的郵件服務商。`,
 			dividertext: '選項（可不填）',
+			daggrUserTitle: '編輯您的個人資料，以便您的朋友找到您',
 		},
 		error_message: {
 			title: '錯誤',

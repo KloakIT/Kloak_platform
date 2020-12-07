@@ -324,7 +324,7 @@ class encryptoClass {
 		if ( this._keypair["localserverPublicKey" ]) {
 			this.localServerPublicKey = ( await openpgp.key.readArmored ( this._keypair.localserverPublicKey )).keys
 		}
-		return this.readImapIInputData ( CallBack )
+		return CallBack ()
 	}
 
 	public decryptJsonWithAPKey =  ( encryptoText: string, CallBack ) => {
@@ -558,17 +558,6 @@ class encryptoClass {
 		})
 	}
 
-	public saveImapIInputData ( imapData: IinputData, CallBack ) {
-		
-		return this.encryptString_withMyPublicKey ( JSON.stringify ( imapData ), ( err, data ) => {
-			if ( err ) {
-				return CallBack ( err )
-			}
-
-			return this.DB_writeImap ( data, CallBack )
-		})
-	}
-
 	public encrypt_withLocalServerKey ( message: string, CallBack ) {
 		const self = this
 		const option = {
@@ -679,82 +668,6 @@ class encryptoClass {
 				
 			}
         }
-	}
-
-	public readImapIInputData ( CallBack ) {
-		const request = window.indexedDB.open ( "kloak", 1 )
-		let DB = null
-		let imapStore = null
-		let onupgradeneeded = false
-
-		request.onerror = event => {
-			console.dir ( event )
-			CallBack ( `unsupport` )
-			return this.ready ( `unsupport!` )
-		}
-
-
-
-		request.onsuccess = event => {
-			if ( onupgradeneeded ) {
-				return CallBack ()
-			}
-
-			
-			DB = event.target ["result"]
-			imapStore = DB.transaction ( 'IMAP', 'readwrite' ).objectStore ( 'IMAP' )
-
-
-			let cursor = null
-			let ret = null
-			const deleteData = () => {
-				imapStore.delete ( 0 ).onsuccess = event => {
-					return CallBack ()
-				}
-			}
-
-			const finish = () => {
-				if ( !cursor ) {
-					return CallBack ()
-				}
-				this.decrypt_withMyPublicKey ( cursor.data, ( err, data ) => {
-					if ( err ) {
-						console.dir ( `imap table data [${ cursor }] can't be decrypt, delete data!`)
-						return deleteData ()
-					}
-
-					try {
-						ret = JSON.parse ( data )
-					} catch ( ex ) {
-						console.dir ( `imap table data [${ data }] can't be JSON.parse, delete data!`)
-						return deleteData ()
-					}
-					return CallBack ( null, ret )
-				})
-			}
-
-			const request = imapStore.get(0)
-
-			request.onerror = evevnt => {
-				console.dir (`imapStore.get('0') error`)
-				return CallBack ( `imapStore.get data error!` )
-			}
-
-			request.onsuccess = event => {
-				cursor = request.result
-				return finish ()
-			}
-
-		}
-
-		request.onupgradeneeded = event => {
-			console.dir (`request.onupgradeneeded, have no Imap data!`)
-			DB = event.target ["result"]
-			imapStore = DB.createObjectStore ( 'IMAP', { keyPath: 'id' })
-			return onupgradeneeded = true
-        }
-		
-		
 	}
 
 	public saveHistoryTable ( data, CallBack ) {

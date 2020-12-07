@@ -2,14 +2,18 @@ const marginOfTextarea = 20
 const sentTypingTimeout = 1000 * 60 * 1
 const showTypingKeepTimes = 1000 * 60 * 0.5
 
+declare const EmojiPanel
+
+
+
 const resizeInputTextArea = () => {
-	const elm = document.getElementById('daggrInput')
+	const elm = document.getElementById ( 'daggrInput' )
 	if ( elm ) {
 		elm.style.height = '0px'
 		elm.style.height = elm.scrollHeight + 'px'
 	}
 
-	const elm1 = document.getElementById('chatArea')
+	const elm1 = document.getElementById ('chatArea')
 	elm1.style.paddingTop = document.getElementById('daggr_bottomInputArea').clientHeight + 30 + 'px'
 	scrollTop ()
 }
@@ -24,10 +28,10 @@ const scrollTop = () => {
 }
 
 class daggr extends sharedAppClass {
-	private daggr_preperences_save_UUID = _view.localServerConfig ()['daggerUUID']
+	private daggr_preperences_save_UUID = _view.systemPreferences["daggr_UUID"] = _view.systemPreferences?.daggr_UUID || uuid_generate ()
 	public currentUser: KnockoutObservableArray < currentUser > = ko.observableArray ([])
 	public userData: KnockoutObservable < daggr_preperences > = ko.observable ( null )
-	public showUserInfor = ko.observable ( true )
+	public showUserInfor = ko.observable ( false )
 	public searchResultUsers: KnockoutObservableArray < currentUser > = ko.observableArray ([])
 	public currentChat: KnockoutObservable<currentUser> = ko.observable ()
 	public currentChatIndex = null
@@ -43,7 +47,12 @@ class daggr extends sharedAppClass {
 	public showYoutube = ko.observable ( false )
 	public textInput = ko.observable ('')
 	private videoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
-
+	public showEmojiPanel = ko.observable ( false )
+	private emojiPanel = null
+	public keyPairGenerateForm = ko.observable ( null )
+/**** test unit */
+private currentYoutubeObj = null
+/** test unit end */
 	public search_form_request = {
         command: 'daggr',
         Args: [],
@@ -61,7 +70,7 @@ class daggr extends sharedAppClass {
 	}
 	
 	public searchInputPlaceholder = [
-		'检索用户昵称或邮箱地址或ID', 'ユーザネックネーム又はEmail又はIDを検索','Search user by nikename or Email or key ID','檢索用戶暱稱或郵箱地址或ID'
+		'检索用户昵称或邮箱地址或ID', 'ユーザネックネーム又はEmail又はIDを検索','Search user by nickname or Email or key ID','檢索用戶暱稱或郵箱地址或ID'
 	]
 
 	public addUserInfo = [
@@ -78,7 +87,7 @@ class daggr extends sharedAppClass {
 
 		switch ( com.command ) {
 			case 'daggr' : {
-				this.searchResultUsers ( [com.Args[0]] )
+				this.searchResultUsers ( com.Args[0] )
 				const self = this
 				return this.showUserInfor ( true )
 			}
@@ -127,21 +136,25 @@ class daggr extends sharedAppClass {
 	}
 
 	public addUser ( index: number ) {
-		const user  = this.searchResultUsers.splice ( index, 1 )[0]
+		const user = this.searchResultUsers.splice ( index, 1 )[0]
 		user.chatDataUUID = uuid_generate ()
-
-		const _index = this.currentUser().map ( n => n.id ).indexOf ( user.id )
-		if ( _index > -1 ) {
-			return 
+		if ( this.currentUser()) {
+			const _index = this.currentUser().map ( n => n.keyID ).indexOf ( user.keyID )
+			if ( _index > -1 ) {
+				return 
+			}
 		}
+		
 		user['typing'] = ko.observable ( false )
 		user['_notice']  = 0
 		user['notice'] = ko.observable ( 0 )
 		this.currentUser.unshift ( user )
-		this.saveDaggrPreperences ( )
+		this.userData()['contacts'] = this.currentUser()
+		this.saveDaggrPreperences ()
 	}
 
 	public startChat ( index: number ) {
+
 		const user = this.currentUser ()[ this.currentChatIndex = index ]
 		user['typing'] = ko.observable ( false )
 		if ( !user?.chatDataUUID ) {
@@ -183,7 +196,8 @@ class daggr extends sharedAppClass {
 			
 			this.getFocus ( true )
 			this.saveDaggrPreperences ()
-
+			this.showInputMenu ( false )
+			this.showYoutube ( false )
 			$( window ).on ( 'resize', resizeInputTextArea )
 
 			document.getElementById ('daggrInput').onkeydown = event => {
@@ -208,9 +222,56 @@ class daggr extends sharedAppClass {
 		})
 		
 	}
+
+	private getDaggrPreferences () {
+		return _view.storageHelper.decryptLoad ( this.daggr_preperences_save_UUID, ( err, data ) => {
+
+			if ( err ) {
+				return _view.connectInformationMessage.showErrorMessage ( err )
+			}
+
+			let userData = null
+
+			try {
+				userData = JSON.parse ( Buffer.from ( data ).toString () ) || {}
+
+			} catch ( ex ) {
+				return _view.connectInformationMessage.showErrorMessage ( err )
+			}
+
+
+			if ( userData?.keyInfo ) {
+
+				userData?.contacts?.forEach ( n => {
+					n.notice = ko.observable ( n._notice )
+				})
+
+				this.currentUser ( userData.contacts ? userData.contacts : [])
+
+			} else {
+				this.topMenu ( false )
+				let pro = new keyPairGenerateForm ( null, ( _keyPair: keypair ) => {
+					this.topMenu ( true )
+					userData["keyInfo"] = _keyPair
+					this.saveDaggrPreperences ()
+					_view.saveSystemPreferences (() => {
+						this.keyPairGenerateForm ( pro = null )
+						this.publishProfile ()
+					})
+				})
+				this.keyPairGenerateForm ( pro )
+			}
+
+			this.userData ( userData )
+
+		})
+	}
 	
 	constructor ( public exit: () => void ) {
 		super ( exit )
+		
+		this.getDaggrPreferences ()
+
 		this.textInput.subscribe (( newValue: string ) => {
 			if ( newValue && newValue.length ) {
 				this.showSendBottom ( true )
@@ -238,7 +299,7 @@ class daggr extends sharedAppClass {
 			
 			const com: QTGateAPIRequestCommand = {
 				command: 'daggr',
-				Args: [ user.id, true ],
+				Args: [ user.keyID, true ],
 				error: null,
 				subCom: 'typing',
 				requestSerial: uuid_generate ()
@@ -263,26 +324,6 @@ class daggr extends sharedAppClass {
 
 		})
 
-		_view.storageHelper.decryptLoad ( _view.localServerConfig ()['daggerUUID'], ( err, data ) => {
-			if ( err ) {
-				return _view.connectInformationMessage.showErrorMessage ( err )
-			}
-			let userData: daggr_preperences = null
-			try {
-				userData = JSON.parse ( Buffer.from ( data ).toString () )
-			} catch ( ex ) {
-				return console.log ( ex )
-			}
-			this.userData ( userData )
-
-			userData.contacts.forEach ( n => {
-				n.notice = ko.observable ( n._notice )
-			})
-
-			this.currentUser ( this.userData().contacts )
-
-		})
-
 		this.currentChat.subscribe ( data => {
 			if ( !data ) {
 				$( window ).off ( 'resize', resizeInputTextArea )
@@ -292,6 +333,7 @@ class daggr extends sharedAppClass {
 		this.searchInputText.subscribe ( val => {
 			this.searchInputTextError ( false )
 		})
+
 	}
 
 	public errorProcess = ( err ) => {
@@ -338,6 +380,7 @@ class daggr extends sharedAppClass {
 
 					this.imageSource ( data.rawData )
 					this.showSendBottom ( true )
+					this.showInputMenu ( false )
 					resizeInputTextArea ()
 					
 				}
@@ -345,6 +388,45 @@ class daggr extends sharedAppClass {
 		}
 
 		return reader.readAsDataURL ( file )
+	}
+
+	private publishProfile () {
+		const _profile = this.userData().keyInfo
+
+		const profile = {
+			bio: _profile.bio,
+			image: _profile.image,
+			publicKey: _profile.publicKey,
+			phoneNumber: _profile.phoneNumber,
+			email: _profile.email,
+			nickname: _profile.nickname
+		}
+
+		const com: QTGateAPIRequestCommand = {
+			command: 'daggr',
+			Args: [ Buffer.from ( JSON.stringify ( profile )).toString('base64') ],
+			error: null,
+			subCom: 'userProfile',
+			requestSerial: uuid_generate ()
+		}
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+
+			if ( err ) {
+				console.log ( `_view.connectInformationMessage.emitRequest Error`, err )
+				return this.errorProcess ( err )
+			}
+
+			if ( !com ) {
+				console.log ( `_view.connectInformationMessage.emitRequest !com` )
+				return 
+			}
+
+			if ( com.error === -1 ) {
+				return 
+				
+			}
+			console.log ( `_view.connectInformationMessage.emitRequest com = `, com.Args )
+		})
 	}
 
 	public snedMessage () {
@@ -367,7 +449,7 @@ class daggr extends sharedAppClass {
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'daggr',
-			Args: [ user.id, message ],
+			Args: [ user.keyID, message ],
 			error: null,
 			subCom: 'sendMessage',
 			requestSerial: uuid_generate ()
@@ -378,6 +460,7 @@ class daggr extends sharedAppClass {
 		this.saveChatData ()
 		this.textInput ('')
 		this.imageSource ('')
+
 		//document.getElementById( "daggrInput" ).style.height = '48px'
 		//this.textInputHeightRun ( document.getElementById( `${ message.uuid }` ) )
 
@@ -409,13 +492,12 @@ class daggr extends sharedAppClass {
 		
 	}
 
-
 	public textInputHeight = ko.observable ()
 
 
 	public getTyping ( obj: QTGateAPIRequestCommand ) {
 
-		if ( !this.currentChat() || this.currentChat().id !== obj.account ) {
+		if ( !this.currentChat() || this.currentChat().keyID !== obj.account ) {
 			return
 		}
 
@@ -444,7 +526,7 @@ class daggr extends sharedAppClass {
 			message.youtubeObj['showLoading'] = ko.observable ( 0 )
 			message.youtubeObj['showError'] = ko.observable ( false )
 		}
-		if ( this.currentChat () && this.currentChat ().id === messageUserID ) {
+		if ( this.currentChat () && this.currentChat ().keyID === messageUserID ) {
 			message['create'] = ko.observable ( new Date ( message._create ))
 
 			this.currentChat ().chatData.unshift ( message )
@@ -453,7 +535,7 @@ class daggr extends sharedAppClass {
 			return this.saveChatData ()
 		}
 
-		const index = this.currentUser().findIndex ( n => n.id === messageUserID )
+		const index = this.currentUser().findIndex ( n => n.keyID === messageUserID )
 		if ( index < 0 ) {
 			return 
 		}
@@ -593,6 +675,107 @@ class daggr extends sharedAppClass {
 		currentItem.youtubeObj.showLoading ( 4 )
 		console.log (`Skip Ad click video url = /streamUrl?uuid=${ currentItem ['blobUUID']}`)
 		$(`#${ currentItem.uuid }_videoPlay`).attr ( 'src', `/streamUrl?uuid=${ currentItem ['blobUUID']}`)
+	}
+
+	public youtubePlayClick1 ( index ) {
+		const currentItem = this.currentChat ().chatData()[ index ]
+		currentItem.youtubeObj.showLoading ( 1 )
+		this.currentYoutubeObj = currentItem
+		/**
+		 * 			start downloadQuere
+		 */
+		document.getElementById( 'video_Input' ).click()
+	}
+
+	public videoInput ( ee ) {
+		if ( !ee || !ee.files || !ee.files.length ) {
+			return
+		}
+
+		const file = ee.files[0]
+		const reader = new FileReader()
+
+
+		reader.onload = e => {
+			const currentItem = this.currentYoutubeObj
+			const rawData = Buffer.from ( reader.result )
+			const kk = new Mp4LocalServerUrl ( rawData.length, uuid => {
+				currentItem ['blobUUID'] = uuid
+				currentItem.youtubeObj.showLoading ( 3 )
+				let point = 0
+				const bufferLength = 1024 * 1024
+
+				const setTime = () => {
+					const startDate = new Date ()
+					kk.BufferArray = Buffer.from ( kk.BufferArray.toString ('hex') + rawData.slice ( point, point + bufferLength ).toString ('hex'), 'hex')
+					console.log (`BufferArray.length [${ kk.BufferArray.length }] totlaTime = [${ new Date().getTime() - startDate.getTime()} ]`)
+					kk.transferData ()
+					point = point + bufferLength
+
+					if ( point < rawData.length ) {
+						return setTimeout (()=> { setTime ()}, 500 )
+					}
+					console.log ( `all rawData success to buffer!`)
+					
+				}
+				setTime ()
+			})
+			
+		}
+
+		return reader.readAsArrayBuffer ( file )
+	}
+
+	public emojiTrigger () {
+
+		const emojiInput = emoji => {
+			const inputArea = document.getElementById ('daggrInput')
+			const start = inputArea['selectionStart'] 
+			this.textInput ( 
+				this.textInput().substr ( 0, start ) +
+				emoji.char +
+				this.textInput().substr ( inputArea['selectionEnd'] )
+			)
+			setTimeout (() => {
+				inputArea["setSelectionRange"] ( start + 2, start + 2 )
+			}, 300 )
+			
+			
+			
+		}
+
+		if ( this.showEmojiPanel()) {
+			//this.emojiPanel.removeEventListener ( 'select', emojiInput )
+			this.emojiPanel = null
+			return this.showEmojiPanel ( false )
+		}
+		this.showEmojiPanel( true )
+
+		this.emojiPanel = new EmojiPanel ({
+			container: '#EmojiPanel'
+		})
+
+		this.emojiPanel.addListener( 'select', emojiInput )
+	}
+
+	public profileClick () {
+		const userData = this.userData ()
+		this.topMenu ( false )
+		let pro = new keyPairGenerateForm ( userData["keyInfo"], ( _keyPair: keypair ) => {
+			this.keyPairGenerateForm ( pro = null )
+			this.topMenu ( true )
+			if ( !_keyPair ) {
+				return
+			}
+			userData["keyInfo"] = _keyPair
+			this.saveDaggrPreperences ()
+			_view.saveSystemPreferences (() => {
+				this.publishProfile ()
+			})
+			
+		})
+		this.keyPairGenerateForm ( pro )
+
 	}
 
 }

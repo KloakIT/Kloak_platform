@@ -123,6 +123,7 @@ class connectInformationMessage {
 	public messageArray = ko.observable ( null )
 	public socketIoOnline = false
 	public socketIo: SocketIOClient.Socket = null
+	public connectedCoNET = false
 	
 	public localServerPublicKey = ""
 
@@ -144,26 +145,27 @@ class connectInformationMessage {
 		})
 
 		this.first = false
-
+		this.socketListening ()
 	}
 
-	public socketListening ( url: string ) {
+	public socketListening () {
 		const self = this
-		const roomUrl = `${ url }/${ this.keyID }`
+		const roomUrl = `${ _view.LocalServerUrl }/${ this.keyID }`
 
 		if ( this.socketIo ) {
-			if ( _view.connectedCoNET() ) {
+
+			if ( this.connectedCoNET ) {
 				this.socketIo.close ()
 				this.socketIo.removeAllListeners()
 				this.socketIo = null
 				_view.networkConnect ( false )
-				_view.connectedCoNET ( false )
+				this.connectedCoNET = false
 				return _view.localServerConnected ( false )
 			}
 			
-			if ( _view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
+			if ( typeof _view.CoNETConnectClass?.sendConnectMail === 'function') {
 
-				_view.CoNETConnect().sendConnectMail()
+				_view.CoNETConnectClass.sendConnectMail()
 				return _view.connectToNode ()
 			}
 			return console.dir (`socketListening this.socketIo already have error!`)
@@ -213,7 +215,6 @@ class connectInformationMessage {
 		this.socketIo.on ( 'doingRequest', ( mess, uuid ) => {
 			this.onDoingRequest ( mess, uuid )
 		})
-
 
 		this.socketIo.on ( 'systemErr', err => {
 			console.dir ( err )
@@ -416,6 +417,7 @@ class connectInformationMessage {
 	}
 
 	private currentEmitRequest = null
+
 	private _sockEmit ( eventName: string, ...args ) {
 		const argLength = args.length - 1
 		let _CallBack = null

@@ -55,7 +55,7 @@ const NewKeyPair = ( ports, cmd: sharedWorkerCommand ) => {
 	return openpgp.generateKey ( option ).then (( out: { publicKeyArmored: string, privateKeyArmored: string, revocationCertificate: string }) => {
 		const keypair: keypair = {
 			keyLength: null,
-			nikeName: uu.nikeName,
+			nickname: uu.nikeName,
 			createDate: null,
 			email: uu.email,
 			publicKeyID: null,
@@ -123,14 +123,22 @@ const getKeyInfo = async ( keyPair: keypair, CallBack: ( err?: Error, ret?: keyp
 	ret.localserverPublicKey = keyPair["localserverPublicKey"]
 	
 	ret.passwordOK = false
-	if ( !keyPair._password ) {
+
+	//console.log (`getKeyPairInfo test password!`)
+	if ( privateKey1.isDecrypted() ) {
+		ret.passwordOK = true
+		ret._password = keyPair._password
+		didCallback = true
 		return CallBack ( null, ret )
 	}
-	//console.log (`getKeyPairInfo test password!`)
 	return privateKey1.decrypt ( keyPair._password ).then ( keyOK => {
 		//console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
 		ret.passwordOK = keyOK
 		ret._password = keyPair._password
+		didCallback = true
+		return CallBack ( null, ret )
+	}).catch ( err => {
+		
 		didCallback = true
 		return CallBack ( null, ret )
 	})
@@ -192,15 +200,26 @@ const doingCommand = ( message: string, ports ) => {
 					return returnCommand ( ports, cmd )
 				}
 				cmd.args = data
-				return encryptoClassObj = new encryptoClass ( data, data._password, ( err, _data ) => {
+				return encryptoClassObj = new encryptoClass ( data, data._password, err => {
 					if ( err ) {
 						cmd.error = err.message
 						return returnCommand ( ports, cmd )
 					}
-					cmd.args["imapData"] = _data
+					
 					return returnCommand ( ports, cmd )
 				})
 				
+			})
+		}
+
+		case 'getKeyInfo_Daggr': {
+			return getKeyInfo ( cmd.args, ( err, data: keypair ) => {
+				if ( err ) {
+					cmd.error = err.message
+					return returnCommand ( ports, cmd )
+				}
+				cmd.args = data
+				return returnCommand ( ports, cmd )
 			})
 		}
 
@@ -214,11 +233,6 @@ const doingCommand = ( message: string, ports ) => {
 				return returnCommand ( ports, cmd )
 			})
 		}
-
-		case 'saveImapIInputData': {
-			return encryptoClassObj.saveImapIInputData ( cmd.args, encryptoClassObjCallBack )
-		}
-
 		/**
 		 * 		Encrypt function
 		 */

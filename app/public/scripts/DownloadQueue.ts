@@ -1034,6 +1034,100 @@ class DownloadQueue {
 	}
 }
 
+class Mp4LocalServerUrl {
+	private uuid = ''
+	private readyTransfer = false
+	private postUrl = '/streamUrl'
+	private posting = false
+	private transferBufferLength = 1024 * 1000
+	private currentStartPoint = 0
+	private currentEndPoint = 0
+	public BufferArray: Buffer = Buffer.alloc (0)
+	constructor( private bufferTotalLength: number,  callBack ) {
+		_view.connectInformationMessage.sockEmit ( 'requestStreamUrl', bufferTotalLength, uuid => {
+			this.uuid = uuid
+			_view.connectInformationMessage.socketIo.on ( uuid, ( range: string ) => {
+				console.log (`Start transfer Buffer!range = [${ range }] `)
+				
+				this.readyTransfer = true
+				if ( range ) {
+					const _range = range.split ('=')[1]
+					this.currentStartPoint = parseInt ( _range.split ('-')[0] ) || 0
+					this.currentEndPoint = parseInt ( _range.split ('-')[1] ) || this.bufferTotalLength
+					if ( this.posting ) {
+						console.log (`Already posting! reset to new range!`)
+						this.posting = false 
+					}
+				}
+				
+
+				this.transferData ()
+			})
+			
+			
+			return callBack ( uuid )
+		})
+	}
+
+	public transferData ( ) {
+		if ( !this.readyTransfer || this.posting ) {
+			return console.log ( `this.readyTransfer have not ready!`)
+		}
+
+		if ( this.currentStartPoint > this.bufferTotalLength ) {
+			return console.log (`All buffer had transfer`)
+		}
+
+		if ( this.BufferArray.length < this.currentStartPoint ) {
+			return console.log (`Request part have over buffer!`)
+		}
+
+		this.posting = true
+
+		let endPoint = this.currentStartPoint + this.transferBufferLength
+		endPoint = endPoint > this.bufferTotalLength - 1 ? this.bufferTotalLength - 1 : endPoint
+
+		if ( this.BufferArray.length < endPoint ) {
+			this.posting = false
+			return console.log (`this.BufferArray.length < endPoint STOP this.BufferArray.length [${ this.BufferArray.length }] [${ this.currentStartPoint }-${ endPoint }]`)
+		}
+
+		const buffer = this.BufferArray.slice ( this.currentStartPoint, endPoint )
+
+		if ( ! buffer || !buffer.length ) {
+			$.post ( this.postUrl, { uuid: this.uuid, buffer: '' })
+				.done (() => {
+					console.log (`transferData END success,`)
+					this.posting = false
+					return console.log ( `BufferArray length [${ this.BufferArray.length }] ( this.currentStartPoint[${ this.currentStartPoint, endPoint }], endPoint ${endPoint }) null stop transferData!`)
+
+				})
+			
+		}
+
+		console.log (`POST buffer [${ this.currentStartPoint }-${ endPoint }] length [${ buffer.length }]`)
+
+		this.currentStartPoint = endPoint
+		const uuu = Buffer.from ( buffer )
+		
+
+		return $.post ( this.postUrl, { uuid: this.uuid, buffer: uuu.toString ('base64') })
+			.done (() => {
+				console.log (`transferData post data success, do again!`)
+				this.posting = false
+				return this.transferData ()
+			})
+			.fail (() => {
+				this.posting = false
+				return console.log (`transferData post data fail!!!`)
+			})
+
+	}
+
+
+}
+
+
 class mediaHtmlStream {
 	constructor ( uuid: string, ) {
 

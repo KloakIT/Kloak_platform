@@ -133,7 +133,7 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 		keypair.passwordOK = true
 		view.password = passwd
 		keypair.showLoginPasswordField ( false )
-
+		
 		view.showMain ()
 	})
 
@@ -147,12 +147,11 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 		return keypair.showConform ( true )
 	}
 
-	keypair.deleteKeyPairNext = () => {
+	keypair.deleteKeyPairNext = ( ) => {
 		localStorage.setItem ( 'config', JSON.stringify( {} ))
 		view.localServerConfig ( null )
-		view.connectedCoNET ( false )
-		view.connectToCoNET ( false )
-		view.CoNETConnect ( view.CoNETConnectClass = null )
+
+		view.CoNETConnectClass = null
 		view.imapSetup ( view.imapFormClass = null )
 		keypair.showDeleteKeyPairNoite ( false )
 		keypair.delete_btn_view ( false )
@@ -165,106 +164,106 @@ const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
 module view_layout {
 	export class view {
 		//--   define
-			public connectInformationMessage: connectInformationMessage = null
-			public sectionLogin = ko.observable(false)
-			public sectionAgreement = ko.observable(false)
-			public sectionWelcome = ko.observable(true)
-			public isFreeUser = ko.observable(true)
-			public QTTransferData = ko.observable(false)
-			public LocalLanguage = 'up'
-			public menu = Menu
-			public modalContent = ko.observable('')
-			public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
-			public tLang = ko.observable(initLanguageCookie())
-			public languageIndex = ko.observable(lang[this.tLang()])
-			public localServerConfig = ko.observable()
-			public keyPair: KnockoutObservable<keypair> = ko.observable(InitKeyPair())
-			public hacked = ko.observable(false)
-			public imapSetup: KnockoutObservable<imapForm> = ko.observable()
-			public connectToCoNET = ko.observable(false)
-			public connectedCoNET = ko.observable(false)
-			public showKeyPair = ko.observable(false)
-			public CoNETConnectClass: CoNETConnect = null
-			public imapFormClass: imapForm = null
-			public CoNETConnect: KnockoutObservable<CoNETConnect> = ko.observable(null)
-			public historyData = ko.observableArray()
-			public bodyBlue = ko.observable(true)
-			public CanadaBackground = ko.observable(false)
-			public password = null
-			public KloakTL = gsap.timeline()
-			public secondTitle = ko.observable(false)
-			public titleAnimationStep = ko.observable(0)
-			public sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js')
-			public welcomeTitle = ko.observable(true)
-			public showMainPage = ko.observable(false)
-			public showStartupVideo = ko.observable(true)
-			public daggrHtml = ko.observable(false)
-			public showFileStorage = ko.observable(false)
-			public showGeneralSpalding = ko.observable(false)
-			public showCanada = ko.observable(false)
-			public muteHtml = ko.observable ( false )
-			public forTwitterHtml = ko.observable ( false )
-			public forYoutubeHtml = ko.observable ( false )
-			public storageHelper = new StorageHelper()
-			public localServerConnected = ko.observable(false)
-			public showLocalServerDisconnect = ko.observable(false)
-			public displayMedia = ko.observable(null)
-			public videoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
-			public mediaViewer: MediaViewer = null
-			private dagge: daggr_preperences = null
+			// -   method
+
+				public connectInformationMessage: connectInformationMessage = null
+				public keyPairGenerateForm: KnockoutObservable< keyPairGenerateForm > = ko.observable()
+				public localServerConfig: KnockoutObservable< localServerConfig > = ko.observable()
+				public imapSetup: KnockoutObservable < imapForm > = ko.observable ( null )
+				public CoNETConnectClass: CoNETConnect = null
+				public imapFormClass: imapForm = null
+				public sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js')
+				public storageHelper = new StorageHelper()
+				public videoPlayer: KnockoutObservable < VideoPlayer > = ko.observable ( null )
+				public mediaViewer: MediaViewer = null
+				public appsManager: KnockoutObservable<appsManager> = ko.observable( null )
+			//-
+				public LocalServerUrl = window.location.href.split(/https?\:\/\//i)[1].split(/\//)[0]
+				public password = null
+				public systemPreferences = null
+
+			//- for View 
+
+				//- language select
+				public tLang = ko.observable( initLanguageCookie())
+				public languageIndex = ko.observable ( lang[this.tLang()])
+				public showLanguageSelect = ko.observable ( true )
+
+				public networkSetupHeader = [
+					'网络通讯线路设定',
+					'ネットワーク通信設定',
+					'Network connection setup',
+					'網絡通訊線路設定',
+				]
+				public networkSetupDescription = [
+					'指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码',
+					'ローカールネットワークモージュルとCoNet通信用メールアカウント設定',
+					'Local network module and the mail informationthe for connect to CoNet network',
+					'指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼',
+				]
+				public networkSetupConnectShow = [
+					'连接节点',
+					'ノードへ接続',
+					'Connect to node',
+					'連接結點',
+				]
+				public networkDisconnect = [
+					'解除连接',
+					'接続を解除',
+					'Disconnect',
+					'解除連結',
+				]
+	
+
+				//- main
+				public sectionLogin = ko.observable ( false )
+				public sectionAgreement = ko.observable ( false )
+				public sectionWelcome = ko.observable ( true )
+				public menu = Menu
+				public keyPair: KnockoutObservable< keypair> = ko.observable ( InitKeyPair())
+				public showKeyPair = ko.observable ( false )
+				public bodyBlue = ko.observable( true )
+				public CanadaBackground = ko.observable ( false )
+				public welcomeTitle = ko.observable ( true )
+				public showMainPage = ko.observable ( false )
+				public showStartupVideo = ko.observable ( true )
+				public localServerConnected = ko.observable ( false )
+				public showLocalServerDisconnect = ko.observable ( false )
+				public displayMedia = ko.observable ( null )
+				public networkConnect: KnockoutObservable<number | boolean> = ko.observable ( false )
+				public showSnapshop = ko.observable ( null )
+				public mainManuItems = ko.observableArray ( mainMenuArray )
+				public tempAppHtml = ko.observable ( false )
+				public appScript = ko.observable ()
+				public middleX = ko.observable ( window.innerWidth / 2 )
+				public middleY = ko.observable ( window.innerHeight / 2 )
+
+				public imapData = ko.observable ( null )
+				public AppList = ko.observable ( false )
+
+				public daggrHtml = ko.observable ( false )
+				public showFileStorage = ko.observable ( false )
+				public showGeneralSpalding = ko.observable ( false )
+				public showCanada = ko.observable ( false )
+
+				public muteHtml = ko.observable ( false )
+				public forTwitterHtml = ko.observable ( false )
+				public forYoutubeHtml = ko.observable ( false )
+
+				//-animation
+				public KloakTL = gsap.timeline()
+				private demoTimeout = null
+				private demoMainElm = null
+				public newVersion = ko.observable ()
+			
+			
 			/*
 			public worker = new workerManager ([
 				'mHtml2Html'
 			])
 			*/
 
-			public appsManager: KnockoutObservable<appsManager> = ko.observable(null)
-			public AppList = ko.observable(false)
-			public LocalServerUrl = window.location.href
-				.split(/https?\:\/\//i)[1]
-				.split(/\//)[0]
-			public imapData = ko.observable(null)
-			public newVersion = ko.observable(null)
-			public showLanguageSelect = ko.observable(true)
-			private demoTimeout = null
-			private demoMainElm
-			/**
-			 * 	showSnapshop
-			 */
-			public showSnapshop = ko.observable ( null )
 			
-			public networkSetupHeader = [
-				'网络通讯线路设定',
-				'ネットワーク通信設定',
-				'Network connection setup',
-				'網絡通訊線路設定',
-			]
-			public networkSetupDescription = [
-				'指定本地网络通讯模块，及接入CoNet网络所使用的邮件服务器帐号密码',
-				'ローカールネットワークモージュルとCoNet通信用メールアカウント設定',
-				'Local network module and the mail informationthe for connect to CoNet network',
-				'指定本地網絡通訊模塊，及接入CoNet網絡所使用的郵件伺服器帳號密碼',
-			]
-			public networkSetupConnectShow = [
-				'连接节点',
-				'ノードへ接続',
-				'Connect to node',
-				'連接結點',
-			]
-			public networkDisconnect = [
-				'解除连接',
-				'接続を解除',
-				'Disconnect',
-				'解除連結',
-			]
-
-
-			public networkConnect: KnockoutObservable<number | boolean> = ko.observable(false)
-			public mainManuItems = ko.observableArray( mainMenuArray )
-			public tempAppHtml = ko.observable(false)
-			public appScript = ko.observable()
-			public middleX = ko.observable(window.innerWidth / 2)
-			public middleY = ko.observable(window.innerHeight / 2)
 		//-
 
 		private afterInitConfig() {
@@ -343,10 +342,7 @@ module view_layout {
 
 		private initConfig( config ) {
 			const self = this
-			if ( !config?.daggerUUID ) {
-				config[ 'daggerUUID' ] = uuid_generate ()
-				localStorage.setItem ( 'config', JSON.stringify ( config ))
-			}
+			
 
 			if ( config?.keypair?.publicKeyID ) {
 				/**
@@ -373,7 +369,7 @@ module view_layout {
 			this.svgDemo_showLanguage()
 			config['account'] = config['keypair'] = null
 			
-			let _keyPairGenerateForm = new keyPairGenerateForm (( _keyPair: keypair ) => {
+			let _keyPairGenerateForm = new keyPairGenerateForm ( null, ( _keyPair: keypair ) => {
 					self.keyPairGenerateForm (( _keyPairGenerateForm = null ))
 					/**
 					 *      key pair ready
@@ -383,15 +379,11 @@ module view_layout {
 					_keyPair._password = null
 					config.account =  _keyPair.publicKeyID
 
-					this.dagge = JSON.parse ( JSON.stringify ( _keyPair ['daggr']))
-
-					_keyPair ['daggr'] = null
-
 					config.keypair = _keyPair
 					localStorage.setItem ( 'config', JSON.stringify ( config ))
 					_keyPair.passwordOK = true
 					_keyPair._password = self.password
-					//self.localServerConfig ( config )
+					
 					self.keyPair ( _keyPair )
 					self.showMain ()
 				}
@@ -468,7 +460,7 @@ module view_layout {
 				}
 			})
 
-			$('.languageText').shape(`flip ${this.LocalLanguage}`)
+			$('.languageText').shape(`flip up`)
 			$('.KnockoutAnimation').transition('jiggle')
 			this.animationTitle()
 			initPopupArea()
@@ -521,54 +513,63 @@ module view_layout {
 		public agreeClick() {
 			this.connectInformationMessage.sockEmit('agreeClick')
 			this.sectionAgreement(false)
-			this.localServerConfig().firstRun = false
 			return this.openClick()
 		}
 
-		public refresh() {
-			if (typeof require === 'undefined') {
-				this.modalContent(
-					infoDefine[this.languageIndex()].emailConform.formatError[11]
-				)
-				return this.hacked(true)
-			}
-			const { remote } = require('electron')
-			if (remote && remote.app && typeof remote.app.quit === 'function') {
-				return remote.app.quit()
-			}
+		public saveSystemPreferences ( CallBack ) {
+			return this.storageHelper.encryptSave ( this.localServerConfig().account, JSON.stringify ( this.systemPreferences ), err => {
+				if ( err ) {
+					this.connectInformationMessage.showErrorMessage ( err )
+				}
+				return CallBack ()
+			} )
+		}
+
+		public getSystemPreferences ( CallBack ) {
+			return this.storageHelper.decryptLoad ( this.localServerConfig ().account, ( err, data ) => {
+				if ( err ) {
+					return this.connectInformationMessage.showErrorMessage ( err )
+				}
+
+				
+				try {
+					this.systemPreferences = JSON.parse ( Buffer.from ( data ).toString () )
+				} catch ( ex ) {
+					return this.connectInformationMessage.showErrorMessage ( err )
+				}
+				this.systemPreferences = this.systemPreferences || {}
+				return CallBack ()
+
+			})
 		}
 
 		public showImapSetup() {
-			const self = this
+			
 			this.hideMainPage ()
 			this.sectionLogin ( true )
-			return this.imapSetup ( this.imapFormClass = new imapForm ( this.keyPair().publicKeyID, this.imapData (), ( imapData: IinputData ) => {
-				self.imapSetup( self.imapFormClass = null )
-				self.sectionLogin ( false )
-				self.imapData( imapData )
-				return self.sharedMainWorker.saveImapIInputData ( imapData, ( err, data ) => {
-					return self.showMain ()
+			return this.imapSetup ( this.imapFormClass = new imapForm ( this.keyPair().publicKeyID, this.imapData(), true, ( imapData: IinputData ) => {
+				this.imapSetup ( this.imapFormClass = null )
+				this.sectionLogin ( false )
+				this.imapData ( this.systemPreferences['imapData'] = imapData )
+				this.saveSystemPreferences ( () => {
+					return this.showMain ()
 				})
+				
 			}))
 		}
 
-		public connectToNode() {
-			const self = this
-			self.networkConnect(2)
-			return this.CoNETConnect(
-				(this.CoNETConnectClass = new CoNETConnect(
-					this,
-					this.keyPair().verified,
-					(err) => {
-						if (typeof err === 'number' && err > -1) {
-							self.CoNETConnect((this.CoNETConnectClass = null))
-							return self.showImapSetup()
-						}
-						self.networkConnect(true)
-						self.connectedCoNET(true)
+		public connectToNode () {
+
+			this.networkConnect ( 2 )
+			return this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified,
+				( err ) => {
+					if ( typeof err === 'number' && err > -1 ) {
+						this.CoNETConnectClass = null
+						return this.showImapSetup()
 					}
-				))
-			)
+					this.networkConnect ( true )
+				})
+			
 		}
 
 		public reFreshLocalServer() {
@@ -698,9 +699,8 @@ module view_layout {
 		public deleteKey() {
 			localStorage.setItem ('config', JSON.stringify({}))
 			_view.localServerConfig ( null )
-			_view.connectedCoNET ( false )
-			_view.connectToCoNET ( false )
-			_view.CoNETConnect (_view.CoNETConnectClass = null )
+
+			_view.CoNETConnectClass = null
 			_view.imapSetup ( _view.imapFormClass = null )
 			localStorage.clear ()
 			return _view.reFreshLocalServer ()
@@ -722,7 +722,7 @@ module view_layout {
 
 				const message: messageContent = obj.Args[1]
 				message.isSelf = false
-				return _view.storageHelper.decryptLoad ( this.localServerConfig ()['daggerUUID'], ( err, data ) => {
+				return _view.storageHelper.decryptLoad ( this.localServerConfig ().account, ( err, data ) => {
 					if ( err ) {
 						return _view.connectInformationMessage.showErrorMessage ( err )
 					}
@@ -738,7 +738,7 @@ module view_layout {
 					const contact =  userData.contacts[ index ]
 					contact._notice += 1
 					daggr.notice ( daggr.notice () + 1 )
-					return _view.storageHelper.encryptSave ( this.localServerConfig ()['daggerUUID'], JSON.stringify ( userData ), err => {
+					return _view.storageHelper.encryptSave ( this.localServerConfig ().account, JSON.stringify ( userData ), err => {
 						if ( err ) {
 							return _view.connectInformationMessage.showErrorMessage ( err )
 						}
@@ -772,7 +772,7 @@ module view_layout {
 			const index = mainMenuArray.findIndex ( n => n.name === 'daggr')
 			if ( index > 0 ) {
 				const daggr = mainMenuArray[ index ]
-				_view.storageHelper.decryptLoad ( this.localServerConfig ()['daggerUUID'], ( err, data ) => {
+				_view.storageHelper.decryptLoad ( this.localServerConfig ().account, ( err, data ) => {
 					if ( err ) {
 						return _view.connectInformationMessage.showErrorMessage ( err )
 					}
@@ -799,57 +799,37 @@ module view_layout {
 
 		public afterPasswordReady () {
 			const self = this
-			if ( ! this.connectInformationMessage ) {
-				this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
-			}
 
-			return this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), ( err, data: keypair ) => {
+			return this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), err => {
 				if ( err ) {
 					return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
 				}
-				if ( data ['imapData']) {
-					self.imapData ( data['imapData'] )
-				}
-
-				self.connectInformationMessage.socketListening ( this.LocalServerUrl )
 				
+				return this.getSystemPreferences (() => {
+
+					this.imapData ( this.systemPreferences?.imapData )
+					this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
+					if ( this.imapData ()) {
+						//this.getDaggrNotice ()
+						return this.showMainPage ( true )
+					}
+	
+					return this.showImapSetup ()
+				})
+					
+				
+				/*
 				if ( this.dagge ) {
-					_view.storageHelper.encryptSave ( self.localServerConfig ()['daggerUUID'], JSON.stringify ( this.dagge ), err => {
+					_view.storageHelper.encryptSave ( self.localServerConfig ().account, JSON.stringify ( this.dagge ), err => {
 						if ( err ) {
 							return _view.connectInformationMessage.showErrorMessage ( err )
 						}
 					})
 				}
+				*/
 
-				if ( this.imapData ()) {
-					this.getDaggrNotice ()
-					return this.showMainPage ( true )
-				}
 
-				return this.showImapSetup ()
-			})
-		}
-
-		public connectToLocalServer() {
-			this.connectInformationMessage.getServerPublicKey((err) => {
-				this.keyPair()['localserverPublicKey'] =
-					_view.connectInformationMessage.localServerPublicKey
-				const self = this
-				return this.sharedMainWorker.getKeyPairInfo(
-					this.keyPair(),
-					(err, data: keypair) => {
-						if (err) {
-							return console.dir(
-								`sharedMainWorker.getKeyPairInfo return Error!`
-							)
-						}
-
-						if (data['imapData']) {
-							self.imapData(data['imapData'])
-							//return view.imapSetupClassExit ( view.imapData )
-						}
-					}
-				)
+				
 			})
 		}
 
@@ -872,25 +852,27 @@ module view_layout {
 
 		public appClick ( index ) {
 			const appScript1: any = mainMenuArray [ index ].click
-			const showSwitch = `_view.${mainMenuArray[index].htmlTemp }( true )`
-			if (!appScript1 || !showSwitch ) {
+			const showSwitch = `_view.${ mainMenuArray [ index ].htmlTemp }( true )`
+			if ( ! appScript1 || ! showSwitch ) {
 				return
 			}
-			_view.showMainPage ( false )
-			_view.bodyBlue ( false )
-			_view.sectionLogin ( false )
+			this.showMainPage ( false )
+			this.bodyBlue ( false )
+			this.sectionLogin ( false )
 			if (
 				typeof appScript1 === 'object' &&
 				typeof appScript1.startup === 'function'
 			) {
 				appScript1.startup ( appScript1 )
-				_view.appScript ( appScript1 )
+				this.appScript ( appScript1 )
+
 			} else {
-				_view.appScript( new appScript1( () => {
-					_view.appScript( null )
-					_view.showMainPage ( true )
-					_view.bodyBlue ( true )
-					eval ( `_view.${mainMenuArray[index].htmlTemp }( false )` )
+
+				this.appScript( new appScript1( () => {
+					this.appScript ( null )
+					this.showMainPage ( true )
+					this.bodyBlue ( true )
+					eval ( `_view.${ mainMenuArray[ index ].htmlTemp }( false )` )
 				}))
 			}
 
@@ -903,8 +885,8 @@ module view_layout {
 		}
 
 		public connectLocalServer() {
-			_view.showLocalServerDisconnect(false)
-			_view.connectInformationMessage.socketListening(this.LocalServerUrl)
+			this.showLocalServerDisconnect ( false )
+			this.connectInformationMessage.socketListening ()
 		}
 
 		public userTextareaHeight ( id ) {

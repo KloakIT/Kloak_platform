@@ -49,7 +49,7 @@ interface keypair {
 	publicKey?: string
 	privateKey?: string
 	keyLength: number
-	nikeName: string
+	nickname: string
 	createDate: string
 	email: string
 	passwordOK: boolean
@@ -66,6 +66,8 @@ interface keypair {
 	keyPairPassword?: KnockoutObservable<keyPairPassword>
 	showDeleteKeyPairNoite?: KnockoutObservable<boolean>
 	image: string
+	phoneNumber?: string
+	bio?: string
 }
 
 interface StringValidator {
@@ -218,7 +220,7 @@ interface QTGateCommand {
 	publicKey: string
 	image?: string
 	bio?: string
-	nickName?: string
+	niekname?: string
 	email?: string
 	
 }
@@ -683,6 +685,26 @@ interface googleSearchResultItemlocal extends googleSearchResultItem {
 	snapshotReady: KnockoutObservable<boolean>
 }
 
+/**
+ * 
+ * 		Global APP setup 
+ * 
+ */
+interface systemPreferences {
+	daggrPreferencesUUID: string
+
+}
+
+interface localServerConfig {
+	account?: string
+	keypair?: keypair
+}
+
+interface daggr_preperences {
+	keyInfo: keypair
+	contacts: currentUser []
+}
+
 // ===============================================================
 // DOWNLOADER ====================================================
 
@@ -786,11 +808,11 @@ interface currentUser {
 	chatDataUUID: string
 	chatData: KnockoutObservableArray < messageContent >
 	chatDataArray: messageContent []
-	id: string
+	keyID: string
 	title: string
 	image: string
 	email: string
-	nickName: string
+	nickname: string
 	notice: KnockoutObservable < number >
 	_notice: number
 	typing: KnockoutObservable < boolean >
@@ -821,13 +843,3 @@ interface messageContent {
 	youtubeObj: messageYoutubeObj
 }
 
-interface daggr_preperences {
-	keyInfo: {
-		keyID: string
-		bio: string
-		image: string
-		nikeName: string
-		email: string
-	}
-	contacts: currentUser []
-}

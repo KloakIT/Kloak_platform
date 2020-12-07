@@ -19,10 +19,10 @@ class daggr extends sharedAppClass {
     constructor(exit) {
         super(exit);
         this.exit = exit;
-        this.daggr_preperences_save_UUID = _view.localServerConfig()['daggerUUID'];
+        this.daggr_preperences_save_UUID = _view.systemPreferences["daggr_UUID"] = _view.systemPreferences?.daggr_UUID || uuid_generate();
         this.currentUser = ko.observableArray([]);
         this.userData = ko.observable(null);
-        this.showUserInfor = ko.observable(true);
+        this.showUserInfor = ko.observable(false);
         this.searchResultUsers = ko.observableArray([]);
         this.currentChat = ko.observable();
         this.currentChatIndex = null;
@@ -38,6 +38,12 @@ class daggr extends sharedAppClass {
         this.showYoutube = ko.observable(false);
         this.textInput = ko.observable('');
         this.videoPlayer = ko.observable(null);
+        this.showEmojiPanel = ko.observable(false);
+        this.emojiPanel = null;
+        this.keyPairGenerateForm = ko.observable(null);
+        /**** test unit */
+        this.currentYoutubeObj = null;
+        /** test unit end */
         this.search_form_request = {
             command: 'daggr',
             Args: [],
@@ -53,7 +59,7 @@ class daggr extends sharedAppClass {
             requestSerial: null
         };
         this.searchInputPlaceholder = [
-            '检索用户昵称或邮箱地址或ID', 'ユーザネックネーム又はEmail又はIDを検索', 'Search user by nikename or Email or key ID', '檢索用戶暱稱或郵箱地址或ID'
+            '检索用户昵称或邮箱地址或ID', 'ユーザネックネーム又はEmail又はIDを検索', 'Search user by nickname or Email or key ID', '檢索用戶暱稱或郵箱地址或ID'
         ];
         this.addUserInfo = [
             '加入用户', 'ユーザを追加', 'Add user', '加入用戶'
@@ -70,6 +76,7 @@ class daggr extends sharedAppClass {
             const ads = ['coronavirus-ad.mp4', 'ipad-ad.mp4', 'nike-ad.mp4'];
             return `/videos/ads/${ads[Math.round(Math.random() * 2)]}`;
         });
+        this.getDaggrPreferences();
         this.textInput.subscribe((newValue) => {
             if (newValue && newValue.length) {
                 this.showSendBottom(true);
@@ -91,7 +98,7 @@ class daggr extends sharedAppClass {
             const user = this.currentChat();
             const com = {
                 command: 'daggr',
-                Args: [user.id, true],
+                Args: [user.keyID, true],
                 error: null,
                 subCom: 'typing',
                 requestSerial: uuid_generate()
@@ -108,23 +115,6 @@ class daggr extends sharedAppClass {
                 }
             });
         });
-        _view.storageHelper.decryptLoad(_view.localServerConfig()['daggerUUID'], (err, data) => {
-            if (err) {
-                return _view.connectInformationMessage.showErrorMessage(err);
-            }
-            let userData = null;
-            try {
-                userData = JSON.parse(Buffer.from(data).toString());
-            }
-            catch (ex) {
-                return console.log(ex);
-            }
-            this.userData(userData);
-            userData.contacts.forEach(n => {
-                n.notice = ko.observable(n._notice);
-            });
-            this.currentUser(this.userData().contacts);
-        });
         this.currentChat.subscribe(data => {
             if (!data) {
                 $(window).off('resize', resizeInputTextArea);
@@ -138,7 +128,7 @@ class daggr extends sharedAppClass {
     searchItemList_build(com, first) {
         switch (com.command) {
             case 'daggr': {
-                this.searchResultUsers([com.Args[0]]);
+                this.searchResultUsers(com.Args[0]);
                 const self = this;
                 return this.showUserInfor(true);
             }
@@ -180,14 +170,17 @@ class daggr extends sharedAppClass {
     addUser(index) {
         const user = this.searchResultUsers.splice(index, 1)[0];
         user.chatDataUUID = uuid_generate();
-        const _index = this.currentUser().map(n => n.id).indexOf(user.id);
-        if (_index > -1) {
-            return;
+        if (this.currentUser()) {
+            const _index = this.currentUser().map(n => n.keyID).indexOf(user.keyID);
+            if (_index > -1) {
+                return;
+            }
         }
         user['typing'] = ko.observable(false);
         user['_notice'] = 0;
         user['notice'] = ko.observable(0);
         this.currentUser.unshift(user);
+        this.userData()['contacts'] = this.currentUser();
         this.saveDaggrPreperences();
     }
     startChat(index) {
@@ -227,6 +220,8 @@ class daggr extends sharedAppClass {
             this.currentChat(user);
             this.getFocus(true);
             this.saveDaggrPreperences();
+            this.showInputMenu(false);
+            this.showYoutube(false);
             $(window).on('resize', resizeInputTextArea);
             document.getElementById('daggrInput').onkeydown = event => {
                 if (event.defaultPrevented) {
@@ -245,6 +240,40 @@ class daggr extends sharedAppClass {
                 return true;
             };
             this.showSendBottom(false);
+        });
+    }
+    getDaggrPreferences() {
+        return _view.storageHelper.decryptLoad(this.daggr_preperences_save_UUID, (err, data) => {
+            if (err) {
+                return _view.connectInformationMessage.showErrorMessage(err);
+            }
+            let userData = null;
+            try {
+                userData = JSON.parse(Buffer.from(data).toString()) || {};
+            }
+            catch (ex) {
+                return _view.connectInformationMessage.showErrorMessage(err);
+            }
+            if (userData?.keyInfo) {
+                userData?.contacts?.forEach(n => {
+                    n.notice = ko.observable(n._notice);
+                });
+                this.currentUser(userData.contacts ? userData.contacts : []);
+            }
+            else {
+                this.topMenu(false);
+                let pro = new keyPairGenerateForm(null, (_keyPair) => {
+                    this.topMenu(true);
+                    userData["keyInfo"] = _keyPair;
+                    this.saveDaggrPreperences();
+                    _view.saveSystemPreferences(() => {
+                        this.keyPairGenerateForm(pro = null);
+                        this.publishProfile();
+                    });
+                });
+                this.keyPairGenerateForm(pro);
+            }
+            this.userData(userData);
         });
     }
     saveChatData() {
@@ -273,10 +302,43 @@ class daggr extends sharedAppClass {
                 }
                 this.imageSource(data.rawData);
                 this.showSendBottom(true);
+                this.showInputMenu(false);
                 resizeInputTextArea();
             });
         };
         return reader.readAsDataURL(file);
+    }
+    publishProfile() {
+        const _profile = this.userData().keyInfo;
+        const profile = {
+            bio: _profile.bio,
+            image: _profile.image,
+            publicKey: _profile.publicKey,
+            phoneNumber: _profile.phoneNumber,
+            email: _profile.email,
+            nickname: _profile.nickname
+        };
+        const com = {
+            command: 'daggr',
+            Args: [Buffer.from(JSON.stringify(profile)).toString('base64')],
+            error: null,
+            subCom: 'userProfile',
+            requestSerial: uuid_generate()
+        };
+        return _view.connectInformationMessage.emitRequest(com, (err, com) => {
+            if (err) {
+                console.log(`_view.connectInformationMessage.emitRequest Error`, err);
+                return this.errorProcess(err);
+            }
+            if (!com) {
+                console.log(`_view.connectInformationMessage.emitRequest !com`);
+                return;
+            }
+            if (com.error === -1) {
+                return;
+            }
+            console.log(`_view.connectInformationMessage.emitRequest com = `, com.Args);
+        });
     }
     snedMessage() {
         const user = this.currentChat();
@@ -297,7 +359,7 @@ class daggr extends sharedAppClass {
         };
         const com = {
             command: 'daggr',
-            Args: [user.id, message],
+            Args: [user.keyID, message],
             error: null,
             subCom: 'sendMessage',
             requestSerial: uuid_generate()
@@ -332,7 +394,7 @@ class daggr extends sharedAppClass {
         });
     }
     getTyping(obj) {
-        if (!this.currentChat() || this.currentChat().id !== obj.account) {
+        if (!this.currentChat() || this.currentChat().keyID !== obj.account) {
             return;
         }
         this.currentChat().typing(true);
@@ -354,14 +416,14 @@ class daggr extends sharedAppClass {
             message.youtubeObj['showLoading'] = ko.observable(0);
             message.youtubeObj['showError'] = ko.observable(false);
         }
-        if (this.currentChat() && this.currentChat().id === messageUserID) {
+        if (this.currentChat() && this.currentChat().keyID === messageUserID) {
             message['create'] = ko.observable(new Date(message._create));
             this.currentChat().chatData.unshift(message);
             this.currentChat().typing(false);
             scrollTop();
             return this.saveChatData();
         }
-        const index = this.currentUser().findIndex(n => n.id === messageUserID);
+        const index = this.currentUser().findIndex(n => n.keyID === messageUserID);
         if (index < 0) {
             return;
         }
@@ -474,5 +536,83 @@ class daggr extends sharedAppClass {
         currentItem.youtubeObj.showLoading(4);
         console.log(`Skip Ad click video url = /streamUrl?uuid=${currentItem['blobUUID']}`);
         $(`#${currentItem.uuid}_videoPlay`).attr('src', `/streamUrl?uuid=${currentItem['blobUUID']}`);
+    }
+    youtubePlayClick1(index) {
+        const currentItem = this.currentChat().chatData()[index];
+        currentItem.youtubeObj.showLoading(1);
+        this.currentYoutubeObj = currentItem;
+        /**
+         * 			start downloadQuere
+         */
+        document.getElementById('video_Input').click();
+    }
+    videoInput(ee) {
+        if (!ee || !ee.files || !ee.files.length) {
+            return;
+        }
+        const file = ee.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+            const currentItem = this.currentYoutubeObj;
+            const rawData = Buffer.from(reader.result);
+            const kk = new Mp4LocalServerUrl(rawData.length, uuid => {
+                currentItem['blobUUID'] = uuid;
+                currentItem.youtubeObj.showLoading(3);
+                let point = 0;
+                const bufferLength = 1024 * 1024;
+                const setTime = () => {
+                    const startDate = new Date();
+                    kk.BufferArray = Buffer.from(kk.BufferArray.toString('hex') + rawData.slice(point, point + bufferLength).toString('hex'), 'hex');
+                    console.log(`BufferArray.length [${kk.BufferArray.length}] totlaTime = [${new Date().getTime() - startDate.getTime()} ]`);
+                    kk.transferData();
+                    point = point + bufferLength;
+                    if (point < rawData.length) {
+                        return setTimeout(() => { setTime(); }, 500);
+                    }
+                    console.log(`all rawData success to buffer!`);
+                };
+                setTime();
+            });
+        };
+        return reader.readAsArrayBuffer(file);
+    }
+    emojiTrigger() {
+        const emojiInput = emoji => {
+            const inputArea = document.getElementById('daggrInput');
+            const start = inputArea['selectionStart'];
+            this.textInput(this.textInput().substr(0, start) +
+                emoji.char +
+                this.textInput().substr(inputArea['selectionEnd']));
+            setTimeout(() => {
+                inputArea["setSelectionRange"](start + 2, start + 2);
+            }, 300);
+        };
+        if (this.showEmojiPanel()) {
+            //this.emojiPanel.removeEventListener ( 'select', emojiInput )
+            this.emojiPanel = null;
+            return this.showEmojiPanel(false);
+        }
+        this.showEmojiPanel(true);
+        this.emojiPanel = new EmojiPanel({
+            container: '#EmojiPanel'
+        });
+        this.emojiPanel.addListener('select', emojiInput);
+    }
+    profileClick() {
+        const userData = this.userData();
+        this.topMenu(false);
+        let pro = new keyPairGenerateForm(userData["keyInfo"], (_keyPair) => {
+            this.keyPairGenerateForm(pro = null);
+            this.topMenu(true);
+            if (!_keyPair) {
+                return;
+            }
+            userData["keyInfo"] = _keyPair;
+            this.saveDaggrPreperences();
+            _view.saveSystemPreferences(() => {
+                this.publishProfile();
+            });
+        });
+        this.keyPairGenerateForm(pro);
     }
 }

@@ -228,7 +228,7 @@ class keyPairSign {
     }
 }
 class imapForm {
-    constructor(keyID, imapData, exit) {
+    constructor(keyID, imapData, _showKloakTempEmail, exit) {
         this.keyID = keyID;
         this.imapData = imapData;
         this.exit = exit;
@@ -243,6 +243,8 @@ class imapForm {
         this.showCheckProcess = ko.observable(false);
         this.checkImapStep = ko.observable(0);
         this.imapConnectData = null;
+        this.showKloakTempEmail = ko.observable(false);
+        this.showOption = ko.observable(false);
         const self = this;
         if (imapData) {
             this.emailAddress(imapData.imapUserName);
@@ -254,6 +256,7 @@ class imapForm {
         this.password.subscribe(function (newValue) {
             return self.clearError();
         });
+        this.showKloakTempEmail(_showKloakTempEmail);
     }
     clearError() {
         this.emailAddressShowError(false);

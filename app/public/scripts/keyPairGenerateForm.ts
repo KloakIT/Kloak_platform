@@ -93,9 +93,11 @@ class keyPairGenerateForm {
 	public showInsideFireWallEmail = ko.observable ( false )
 	public NickNameError = ko.observable ( false )
 	public passwordError = ko.observable ( false )
-	public SystemAdministratorNickName = ko.observable ('')
+	public SystemAdministratorNiekname = ko.observable ('')
 	public bio = ko.observable ('')
 	public systemSetup_systemPassword = ko.observable ('')
+	public SystemAdministratorPhone = ko.observable ('')
+	
 	public showKeyPairPorcess = ko.observable ( false )
 	public delete_btn_view = ko.observable ( false )
 	public doingProcessBarTime = null
@@ -106,13 +108,23 @@ class keyPairGenerateForm {
 	public showKeyPairForm = ko.observable ( true )
 	public showKeyInfomation = ko.observable ( false )
 	public avatarImage = ko.observable ('')
-	public SystemAdministratorNickNameEdit = ko.observable ( false )
+	public SystemAdministratorNieknameEdit = ko.observable ( false )
 	public SystemAdministratorEmailAddressEdit = ko.observable ( false )
 	public bioEdit = ko.observable ( false )
-
+	public DaggrUser = ko.observable ( null )
+	public SystemAdministratorPhoneEdit = ko.observable ( false )
+	public PhoneNumberFcous = ko.observable ( false )
+	public SystemAdministratorNieknameFcous = ko.observable ( false )
+	public SystemAdministratorEmailAddressFcous = ko.observable ( false )
+	public bioEditFcous = ko.observable ( false )
+	public publicKey = null
 
 	public boiPlaceholder = [
-		'自我介绍','自己紹介','Bio','自我介紹'
+		'自我介绍（选项，可不填）','自己紹介（非必須）','Bio ( Option )','自我介紹（選項，可不填）'
+	]
+
+	public userID = [
+		'用户ID: ', 'ユーザーID: ','User ID: ', '用戶ID: '
 	]
 	
 	private checkEmailAddress ( email: string ) {
@@ -138,8 +150,8 @@ class keyPairGenerateForm {
 		}
 
 		
-		if ( ! this.SystemAdministratorNickName ().length ){
-			this.SystemAdministratorNickName ( getNickName ( email ))
+		if ( ! this.SystemAdministratorNiekname ().length ){
+			this.SystemAdministratorNiekname ( getNickName ( email ))
 		}
 
 		if ( insideChinaEmail.test ( email )) {
@@ -150,7 +162,7 @@ class keyPairGenerateForm {
 	}
 
 	private checkPassword ( password: string ) {
-		this.passwordError(false)
+		this.passwordError( false )
 		if ( !password || password.length < 5 ) {
 			this.passwordError ( true )
 			initPopupArea ()
@@ -166,8 +178,9 @@ class keyPairGenerateForm {
 		})
 	}
 
-	constructor ( private exit: ( keyPair ) => void ) {
+	constructor ( public _daggrUser: keypair | null, private exit: ( keyPair ) => void ) {
 		const self = this
+		this.DaggrUser ( _daggrUser )
 		this.SystemAdministratorEmailAddress.subscribe ( function ( newValue ) {
 			return self.checkEmailAddress ( newValue )
 		})
@@ -176,6 +189,15 @@ class keyPairGenerateForm {
 			return self.checkPassword ( newValue )
 		})
 		*/
+
+		if ( _daggrUser ) {
+			this.publicKey = _daggrUser.publicKeyID
+			this.SystemAdministratorEmailAddress ( _daggrUser.email)
+			this.avatarImage ( _daggrUser.image )
+			this.SystemAdministratorPhone ( _daggrUser.phoneNumber )
+			this.SystemAdministratorNiekname ( _daggrUser.nickname )
+			this.bio( _daggrUser.bio )
+		}
 	}
 
 	
@@ -184,37 +206,31 @@ class keyPairGenerateForm {
 		this.checkEmailAddress ( this.SystemAdministratorEmailAddress ())
 		
 		this.checkPassword ( this.systemSetup_systemPassword ())
-		if ( this.passwordError() || this.EmailAddressError() || this.NickNameError()) {
+		if ( this.EmailAddressError() || !this._daggrUser && ( this.passwordError() || this.NickNameError())) {
 			return false
 		}
 		this.showKeyPairPorcess ( true )
 		this.showKeyPairForm ( false )
 		const email = this.SystemAdministratorEmailAddress ()
-		const array = {
-			nickName: this.SystemAdministratorNickName (),
-			bio: this.bio()
-		}
+		
 		const sendData: INewKeyPair = {
 			password: this.systemSetup_systemPassword (),
-			nikeName: this.SystemAdministratorNickName (),
+			nikeName: this.SystemAdministratorNiekname (),
 			email: this.SystemAdministratorEmailAddress()
 		}
-		let percent = 1
-		$('.keyPairProcessBar').progress ('reset')
-		const timeSet = 10000
+
 		
-		const doingProcessBar = function () {
-			clearTimeout ( self.doingProcessBarTime )
-			self.doingProcessBarTime = setTimeout ( function () {
-				$('.keyPairProcessBar').progress ({
-					percent: percent++
-				})
-				if ( percent < 100 )
-					return doingProcessBar ()
-			}, timeSet )
+
+		if ( this.publicKey ) {
+			this._daggrUser.email = this.SystemAdministratorEmailAddress()
+			this._daggrUser.image = this.avatarImage()
+			this._daggrUser.phoneNumber = this.SystemAdministratorPhone()
+			this._daggrUser.nickname = this.SystemAdministratorNiekname ()
+			this._daggrUser.bio = this.bio()
+			return self.exit ( this._daggrUser )
 		}
 
-		_view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
+		return _view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
 			self.stopDoingProcessBar ()
 			self.keyPairGenerateFormMessage ( true )
 			if ( err ) {
@@ -222,56 +238,78 @@ class keyPairGenerateForm {
 			}
 			self.message_keyPairGenerateSuccess ( true )
 			
-			
-			console.dir ( data )
+			if ( this.DaggrUser ) {
+				return _view.sharedMainWorker.getKeyInfo_Daggr ( data, ( err, _data: keypair ) => {
+				
+					_data.publicKeyID = _data.publicKeyID.substr ( 24 )
+					_data.email = this.SystemAdministratorEmailAddress()
+					_data.image = this.avatarImage()
+					_data.phoneNumber = this.SystemAdministratorPhone()
+					_data.nickname = this.SystemAdministratorNiekname ()
+					_data.bio = this.bio()
+					return self.exit ( _data )
+				})
+			}
 			return _view.sharedMainWorker.getKeyPairInfo ( data, ( err, _data ) => {
 				
 				_data.publicKeyID = _data.publicKeyID.substr ( 24 )
-
-				const daggr: daggr_preperences = {
-					keyInfo: {
-						nikeName: this.SystemAdministratorNickName (),
-						bio: this.bio(),
-						image: this.avatarImage(),
-						email: this.SystemAdministratorEmailAddress(),
-						keyID: _data.publicKeyID
-					},
-					contacts: []
-				}
-				_data.email = this.SystemAdministratorEmailAddress()
-
-				_data ['daggr'] = daggr
 				return self.exit ( _data )
 			})
 			
 			
 		})
-		return doingProcessBar ()
+		
 	}
 
-	public SystemAdministratorNickNameEditClick () {
-		this.SystemAdministratorNickNameEdit ( true )
+	public SystemAdministratorNieknameEditClick () {
+		this.SystemAdministratorNieknameEdit ( true )
 		this.SystemAdministratorEmailAddressEdit ( false )
 		this.bioEdit ( false )
+		this.SystemAdministratorPhoneEdit ( false )
+		this.SystemAdministratorNieknameFcous ( true )
+		this.PhoneNumberFcous ( false )
+		this.SystemAdministratorEmailAddressFcous ( false )
+		this.bioEditFcous ( false )
 	}
 
 	public SystemAdministratorEmailAddressEditClick () {
 		this.SystemAdministratorEmailAddressEdit ( true )
-		this.SystemAdministratorNickNameEdit ( false )
+		this.SystemAdministratorNieknameEdit ( false )
 		this.bioEdit ( false )
+		this.SystemAdministratorPhoneEdit ( false )
+		this.SystemAdministratorNieknameFcous ( false )
+		this.PhoneNumberFcous ( false )
+		this.SystemAdministratorEmailAddressFcous ( true )
+		this.bioEditFcous ( false )
+	}
+
+	public SystemAdministratorPhoneEditClick () {
+		this.SystemAdministratorPhoneEdit ( true )
+		this.SystemAdministratorEmailAddressEdit ( false )
+		this.SystemAdministratorNieknameEdit ( false )
+		this.bioEdit ( false )
+		this.PhoneNumberFcous ( true )
+		this.SystemAdministratorNieknameFcous ( false )
+		this.SystemAdministratorEmailAddressFcous ( false )
+		this.bioEditFcous ( false )
 	}
 
 	public bioEditClick () {
 		this.bioEdit ( true )
 		this.SystemAdministratorEmailAddressEdit ( false )
-		this.SystemAdministratorNickNameEdit ( false )
+		this.SystemAdministratorNieknameEdit ( false )
+		this.SystemAdministratorPhoneEdit ( false )
+		this.PhoneNumberFcous ( false )
+		this.SystemAdministratorNieknameFcous ( false )
+		this.SystemAdministratorEmailAddressFcous ( false )
+		this.bioEditFcous ( true )
 		
 	}
 
 	public endEdit () {
 		this.bioEdit ( false )
 		this.SystemAdministratorEmailAddressEdit ( false )
-		this.SystemAdministratorNickNameEdit ( false )
+		this.SystemAdministratorNieknameEdit ( false )
 	}
 
 	public inputClick () {
@@ -314,5 +352,9 @@ class keyPairGenerateForm {
 		this.message_keyPairGenerateSuccess ( false )
 		this.keyPairGenerateFormMessage ( false )
 		return this.showKeyPairForm ( true )
+	}
+
+	public cancel () {
+		this.exit ( null )
 	}
 }

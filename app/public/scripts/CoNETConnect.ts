@@ -60,8 +60,7 @@ class CoNETConnect {
 	public listingConnectStage ( err, stage, publicKeyMessage ) {
 		const self = this
 		this.showConnectCoNETProcess ( true )
-		
-
+	
 		switch ( stage ) {
 
 			case 1: {
@@ -176,51 +175,35 @@ class CoNETConnect {
 		this.showTryAgain ( false )
 		this.showSendConnectMail ( false )
 		const self = this
-		return _view.storageHelper.decryptLoad ( _view.localServerConfig ()['daggerUUID'], ( err, data ) => {
-			let userData: daggr_preperences = null
-			try {
-				userData = JSON.parse ( Buffer.from ( data ).toString () )
-			} catch ( ex ) {
-				console.log (`_view.storageHelper.decryptLoad ['daggerUUID']  JSON.parse(data) error`, Buffer.from ( data ).toString () )
-			}
-
-			const qtgateCommand: QTGateCommand = {
-				account: _view.imapData().account,
-				QTGateVersion: CoNET_version,
-				imapData: _view.imapData(),
-				command: 'connect',
-				error: null,
-				callback: null,
-				language: _view.imapData().language,
-				publicKey: this.view.keyPair().publicKey,
-				image: userData?.keyInfo?.image,
-				nickName: userData?.keyInfo?.nikeName,
-				bio: userData?.keyInfo?.bio,
-				email: userData?.keyInfo?.email
-				
-			}
-	
-			return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
-				if ( err ) {
-					return self.listingConnectStage ( null, -1, "" )
-				}
-				const localCommand = {
-					message: data, 
-					imapData: _view.imapData(),
-					toMail: self.nodeEmail,
-					subject: 'nodeTest'
-				}
-				
-				return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
-					
-				})
-			})
-
-			
-
-		})
 		
 
+		const qtgateCommand: QTGateCommand = {
+			account: _view.imapData().account,
+			QTGateVersion: CoNET_version,
+			imapData: _view.imapData(),
+			command: 'connect',
+			error: null,
+			callback: null,
+			language: _view.imapData().language,
+			publicKey: this.view.keyPair().publicKey
+			
+		}
+
+		return this.view.sharedMainWorker.encrypto_withNodeKey ( JSON.stringify ( qtgateCommand ), ( err, data ) => {
+			if ( err ) {
+				return self.listingConnectStage ( null, -1, "" )
+			}
+			const localCommand = {
+				message: data, 
+				imapData: _view.imapData(),
+				toMail: self.nodeEmail,
+				subject: 'nodeTest'
+			}
+			
+			return _view.connectInformationMessage.emitLocalCommand ( 'sendRequestMail', localCommand, err => {
+				
+			})
+		})
 		
 	}
 
@@ -269,7 +252,8 @@ class CoNETConnect {
 		if ( !this.imapData.confirmRisk ) {
 			this.imapData.confirmRisk = true
 			
-			return _view.sharedMainWorker.saveImapIInputData ( this.imapData, err => {
+			return _view.saveSystemPreferences (() => {
+				this.sendConnectMail ()
 				connect ()
 			})
 			

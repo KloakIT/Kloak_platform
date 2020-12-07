@@ -115,6 +115,7 @@ class connectInformationMessage {
         this.messageArray = ko.observable(null);
         this.socketIoOnline = false;
         this.socketIo = null;
+        this.connectedCoNET = false;
         this.localServerPublicKey = "";
         this.requestPool = new Map();
         this.first = true;
@@ -149,21 +150,22 @@ class connectInformationMessage {
             div.transition('fly down');
         });
         this.first = false;
+        this.socketListening();
     }
-    socketListening(url) {
+    socketListening() {
         const self = this;
-        const roomUrl = `${url}/${this.keyID}`;
+        const roomUrl = `${_view.LocalServerUrl}/${this.keyID}`;
         if (this.socketIo) {
-            if (_view.connectedCoNET()) {
+            if (this.connectedCoNET) {
                 this.socketIo.close();
                 this.socketIo.removeAllListeners();
                 this.socketIo = null;
                 _view.networkConnect(false);
-                _view.connectedCoNET(false);
+                this.connectedCoNET = false;
                 return _view.localServerConnected(false);
             }
-            if (_view.CoNETConnect() && typeof _view.CoNETConnect().sendConnectMail === 'function') {
-                _view.CoNETConnect().sendConnectMail();
+            if (typeof _view.CoNETConnectClass?.sendConnectMail === 'function') {
+                _view.CoNETConnectClass.sendConnectMail();
                 return _view.connectToNode();
             }
             return console.dir(`socketListening this.socketIo already have error!`);

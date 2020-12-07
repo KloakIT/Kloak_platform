@@ -66,6 +66,15 @@ class sharedWorkerManager {
 		return this.emitCommand ( cmd, CallBack )
 	}
 
+	public getKeyInfo_Daggr ( keypair, CallBack ) {
+		const cmd: sharedWorkerCommand = {
+			command: 'getKeyInfo_Daggr',
+			args: keypair
+		}
+
+		return this.emitCommand ( cmd, CallBack )
+	}
+
 	public getKeyPairInfo ( keypair, CallBack ) {
 		const cmd: sharedWorkerCommand = {
 			command: 'getKeyInfo',
@@ -148,14 +157,6 @@ class sharedWorkerManager {
 		return this.emitCommand ( cmd, CallBack )
 	}
 
-	public saveImapIInputData ( imap: IinputData, CallBack ) {
-		const cmd: sharedWorkerCommand = {
-			command: 'saveImapIInputData',
-			args: imap
-		}
-		return this.emitCommand ( cmd, CallBack )
-	}
-
 	public getHistoryTable ( CallBack ) {
 		const cmd: sharedWorkerCommand = {
 			command: 'getHistoryTable'
@@ -201,6 +202,8 @@ class sharedWorkerManager {
 		}
 		return new Worker ( this.sharedPath )
 	}
+
+	
 
 	private saveFileBlock ( uuid: string, buffer: string, CallBack ) {
 		const cmd: sharedWorkerCommand = {

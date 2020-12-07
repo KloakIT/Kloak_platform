@@ -280,6 +280,8 @@ class imapForm {
 	public showCheckProcess = ko.observable ( false )
 	public checkImapStep = ko.observable (0)
 	public imapConnectData = null
+	public showKloakTempEmail = ko.observable ( false )
+	public showOption = ko.observable ( false )
 	
 	private clearError () {
 		this.emailAddressShowError ( false )
@@ -423,7 +425,7 @@ class imapForm {
 		
 	}
 
-	constructor ( private keyID: string, private imapData: IinputData, private exit: ( IinputData: IinputData ) => void ) {
+	constructor ( private keyID: string, private imapData: IinputData, _showKloakTempEmail: boolean, private exit: ( IinputData: IinputData ) => void ) {
 		const self = this
 		if ( imapData ) {
 			this.emailAddress ( imapData.imapUserName )
@@ -437,6 +439,8 @@ class imapForm {
 		this.password.subscribe ( function ( newValue ) {
 			return self.clearError ()
 		})
+
+		this.showKloakTempEmail ( _showKloakTempEmail )
 	}
 
 	public imapAccountGoCheckClick () {

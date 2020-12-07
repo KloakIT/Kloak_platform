@@ -38,7 +38,7 @@ block jumbotron1
 				
 				.textBox( style = "height: 3rem; margin-top: 1rem;")
 					
-					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2, css: { shadowText1: titleAnimationStep () === 1, shadowText2: titleAnimationStep () === 0 }" style = "padding-right:1em;padding-left:1em;" )
+					H1.shadowText2( data-bind = " animationTextIn: infoDefine [ languageIndex() ].cover.firstTitle2" style = "padding-right:1em;padding-left:1em;" )
 		<!-- /ko -->
 
 		<!-- ko if: showStartupVideo -->
@@ -58,21 +58,21 @@ block jumbotron1
 				.searchItems( style = "padding-bottom: 10rem;" )
 								
 					.content( style = "padding: 0.5rem; " )
-						<!-- ko if: showLocalServerDisconnect() -->
+						<!-- ko if: showLocalServerDisconnect -->
 							.ui.buttons
 								button.ui.button.kloak_background_lightGrey( data-bind = "click: () => { showLocalServerDisconnect ( false );}, text: infoDefine [ languageIndex() ].home_index_view.cancel ")
 								.or
 								button.ui.positive.button.kloak_background_DarkBlue( data-bind = "click: connectLocalServer, text: infoDefine [ languageIndex() ].airplaneMode" )
 						<!-- /ko -->
-						<!-- ko if: !showLocalServerDisconnect() -->
-							<!-- ko if: localServerConnected() -->
+						<!-- ko ifnot: showLocalServerDisconnect -->
+							<!-- ko if: localServerConnected -->
 								a.ui.labeled.button( style = "margin: 1rem; margin-left: 0;" tabindex="0" )
 									.ui.vk.button( data-bind = "click: () => { showLocalServerDisconnect ( true )}" )
 										i.icon.home
 										<!-- ko text: LocalServerUrl --><!-- /ko -->
 
 									<!-- ko if: imapData -->
-										.ui.label.basic.left.pointing( data-bind = " click: connectLocalServer, css: { 'kloak_color_DarkBlue': networkConnect() !== 1, 'red': networkConnect() === 1 }")
+										.ui.label.basic.left.pointing( data-bind = "click: () => { networkConnect() === 1 ? CoNETConnectClass.sendConnectMail() : null }, css: { 'kloak_color_DarkBlue': networkConnect() !== 1, 'red': networkConnect() === 1 }")
 											<!-- ko text: imapData().imapUserName --><!-- /ko -->
 											
 											<!-- ko if: !networkConnect() -->
@@ -94,7 +94,7 @@ block jumbotron1
 									<!-- /ko -->
 								
 							<!-- /ko -->
-							<!-- ko if: !localServerConnected() -->
+							<!-- ko ifnot: localServerConnected -->
 								button.circular.ui.icon.button.kloak_background_BrightBlue.kloak_color_lightGrey( data-bind = " click: connectLocalServer" )
 									i.icon.plane
 							<!-- /ko -->
@@ -144,20 +144,22 @@ block jumbotron1
 					<!-- ko with: keyPairPassword -->
 					
 						form.ui.form( data-bind=" submit: keyPair_checkPemPasswordClick" )
+						
 							<!-- ko if: !showConform () -->
 							.field( data-bind = " css: { error: showPasswordErrorMessage(), disabled: passwordChecking()}")
 								//-p( data-bind = " text: infoDefine [ $root.languageIndex() ].Home_keyPairInfo_view.locked")
 								.ui.left.icon.input.big( data-bind=" css: { action: systemSetup_systemPassword().length > 4 && ! passwordChecking()}" )
-									<!-- ko if: systemSetup_systemPassword().length < 5 -->
-									i.icon.close.link.circular( data-bind = "click: reFresh" style = " color: #4285f4!important; " )
-									<!-- /ko -->
+									
 									input.backgroundTransparent( data-bind = "attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.locked, 'data-content': showPasswordErrorMessage () ? infoDefine[ $root.languageIndex() ].error_message.SystemPasswordError : null }, css: { 'activating element inline': showPasswordErrorMessage() }, textInput: systemSetup_systemPassword, hasFocus: inputFocus", type="password" value="" tabindex = "0" data-variation="very wide")
+									
 									<!-- ko if: systemSetup_systemPassword().length < 5 -->
-									i.icon.trash.alternate.link.circular.red( data-bind = "click: function () { showConform ( true )}" style = "left: auto; right: 1rem;")
+										i.icon.trash.alternate.link.circular.red( data-bind = "click: function () { showConform ( true )}" style = "left: auto; right: 1rem;")
 									<!-- /ko -->
+									
 									button.ui.icon.button.positive( data-bind = "visible: systemSetup_systemPassword().length > 4 && ! passwordChecking ()" type="submit" )
 										i.icon.angle.right
 							<!-- /ko -->
+
 							<!-- ko if: showConform -->
 							.field( style = "padding: 1rem;")
 								p( data-bind = " text : infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.deleteKeyPairInfo " style="color: brown;")
@@ -176,97 +178,9 @@ block jumbotron1
 				//- if: keyPair
 				
 				<!-- ko if: keyPairGenerateForm -->
-				<!-- ko with: keyPairGenerateForm -->
-				.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
-					.keyPairGenerateForm
-						
-						form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
-							.hideInput( style="position: absolute;")
-								input#imageInput1( onchange = "_view.keyPairGenerateForm().imageInput ( this )" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0;width: 0px;height: 0px;" )
-							.field
-								H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
-							.field.required( data-bind = " css: { error: passwordError ()}")
-								.ui.input.focus.left.icon.big
-									i.icon.privacy
-									input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
-							.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
-							.field
-								.ui.card( data-bind = " click: endEdit " style = "width: 100%;")
-									.content
-										.center.aligned.header
-											
-											<!-- ko ifnot: SystemAdministratorNickNameEdit -->
-												span( data-bind = "click:  SystemAdministratorNickNameEditClick, clickBubble: false, text: SystemAdministratorNickName() ? SystemAdministratorNickName() : infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName ")
-											<!-- /ko -->
-											<!-- ko if: SystemAdministratorNickNameEdit -->
-												.ui.input.focus.left.icon( data-bind = "click: inputClick, clickBubble: false")
-													i.icon.student
-													input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
-											<!-- /ko -->
-										.center.aligned.description
-											<!-- ko ifnot: SystemAdministratorEmailAddressEdit -->
-												<!-- ko if: EmailAddressError -->
-													span
-														i.icon.red.exclamation.triangle
-												<!-- /ko -->
-												span( data-bind = "click: SystemAdministratorEmailAddressEditClick, clickBubble: false, text: SystemAdministratorEmailAddress() ? SystemAdministratorEmailAddress() : infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, css: { 'red': EmailAddressError()} ")
-											<!-- /ko -->
-											<!-- ko if: SystemAdministratorEmailAddressEdit -->
-												.ui.input.focus.left.icon
-													i.icon.spy
-													input( type = "email", z-index = "2", data-bind = "click: inputClick, clickBubble: false, value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
-											<!-- /ko -->
-										.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false ")
-											<!-- ko ifnot: bioEdit -->
-												textarea( data-bind = "  value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; overflow: hidden; color: grey; border: none;text-align-last: center;" )
-											<!-- /ko -->
-											<!-- ko if: bioEdit -->
-												textarea( data-bind = " click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" style = " width: 100%; resize: none; padding: 0.5rem; overflow: hidden; color: grey;text-align-last: center;" )
-											<!-- /ko -->
-									.extra.content
-										.center.aligned.author
-											
-											<!-- ko if: avatarImage -->
-												img.ui.circular.tiny.image( data-bind = " attr: { src: avatarImage()}, click: function (){ document.getElementById('imageInput1').click() } ")
-												
-											<!-- /ko -->
-											<!-- ko ifnot: avatarImage -->
-												button.circular.ui.icon.button( data-bind = "click: function (){ document.getElementById('imageInput1').click() }, clickBubble: false ")
-													i.icon.user.plus
-											<!-- /ko -->
-							
-							//-.template
-								.field( data-bind = "css: { error: EmailAddressError() }" )
-									.ui.input.focus.left.icon.big
-										i.icon.spy
-										input( type = "email", z-index = "2", data-bind = "value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" )
-									.ui.info.message( data-bind = " visible: showInsideFireWallEmail()" )
-										i.icon.close( data-bind=" click: function () { showInsideFireWallEmail(false);}")
-										span.errorInformationText( data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.accountEmailInfo ")
-								
-								.field( data-bind = " css: { error: NickNameError ()}")
-									.ui.input.focus.left.icon.big
-										i.icon.student
-										input( type = "text", z-index = "3", data-bind = " value : SystemAdministratorNickName, attr: { 'data-content' : NickNameError() ? infoDefine[ $root.languageIndex() ].error_message.required : null , placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }, css: { 'activating element inline': NickNameError() }" )
-								.field( data-bind = "" )
-									textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "3" )
-							
-							button.ui.green.basic.large.button( type = "submit" data-bind = " text: infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
-				.card.centered.raised( data-bind = "if: showKeyPairPorcess, visible: showKeyPairPorcess" style = "width: 100%;padding: 2em;")
-					.detail
-						p( data-bind = " html: infoDefine [ $root.languageIndex() ].home_index_view.GenerateKeypair ")
-						.keyPairProcessBar.ui.bottom.teal.attached.progress( style="margin-bottom: 1em;" data-value="1" data-total="100")
-							.bar
-				.card.centered.raised( data-bind = "if: keyPairGenerateFormMessage, visible: keyPairGenerateFormMessage " style = "width: 100%;padding: 2em;")
-					.detail
-						p( data-bind="visible: message_cancel(), text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairCancel ")
-						p( data-bind="visible: message_keyPairGenerateError, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateError ")
-						p( data-bind = "visible: message_keyPairGenerateSuccess, text: infoDefine [ $root.languageIndex() ].home_index_view.keyPairGenerateSuccess ")
-						button.ui.negative.basic.button( data-bind= " click: CloseKeyPairGenerateFormMessage, text: infoDefine [ $root.languageIndex() ].error_message.Success")
+					include ../Shared/keypairGenerateForm.pug
 				<!-- /ko -->
-				//-	if: keyPairGenerateForm
-				<!-- /ko -->
-				//- with: keyPairGenerateForm
+				
 
 	<!-- /ko -->
 
@@ -291,47 +205,7 @@ block jumbotron1
 	<!-- /ko -->
 
 	<!-- ko if: imapSetup -->
-		<!-- ko with: imapSetup -->
-			.ui.cards.loginCards( style = "margin-top: -10rem!important;" )
-				.card.centered.raised( style = " width: 100%;" )
-					<!-- ko if: showForm -->
-						
-						.content.imapSetupForm
-							<!-- ko if: checkImapError () > -1 -->
-								.ui.top.attached.segment.warning.message( style = "font-size: large;")
-									i.icon.exclamation.triangle.red
-									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckError[ checkImapError() ] --><!-- /ko -->
-							<!-- /ko -->
-							.ui.segment.attached( data-bind = "css: { 'teal': checkImapError () < 0 }")
-								
-								p.kloak_color_PrimaryTeal( style = "font-size: large;" )
-									<!-- ko text: infoDefine [ $root.languageIndex() ].imapInformation.infomation --><!-- /ko -->
-									a.ui.label.teal.link.big( data-bind = " click: useCoNetTempAccount, text: infoDefine [ $root.languageIndex() ].imapInformation.coNetTempAccount ")
-									
-							form.ui.form.fluid( data-bind = "submit: imapAccountGoCheckClick " style = "padding-top: 1rem;" )
-								.two.fields
-									.field( data-bind = " css: { error: emailAddressShowError ()}")
-										.ui.left.icon.input.huge
-											i.icon.outline.mail
-											input( data-bind = " hasFocus: true, value : emailAddress, css:{ 'activating element inline': emailAddressShowError() }, attr: { tabindex: 1, placeholder: infoDefine [ $root.languageIndex() ].home_index_view.imapEmailAddress, 'data-content' : emailAddressShowError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[ EmailAddressErrorType() ]: null }" type = "text" z-index = "1" )
-									.field
-										.passwdInput.ui.input.huge( data-bind = " css: { 'left icon': !password() || !password().length, 'action': password() && password().length }")
-											i.icon.privacy( data-bind = " visible: !password() || !password().length ")
-											input( data-bind = " textInput: password, attr: { placeholder: infoDefine [ $root.languageIndex() ].imapInformation.emailServerPassword, tabindex: 2 }" type = "password"  z-index = "2" )
-											button.ui.icon.button.positive( data-bind = " visible: password() && password().length, click: imapAccountGoCheckClick" type = "submit" )
-												i.icon.angle.right
-					<!-- /ko -->
-					<!-- ko if: showCheckProcess -->
-						.content.loader
-							p.kloak_color_PrimaryTeal( data-bind = "text: infoDefine [ $root.languageIndex() ].imapInformation.imapCheckingStep[0] ")
-							.loaderCoNET
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
-								.loaderCoNET-div
-
-					<!-- /ko -->
-		<!-- /ko -->
+		include ../Shared/imapSetupForm.pug
 	<!-- /ko -->
 
 	//-		AppList 

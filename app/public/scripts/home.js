@@ -108,9 +108,7 @@ const makeKeyPairData = (view, keypair) => {
     keypair.deleteKeyPairNext = () => {
         localStorage.setItem('config', JSON.stringify({}));
         view.localServerConfig(null);
-        view.connectedCoNET(false);
-        view.connectToCoNET(false);
-        view.CoNETConnect(view.CoNETConnectClass = null);
+        view.CoNETConnectClass = null;
         view.imapSetup(view.imapFormClass = null);
         keypair.showDeleteKeyPairNoite(false);
         keypair.delete_btn_view(false);
@@ -123,71 +121,27 @@ var view_layout;
     class view {
         constructor() {
             //--   define
+            // -   method
             this.connectInformationMessage = null;
-            this.sectionLogin = ko.observable(false);
-            this.sectionAgreement = ko.observable(false);
-            this.sectionWelcome = ko.observable(true);
-            this.isFreeUser = ko.observable(true);
-            this.QTTransferData = ko.observable(false);
-            this.LocalLanguage = 'up';
-            this.menu = Menu;
-            this.modalContent = ko.observable('');
             this.keyPairGenerateForm = ko.observable();
-            this.tLang = ko.observable(initLanguageCookie());
-            this.languageIndex = ko.observable(lang[this.tLang()]);
             this.localServerConfig = ko.observable();
-            this.keyPair = ko.observable(InitKeyPair());
-            this.hacked = ko.observable(false);
-            this.imapSetup = ko.observable();
-            this.connectToCoNET = ko.observable(false);
-            this.connectedCoNET = ko.observable(false);
-            this.showKeyPair = ko.observable(false);
+            this.imapSetup = ko.observable(null);
             this.CoNETConnectClass = null;
             this.imapFormClass = null;
-            this.CoNETConnect = ko.observable(null);
-            this.historyData = ko.observableArray();
-            this.bodyBlue = ko.observable(true);
-            this.CanadaBackground = ko.observable(false);
-            this.password = null;
-            this.KloakTL = gsap.timeline();
-            this.secondTitle = ko.observable(false);
-            this.titleAnimationStep = ko.observable(0);
             this.sharedMainWorker = new sharedWorkerManager('/scripts/netSocket.js');
-            this.welcomeTitle = ko.observable(true);
-            this.showMainPage = ko.observable(false);
-            this.showStartupVideo = ko.observable(true);
-            this.daggrHtml = ko.observable(false);
-            this.showFileStorage = ko.observable(false);
-            this.showGeneralSpalding = ko.observable(false);
-            this.showCanada = ko.observable(false);
-            this.muteHtml = ko.observable(false);
-            this.forTwitterHtml = ko.observable(false);
-            this.forYoutubeHtml = ko.observable(false);
             this.storageHelper = new StorageHelper();
-            this.localServerConnected = ko.observable(false);
-            this.showLocalServerDisconnect = ko.observable(false);
-            this.displayMedia = ko.observable(null);
             this.videoPlayer = ko.observable(null);
             this.mediaViewer = null;
-            this.dagge = null;
-            /*
-            public worker = new workerManager ([
-                'mHtml2Html'
-            ])
-            */
             this.appsManager = ko.observable(null);
-            this.AppList = ko.observable(false);
-            this.LocalServerUrl = window.location.href
-                .split(/https?\:\/\//i)[1]
-                .split(/\//)[0];
-            this.imapData = ko.observable(null);
-            this.newVersion = ko.observable(null);
+            //-
+            this.LocalServerUrl = window.location.href.split(/https?\:\/\//i)[1].split(/\//)[0];
+            this.password = null;
+            this.systemPreferences = null;
+            //- for View 
+            //- language select
+            this.tLang = ko.observable(initLanguageCookie());
+            this.languageIndex = ko.observable(lang[this.tLang()]);
             this.showLanguageSelect = ko.observable(true);
-            this.demoTimeout = null;
-            /**
-             * 	showSnapshop
-             */
-            this.showSnapshop = ko.observable(null);
             this.networkSetupHeader = [
                 '网络通讯线路设定',
                 'ネットワーク通信設定',
@@ -212,12 +166,42 @@ var view_layout;
                 'Disconnect',
                 '解除連結',
             ];
+            //- main
+            this.sectionLogin = ko.observable(false);
+            this.sectionAgreement = ko.observable(false);
+            this.sectionWelcome = ko.observable(true);
+            this.menu = Menu;
+            this.keyPair = ko.observable(InitKeyPair());
+            this.showKeyPair = ko.observable(false);
+            this.bodyBlue = ko.observable(true);
+            this.CanadaBackground = ko.observable(false);
+            this.welcomeTitle = ko.observable(true);
+            this.showMainPage = ko.observable(false);
+            this.showStartupVideo = ko.observable(true);
+            this.localServerConnected = ko.observable(false);
+            this.showLocalServerDisconnect = ko.observable(false);
+            this.displayMedia = ko.observable(null);
             this.networkConnect = ko.observable(false);
+            this.showSnapshop = ko.observable(null);
             this.mainManuItems = ko.observableArray(mainMenuArray);
             this.tempAppHtml = ko.observable(false);
             this.appScript = ko.observable();
             this.middleX = ko.observable(window.innerWidth / 2);
             this.middleY = ko.observable(window.innerHeight / 2);
+            this.imapData = ko.observable(null);
+            this.AppList = ko.observable(false);
+            this.daggrHtml = ko.observable(false);
+            this.showFileStorage = ko.observable(false);
+            this.showGeneralSpalding = ko.observable(false);
+            this.showCanada = ko.observable(false);
+            this.muteHtml = ko.observable(false);
+            this.forTwitterHtml = ko.observable(false);
+            this.forYoutubeHtml = ko.observable(false);
+            //-animation
+            this.KloakTL = gsap.timeline();
+            this.demoTimeout = null;
+            this.demoMainElm = null;
+            this.newVersion = ko.observable();
             this.getConfigFromLocalStorage();
             this.CanadaBackground.subscribe((val) => {
                 if (val) {
@@ -231,6 +215,11 @@ var view_layout;
             this.InitKloakLogoTimeLine();
             this.initWelcomeView();
         }
+        /*
+        public worker = new workerManager ([
+            'mHtml2Html'
+        ])
+        */
         //-
         afterInitConfig() {
             this.keyPair(this.localServerConfig().keypair);
@@ -296,10 +285,6 @@ var view_layout;
         }
         initConfig(config) {
             const self = this;
-            if (!config?.daggerUUID) {
-                config['daggerUUID'] = uuid_generate();
-                localStorage.setItem('config', JSON.stringify(config));
-            }
             if (config?.keypair?.publicKeyID) {
                 /**
                  *
@@ -321,7 +306,7 @@ var view_layout;
              */
             this.svgDemo_showLanguage();
             config['account'] = config['keypair'] = null;
-            let _keyPairGenerateForm = new keyPairGenerateForm((_keyPair) => {
+            let _keyPairGenerateForm = new keyPairGenerateForm(null, (_keyPair) => {
                 self.keyPairGenerateForm((_keyPairGenerateForm = null));
                 /**
                  *      key pair ready
@@ -329,13 +314,10 @@ var view_layout;
                 self.password = _keyPair._password;
                 _keyPair._password = null;
                 config.account = _keyPair.publicKeyID;
-                this.dagge = JSON.parse(JSON.stringify(_keyPair['daggr']));
-                _keyPair['daggr'] = null;
                 config.keypair = _keyPair;
                 localStorage.setItem('config', JSON.stringify(config));
                 _keyPair.passwordOK = true;
                 _keyPair._password = self.password;
-                //self.localServerConfig ( config )
                 self.keyPair(_keyPair);
                 self.showMain();
             });
@@ -387,7 +369,7 @@ var view_layout;
                     ele.text(eval(data));
                 }
             });
-            $('.languageText').shape(`flip ${this.LocalLanguage}`);
+            $('.languageText').shape(`flip up`);
             $('.KnockoutAnimation').transition('jiggle');
             this.animationTitle();
             initPopupArea();
@@ -433,43 +415,52 @@ var view_layout;
         agreeClick() {
             this.connectInformationMessage.sockEmit('agreeClick');
             this.sectionAgreement(false);
-            this.localServerConfig().firstRun = false;
             return this.openClick();
         }
-        refresh() {
-            if (typeof require === 'undefined') {
-                this.modalContent(infoDefine[this.languageIndex()].emailConform.formatError[11]);
-                return this.hacked(true);
-            }
-            const { remote } = require('electron');
-            if (remote && remote.app && typeof remote.app.quit === 'function') {
-                return remote.app.quit();
-            }
+        saveSystemPreferences(CallBack) {
+            return this.storageHelper.encryptSave(this.localServerConfig().account, JSON.stringify(this.systemPreferences), err => {
+                if (err) {
+                    this.connectInformationMessage.showErrorMessage(err);
+                }
+                return CallBack();
+            });
+        }
+        getSystemPreferences(CallBack) {
+            return this.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
+                if (err) {
+                    return this.connectInformationMessage.showErrorMessage(err);
+                }
+                try {
+                    this.systemPreferences = JSON.parse(Buffer.from(data).toString());
+                }
+                catch (ex) {
+                    return this.connectInformationMessage.showErrorMessage(err);
+                }
+                this.systemPreferences = this.systemPreferences || {};
+                return CallBack();
+            });
         }
         showImapSetup() {
-            const self = this;
             this.hideMainPage();
             this.sectionLogin(true);
-            return this.imapSetup(this.imapFormClass = new imapForm(this.keyPair().publicKeyID, this.imapData(), (imapData) => {
-                self.imapSetup(self.imapFormClass = null);
-                self.sectionLogin(false);
-                self.imapData(imapData);
-                return self.sharedMainWorker.saveImapIInputData(imapData, (err, data) => {
-                    return self.showMain();
+            return this.imapSetup(this.imapFormClass = new imapForm(this.keyPair().publicKeyID, this.imapData(), true, (imapData) => {
+                this.imapSetup(this.imapFormClass = null);
+                this.sectionLogin(false);
+                this.imapData(this.systemPreferences['imapData'] = imapData);
+                this.saveSystemPreferences(() => {
+                    return this.showMain();
                 });
             }));
         }
         connectToNode() {
-            const self = this;
-            self.networkConnect(2);
-            return this.CoNETConnect((this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
+            this.networkConnect(2);
+            return this.CoNETConnectClass = new CoNETConnect(this, this.keyPair().verified, (err) => {
                 if (typeof err === 'number' && err > -1) {
-                    self.CoNETConnect((this.CoNETConnectClass = null));
-                    return self.showImapSetup();
+                    this.CoNETConnectClass = null;
+                    return this.showImapSetup();
                 }
-                self.networkConnect(true);
-                self.connectedCoNET(true);
-            })));
+                this.networkConnect(true);
+            });
         }
         reFreshLocalServer() {
             location.reload();
@@ -571,9 +562,7 @@ var view_layout;
         deleteKey() {
             localStorage.setItem('config', JSON.stringify({}));
             _view.localServerConfig(null);
-            _view.connectedCoNET(false);
-            _view.connectToCoNET(false);
-            _view.CoNETConnect(_view.CoNETConnectClass = null);
+            _view.CoNETConnectClass = null;
             _view.imapSetup(_view.imapFormClass = null);
             localStorage.clear();
             return _view.reFreshLocalServer();
@@ -590,7 +579,7 @@ var view_layout;
                 const sender = obj.account;
                 const message = obj.Args[1];
                 message.isSelf = false;
-                return _view.storageHelper.decryptLoad(this.localServerConfig()['daggerUUID'], (err, data) => {
+                return _view.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
                     if (err) {
                         return _view.connectInformationMessage.showErrorMessage(err);
                     }
@@ -605,7 +594,7 @@ var view_layout;
                     const contact = userData.contacts[index];
                     contact._notice += 1;
                     daggr.notice(daggr.notice() + 1);
-                    return _view.storageHelper.encryptSave(this.localServerConfig()['daggerUUID'], JSON.stringify(userData), err => {
+                    return _view.storageHelper.encryptSave(this.localServerConfig().account, JSON.stringify(userData), err => {
                         if (err) {
                             return _view.connectInformationMessage.showErrorMessage(err);
                         }
@@ -635,7 +624,7 @@ var view_layout;
             const index = mainMenuArray.findIndex(n => n.name === 'daggr');
             if (index > 0) {
                 const daggr = mainMenuArray[index];
-                _view.storageHelper.decryptLoad(this.localServerConfig()['daggerUUID'], (err, data) => {
+                _view.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
                     if (err) {
                         return _view.connectInformationMessage.showErrorMessage(err);
                     }
@@ -658,45 +647,28 @@ var view_layout;
         }
         afterPasswordReady() {
             const self = this;
-            if (!this.connectInformationMessage) {
-                this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
-            }
-            return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
+            return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), err => {
                 if (err) {
                     return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
                 }
-                if (data['imapData']) {
-                    self.imapData(data['imapData']);
-                }
-                self.connectInformationMessage.socketListening(this.LocalServerUrl);
-                if (this.dagge) {
-                    _view.storageHelper.encryptSave(self.localServerConfig()['daggerUUID'], JSON.stringify(this.dagge), err => {
-                        if (err) {
-                            return _view.connectInformationMessage.showErrorMessage(err);
-                        }
-                    });
-                }
-                if (this.imapData()) {
-                    this.getDaggrNotice();
-                    return this.showMainPage(true);
-                }
-                return this.showImapSetup();
-            });
-        }
-        connectToLocalServer() {
-            this.connectInformationMessage.getServerPublicKey((err) => {
-                this.keyPair()['localserverPublicKey'] =
-                    _view.connectInformationMessage.localServerPublicKey;
-                const self = this;
-                return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), (err, data) => {
-                    if (err) {
-                        return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
+                return this.getSystemPreferences(() => {
+                    this.imapData(this.systemPreferences?.imapData);
+                    this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
+                    if (this.imapData()) {
+                        //this.getDaggrNotice ()
+                        return this.showMainPage(true);
                     }
-                    if (data['imapData']) {
-                        self.imapData(data['imapData']);
-                        //return view.imapSetupClassExit ( view.imapData )
-                    }
+                    return this.showImapSetup();
                 });
+                /*
+                if ( this.dagge ) {
+                    _view.storageHelper.encryptSave ( self.localServerConfig ().account, JSON.stringify ( this.dagge ), err => {
+                        if ( err ) {
+                            return _view.connectInformationMessage.showErrorMessage ( err )
+                        }
+                    })
+                }
+                */
             });
         }
         hidePlanetElement(elem, onCompleteAll) {
@@ -719,19 +691,19 @@ var view_layout;
             if (!appScript1 || !showSwitch) {
                 return;
             }
-            _view.showMainPage(false);
-            _view.bodyBlue(false);
-            _view.sectionLogin(false);
+            this.showMainPage(false);
+            this.bodyBlue(false);
+            this.sectionLogin(false);
             if (typeof appScript1 === 'object' &&
                 typeof appScript1.startup === 'function') {
                 appScript1.startup(appScript1);
-                _view.appScript(appScript1);
+                this.appScript(appScript1);
             }
             else {
-                _view.appScript(new appScript1(() => {
-                    _view.appScript(null);
-                    _view.showMainPage(true);
-                    _view.bodyBlue(true);
+                this.appScript(new appScript1(() => {
+                    this.appScript(null);
+                    this.showMainPage(true);
+                    this.bodyBlue(true);
                     eval(`_view.${mainMenuArray[index].htmlTemp}( false )`);
                 }));
             }
@@ -742,8 +714,8 @@ var view_layout;
             this.middleY(window.innerHeight / 2);
         }
         connectLocalServer() {
-            _view.showLocalServerDisconnect(false);
-            _view.connectInformationMessage.socketListening(this.LocalServerUrl);
+            this.showLocalServerDisconnect(false);
+            this.connectInformationMessage.socketListening();
         }
         userTextareaHeight(id) {
             const d = document.getElementById(id);

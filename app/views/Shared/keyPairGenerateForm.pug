@@ -1,0 +1,93 @@
+
+<!-- ko with: keyPairGenerateForm -->
+	.card.centered.raised( data-bind = "if: showKeyPairForm, visible: showKeyPairForm" style = "width: 100%;padding: 2em;")
+		.keyPairGenerateForm
+			
+			form.ui.form( data-bind = "submit: form_AdministratorEmail_submit")
+				.hideInput( style="position: absolute;")
+					input#imageInput1( onchange = "_view.appScript().keyPairGenerateForm().imageInput ( this )" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0;width: 0px;height: 0px;" )
+				<!-- ko ifnot: DaggrUser -->
+					.field
+						H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.inputEmail" style = "color: rgba(30, 123, 200,0.9)")
+					.field.required( data-bind = " css: { error: passwordError ()}")
+						.ui.input.focus.left.icon.big
+							i.icon.privacy
+							input( type = "password" z-index = "1" data-bind = "hasFocus: true, value: systemSetup_systemPassword, attr: { placeholder: infoDefine[ $root.languageIndex() ].Home_keyPairInfo_view.password, 'data-content' : passwordError() ? infoDefine[ $root.languageIndex() ].error_message.PasswordLengthError : null }, css: { 'activating element inline': passwordError() }" )
+				<!-- /ko -->
+				<!-- ko if: DaggrUser -->
+					//-.ui.horizontal.divider.blue( data-bind = "text: infoDefine [ $root.languageIndex() ].home_index_view.dividertext" style="color:#175c678f;")
+					.field
+						H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.daggrUserTitle" style = "color: rgba(30, 123, 200,0.9)")
+					.field
+						.item( data-bind = " click: endEdit " style = "width: 100%;")
+							<!-- ko if: publicKey -->
+								.ui.top.attached.segment.tertiary.blue.inverted.center.aligned( data-bind=" text: userID [ $root.languageIndex() ] + publicKey" )
+							<!-- /ko -->
+								.ui.attached.segment.center.aligned( style = "padding: 0.5rem; color: grey;")
+									.ui.top.aligned.image
+										
+										<!-- ko if: avatarImage -->
+											a.item( style = "position: relative;cursor: pointer;")
+												img.ui.circular.tiny.image( data-bind = " attr: { src: avatarImage()}, click: function (){ document.getElementById('imageInput1').click() } ")
+												.floating.ui.red.label( data-bind = "click: () => { avatarImage('')}" style = "top: 0px;") X
+										<!-- /ko -->
+										<!-- ko ifnot: avatarImage -->
+											button.circular.ui.icon.button( data-bind = "click: function (){ document.getElementById('imageInput1').click() }, clickBubble: false ")
+												i.icon.user.plus.big
+										<!-- /ko -->
+									.content( style="margin-top: 1rem;")
+										<!-- ko ifnot: SystemAdministratorNieknameEdit -->
+											span( data-bind = "click:  SystemAdministratorNieknameEditClick, clickBubble: false, text: SystemAdministratorNiekname() ? SystemAdministratorNiekname() : infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNiekname ")
+										<!-- /ko -->
+										<!-- ko if: SystemAdministratorNieknameEdit -->
+											.ui.input.focus.left.icon( data-bind = "click: inputClick, clickBubble: false")
+												i.icon.student
+												input( type = "text", tabindex="0", data-bind = "hasFocus: SystemAdministratorNieknameFcous, value : SystemAdministratorNiekname, attr: {  placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNiekname }" style = ";text-align: center;")
+										<!-- /ko -->
+										.center.aligned( style = "padding: 0.5rem;")
+										<!-- ko ifnot: SystemAdministratorPhoneEdit -->
+											span( data-bind = " click:  SystemAdministratorPhoneEditClick, clickBubble: false, text: SystemAdministratorPhone() ? SystemAdministratorPhone() : infoDefine [ $root.languageIndex() ].home_index_view.phoneNumber ")
+										<!-- /ko -->
+										<!-- ko if: SystemAdministratorPhoneEdit -->
+											.ui.input.focus.left.icon( data-bind = "click: inputClick, clickBubble: false" )
+												i.icon.student
+												input( type = "text", tabindex="1", data-bind = " hasFocus: PhoneNumberFcous, value : SystemAdministratorPhone, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.phoneNumber }, css: { 'activating element inline': NickNameError() }" style = "text-align: center;")
+										<!-- /ko -->
+										.center.aligned( style = "padding: 0.5rem;")
+										<!-- ko ifnot: SystemAdministratorEmailAddressEdit -->
+											<!-- ko if: EmailAddressError -->
+												span
+													i.icon.red.exclamation.triangle
+											<!-- /ko -->
+											span( data-bind = "click: SystemAdministratorEmailAddressEditClick, clickBubble: false, text: SystemAdministratorEmailAddress() ? SystemAdministratorEmailAddress() : infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, css: { 'red': EmailAddressError()} ")
+										<!-- /ko -->
+										<!-- ko if: SystemAdministratorEmailAddressEdit -->
+											.ui.input.focus.left.icon
+												i.icon.spy
+												input( type = "email", tabindex="2", data-bind = "hasFocus: SystemAdministratorEmailAddressFcous, click: inputClick, clickBubble: false, value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" style = "text-align: center;")
+										<!-- /ko -->
+									.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false " style = "padding: 0.5rem;" )
+										<!-- ko ifnot: bioEdit -->
+											textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" readOnly disabled style = " width: 100%; padding: 0.5rem; color: grey; border: none; text-align-last: center; padding: 1rem;" )
+										<!-- /ko -->
+										<!-- ko if: bioEdit -->
+											textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; text-align-last: center;" )
+										<!-- /ko -->
+									
+					
+					
+				<!-- /ko -->
+
+				<!-- ko if: publicKey -->
+					.ui.buttons
+						button.button.basic.red.ui( data-bind = " click: cancel, clickBubble: false, text: infoDefine [ $root.languageIndex() ].home_index_view.cancel ")
+						.or
+						button.ui.green.basic.large.button( type = "submit" data-bind = " text: DaggrUser ? infoDefine [ $root.languageIndex() ].home_index_view.publishDaggrProfile : infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
+
+				<!-- /ko -->
+
+				<!-- ko ifnot: publicKey -->
+					button.ui.green.basic.large.button( type = "submit" data-bind = " text: DaggrUser ? infoDefine [ $root.languageIndex() ].home_index_view.publishDaggrProfile : infoDefine [ $root.languageIndex() ].home_index_view.creatKeyPair, click: form_AdministratorEmail_submit ")
+				<!-- /ko -->
+<!-- /ko -->
+

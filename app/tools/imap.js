@@ -29,10 +29,11 @@ const buffer_1 = require("buffer");
 const MAX_INT = 9007199254740992;
 const debug = true;
 const NoopLoopWaitingTime = 1000 * 1;
-exports.saveLog = (log, _console = true) => {
+const saveLog = (log, _console = true) => {
     const data = `${new Date().toUTCString()}: ${log}\r\n`;
     _console ? console.log(data) : null;
 };
+exports.saveLog = saveLog;
 const debugOut = (text, isIn, serialID) => {
     const log = `【${new Date().toISOString()}】【${serialID}】${isIn ? '<=' : '=>'} 【${text}】`;
     console.log(log);
@@ -954,7 +955,7 @@ class qtGateImap extends Event.EventEmitter {
     }
 }
 exports.qtGateImap = qtGateImap;
-exports.seneMessageToFolder = (IMapConnect, writeFolder, message, subject, createFolder, CallBack) => {
+const seneMessageToFolder = (IMapConnect, writeFolder, message, subject, createFolder, CallBack) => {
     const wImap = new qtGateImap(IMapConnect, null, false, writeFolder, debug, null);
     let _callback = false;
     //console.log ( `seneMessageToFolder !!! ${ subject }`)
@@ -984,6 +985,7 @@ exports.seneMessageToFolder = (IMapConnect, writeFolder, message, subject, creat
         });
     });
 };
+exports.seneMessageToFolder = seneMessageToFolder;
 class qtGateImapRead extends qtGateImap {
     constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, newMail) {
         super(IMapConnect, listenFolder, deleteBoxWhenEnd, null, debug, newMail);
@@ -994,7 +996,7 @@ class qtGateImapRead extends qtGateImap {
     }
 }
 exports.qtGateImapRead = qtGateImapRead;
-exports.getMailAttached = (email) => {
+const getMailAttached = (email) => {
     const attachmentStart = email.indexOf('\r\n\r\n');
     if (attachmentStart < 0) {
         console.log(`getMailAttached error! can't faind mail attahced start!\n${email.toString()}`);
@@ -1003,7 +1005,8 @@ exports.getMailAttached = (email) => {
     const attachment = email.slice(attachmentStart + 4);
     return attachment.toString();
 };
-exports.getMailSubject = (email) => {
+exports.getMailAttached = getMailAttached;
+const getMailSubject = (email) => {
     const ret = email.toString().split('\r\n\r\n')[0].split('\r\n');
     const yy = ret.find(n => {
         return /^subject: /i.test(n);
@@ -1014,7 +1017,8 @@ exports.getMailSubject = (email) => {
     }
     return yy.split(/^subject: +/i)[1];
 };
-exports.getMailAttachedBase64 = (email) => {
+exports.getMailSubject = getMailSubject;
+const getMailAttachedBase64 = (email) => {
     const attachmentStart = email.indexOf('\r\n\r\n');
     if (attachmentStart < 0) {
         console.log(`getMailAttached error! can't faind mail attahced start!`);
@@ -1023,7 +1027,8 @@ exports.getMailAttachedBase64 = (email) => {
     const attachment = email.slice(attachmentStart + 4);
     return attachment.toString();
 };
-exports.imapAccountTest = (IMapConnect, CallBack) => {
+exports.getMailAttachedBase64 = getMailAttachedBase64;
+const imapAccountTest = (IMapConnect, CallBack) => {
     debug ? exports.saveLog(`start test imap [${IMapConnect.imapUserName}]`, true) : null;
     let callbackCall = false;
     let startTime = null;
@@ -1053,13 +1058,15 @@ exports.imapAccountTest = (IMapConnect, CallBack) => {
         return doCallBack(err);
     });
 };
-exports.imapGetMediaFile = (IMapConnect, fileName, CallBack) => {
+exports.imapAccountTest = imapAccountTest;
+const imapGetMediaFile = (IMapConnect, fileName, CallBack) => {
     let rImap = new qtGateImapRead(IMapConnect, fileName, debug, mail => {
         rImap.logout();
         const retText = exports.getMailAttachedBase64(mail);
         return CallBack(null, retText);
     });
 };
+exports.imapGetMediaFile = imapGetMediaFile;
 const pingPongTimeOut = 1000 * 15;
 const resetConnectTimeLength = 1000 * 60 * 15;
 class imapPeer extends Event.EventEmitter {

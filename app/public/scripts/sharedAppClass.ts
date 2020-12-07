@@ -43,7 +43,7 @@ class sharedAppClass {
 	public item_request_get_response ( currentItem, data: QTGateAPIRequestCommand ) { return true }
 
 	constructor ( public exit: () => void ) {
-
+		
 	}
 	
 	

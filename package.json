@@ -1,6 +1,6 @@
 {
 	"name": "kloak_platform",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"license": "MIT",
 	"description": "Kloak platform",
 	"scripts": {
@@ -31,6 +31,7 @@
 		"@types/socket.io": "^2.1.11",
 		"@types/socket.io-client": "^1.4.34",
 		"electron": "^11.0.1",
+		"emojipanel": "^1.0.0",
 		"jimp": "^0.16.1",
 		"jquery": "^3.5.1",
 		"jszip": "^3.5.0",
@@ -100,8 +101,8 @@
 		"nodemailer": "^6.4.16",
 		"openpgp": "4.10.8",
 		"pug": "^3.0.0",
-		"snyk": "^1.430.2",
-		"socket.io": "^3.0.3"
+		"snyk": "^1.433.0",
+		"socket.io":"^3.0.3"
 	},
 	"snyk": true,
 	"bin": {

@@ -156,7 +156,7 @@ export default class localServer {
 		const _exitFunction = async err => {
 			console.log ( `makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err )
 			const allSockets = socket.nsp
-			const uuu = await allSockets.allSockets()
+			const uuu = await allSockets["allSockets"]()
 
 			console.log ( typeof uuu,'\n\n', uuu.size )
 
@@ -663,21 +663,29 @@ export default class localServer {
 			
 			console.dir ( req.headers , { depth: 4 })
 			const range = req.header ('range')?.toLocaleLowerCase()
-			const _length = socket['requestStreamTotalLength']
-			const rangeEnd = parseInt( range.split ('bytes=0-')[1] )
-			const rangeStart = parseInt ( range.split ( 'bytes=' )[1].split ('-')[0] )
+			const _length = socket ['requestStreamTotalLength']
+			const oldRes = responseArray.get ( uuid )
+			if ( oldRes ) {
+				oldRes.end()
+			}
+
+
 			responseArray.set ( uuid, res )
-			if ( rangeStart && rangeEnd ) {
-				
-				
+			
+
+			if ( range  ) {
+				const _range = range.split ('=')[1]
+				const rangeStart = parseInt( _range.split('-')[0] ) || 0
+				const rangeEnd = parseInt( _range.split('-')[1] ) || _length - 1
+				console.dir (`rangeStart [${ rangeStart }] rangeEnd [${ rangeEnd }]`)
 				if ( /^bytes\=0\-1$/.test ( range )) {
 					console.dir ( req.rawHeaders )
 					res.writeHead ( 206, { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': 2, 'Content-Range': `bytes 0-1/${ _length }`,'Connection':'close' })
 					return res.end ( Buffer.alloc( 2, 0 ))
 				}
 				
-				console.dir (`range = 【${ range } 】`)
-				const resHeader = { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${ rangeEnd - rangeStart + 1 }` , 'Content-Range': `bytes=${ rangeStart }-${ rangeEnd }/${ _length }`, 'Connection': 'close' }
+				console.dir (`range = 【${ range } 】rangeEnd [${ rangeEnd }]`)
+				const resHeader = { 'Content-Type': 'video/mp4', 'accept-ranges': 'bytes', 'Content-Length': `${ rangeEnd - rangeStart + 1 }` , 'Content-Range': `bytes ${ rangeStart }-${ rangeEnd }/${ _length }`, 'Connection': 'Keep-Alive', 'Cache-Control': 'private, max-age=0' }
 				res.writeHead ( 206, resHeader )
 				
 				res['currectRange'] = socket['currectRange'] = range
@@ -687,35 +695,16 @@ export default class localServer {
 				console.dir ( resHeader )
 				const uuid = socket['requestStreamUrlUUID']
 				
-				const doingGetData = () => {
-
-					socket.emit ( uuid, range )
-					/*
-					socket.emit ( uuid, range, ( chunk: string ) => {
-						const uuu = Buffer.from ( chunk, 'base64')
-						console.dir ( `socket【${ uuid }】buffer length = [${ uuu.length }] write urlSocket now!`)
-						//console.dir (`listenChunk ${ _uuid }, buffer length = [${ uuu.length }]`)
-
-						if ( !res.socket.write ( uuu )) {
-							console.log (`res [${ uuid }] need pause!!!`)
-
-							res.socket.once ( 'drain', () => {
-								console.log (`res [${ uuid }] on drain, emit resume emit CallBack`)
-								return doingGetData ( )
-							})
-						}
-						return doingGetData ( )
-					})
-					*/
-				}
 				
 				
-				return doingGetData ()
+				
+				return socket.emit ( uuid, range )
 			}
 
-			res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes', 'Content-Length': `${ _length }`})
-			socket.emit ( uuid, range )
-            
+			//res.writeHead ( 200, { 'Content-Type': 'video/mp4','status':200, 'accept-ranges': 'bytes', 'Content-Range': `bytes=${ rangeStart }-${ rangeEnd }/${ _length }`, 'Content-Length': `${ _length }`})
+			//socket.emit ( uuid, range )
+			console.log (`request have not range`)
+            res.end()
 		})
 
 		this.expressServer.post ( `${ folderName }/streamUrl`, ( req, res ) => {
@@ -729,25 +718,32 @@ export default class localServer {
 				return res.end ()
 			}
 			if ( !uuid ) {
-
 				return errRespon ()
 			}
 
 			
 
 			const response = responseArray.get ( uuid )
-			const uuu = Buffer.from ( body.buffer, 'base64')
-			res.writeHead (200)
+			const uuu = Buffer.from ( body.buffer, 'base64' )
+			console.log ( `uuu length [${ uuu.length }]`)
+			res.writeHead ( 200 )
+			if ( !uuu.length ) {
+				responseArray.delete ( uuid )
+				response.end()
+				res.end()
 
+				return console.log ('/streamUrl EOF!!')
+			}
 			if ( !response.write ( uuu )) {
 				console.log (`res [${ uuid }] need pause!!!`)
 
-				response.socket.once ( 'drain', () => {
+				return response.once ( 'drain', () => {
 					console.log (`res [${ uuid }] on drain, emit resume emit CallBack`)
 					return res.end ()
 				})
-			}
 
+			}
+			console.dir (`response.write success res.end ()`)
 			return res.end ()
 		})
 

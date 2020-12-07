@@ -57,6 +57,13 @@ class sharedWorkerManager {
         };
         return this.emitCommand(cmd, CallBack);
     }
+    getKeyInfo_Daggr(keypair, CallBack) {
+        const cmd = {
+            command: 'getKeyInfo_Daggr',
+            args: keypair
+        };
+        return this.emitCommand(cmd, CallBack);
+    }
     getKeyPairInfo(keypair, CallBack) {
         const cmd = {
             command: 'getKeyInfo',
@@ -124,13 +131,6 @@ class sharedWorkerManager {
         const cmd = {
             command: 'decryptStreamWithAPKey',
             args: message
-        };
-        return this.emitCommand(cmd, CallBack);
-    }
-    saveImapIInputData(imap, CallBack) {
-        const cmd = {
-            command: 'saveImapIInputData',
-            args: imap
         };
         return this.emitCommand(cmd, CallBack);
     }

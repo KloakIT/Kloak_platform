@@ -15,7 +15,7 @@ script#messgae_content( type = "text/html" )
 				<!-- ko text: title --><!-- /ko -->
 
 			<!-- ko if: !showLoading ()-->
-				a.image.ui.medium( data-bind = "click:  function() { $parents[2].youtubePlayClick( $index ())}, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width: 100%;" )
+				a.image.ui.medium( data-bind = "click:  function() { $parents[2].youtubePlayClick1( $index ())}, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width: 100%;" )
 					img( data-bind = "attr: { src: img }" style="width: inherit;border-radius: 0 0 0.7rem 0.7rem;")
 					<!-- ko if: time && !showLoading () -->
 						
@@ -39,27 +39,24 @@ script#messgae_content( type = "text/html" )
 					<!-- /ko -->
 			<!-- /ko -->
 
-
-			<!-- ko if: $parents[2].videoPlayer() -->
-				<!-- ko template: { name: 'kloakVideoPlayer', data: $parents[2].videoPlayer}  --><!-- /ko -->
+			<!-- ko if: showLoading () === 4 -->
+				video( data-bind="attr: { 'id': $parent.uuid + '_videoPlay' }" style = "width: 100%;border-radius: 0 0 0.7rem 0.7rem;" autoplay controls muted type="video/mp4" )
 			<!-- /ko -->
-			//- <!-- ko if: showLoading () === 4 -->
-			//- 	video( data-bind="attr: { 'id': $parent.uuid + '_videoPlay' }" style="width: 100%;border-radius: 0 0 0.7rem 0.7rem;" autoplay type="video/mp4" )
-			//- <!-- /ko -->
 
-			//- <!-- ko if: showLoading () && showLoading () < 4 -->
-			//- 	.video( style= "position: relative;")
-			//- 		video( data-bind = " attr: { src: $parents[2].ad_video_random }" style="width: 100%; border-radius: 0 0 0.7rem 0.7rem;" autoplay loop )
+			<!-- ko if: showLoading () && showLoading () < 4 -->
+				.video( style= "position: relative;")
+					video( data-bind = " attr: { src: $parents[2].ad_video_random }" style="width: 100%; border-radius: 0 0 0.7rem 0.7rem;" autoplay loop )
 						
-			//- 		.ui.top.left.attached.label.tiny( style = "border-radius: unset; background-color: #00000050; color: white!important; font-weight: bolder; font-family: system-ui; font-style: italic;") Ad from Kloak.APP
-			//- 		<!-- ko if: showLoading () === 3 -->
-			//- 			a.ui.bottom.right.attached.label.tiny( data-bind="click: () => { $parents[2].skipAdclick($index()) }" style = "border-radius: unset; background-color: #00000050; color: white!important; font-weight: bolder; font-family: system-ui; font-style: italic; bottom: 2rem;")
-			//- 				span Skip Ad
-			//- 				//-span
-			//- 					svg( height="100%" version="1.1" viewBox="0 0 36 36" width="100%")
-			//- 						path.skipSVG( d="M 12,24 20.5,18 12,12 V 24 z M 22,12 v 12 h 2 V 12 h -2 z" )
-			//- 		<!-- /ko -->
-			//- <!-- /ko -->
+					.ui.top.left.attached.label.tiny( style = "border-radius: unset; background-color: #00000050; color: white!important; font-weight: bolder; font-family: system-ui; font-style: italic;") Ad from Kloak.APP
+					<!-- ko if: showLoading () === 3 -->
+						a.ui.bottom.right.attached.label.tiny( data-bind="click: () => { $parents[2].skipAdclick($index()) }" style = "border-radius: unset; background-color: #00000050; color: white!important; font-weight: bolder; font-family: system-ui; font-style: italic; bottom: 2rem;")
+							span Skip Ad
+							//-span
+								svg( height="100%" version="1.1" viewBox="0 0 36 36" width="100%")
+									path.skipSVG( d="M 12,24 20.5,18 12,12 V 24 z M 22,12 v 12 h 2 V 12 h -2 z" )
+					<!-- /ko -->
+				
+			<!-- /ko -->
 
 				
 		<!-- /ko -->
@@ -129,3 +126,4 @@ script#message_youtube_search( type = "text/html" )
 				button.ui.large.button.negative( data-bind = " text: messageBoxDefine [ nextButtonShowError()][ $root.languageIndex() ], click: searchNext" style="margin-top: 1em;margin-bottom: 2em;" )
 			<!-- /ko -->
 	<!-- /ko  -->
+

@@ -59,7 +59,4 @@ class keyPairPassword {
     deleteKeypair() {
         return this.exit(null, true);
     }
-    reFresh() {
-        location.reload();
-    }
 }
