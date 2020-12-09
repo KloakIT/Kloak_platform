@@ -1,4 +1,5 @@
 # Kloak Platform / Kloakプラットフォーム / Kloak平台
+> This is the time we give power back to user from big tech.
 [![Build Status](https://travis-ci.org/KloakIT/Kloak_platform.svg?branch=master)](https://travis-ci.org/github/KloakIT/Kloak_platform)
 [![npm version](https://badge.fury.io/js/kloak_platform.svg)](https://badge.fury.io/js/kloak_platform)
 [![Known Vulnerabilities](https://snyk.io/test/github/KloakIT/Kloak_platform/badge.svg)](https://snyk.io/test/github/KloakIT/Kloak_platform)
