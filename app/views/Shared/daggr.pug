@@ -23,9 +23,9 @@
 								<!-- /ko  -->
 						<!-- /ko  -->
 						<!-- ko if : showUserInfor -->
-						.content( style = "padding-left: 0.5rem;")
-							.ui.transparent.big.input
-								input( data-bind = "value: $root.keyPair().publicKeyID " type="text" style = "color: #2185d0!important;")
+							//-.content( style = "padding-left: 0.5rem;")
+								.ui.transparent.big.input
+									input( data-bind = "value: $root.keyPair().publicKeyID " type="text" style = "color: #2185d0!important;")
 						<!-- /ko  -->
 					
 					<!-- ko if : showTopMenuInputField -->
@@ -86,9 +86,9 @@
 									p( data-bind = "text: keyID" style="margin-bottom: 0;")
 								<!-- ko if: bio -->
 									.description
-										textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; color: grey; border: none;text-align-last: center;background-color: white;" )
+										textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; color: grey; border: none; background-color: white;" )
 								<!-- /ko  -->
-								<!-- ko if: keyID !== $parent.myKeyID -->
+								<!-- ko if: showAddUserbutton -->
 								.extra
 									button.ui.primary.button( data-bind = "click: function() { $parent.addUser($index()) }, text: $parent.addUserInfo[ $root.languageIndex()]")
 								<!-- /ko  -->
@@ -96,38 +96,77 @@
 			<!-- /ko  -->
 
 			<!-- ko if: !searchResultUsers()?.length && currentUser()?.length && ! keyPairGenerateForm() -->
-				.ui.unstackable.cards.searchItems( style = "margin-top: 6rem!important;max-width: 44em!important;" )
-					<!-- ko foreach: currentUser -->
-						.card
-							.content
-								<!-- ko if: image -->
-									img.right.floated.tiny.ui.image.circular.image-link( data-bind="click: () => { $parent.startChat ($index()) }, attr: { src: image }")
-								<!-- /ko  -->
-								<!-- ko ifnot: image -->
-									button.ui.circular.blue.icon.button
-										i.icon.user.secret
-								<!-- /ko  -->
-								<!-- ko if: nickname -->
-									.header( data-bind = " text: nickname " )
-								<!-- /ko  -->
-								
-								.meta
-									p( data-bind = "text: keyID" style="margin-bottom: 0;")
-									<!-- ko if: phoneNumber -->
-										p( data-bind = "text: phoneNumber")
-									<!-- /ko  -->
-									<!-- ko if: email -->
-										p( data-bind = "text: email" )
-									<!-- /ko  -->
-								<!-- ko if: bio -->
-								.description
-									textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; color: grey; border: none; text-align-last: center; background-color: white;" )
-								<!-- /ko  -->
-								<!-- ko if: notice -->
-									.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
-								<!-- /ko  -->
+				.searchItems.CoContent.content
+					.ui.divided.unstackable.items( style = "margin-top: 6rem!important;max-width: 44em!important;" )
+						<!-- ko foreach: currentUser -->
+							.item
+								a.ui.circular.image.tiny( data-bind="click: () => { $parent.startChat ($index()) }" style= "width: 80px!important;")
 
-					<!-- /ko  -->
+									<!-- ko if: image -->
+										img( data-bind="css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}, attr: { src: image }" style="border-radius: 500rem!important;")
+									<!-- /ko  -->
+									<!-- ko ifnot: image -->
+										button.ui.circular.blue.icon.button
+											i.icon.user.secret
+									<!-- /ko  -->
+
+								.content()
+									a.header( data-bind = "css: { 'kloak_color_DarkBlue': online, 'kloak_color_lightGrey': !online() }, click: () => { $parent.startChat ($index()) }" )
+										<!-- ko if: nickname -->
+											<!-- ko text: nickname --><!-- /ko  -->
+										<!-- /ko  -->
+										<!-- ko ifnot: nickname -->
+											<!-- ko text: keyID --><!-- /ko  -->
+										<!-- /ko  -->
+									.meta( style = "color: grey; margin: unset;" )
+										<!-- ko if: phoneNumber -->
+											span( data-bind = "text: phoneNumber" )
+										<!-- /ko  -->
+										<!-- ko if: email -->
+											span( data-bind = "text: email" )
+										<!-- /ko  -->
+
+									<!-- ko if: bio -->
+									.description( style = "margin-top: 0px; color: grey; ")
+										textarea.searchResultUsersTextarea( data-bind = " value : bio" rows = "3" readOnly disabled style = " width: 100%; resize: none; border: none; background-color: rgba(0,0,0,0);" )
+									<!-- /ko  -->
+									<!-- ko if: notice -->
+										.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
+									<!-- /ko  -->
+						<!-- /ko  -->
+					//-.ui.unstackable.cards.searchItems( style = "margin-top: 6rem!important;max-width: 44em!important;" )
+						<!-- ko foreach: currentUser -->
+						
+							//-.card
+								.content
+									<!-- ko if: image -->
+										img.right.floated.tiny.ui.image.circular.image-link( data-bind="click: () => { $parent.startChat ($index()) }, attr: { src: image }")
+									<!-- /ko  -->
+									<!-- ko ifnot: image -->
+										button.ui.circular.blue.icon.button
+											i.icon.user.secret
+									<!-- /ko  -->
+									<!-- ko if: nickname -->
+										.header( data-bind = " text: nickname " )
+									<!-- /ko  -->
+									
+									.meta
+										p( data-bind = "text: keyID" style="margin-bottom: 0;")
+										<!-- ko if: phoneNumber -->
+											p( data-bind = "text: phoneNumber")
+										<!-- /ko  -->
+										<!-- ko if: email -->
+											p( data-bind = "text: email" )
+										<!-- /ko  -->
+									<!-- ko if: bio -->
+									.description
+										textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; color: grey; border: none; text-align-last: center; background-color: white;" )
+									<!-- /ko  -->
+									<!-- ko if: notice -->
+										.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
+									<!-- /ko  -->
+
+						<!-- /ko  -->
 			<!-- /ko -->
 
 			<!-- ko if: keyPairGenerateForm -->
@@ -145,7 +184,7 @@
 							button.circular.ui.icon.button.blue( data-bind = "click: function () { $parent.currentChat (null)}")
 								i.icon.close
 						.item( style = "width: 100%; height: 5.33rem;padding-right: 6rem;" )
-							img.ui.tiny.circular.image( data-bind = " attr: { src: image }" style = "width: 55px;")
+							img.ui.tiny.circular.image( data-bind = "css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online() }, attr: { src: image }" style = "width: 55px;")
 							.middle.aligned.content( style = "margin-left: 0.5rem;")
 								h3.ui.header( data-bind = " text: nickname ? nickname : keyID" )
 							.input( style = " padding-left: 2rem; padding-right: 4rem;" )

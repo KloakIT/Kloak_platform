@@ -37,7 +37,7 @@ const InitKeyPair = () => {
 		publicKey: null,
 		privateKey: null,
 		keyLength: null,
-		nikeName: null,
+		nickname: null,
 		createDate: null,
 		email: null,
 		passwordOK: false,

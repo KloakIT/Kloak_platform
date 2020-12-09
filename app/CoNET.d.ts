@@ -811,11 +811,14 @@ interface currentUser {
 	keyID: string
 	title: string
 	image: string
+	phoneNumber: string
 	email: string
 	nickname: string
 	notice: KnockoutObservable < number >
 	_notice: number
 	typing: KnockoutObservable < boolean >
+	account: string
+	online: KnockoutObservable < boolean >
 }
 
 interface messageYoutubeObj {

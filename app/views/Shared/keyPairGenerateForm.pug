@@ -68,10 +68,10 @@
 										<!-- /ko -->
 									.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false " style = "padding: 0.5rem;" )
 										<!-- ko ifnot: bioEdit -->
-											textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" readOnly disabled style = " width: 100%; padding: 0.5rem; color: grey; border: none; text-align-last: center; padding: 1rem;" )
+											textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" readOnly disabled style = " width: 100%; padding: 0.5rem; color: grey; border: none; padding: 1rem;" )
 										<!-- /ko -->
 										<!-- ko if: bioEdit -->
-											textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; text-align-last: center;" )
+											textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; " )
 										<!-- /ko -->
 									
 					

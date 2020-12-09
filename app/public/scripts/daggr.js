@@ -26,7 +26,7 @@ class daggr extends sharedAppClass {
         this.searchResultUsers = ko.observableArray([]);
         this.currentChat = ko.observable();
         this.currentChatIndex = null;
-        this.myKeyID = _view.keyPair().publicKeyID;
+        this.myKeyID = '';
         this.getFocus = ko.observable();
         this.typing = ko.observable(false);
         this.lastSenttypingTime = null;
@@ -41,6 +41,7 @@ class daggr extends sharedAppClass {
         this.showEmojiPanel = ko.observable(false);
         this.emojiPanel = null;
         this.keyPairGenerateForm = ko.observable(null);
+        this.tempOnlineStorage = [];
         /**** test unit */
         this.currentYoutubeObj = null;
         /** test unit end */
@@ -66,7 +67,7 @@ class daggr extends sharedAppClass {
         ];
         this.information = {
             delivered: ['已送达', '到着した', 'Delivered', '已送達'],
-            startChat: ['']
+            online: ['在线', 'オンライン', 'Online', '在線']
         };
         this.errorProcess = (err) => {
             return console.log(err);
@@ -128,8 +129,26 @@ class daggr extends sharedAppClass {
     searchItemList_build(com, first) {
         switch (com.command) {
             case 'daggr': {
-                this.searchResultUsers(com.Args[0]);
-                const self = this;
+                const user = com.Args[0];
+                if (typeof user === 'string') {
+                    if (!this.searchResultUsers() || !Object.keys(this.searchResultUsers())) {
+                        this.tempOnlineStorage.push(com.Args);
+                    }
+                    return this.currentUser().forEach(n => {
+                        if (n.keyID === user) {
+                            n.online(com.Args[1]);
+                        }
+                    });
+                }
+                user.forEach(n => {
+                    n['showAddUserbutton'] = ko.observable(this.currentUser().findIndex(_n => n.keyID === _n.keyID) > 0 ? false : true);
+                    n['showAddUserbutton'] = ko.observable(n.keyID !== this.myKeyID);
+                    if (this.tempOnlineStorage.length) {
+                        const index = this.tempOnlineStorage.findIndex(_n => _n[0] === n.keyID);
+                        n['online'] = ko.observable(index > 0 ? this.tempOnlineStorage[index][1] : false);
+                    }
+                });
+                this.searchResultUsers(user);
                 return this.showUserInfor(true);
             }
             case 'CoSearch': {
@@ -256,9 +275,11 @@ class daggr extends sharedAppClass {
             }
             if (userData?.keyInfo) {
                 userData?.contacts?.forEach(n => {
-                    n.notice = ko.observable(n._notice);
+                    n['notice'] = ko.observable(n._notice);
+                    n['online'] = ko.observable(false);
                 });
                 this.currentUser(userData.contacts ? userData.contacts : []);
+                this.myKeyID = userData.keyInfo.publicKeyID;
             }
             else {
                 this.topMenu(false);

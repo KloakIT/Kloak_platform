@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 const messageBoxDefine = {
+    emptyResult: ['搜索无结果，请改变搜索条件再试', '検索した結果がない、条件を変化してから再検索してください', 'No results found. Change the keywards and try again.', '搜索無結果，請改變搜索條件再試'],
     LoadingPage: ['正在解密数据和加载页面', '暗号化したデータを復号化とページの読み込み中。', 'Decrypting data and loading page.', '正在解密数据和加载頁面'],
     offline: ['无互联网，邮件服务器无法到达！', 'インターネットがないか、メールサーバーへ接続ができません！', 'Have no Internet, can not connect to mail server!', '無互聯網，郵件伺服器無法到達！'],
     systemError: ['CoNET客户端故障，请重启后再试', '端末故障です、CoNETを再起動してください', 'CoNET client error! Restart CoNET please!', 'CoNET客戶端故障，請重啟後再試'],

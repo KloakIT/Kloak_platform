@@ -82,7 +82,7 @@ const InitKeyPairV = function () {
 		publicKey: null,
 		privateKey: null,
 		keyLength: null,
-		nikeName: null,
+		nickname: null,
 		createDate: null,
 		email: null,
 		passwordOK: false,
@@ -115,7 +115,7 @@ const getKeyInfo = async ( keyPair: keypair, CallBack: ( err?: Error, ret?: keyp
 	
 	ret.publicKey = keyPair.publicKey
 	ret.privateKey = keyPair.privateKey
-	ret.nikeName = keyPair.nikeName
+	ret.nickname = keyPair.nickname
 	ret.createDate = privateKey1.primaryKey.created.toLocaleDateString()
 	ret.email = keyPair.email
 	ret.verified = false

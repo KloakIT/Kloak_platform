@@ -21,16 +21,16 @@
 		"@types/async": "^3.2.4",
 		"@types/cookie-parser": "^1.4.2",
 		"@types/express": "^4.17.8",
-		"@types/jquery": "^3.5.3",
+		"@types/jquery": "^3.5.5",
 		"@types/knockout": "^3.4.69",
 		"@types/node": "^14.11.10",
 		"@types/node-uuid": "^0.0.28",
 		"@types/openpgp": "^4.4.14",
 		"@types/pkijs": "^0.0.4",
 		"@types/snapsvg": "^0.5.0",
-		"@types/socket.io": "^2.1.11",
+		"@types/socket.io": "^2.1.12",
 		"@types/socket.io-client": "^1.4.34",
-		"electron": "^11.0.1",
+		"electron": "^11.0.4",
 		"emojipanel": "^1.0.0",
 		"jimp": "^0.16.1",
 		"jquery": "^3.5.1",
@@ -38,7 +38,7 @@
 		"knockout": "^3.5.1",
 		"mhtml2html": "^3.0.0",
 		"snapsvg": "^0.5.1",
-		"socket.io-client": "^3.0.3"
+		"socket.io-client": "^3.0.4"
 	},
 	"build": {
 		"appId": "com.Kloak.Platform",
@@ -94,15 +94,15 @@
 	"dependencies": {
 		"async": "^3.2.0",
 		"body-parser": "^1.19.0",
-		"core-js": "^3.8.0",
+		"core-js": "^3.8.1",
 		"express": "^4.17.1",
 		"mime-types": "^2.1.27",
 		"node-uuid": "^1.4.8",
 		"nodemailer": "^6.4.16",
 		"openpgp": "4.10.8",
 		"pug": "^3.0.0",
-		"snyk": "^1.433.0",
-		"socket.io":"^3.0.3"
+		"snyk": "^1.434.2",
+		"socket.io": "^3.0.4"
 	},
 	"snyk": true,
 	"bin": {

@@ -1,3 +1,5 @@
+declare const MP4Box
+
 class Uploader {
 	private uuid: string
 	private file: File

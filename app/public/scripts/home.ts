@@ -734,7 +734,7 @@ module view_layout {
 						return console.log ( ex )
 					}
 					
-					const index = userData.contacts.findIndex ( n => n.id === sender )
+					const index = userData.contacts.findIndex ( n => n.keyID === sender )
 					const contact =  userData.contacts[ index ]
 					contact._notice += 1
 					daggr.notice ( daggr.notice () + 1 )

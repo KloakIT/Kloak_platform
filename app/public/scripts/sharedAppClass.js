@@ -97,12 +97,17 @@ class sharedAppClass {
             if (com.error === -1) {
                 return this.searchInputText_searching(3);
             }
-            this.searchInputText('');
             this.searchInputText_searching(false);
             const totoalTime = new Date().getTime() - com['startTime'];
             console.log(`total time [${totoalTime / 1000}]`);
             if (com.error) {
                 return this.showInputTextAreaError(com.error);
+            }
+            /**
+             * 		empty search results!
+             */
+            if (!com.Args || !com.Args[0] || !Object.keys(com.Args[0]).length) {
+                return this.showInputTextAreaError('emptyResult');
             }
             return this.searchItemList_build(com, true);
         };

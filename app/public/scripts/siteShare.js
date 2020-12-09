@@ -631,7 +631,7 @@ const infoDefine = [
         },
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '基于信任隐私和安全的互联网',
+            firstTitle2: '夺回属于我们的互联网',
             firstTitle3: '革命性的无IP地址通讯网颠覆传统互联网',
             start: '开门',
             proxyStoped: 'CoGate定制代理服务器已经停止，如需使用请重新定制代理服务器。',
@@ -1642,7 +1642,7 @@ const infoDefine = [
         },
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '信頼とプライバシー及セキュリティなインターネット',
+            firstTitle2: '私たちが所有するインターネットを取り戻す',
             firstTitle3: '革命的なIPアドレスない通信網、伝統インターネットルールを挑む',
             start: 'オプンドア',
             proxyStoped: 'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。',
@@ -2386,7 +2386,7 @@ const infoDefine = [
         },
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: 'AN INTERNET BUILT ON TRUST, PRIVACY & SECURITY',
+            firstTitle2: 'Give power back to user from big tech',
             firstTitle3: 'A Revolutionary Online Experience: No IP Address--Absolute Security',
             start: 'ENTER NOW',
             proxyStoped: 'Gateway server shutdown. Please rebuild try again.',
@@ -3430,7 +3430,7 @@ const infoDefine = [
         },
         cover: {
             firstTitle1: 'Kloak OS',
-            firstTitle2: '基於信任隱私和安全的互聯網',
+            firstTitle2: '奪回屬於我們的互聯網',
             firstTitle3: '革命性的無IP地址通訊網顛覆傳統互聯網',
             start: '開門',
             proxyStoped: 'CoGate定制代理伺服器已經停止，如需使用請重新定制代理伺服器。',

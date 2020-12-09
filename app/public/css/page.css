@@ -1067,6 +1067,17 @@ play-btn {
 .kloak_color_lightGrey {
 	color: #dbdbdb !important;
 }
+
+.Kloak_Daggr_online {
+	border: 4px solid rgba(90, 131, 85, 0.96)!important;
+	opacity: 1;
+}
+
+.Kloak_Daggr_ofline {
+	border: 4px solid rgba(88,88,88,0.5)!important;
+	opacity: 0.6;
+}
+
 .kloak_color_PrimaryTeal {
 	color: #93afb4 !important;
 }

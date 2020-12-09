@@ -7,7 +7,9 @@
 
 ![http protocol](/resources/KloakPlatform.png?raw=true)
 
-Kloak Platform is cross-platform software, provids a suite of APP that developed for use on [CoNET](https://github.com/QTGate/CoNET).
+Kloak Platform is cross-platform software, provids a suite of APP that developed for use on [CoNet project](https://github.com/QTGate/CoNET).
+
+CoNet project is let devices connected each other with OpenPGP's Key ID rather than IP address. [CoNet white paper](https://conet.medium.com/conet-project-b54d33f82720)
 
 Kloakプラットフォームは複数のAPPを提供して[CoNET](https://github.com/QTGate/CoNET)を使います。
 

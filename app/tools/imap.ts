@@ -1410,7 +1410,11 @@ export class imapPeer extends Event.EventEmitter {
                 clearTimeout ( this.waitingReplyTimeOut )
 
                 return this.emit ('CoNETConnected', attr )
-            }
+			}
+			console.log (`new mail attr = \n${ attr }\n`)
+			if ( subject === attr ) {
+				return this.replyPing ( subject )
+			}
 
             //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail ( attr, subject )
@@ -1422,9 +1426,9 @@ export class imapPeer extends Event.EventEmitter {
     }
 
 
-    private replyPing ( uu ) {
-
-        return this.AppendWImap1 ( null, uu, err => {
+    private replyPing ( uuid ) {
+		console.log (`\n\nreplyPing\n\n`)
+        return this.AppendWImap1 ( uuid, uuid, err => {
             if ( err ) {
                 debug ? saveLog (`reply Ping ERROR! [${ err.message ? err.message : null }]`): null 
             }

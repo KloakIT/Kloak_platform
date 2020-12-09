@@ -717,7 +717,7 @@ const infoDefine = [
 
 		cover: {
 			firstTitle1: 'Kloak OS',
-			firstTitle2: '基于信任隐私和安全的互联网',
+			firstTitle2: '夺回属于我们的互联网',
 			firstTitle3: '革命性的无IP地址通讯网颠覆传统互联网',
 			start: '开门',
 			proxyStoped:
@@ -1820,8 +1820,7 @@ const infoDefine = [
 					image: '/images/android1.jpg',
 				},
 				{
-					title:
-						'Wi-Fiネットワーク名を押し続けます。[ネットワークを変更]をタップします',
+					title:'Wi-Fiネットワーク名を押し続けます。[ネットワークを変更]をタップします',
 					titleImage: '',
 					detail: '',
 					image: '/images/android2.jpg',
@@ -1871,19 +1870,15 @@ const infoDefine = [
 
 		cover: {
 			firstTitle1: 'Kloak OS',
-			firstTitle2: '信頼とプライバシー及セキュリティなインターネット',
-			firstTitle3:
-				'革命的なIPアドレスない通信網、伝統インターネットルールを挑む',
+			firstTitle2: '私たちが所有するインターネットを取り戻す',
+			firstTitle3: '革命的なIPアドレスない通信網、伝統インターネットルールを挑む',
 			start: 'オプンドア',
-			proxyStoped:
-				'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。',
+			proxyStoped:'カスタマーゲートウェイサーバーが停止しました、再作成をしてください。',
 		},
 
 		firstNote: {
-			title:
-				'CoNETの製品およびサービス（以下「本サービス」）をご利用いただきありがとうございます。本サービスはカナダCoNETテクノロジ株式会社（以下はCoNETと言い）が提供しています。',
-			firstPart:
-				'ユーザーは、本サービスを利用することにより、本規約に同意することになります。以下を注意してお読みください。',
+			title: 'CoNETの製品およびサービス（以下「本サービス」）をご利用いただきありがとうございます。本サービスはカナダCoNETテクノロジ株式会社（以下はCoNETと言い）が提供しています。',
+			firstPart: 'ユーザーは、本サービスを利用することにより、本規約に同意することになります。以下を注意してお読みください。',
 			detail: [
 				{
 					header: '本サービスのご利用について',
@@ -2732,7 +2727,7 @@ const infoDefine = [
 
 		cover: {
 			firstTitle1: 'Kloak OS',
-			firstTitle2: 'AN INTERNET BUILT ON TRUST, PRIVACY & SECURITY',
+			firstTitle2: 'Give power back to user from big tech',
 			firstTitle3:
 				'A Revolutionary Online Experience: No IP Address--Absolute Security',
 
@@ -3926,7 +3921,7 @@ const infoDefine = [
 
 		cover: {
 			firstTitle1: 'Kloak OS',
-			firstTitle2: '基於信任隱私和安全的互聯網',
+			firstTitle2: '奪回屬於我們的互聯網',
 			firstTitle3: '革命性的無IP地址通訊網顛覆傳統互聯網',
 			start: '開門',
 			proxyStoped:

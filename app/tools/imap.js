@@ -1134,13 +1134,18 @@ class imapPeer extends Event.EventEmitter {
                 timers_1.clearTimeout(this.waitingReplyTimeOut);
                 return this.emit('CoNETConnected', attr);
             }
+            console.log(`new mail attr = \n${attr}\n`);
+            if (subject === attr) {
+                return this.replyPing(subject);
+            }
             //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail(attr, subject);
         }
         console.log(`get mail have not subject\n\n`, email.toString());
     }
-    replyPing(uu) {
-        return this.AppendWImap1(null, uu, err => {
+    replyPing(uuid) {
+        console.log(`\n\nreplyPing\n\n`);
+        return this.AppendWImap1(uuid, uuid, err => {
             if (err) {
                 debug ? exports.saveLog(`reply Ping ERROR! [${err.message ? err.message : null}]`) : null;
             }

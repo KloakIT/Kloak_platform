@@ -35,7 +35,7 @@ class daggr extends sharedAppClass {
 	public searchResultUsers: KnockoutObservableArray < currentUser > = ko.observableArray ([])
 	public currentChat: KnockoutObservable<currentUser> = ko.observable ()
 	public currentChatIndex = null
-	public myKeyID = _view.keyPair().publicKeyID
+	public myKeyID = ''
 	public getFocus = ko.observable ()
 	public typing = ko.observable ( false )
 	private lastSenttypingTime: Date = null
@@ -50,6 +50,7 @@ class daggr extends sharedAppClass {
 	public showEmojiPanel = ko.observable ( false )
 	private emojiPanel = null
 	public keyPairGenerateForm = ko.observable ( null )
+	private tempOnlineStorage = []
 /**** test unit */
 private currentYoutubeObj = null
 /** test unit end */
@@ -79,16 +80,36 @@ private currentYoutubeObj = null
 
 	public information = {
 		delivered: ['已送达','到着した','Delivered','已送達'],
-		startChat: ['']
+		online: ['在线','オンライン','Online','在線']
 	}
+
 
 	//     Result of search a user
 	public searchItemList_build ( com: QTGateAPIRequestCommand, first: boolean ) {
 
 		switch ( com.command ) {
 			case 'daggr' : {
-				this.searchResultUsers ( com.Args[0] )
-				const self = this
+				const user = com.Args[0]
+				if ( typeof user === 'string') {
+					if ( !this.searchResultUsers() || !Object.keys ( this.searchResultUsers())) {
+						this.tempOnlineStorage.push ( com.Args )
+					}
+					return this.currentUser ().forEach ( n => {
+						if ( n.keyID === user ) {
+							n.online ( com.Args[1] )
+						}
+					})
+				}
+				user.forEach ( n => {
+					n['showAddUserbutton'] = ko.observable ( this.currentUser().findIndex ( _n => n.keyID === _n.keyID ) > 0 ? false : true )
+					n['showAddUserbutton'] = ko.observable ( n.keyID !== this.myKeyID )
+					if ( this.tempOnlineStorage.length ) {
+						const index = this.tempOnlineStorage.findIndex ( _n => _n[0] === n.keyID )
+						n['online'] = ko.observable ( index > 0 ? this.tempOnlineStorage[index][1] : false )
+					}
+				})
+				this.searchResultUsers ( user )
+
 				return this.showUserInfor ( true )
 			}
 			case 'CoSearch': {
@@ -157,7 +178,8 @@ private currentYoutubeObj = null
 
 		const user = this.currentUser ()[ this.currentChatIndex = index ]
 		user['typing'] = ko.observable ( false )
-		if ( !user?.chatDataUUID ) {
+
+		if ( ! user?.chatDataUUID ) {
 			user [ 'chatDataUUID' ] = uuid_generate ()
 			return this.saveDaggrPreperences ()
 		}
@@ -219,6 +241,8 @@ private currentYoutubeObj = null
 			}
 
 			this.showSendBottom ( false )
+			
+			
 		})
 		
 	}
@@ -243,10 +267,13 @@ private currentYoutubeObj = null
 			if ( userData?.keyInfo ) {
 
 				userData?.contacts?.forEach ( n => {
-					n.notice = ko.observable ( n._notice )
+					n['notice'] = ko.observable ( n._notice )
+					n['online'] = ko.observable ( false )
+					
 				})
 
 				this.currentUser ( userData.contacts ? userData.contacts : [])
+				this.myKeyID = userData.keyInfo.publicKeyID
 
 			} else {
 				this.topMenu ( false )
