@@ -1373,12 +1373,20 @@ export class imapPeer extends Event.EventEmitter {
             console.log (`this.makeRImap = true STOP rImap_restart!`)
             return
         }
+
+		if ( typeof this.rImap.imapStream.loginoutWithCheck === 'function') {
+			this.rImap.imapStream.loginoutWithCheck (() => {
+
+			})
+		}
         
-        return this.rImap.imapStream.loginoutWithCheck (() => {
-            console.dir (`doing restart_rImap`)
-            this.rImap.emit ('end')
-            return this.newReadImap ()
-        })
+        
+		this.rImap.emit ('end')
+		setTimeout (() => {
+			return this.newReadImap ()
+		}, 500 )
+		
+        
     }
 
     public checklastAccessTime () {

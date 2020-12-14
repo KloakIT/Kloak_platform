@@ -1104,11 +1104,14 @@ class imapPeer extends Event.EventEmitter {
             console.log(`this.makeRImap = true STOP rImap_restart!`);
             return;
         }
-        return this.rImap.imapStream.loginoutWithCheck(() => {
-            console.dir(`doing restart_rImap`);
-            this.rImap.emit('end');
+        if (typeof this.rImap.imapStream.loginoutWithCheck === 'function') {
+            this.rImap.imapStream.loginoutWithCheck(() => {
+            });
+        }
+        this.rImap.emit('end');
+        timers_1.setTimeout(() => {
             return this.newReadImap();
-        });
+        }, 500);
     }
     checklastAccessTime() {
         const now = new Date().getTime();

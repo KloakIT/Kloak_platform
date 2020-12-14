@@ -23,28 +23,29 @@
 							<!-- ko if: publicKey -->
 								.ui.top.attached.segment.tertiary.blue.inverted.center.aligned( data-bind=" text: userID [ $root.languageIndex() ] + publicKey" )
 							<!-- /ko -->
-								.ui.attached.segment.center.aligned( style = "padding: 0.5rem; color: grey;")
-									.ui.top.aligned.image
-										
-										<!-- ko if: avatarImage -->
-											a.item( style = "position: relative;cursor: pointer;")
-												img.ui.circular.tiny.image( data-bind = " attr: { src: avatarImage()}, click: function (){ document.getElementById('imageInput1').click() } ")
-												.floating.ui.red.label( data-bind = "click: () => { avatarImage('')}" style = "top: 0px;") X
-										<!-- /ko -->
-										<!-- ko ifnot: avatarImage -->
-											button.circular.ui.icon.button( data-bind = "click: function (){ document.getElementById('imageInput1').click() }, clickBubble: false ")
-												i.icon.user.plus.big
-										<!-- /ko -->
-									.content( style="margin-top: 1rem;")
+							.ui.attached.segment.center.aligned( style = "padding: 0.5rem; color: grey;")
+								.ui.top.aligned.image
+									
+									<!-- ko if: avatarImage -->
+										a.item( style = "position: relative;cursor: pointer;")
+											img.ui.circular.tiny.image( data-bind = " attr: { src: avatarImage()}, click: function (){ document.getElementById('imageInput1').click() } ")
+											.floating.ui.red.label( data-bind = "click: () => { avatarImage('')}" style = "top: 0px;") X
+									<!-- /ko -->
+									<!-- ko ifnot: avatarImage -->
+										button.circular.ui.icon.button( data-bind = "click: function (){ document.getElementById('imageInput1').click() }, clickBubble: false ")
+											i.icon.user.plus.big
+									<!-- /ko -->
+								.content( style="margin-top: 1rem;")
+									.center.aligned( style = "padding: 0.5rem;")
 										<!-- ko ifnot: SystemAdministratorNieknameEdit -->
-											span( data-bind = "click:  SystemAdministratorNieknameEditClick, clickBubble: false, text: SystemAdministratorNiekname() ? SystemAdministratorNiekname() : infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNiekname ")
+											span( data-bind = "click:  SystemAdministratorNieknameEditClick, clickBubble: false, text: SystemAdministratorNiekname() ? SystemAdministratorNiekname() : infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName ")
 										<!-- /ko -->
 										<!-- ko if: SystemAdministratorNieknameEdit -->
 											.ui.input.focus.left.icon( data-bind = "click: inputClick, clickBubble: false")
 												i.icon.student
-												input( type = "text", tabindex="0", data-bind = "hasFocus: SystemAdministratorNieknameFcous, value : SystemAdministratorNiekname, attr: {  placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNiekname }" style = ";text-align: center;")
+												input( type = "text", tabindex="0", data-bind = "hasFocus: SystemAdministratorNieknameFcous, value : SystemAdministratorNiekname, attr: {  placeholder: infoDefine [ $root.languageIndex() ].home_index_view.SystemAdministratorNickName }" style = ";text-align: center;")
 										<!-- /ko -->
-										.center.aligned( style = "padding: 0.5rem;")
+									.center.aligned( style = "padding: 0.5rem;")
 										<!-- ko ifnot: SystemAdministratorPhoneEdit -->
 											span( data-bind = " click:  SystemAdministratorPhoneEditClick, clickBubble: false, text: SystemAdministratorPhone() ? SystemAdministratorPhone() : infoDefine [ $root.languageIndex() ].home_index_view.phoneNumber ")
 										<!-- /ko -->
@@ -53,7 +54,7 @@
 												i.icon.student
 												input( type = "text", tabindex="1", data-bind = " hasFocus: PhoneNumberFcous, value : SystemAdministratorPhone, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.phoneNumber }, css: { 'activating element inline': NickNameError() }" style = "text-align: center;")
 										<!-- /ko -->
-										.center.aligned( style = "padding: 0.5rem;")
+									.center.aligned( style = "padding: 0.5rem;")
 										<!-- ko ifnot: SystemAdministratorEmailAddressEdit -->
 											<!-- ko if: EmailAddressError -->
 												span
@@ -66,14 +67,14 @@
 												i.icon.spy
 												input( type = "email", tabindex="2", data-bind = "hasFocus: SystemAdministratorEmailAddressFcous, click: inputClick, clickBubble: false, value : SystemAdministratorEmailAddress, attr: { placeholder: infoDefine [ $root.languageIndex() ].home_index_view.emailAddress, 'data-content' : EmailAddressError() ? infoDefine[ $root.languageIndex() ].error_message.EmailAddress[0] : null }, css: { 'activating element inline': EmailAddressError() }" style = "text-align: center;")
 										<!-- /ko -->
-									.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false " style = "padding: 0.5rem;" )
-										<!-- ko ifnot: bioEdit -->
-											textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" readOnly disabled style = " width: 100%; padding: 0.5rem; color: grey; border: none; padding: 1rem;" )
-										<!-- /ko -->
-										<!-- ko if: bioEdit -->
-											textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; " )
-										<!-- /ko -->
-									
+								.center.aligned.description( data-bind = "click: bioEditClick, clickBubble: false " style = "padding: 0.5rem;" )
+									<!-- ko ifnot: bioEdit -->
+										textarea( data-bind = " value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" readOnly disabled style = " width: 100%; padding: 0.5rem; color: grey; border: none; padding: 1rem;" )
+									<!-- /ko -->
+									<!-- ko if: bioEdit -->
+										textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; " )
+									<!-- /ko -->
+								
 					
 					
 				<!-- /ko -->

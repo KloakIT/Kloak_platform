@@ -289,7 +289,7 @@ class daggr extends sharedAppClass {
             }
             else {
                 this.topMenu(false);
-                let pro = new keyPairGenerateForm(null, (_keyPair) => {
+                let pro = new keyPairGenerateForm({}, (_keyPair) => {
                     this.topMenu(true);
                     userData["keyInfo"] = _keyPair;
                     this.saveDaggrPreperences();
@@ -500,14 +500,17 @@ class daggr extends sharedAppClass {
         const messageUserID = message.senderKeyID;
         message['isSelf'] = false;
         message['showDelete'] = ko.observable(false);
-        console.log(`getMessage\n`, obj.Args);
         message['youtubeObj'] = message['youtubeObj'] || null;
         if (message?.youtubeObj) {
             message.youtubeObj['showLoading'] = ko.observable(0);
             message.youtubeObj['showError'] = ko.observable(false);
         }
+        message['create'] = ko.observable(new Date(message._create));
         if (this.currentChat() && this.currentChat().keyID === messageUserID) {
-            message['create'] = ko.observable(new Date(message._create));
+            const index = this.currentChat().chatData().findIndex(n => n.uuid === message.uuid);
+            if (index > -1) {
+                return;
+            }
             this.currentChat().chatData.unshift(message);
             this.currentChat().typing(false);
             scrollTop();
@@ -528,8 +531,12 @@ class daggr extends sharedAppClass {
             catch (ex) {
                 return user.chatDataArray = null;
             }
-            const index = mainMenuArray.findIndex(n => n.name === 'daggr');
-            const daggr = mainMenuArray[index];
+            const index = user.chatDataArray.findIndex(n => n.uuid === message.uuid);
+            if (index > -1) {
+                return;
+            }
+            const index1 = mainMenuArray.findIndex(n => n.name === 'daggr');
+            const daggr = mainMenuArray[index1];
             daggr.notice(daggr.notice() + 1);
             user._notice += 1;
             user.notice(user._notice);
@@ -584,7 +591,8 @@ class daggr extends sharedAppClass {
             delivered: ko.observable(null),
             isSelf: true,
             _delivered: null,
-            senderKeyID: this.userData().keyInfo.publicKeyID
+            senderKeyID: this.userData().keyInfo.publicKeyID,
+            lottieMessage: ''
         };
         const user = this.currentChat();
         user.chatData.unshift(message);
@@ -720,5 +728,7 @@ class daggr extends sharedAppClass {
         const self = _view.appScript();
         self.lottieMessage = $('lottie-player', e.currentTarget).attr('src');
         self.snedMessage();
+        self.lottiePanel(false);
+        self.showInputMenu(false);
     }
 }

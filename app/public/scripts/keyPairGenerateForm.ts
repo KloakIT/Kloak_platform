@@ -178,7 +178,7 @@ class keyPairGenerateForm {
 		})
 	}
 
-	constructor ( public _daggrUser: keypair | null, private exit: ( keyPair ) => void ) {
+	constructor ( public _daggrUser: any, private exit: ( keyPair ) => void ) {
 		const self = this
 		this.DaggrUser ( _daggrUser )
 		this.SystemAdministratorEmailAddress.subscribe ( function ( newValue ) {
@@ -190,7 +190,7 @@ class keyPairGenerateForm {
 		})
 		*/
 
-		if ( _daggrUser ) {
+		if ( _daggrUser && _daggrUser?.publicKeyID ) {
 			this.publicKey = _daggrUser.publicKeyID
 			this.SystemAdministratorEmailAddress ( _daggrUser.email)
 			this.avatarImage ( _daggrUser.image )

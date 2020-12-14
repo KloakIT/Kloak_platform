@@ -285,7 +285,7 @@ private currentYoutubeObj = null
 
 			} else {
 				this.topMenu ( false )
-				let pro = new keyPairGenerateForm ( null, ( _keyPair: keypair ) => {
+				let pro = new keyPairGenerateForm ( {}, ( _keyPair: keypair ) => {
 					this.topMenu ( true )
 					userData["keyInfo"] = _keyPair
 					this.saveDaggrPreperences ()
@@ -628,15 +628,18 @@ private currentYoutubeObj = null
 		const messageUserID = message.senderKeyID
 		message['isSelf'] = false
 		message['showDelete'] = ko.observable ( false )
-		console.log ( `getMessage\n`, obj.Args )
+		
 		message['youtubeObj'] = message['youtubeObj'] || null
 		if ( message?.youtubeObj ) {
 			message.youtubeObj['showLoading'] = ko.observable ( 0 )
 			message.youtubeObj['showError'] = ko.observable ( false )
 		}
+		message['create'] = ko.observable ( new Date ( message._create ))
 		if ( this.currentChat () && this.currentChat ().keyID === messageUserID ) {
-			message['create'] = ko.observable ( new Date ( message._create ))
-
+			const index = this.currentChat ().chatData().findIndex ( n => n.uuid === message.uuid )
+			if ( index > -1 ) {
+				return
+			}
 			this.currentChat ().chatData.unshift ( message )
 			this.currentChat().typing ( false )
 			scrollTop ()
@@ -659,10 +662,13 @@ private currentYoutubeObj = null
 			} catch ( ex ) {
 				return user.chatDataArray = null
 			}
-
+			const index = user.chatDataArray.findIndex ( n =>  n.uuid === message.uuid )
+			if ( index > -1 ) {
+				return
+			}
 			
-			const index = mainMenuArray.findIndex ( n => n.name === 'daggr')
-			const daggr = mainMenuArray[ index ]
+			const index1 = mainMenuArray.findIndex ( n => n.name === 'daggr')
+			const daggr = mainMenuArray[ index1 ]
 
 			daggr.notice ( daggr.notice () + 1 )
 			user._notice += 1
@@ -730,7 +736,8 @@ private currentYoutubeObj = null
 			delivered: ko.observable ( null ),
 			isSelf: true,
 			_delivered: null,
-			senderKeyID: this.userData().keyInfo.publicKeyID
+			senderKeyID: this.userData().keyInfo.publicKeyID,
+			lottieMessage: ''
 			
 		}
 		const user = this.currentChat ()
@@ -903,6 +910,8 @@ private currentYoutubeObj = null
 		const self = _view.appScript()
 		self.lottieMessage = $('lottie-player',e.currentTarget).attr('src')
 		self.snedMessage ()
+		self.lottiePanel ( false )
+		self.showInputMenu ( false )
 	}
 
 }
