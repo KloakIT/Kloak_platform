@@ -718,11 +718,12 @@ module view_layout {
 			const daggr = mainMenuArray[ index ]
 
 			if ( index > 0 ) {
-				const sender = obj.account
-
+				
 				const message: messageContent = obj.Args[1]
+				const sender = message.senderKeyID
 				message.isSelf = false
-				return _view.storageHelper.decryptLoad ( this.localServerConfig ().account, ( err, data ) => {
+
+				return _view.storageHelper.decryptLoad ( this.systemPreferences.daggr_UUID, ( err, data ) => {
 					if ( err ) {
 						return _view.connectInformationMessage.showErrorMessage ( err )
 					}
@@ -738,11 +739,13 @@ module view_layout {
 					const contact =  userData.contacts[ index ]
 					contact._notice += 1
 					daggr.notice ( daggr.notice () + 1 )
-					return _view.storageHelper.encryptSave ( this.localServerConfig ().account, JSON.stringify ( userData ), err => {
+
+					
+					return _view.storageHelper.encryptSave ( this.systemPreferences.daggr_UUID, JSON.stringify ( userData ), err => {
 						if ( err ) {
 							return _view.connectInformationMessage.showErrorMessage ( err )
 						}
-
+						
 						return _view.storageHelper.decryptLoad ( contact.chatDataUUID, ( err, data ) => {
 							if ( err ) {
 								return _view.connectInformationMessage.showErrorMessage ( err )
@@ -760,9 +763,10 @@ module view_layout {
 								}
 							})
 						})
+						
 					} )
 					
-
+					
 				})
 			}
 			

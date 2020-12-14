@@ -758,6 +758,8 @@ class ImapServerSwitchStream extends Stream.Transform {
             Base64Data = ''
         }
 
+		console.log (`appendStreamV4 Base64Data = [${ Base64Data }]`)
+
         this.doCommandCallback = ( err, response: string ) => {
             //this.debug ? saveLog (`appendStreamV2 doing this.doCommandCallback`) : null
             clearTimeout ( this.appendWaitResponsrTimeOut )
@@ -1255,13 +1257,13 @@ export const getMailSubject = ( email: Buffer ) => {
 	const ret = email.toString().split ('\r\n\r\n')[0].split('\r\n')
 	
 	const yy = ret.find ( n => {
-		return /^subject: /i.test( n )
+		return /^subject\: /i.test( n )
 	})
 	if ( !yy || !yy.length ) {
 		debug ? saveLog(`\n\n${ ret } \n`) : null
 		return ''
 	}
-	return yy.split(/^subject: +/i)[1]
+	return yy.split(/^subject\: +/i)[1]
 }
 
 export const getMailAttachedBase64 = ( email: Buffer ) => {
@@ -1411,10 +1413,17 @@ export class imapPeer extends Event.EventEmitter {
 
                 return this.emit ('CoNETConnected', attr )
 			}
-			console.log (`new mail attr = \n${ attr }\n`)
-			if ( subject === attr ) {
-				return this.replyPing ( subject )
+
+			if ( attr.length < 40 ) {
+				console.log (`new attr\n${ attr }\n`)
+				const _subject = attr.split (/\r?\n/)[0]
+				if ( subject === _subject ) {
+					console.log (`\n\nthis.replyPing [${_subject }]\n\n`)
+					return this.replyPing ( subject )
+				}
+				return console.log (`new attr\n${ _subject }\n subject [${ _subject } [${ JSON.stringify ( subject ) }]]!== attr 【${ JSON.stringify ( _subject )}】`)
 			}
+			
 
             //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail ( attr, subject )
@@ -1428,7 +1437,7 @@ export class imapPeer extends Event.EventEmitter {
 
     private replyPing ( uuid ) {
 		console.log (`\n\nreplyPing\n\n`)
-        return this.AppendWImap1 ( uuid, uuid, err => {
+        return this.AppendWImap1 ( '', uuid, err => {
             if ( err ) {
                 debug ? saveLog (`reply Ping ERROR! [${ err.message ? err.message : null }]`): null 
             }

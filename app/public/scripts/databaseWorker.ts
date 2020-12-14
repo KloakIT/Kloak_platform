@@ -63,8 +63,8 @@ class DatabaseWorker {
 		})
 	}
 
-	public encryptSave(uuid: string, data: string | ArrayBuffer, callback: Function) {
-		const buffer = Buffer.from(data)
+	public encryptSave(uuid: string, data, callback: Function) {
+		const buffer = Buffer.from ( data )
 
 		if (!uuid) {
 			uuid = uuid_generate()

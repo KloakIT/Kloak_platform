@@ -611,6 +611,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         if (!Base64Data) {
             Base64Data = '';
         }
+        console.log(`appendStreamV4 Base64Data = [${Base64Data}]`);
         this.doCommandCallback = (err, response) => {
             //this.debug ? saveLog (`appendStreamV2 doing this.doCommandCallback`) : null
             timers_1.clearTimeout(this.appendWaitResponsrTimeOut);
@@ -1009,13 +1010,13 @@ exports.getMailAttached = getMailAttached;
 const getMailSubject = (email) => {
     const ret = email.toString().split('\r\n\r\n')[0].split('\r\n');
     const yy = ret.find(n => {
-        return /^subject: /i.test(n);
+        return /^subject\: /i.test(n);
     });
     if (!yy || !yy.length) {
         debug ? exports.saveLog(`\n\n${ret} \n`) : null;
         return '';
     }
-    return yy.split(/^subject: +/i)[1];
+    return yy.split(/^subject\: +/i)[1];
 };
 exports.getMailSubject = getMailSubject;
 const getMailAttachedBase64 = (email) => {
@@ -1134,9 +1135,14 @@ class imapPeer extends Event.EventEmitter {
                 timers_1.clearTimeout(this.waitingReplyTimeOut);
                 return this.emit('CoNETConnected', attr);
             }
-            console.log(`new mail attr = \n${attr}\n`);
-            if (subject === attr) {
-                return this.replyPing(subject);
+            if (attr.length < 40) {
+                console.log(`new attr\n${attr}\n`);
+                const _subject = attr.split(/\r?\n/)[0];
+                if (subject === _subject) {
+                    console.log(`\n\nthis.replyPing [${_subject}]\n\n`);
+                    return this.replyPing(subject);
+                }
+                return console.log(`new attr\n${_subject}\n subject [${_subject} [${JSON.stringify(subject)}]]!== attr 【${JSON.stringify(_subject)}】`);
             }
             //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
             return this.newMail(attr, subject);
@@ -1145,7 +1151,7 @@ class imapPeer extends Event.EventEmitter {
     }
     replyPing(uuid) {
         console.log(`\n\nreplyPing\n\n`);
-        return this.AppendWImap1(uuid, uuid, err => {
+        return this.AppendWImap1('', uuid, err => {
             if (err) {
                 debug ? exports.saveLog(`reply Ping ERROR! [${err.message ? err.message : null}]`) : null;
             }

@@ -576,10 +576,10 @@ var view_layout;
             const index = mainMenuArray.findIndex(n => n.name === 'daggr');
             const daggr = mainMenuArray[index];
             if (index > 0) {
-                const sender = obj.account;
                 const message = obj.Args[1];
+                const sender = message.senderKeyID;
                 message.isSelf = false;
-                return _view.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
+                return _view.storageHelper.decryptLoad(this.systemPreferences.daggr_UUID, (err, data) => {
                     if (err) {
                         return _view.connectInformationMessage.showErrorMessage(err);
                     }
@@ -590,11 +590,11 @@ var view_layout;
                     catch (ex) {
                         return console.log(ex);
                     }
-                    const index = userData.contacts.findIndex(n => n.id === sender);
+                    const index = userData.contacts.findIndex(n => n.keyID === sender);
                     const contact = userData.contacts[index];
                     contact._notice += 1;
                     daggr.notice(daggr.notice() + 1);
-                    return _view.storageHelper.encryptSave(this.localServerConfig().account, JSON.stringify(userData), err => {
+                    return _view.storageHelper.encryptSave(this.systemPreferences.daggr_UUID, JSON.stringify(userData), err => {
                         if (err) {
                             return _view.connectInformationMessage.showErrorMessage(err);
                         }

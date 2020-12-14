@@ -36,7 +36,7 @@ const InitKeyPair = () => {
         publicKey: null,
         privateKey: null,
         keyLength: null,
-        nikeName: null,
+        nickname: null,
         createDate: null,
         email: null,
         passwordOK: false,
@@ -150,7 +150,7 @@ const getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     let didCallback = false;
     ret.publicKey = publicKey;
     ret.privateKey = privateKey;
-    ret.nikeName = exports.getNickName(user.userId.userid);
+    ret.nickname = exports.getNickName(user.userId.userid);
     ret.createDate = privateKey1.primaryKey["created"];
     ret.email = exports.getEmailAddress(user.userId.userid);
     ret.verified = getQTGateSign(user);

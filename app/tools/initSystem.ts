@@ -164,7 +164,7 @@ export const getKeyPairInfo = async ( publicKey: string, privateKey: string, pas
 	
 	ret.publicKey = publicKey
 	ret.privateKey = privateKey
-	ret.nikeName = getNickName ( user.userId.userid )
+	ret.nickname = getNickName ( user.userId.userid )
 	ret.createDate = privateKey1.primaryKey["created"]
 	ret.email = getEmailAddress ( user.userId.userid )
 	ret.verified = getQTGateSign ( user )

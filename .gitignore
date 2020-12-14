@@ -3,9 +3,14 @@
 .DS_Store
 .DS_Store?
 ._*
+.snyk
 .Spotlight-V100
 .Trashes
 .vscode
+.npmignore
+.gitignore
+_config.yml
+.travis.yml
 ehthumbs.db
 Thumbs.db
 crets
@@ -13,8 +18,7 @@ package.update.json
 yarn.lock
 dist
 node_modules
-.gitignore
 yarn.lock
 package-lock.json
-.npmignore
 _config.yml
+

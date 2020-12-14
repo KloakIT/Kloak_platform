@@ -698,6 +698,7 @@ interface systemPreferences {
 interface localServerConfig {
 	account?: string
 	keypair?: keypair
+	daggerUUID?: string
 }
 
 interface daggr_preperences {
@@ -818,7 +819,7 @@ interface currentUser {
 	_notice: number
 	typing: KnockoutObservable < boolean >
 	account: string
-	online: KnockoutObservable < boolean >
+	online: any
 }
 
 interface messageYoutubeObj {
@@ -844,5 +845,8 @@ interface messageContent {
 	delivered?: KnockoutObservable < Date >
 	mediaData: string
 	youtubeObj: messageYoutubeObj
+	senderKeyID: string
+	showDelete?: KnockoutObservable < boolean >
+	lottieMessage: string
 }
 

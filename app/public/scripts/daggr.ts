@@ -51,6 +51,10 @@ class daggr extends sharedAppClass {
 	private emojiPanel = null
 	public keyPairGenerateForm = ko.observable ( null )
 	private tempOnlineStorage = []
+	public gamer = [[1,2,3,4],[1,2,3,4,5]]
+	private lottieMessage = ''
+	public lottiePanel = ko.observable ( false )
+
 /**** test unit */
 private currentYoutubeObj = null
 /** test unit end */
@@ -111,6 +115,7 @@ private currentYoutubeObj = null
 				this.searchResultUsers ( user )
 
 				return this.showUserInfor ( true )
+				
 			}
 			case 'CoSearch': {
 				const args = com.Args
@@ -169,6 +174,7 @@ private currentYoutubeObj = null
 		user['typing'] = ko.observable ( false )
 		user['_notice']  = 0
 		user['notice'] = ko.observable ( 0 )
+		user['online'] = ko.observable ( false )
 		this.currentUser.unshift ( user )
 		this.userData()['contacts'] = this.currentUser()
 		this.saveDaggrPreperences ()
@@ -201,6 +207,8 @@ private currentYoutubeObj = null
 				n.delivered = ko.observable (  n._delivered ? new Date( n._delivered ): null  )
 				n['mediaData'] = n.mediaData || ''
 				n['youtubeObj'] = n['youtubeObj'] || null
+				n['showDelete'] = ko.observable ( false )
+				n['lottieMessage'] = n['lottieMessage'] || ''
 				if ( n?.youtubeObj ) {
 					n.youtubeObj['showLoading'] = ko.observable ( 0 )
 					n.youtubeObj['showError'] = ko.observable ( false )
@@ -290,7 +298,7 @@ private currentYoutubeObj = null
 			}
 
 			this.userData ( userData )
-
+			this.updateAllUserProfile ()
 		})
 	}
 	
@@ -381,6 +389,69 @@ private currentYoutubeObj = null
 		
 	}
 
+	private updateprofile ( Args ) {
+		if ( !Args|| !Args.length ) {
+			return
+		}
+		const a1: currentUser = Args[0]
+		/**
+		 * 		When user profile
+		 */
+		if ( typeof a1 === 'object') {
+
+			const index = this.currentUser().findIndex ( n => n.keyID === a1?.keyID )
+			if ( index < 0 ) {
+				return console.log ( `updateprofile object have no user keyID []`, JSON.stringify ( a1 ))
+			}
+			const user = this.currentUser()[ index ]
+			user['account'] = a1.account
+			user.bio = a1.bio
+			user.email = a1.email
+			user.nickname = a1.nickname
+			user.phoneNumber = a1.phoneNumber
+			user.image = a1.image
+			user.keyID = a1.keyID
+			user.online ( a1.online )
+			console.log (`User [${ user.nickname ? user.nickname : user.keyID }] profile [${ JSON.stringify ( a1 )}]`)
+			return this.saveDaggrPreperences ()
+		}
+		/**
+		 * 		When online status
+		 */
+
+	
+		return console.log (`updateprofile get unknow result!`, JSON.stringify ( Args ))
+	}
+
+	private updateAllUserProfile () {
+		if ( !this.currentUser ()) {
+			return
+		}
+		const com = {
+			command: 'daggr',
+			Args: [ this.currentUser().map ( n => n.keyID )],
+			error: null,
+			subCom: 'user_profiles_update',
+			requestSerial: uuid_generate ()
+		}
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+			if ( err ) {
+				return this.errorProcess ( err )
+			}
+
+			if ( !com ) {
+				return
+			}
+
+			if ( com.error === -1 ) {
+				return console.dir (`Send user_profiles_update success!`)
+			}
+			
+			return this.updateprofile ( com.Args )
+		})
+		
+	}
+
 	public imageSearch ( ee ) {
 
 		if (!ee || !ee.files || !ee.files.length) {
@@ -459,6 +530,9 @@ private currentYoutubeObj = null
 	public snedMessage () {
 		const user = this.currentChat ()
 		const now = new Date ()
+		this.emojiPanel = null
+		this.showEmojiPanel ( false )
+
 		const message: messageContent = {
 			uuid: uuid_generate (),
 			_create: now.toISOString(),
@@ -471,12 +545,15 @@ private currentYoutubeObj = null
 			delivered: ko.observable ( null ),
 			isSelf: true,
 			youtubeObj: null,
-			_delivered: null
+			_delivered: null,
+			showDelete: ko.observable ( false ),
+			senderKeyID: this.userData().keyInfo.publicKeyID,
+			lottieMessage: this.lottieMessage
 		}
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'daggr',
-			Args: [ user.keyID, message ],
+			Args: [ user.account, message ],
 			error: null,
 			subCom: 'sendMessage',
 			requestSerial: uuid_generate ()
@@ -487,6 +564,7 @@ private currentYoutubeObj = null
 		this.saveChatData ()
 		this.textInput ('')
 		this.imageSource ('')
+		this.lottieMessage = ''
 
 		//document.getElementById( "daggrInput" ).style.height = '48px'
 		//this.textInputHeightRun ( document.getElementById( `${ message.uuid }` ) )
@@ -540,13 +618,16 @@ private currentYoutubeObj = null
 	}
 
 	public showAddedAction ( index ) {
-		const item = this.currentChat ().chatData()[index]
+		const item = this.currentChat ().chatData()[ index ]
+		item.showDelete ( true )
 	}
 
 	public getMessage ( obj: QTGateAPIRequestCommand ) {
-		const messageUserID = obj.account
+		
 		const message: messageContent = obj.Args[1]
-		message.isSelf = false
+		const messageUserID = message.senderKeyID
+		message['isSelf'] = false
+		message['showDelete'] = ko.observable ( false )
 		console.log ( `getMessage\n`, obj.Args )
 		message['youtubeObj'] = message['youtubeObj'] || null
 		if ( message?.youtubeObj ) {
@@ -649,6 +730,7 @@ private currentYoutubeObj = null
 			delivered: ko.observable ( null ),
 			isSelf: true,
 			_delivered: null,
+			senderKeyID: this.userData().keyInfo.publicKeyID
 			
 		}
 		const user = this.currentChat ()
@@ -663,6 +745,7 @@ private currentYoutubeObj = null
 		this.showSearchItemResult ( false )
 		this.showInputMenu( false )
 		this.showYoutube( false )
+		this.lottiePanel ( false )
 		resizeInputTextArea()
 	}
 
@@ -803,6 +886,23 @@ private currentYoutubeObj = null
 		})
 		this.keyPairGenerateForm ( pro )
 
+	}
+
+	public deleteChatItem ( index ) {
+		this.currentChat ().chatData.splice ( index, 1 )
+		const user = this.currentChat ()
+		return _view.storageHelper.encryptSave ( user.chatDataUUID, JSON.stringify ( user.chatDataArray ), err => {
+				
+			if ( err ) {
+				return _view.connectInformationMessage.showErrorMessage ( err )
+			}
+		})
+	}
+
+	public gamerClick ( elm, e ) {
+		const self = _view.appScript()
+		self.lottieMessage = $('lottie-player',e.currentTarget).attr('src')
+		self.snedMessage ()
 	}
 
 }

@@ -100,17 +100,19 @@
 					.ui.divided.unstackable.items( style = "margin-top: 6rem!important;max-width: 44em!important;" )
 						<!-- ko foreach: currentUser -->
 							.item
-								a.ui.circular.image.tiny( data-bind="click: () => { $parent.startChat ($index()) }" style= "width: 80px!important;")
+								a( data-bind="click: () => { $parent.startChat ($index()) }" style= "width: 80px!important;position: relative;")
 
 									<!-- ko if: image -->
-										img( data-bind="css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}, attr: { src: image }" style="border-radius: 500rem!important;")
+										img.ui.circular.image.tiny( data-bind="css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}, attr: { src: image }" style="border-radius: 500rem!important;")
 									<!-- /ko  -->
 									<!-- ko ifnot: image -->
 										button.ui.circular.blue.icon.button
 											i.icon.user.secret
 									<!-- /ko  -->
-
-								.content()
+									<!-- ko if: notice -->
+										.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: small; margin-top: 0.5rem!important;")
+									<!-- /ko  -->
+								.content( style= "margin-left: 1rem;" )
 									a.header( data-bind = "css: { 'kloak_color_DarkBlue': online, 'kloak_color_lightGrey': !online() }, click: () => { $parent.startChat ($index()) }" )
 										<!-- ko if: nickname -->
 											<!-- ko text: nickname --><!-- /ko  -->
@@ -130,9 +132,7 @@
 									.description( style = "margin-top: 0px; color: grey; ")
 										textarea.searchResultUsersTextarea( data-bind = " value : bio" rows = "3" readOnly disabled style = " width: 100%; resize: none; border: none; background-color: rgba(0,0,0,0);" )
 									<!-- /ko  -->
-									<!-- ko if: notice -->
-										.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
-									<!-- /ko  -->
+									
 						<!-- /ko  -->
 					//-.ui.unstackable.cards.searchItems( style = "margin-top: 6rem!important;max-width: 44em!important;" )
 						<!-- ko foreach: currentUser -->
@@ -209,24 +209,33 @@
 							<!-- /ko -->
 
 							<!-- ko foreach: chatData, completeOn: 'render', descendantsComplete: resizeInputTextArea -->
-							.item( data-bind = "event: { doubletap: () => { $parents[1].showAddedAction($index()) }, press: () => { $parents[1].showAddedAction($index()) }}, css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem;")
+							.item( data-bind = "event: { doubletap: () => { $parents[1].showAddedAction($index()) }, press: () => { $parents[1].showAddedAction($index()) }}, css: { 'item-margin-right' : isSelf }" style = "transform: scaleY(-1); width: 70%; padding-top: 1rem; position: relative;")
 								<!-- ko if: textContent -->
-									.ui.padded.segment( data-bind = " attr: { 'id': uuid }, style: { 'color': isSelf ? 'white' : 'black', 'padding': youtubeObj ? '0px' : '0.6rem'}, css: { kloak_background_DarkBlue_waiting: isSelf && !delivered(), kloak_background_lightPlusGrey: !isSelf, kloak_background_DarkBlue: isSelf && delivered(), daggerMessageLeftPoint: !isSelf && !youtubeObj, daggerMessageRightPoint: isSelf && !youtubeObj }" style = " border-radius: 0.7rem; border-width: 0;box-shadow: none;")
+									.ui.padded.segment( data-bind = " attr: { 'id': uuid }, style: { 'color': isSelf ? 'white' : 'black', 'padding': youtubeObj ? '0px' : '0.6rem'}, css: { kloak_background_DarkBlue_waiting: isSelf && !delivered(), kloak_background_lightPlusGrey: !isSelf, kloak_background_DarkBlue: isSelf && delivered(), daggerMessageLeftPoint: !isSelf && !youtubeObj, daggerMessageRightPoint: isSelf && !youtubeObj }" style = " border-radius: 0.7rem; border-width: 0;box-shadow: none; font-size:large;")
 
 										<!-- ko template: { name: 'messgae_content' } --><!-- /ko -->
 
 								<!-- /ko -->
+
+								<!-- ko if: lottieMessage -->
+									lottie-player( data-bind = " attr: { src: lottieMessage }, style: { 'margin-left': isSelf ? 'auto' : '' }" background="transparent" style="width: 80%;"  loop autoplay speed="1")
+								<!-- /ko -->
+								
 								<!-- ko if: mediaData -->
 									<!-- ko if: /^data\:image\//.test ( mediaData ) -->
 										.ui.medium.image( style = "width: 100%;")
 											img( data-bind = " attr: { src: mediaData }" style="border-radius: 1rem;")
 									<!-- /ko -->
 								<!-- /ko -->
+
 								<!-- ko if: isSelf && delivered() -->
 									.deliveredArea( style = "margin-left: 1rem; font-size: small; margin-right: 1rem;" )
 										p.kloak_color_lightGrey( data-bind = "style: { 'text-align': isSelf ? 'right': 'left' }, text: isSelf ? $parents[1].information.delivered[ $root.languageIndex()] + ' '+ delivered().toLocaleTimeString() : delivered().toLocaleTimeString() " )
 								<!-- /ko -->
 
+								<!-- ko if: showDelete -->
+									i.icon.minus.circle.red.big.link( data-bind = "click: () => {  $parents[1].deleteChatItem ($index())}, style: { 'margin-left' : isSelf ? '-3rem' : '', 'right': isSelf ? '': '-3rem'}" style = "position: absolute; top: 1.3rem;")
+								<!-- /ko -->
 							<!-- /ko -->
 							
 						<!-- /ko -->
@@ -236,18 +245,18 @@
 			#daggr_bottomInputArea.ui.bottom.fixed.menu.borderless
 						
 				<!-- ko if: showInputMenu() -->
-					<!-- ko ifnot: showYoutube() -->
+					<!-- ko ifnot: showYoutube() || lottiePanel () -->
 						.item.selectMenu( style = "width: 100%;")
 							input#daggr_imageInput( onchange = "_view.appScript().imageSearch( this )" type = "file" accept = 'image/gif,image/jpeg,image/jpg,image/png' style="opacity:0; display: none;" )
 							button.ui.circular.icon.button.olive( data-bind = "click: () => { document.getElementById('daggr_imageInput').click() }, clickBubble: false" style = "margin-right: 1rem;")
 								i.icon.image.outline
-							button.ui.circular.icon.button( data-bind = "click: () => {  }, clickBubble: false" style = "margin-right: 1rem; background-color: unset; padding: unset;")
-								lottie-player( data-bind = "click: () => { snedMessage() }, clickBubble: false" src="/images/lottie/8572-lottiefiles-icon.json" background="transparent" style="width: 60px; height: 60px;"  loop autoplay speed="1")
+							button.ui.circular.icon.button( data-bind = "click: () => { lottiePanel(true)}, clickBubble: false" style = "margin-right: 1rem; background-color: unset; padding: unset;")
+								lottie-player( src="/images/lottie/8572-lottiefiles-icon.json" background="transparent" style="width: 60px; height: 60px;"  loop autoplay speed="1")
 							button.ui.circular.icon.button.red( data-bind = "click: () => { showYoutube( true ) }, clickBubble: false" style = "margin-right: 1rem;")
 								i.icon.youtube
 					<!-- /ko -->
 					<!-- ko if: showYoutube() -->
-						form.form.ui.form( data-bind="event: { 'submit': youtubeSearch } " style = "width: 100%; padding: 1rem;" )
+						form.form.ui( data-bind="event: { 'submit': youtubeSearch } " style = "width: 100%; padding: 1rem;" )
 							.field.ui.fluid.input.big( data-bind = "css: { 'action': !searchInputText_searching(), 'loading icon disabled': searchInputText_searching(), error: searchInputTextError }" style = "width: 100%;" )
 								input( type = "text" data-bind = "textInput: searchInputText, attr: { placeholder: infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" style = "color: rgba ( 0,0,0,0.5 );" )
 								
@@ -261,6 +270,29 @@
 								<!-- /ko  -->
 							.field( data-bind=" style: {'max-height': window.innerHeight/2 + 'px'} " style="overflow-y: scroll;")
 								<!-- ko template: { name: 'message_youtube_search' } --><!-- /ko -->
+					<!-- /ko -->
+
+					<!-- ko if: lottiePanel -->
+						.form.ui( style = "width: 100%; padding: 1rem;" )
+							.field.ui.fluid.input.big( data-bind = "css: { 'action': !searchInputText_searching(), 'loading icon disabled': searchInputText_searching(), error: searchInputTextError }" style = "width: 100%;" )
+								input( type = "text" data-bind = "textInput: searchInputText, attr: { placeholder: infoDefine[ $root.languageIndex() ].coSearch.searchInputPlaceholder }" style = "color: rgba ( 0,0,0,0.5 );" )
+
+								<!-- ko ifnot : searchInputText_searching () -->
+									button.ui.youtube.button( type="submit" )
+										i.icon.search.large
+								<!-- /ko  -->
+
+								<!-- ko if : searchInputText_searching () -->
+									i.icon.search( data-bind = "css: {'icon-background-response-local-server': searchInputText_searching() === 2, 'icon-background-response-Kloak-server': searchInputText_searching() === 3 }")
+								<!-- /ko  -->
+							<!-- ko foreach : { data: gamer[0], as: 'gamer1' }-->
+								.fields( data-bind = "foreach: { data: $parent.gamer[1], as: 'gamer2' } " )
+									.field( style = "margin-left: 2rem;margin-right: 2rem;")
+										i.icon.link( data-bind = "click: $parents[1].gamerClick ")
+											lottie-player( data-bind = "clickBubble: false, attr: { src: 'lottie-library/gamer-girl/' + parseInt( gamer1 ) * parseInt( gamer2 ) + '.json'}" background="transparent" style="width: 80px; height: 70px; margin-top: -10px; margin-left: -10px;"  loop autoplay speed="1")
+							
+							<!-- /ko  -->
+								
 					<!-- /ko -->
 				<!-- /ko -->
 
