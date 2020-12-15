@@ -15,7 +15,7 @@ script#messgae_content( type = "text/html" )
 				<!-- ko text: title --><!-- /ko -->
 
 			<!-- ko if: !showLoading ()-->
-				a.image.ui.medium( data-bind = "click:  function() { $parents[2].youtubePlayClick1( $index ())}, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width: 100%;" )
+				a.image.ui.medium( data-bind = "click:  function() { $parents[2].youtubePlayClick( $index ())}, style: { 'cursor': !showLoading() || showError() || showLoading() === 5 ? 'pointer': 'default' }" style = " width: 100%;" )
 					img( data-bind = "attr: { src: img }" style="width: inherit;border-radius: 0 0 0.7rem 0.7rem;")
 					<!-- ko if: time && !showLoading () -->
 						

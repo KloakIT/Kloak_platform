@@ -146,7 +146,7 @@ class sharedAppClass {
 			/**
 			 * 		empty search results!
 			 */
-			if ( !com.Args || !com.Args[0] || !Object.keys ( com.Args[0] ).length) {
+			if ( !com.Args || !com.Args.Result || !com.Args.Result.length ) {
 				return this.showInputTextAreaError ('emptyResult')
 			}
 

@@ -163,7 +163,7 @@ class localServer {
             const body = req.body;
             const uuid = body.uuid;
             console.log(`this.expressServer.post ( ${folderName}/streamUrl`);
-            console.dir(body.uuid, body.buffer.length);
+            console.log(body.uuid, body.buffer.length);
             const errRespon = () => {
                 res.status(404);
                 return res.end();
@@ -172,6 +172,11 @@ class localServer {
                 return errRespon();
             }
             const response = responseArray.get(uuid);
+            if (!response) {
+                console.log(`streamUrl have no response stop!`);
+                res.writeHead(404);
+                return res.end();
+            }
             const uuu = Buffer.from(body.buffer, 'base64');
             console.log(`uuu length [${uuu.length}]`);
             res.writeHead(200);
@@ -331,7 +336,6 @@ class localServer {
                 return;
             }
             const _callBack = (...data) => {
-                console.log(`+++++++++++++++ doingRequest got response from AP!`);
                 socket.emit(uuid, ...data);
             };
             this.requestPool.set(request_uuid, socket);

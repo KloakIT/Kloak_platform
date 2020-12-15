@@ -592,7 +592,8 @@ class daggr extends sharedAppClass {
             isSelf: true,
             _delivered: null,
             senderKeyID: this.userData().keyInfo.publicKeyID,
-            lottieMessage: ''
+            lottieMessage: '',
+            showDelete: ko.observable(false)
         };
         const user = this.currentChat();
         user.chatData.unshift(message);
@@ -610,26 +611,30 @@ class daggr extends sharedAppClass {
     }
     youtubePlayClick(index) {
         const currentItem = this.currentChat().chatData()[index];
-        currentItem.youtubeObj.showLoading(5);
-        console.log(currentItem);
-        const url = currentItem['textContent'];
-        // if (this.videoPlayer()) {
-        // 	this.videoPlayer(null)
-        // }
-        // this.videoPlayer(new VideoPlayer("", () => {}, () => {}))
-        // this.videoPlayer().youtubePlayer(null, url)
-        // currentItem.youtubeObj.showLoading ( 1 )
-        // /**
-        //  * 			start downloadQuere
-        //  */
-        // const downloadQuere = new getYoutubeMp4Queue ( currentItem.youtubeObj.url, currentItem.youtubeObj.title, localServerUUID => {
-        // 	/**
-        // 	 * 		can skip Ad
-        // 	 */
-        // 	//		show SKIP buttom
-        // 	currentItem.youtubeObj.showLoading ( 3 )
-        // 	currentItem ['blobUUID'] = localServerUUID
-        // })
+        currentItem.youtubeObj.showLoading(1);
+        let mp4Player = null;
+        /**
+         * 			start downloadQuere
+         */
+        const downloadQuere = new DownloadQueue(currentItem.youtubeObj.url, currentItem.youtubeObj.title, (err, buffer) => {
+            /**
+             * 		can skip Ad
+             */
+            //		show SKIP buttom
+            if (err) {
+                return console.log(`youtubePlayClick DownloadQueue callback err`, err);
+            }
+            if (buffer && buffer.length) {
+                console.log(`DownloadQueue return Buffer length = [${buffer.length}]`);
+                if (!mp4Player) {
+                    mp4Player = new Mp4LocalServerUrl(downloadQuere.totalLength, uuid => {
+                        currentItem['blobUUID'] = uuid;
+                        currentItem.youtubeObj.showLoading(3); //		show SKIP button
+                    });
+                }
+                mp4Player.addBuffer(buffer);
+            }
+        }, () => { });
     }
     skipAdclick(index) {
         const currentItem = this.currentChat().chatData()[index];
@@ -644,7 +649,7 @@ class daggr extends sharedAppClass {
         /**
          * 			start downloadQuere
          */
-        document.getElementById('video_Input').click();
+        //document.getElementById( 'video_Input' ).click()
     }
     videoInput(ee) {
         if (!ee || !ee.files || !ee.files.length) {
@@ -652,6 +657,7 @@ class daggr extends sharedAppClass {
         }
         const file = ee.files[0];
         const reader = new FileReader();
+        let startTransferData = false;
         reader.onload = e => {
             const currentItem = this.currentYoutubeObj;
             const rawData = Buffer.from(reader.result);
@@ -662,9 +668,12 @@ class daggr extends sharedAppClass {
                 const bufferLength = 1024 * 1024;
                 const setTime = () => {
                     const startDate = new Date();
-                    kk.BufferArray = Buffer.from(kk.BufferArray.toString('hex') + rawData.slice(point, point + bufferLength).toString('hex'), 'hex');
-                    console.log(`BufferArray.length [${kk.BufferArray.length}] totlaTime = [${new Date().getTime() - startDate.getTime()} ]`);
-                    kk.transferData();
+                    kk.addBuffer(Buffer.from(rawData.slice(point, point + bufferLength)));
+                    console.log(`totlaTime = [${new Date().getTime() - startDate.getTime()} ]`);
+                    if (!startTransferData) {
+                        kk.transferData();
+                        startTransferData = true;
+                    }
                     point = point + bufferLength;
                     if (point < rawData.length) {
                         return setTimeout(() => { setTime(); }, 500);
