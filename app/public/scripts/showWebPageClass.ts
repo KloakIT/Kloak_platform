@@ -22,9 +22,9 @@ class buttonStatusClass {
 		console.log(_self)
 
 		if ( this.loading () === 5 ) {
-				_view.storageHelper.decryptLoad('history', (err, data) => {
+				_view.storageHelper.getDecryptLoad('history', (err, data) => {
 
-					_view.storageHelper.decryptLoad('history', (err, data) => {
+					_view.storageHelper.getDecryptLoad('history', (err, data) => {
 
 						if (err) {
 							return

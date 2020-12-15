@@ -48,6 +48,7 @@ class StorageHelper {
 			const history: fileHistory = {
 				uuid: [requestUuid],
 				filename: `${title}.mp4`,
+				location: 'local',
 				time_stamp: date,
 				last_viewed: date,
 				path: "",
@@ -86,6 +87,7 @@ class StorageHelper {
 				fileExtension: com.contentType.split("/")[1],
 				totalLength: com.totalLength ? com.totalLength : null,
 				contentType: com.contentType,
+				online: false,
 				pieces: [...pieces],
 				finished: com.eof
 			}
@@ -186,6 +188,7 @@ class StorageHelper {
 				fileExtension: com.contentType.split("/")[1],
 				totalLength: com.totalLength ? com.totalLength : null,
 				contentType: com.contentType,
+				online: false,
 				pieces: [...pieces],
 				finished: com.eof
 			}
@@ -327,7 +330,8 @@ class StorageHelper {
 		}
 	}
 
-	public createUploader = (requestUuid: string, file: File, path: string, extraTags: string[], callback: Function) => {
+	public createUploader = (requestUuid: string, file: File, path: string, extraTags: string[], callback: Function, kloakDrive?: boolean) => {
+		console.log(kloakDrive)
 		const progress = ko.observable(0)
 		const uploader = {
 			requestSerial: requestUuid,
@@ -336,7 +340,7 @@ class StorageHelper {
 			instance: new Uploader(requestUuid, file, path, extraTags,  progress, (err, data) => {
 				data === requestUuid ? this.removeFromPool(this.uploadPool, requestUuid) : null
 				callback(err, data)
-			})
+			}, kloakDrive)
 		}
 		this.uploadPool({...this.uploadPool(), [requestUuid]: uploader})
 		return this.uploadPool()[requestUuid]
@@ -347,6 +351,7 @@ class StorageHelper {
 		const file: fileHistory = {
 			uuid: requestUUIDs,
 			filename: title,
+			location: 'local',
 			time_stamp: date,
 			last_viewed: date,
 			path: "",
@@ -385,6 +390,46 @@ class StorageHelper {
 		this.encryptSave(uuid, JSON.stringify(index), callback)
 	}
 
+	public decryptLoad = (buffer: Buffer, callback: (err, data) => void) => {
+		const message = Buffer.from(buffer).toString()
+		const pgpStart = '-----BEGIN PGP MESSAGE-----\n\n'
+		const pgpEnd = '\n-----END PGP MESSAGE-----'
+		const pgpMessage = pgpStart.concat(message, pgpEnd)
+		_view.sharedMainWorker.decryptStreamWithoutPublicKey(pgpMessage, (err, data) => {
+			if (err) {
+				callback(err, null)
+				return
+			}
+			callback(null, Buffer.from(data.data).buffer)
+		})
+	}
+
+	public encryptTrim = (buffer: Buffer, callback: (err, data) => void) => {
+		console.log(buffer)
+		buffer = Buffer.from(buffer)
+		_view.sharedMainWorker.encryptStream_withMyPublicKey(
+			buffer as Buffer,
+			(err, data) => {
+				if (err) {
+					callback(err, null)
+					return
+				}
+				console.log(data)
+				const removePGP = (pgp: string): string => {
+					let modified = pgp.replace('-----BEGIN PGP MESSAGE-----', '')
+					modified = modified.replace('-----END PGP MESSAGE-----', '')
+					modified = modified.replace('Comment: https://openpgpjs.org', '')
+					modified = modified.replace(/([A-Z])\w+: OpenPGP.js *.*/, '')
+					return modified.trim()
+				}
+		
+				let encryptedData = Buffer.from(data).toString()
+				encryptedData = removePGP(data)
+				callback(null, encryptedData)
+			}
+		)
+	}
+
 	public delete = (uuid: string, callback: Function) => {
 		return this.databaseWorker.delete(uuid, callback)
 	}
@@ -397,6 +442,90 @@ class StorageHelper {
 		return this.databaseWorker.encryptSave(uuid, data, callback)
 	}
 
+	public decryptRetrieveOnline = (data: string[], callback: (err, data) => void) => {
+		console.log("I AM HERE")
+		const cmd = {
+			command: 'fortress',
+			Args: data,
+			error: null,
+			subCom: 'fetch',
+			requestSerial: uuid_generate()
+		}
+
+		const emitCallback = (err, com) => {
+			console.log(err, com)
+			if (err) {
+				return new Error (`Emit request error ${ err.message }`)
+			}
+			
+			if (!com) {
+				return
+			}
+
+			if (com.error === -1) {
+				return
+			}
+
+			if (com.error) {
+				return callback(`Kloak response error ${ com.error }`, null)
+			}
+
+			if (com.subCom === 'fetch') {
+				console.log(com)
+			}
+		}
+
+		_view.connectInformationMessage.emitRequest ( cmd, emitCallback )
+	}
+
+	public encryptSaveOnline = (uuid: string, data: ArrayBuffer | Buffer, callback: (err, data) => void) => {
+		console.log("STORAGE HELPER ENCRYPT SAVE ONLINE")
+		const cmd = {
+			command: 'fortress',
+			Args: [], // Data must be less than 512kb
+			error: null,
+			subCom: 'append',
+			requestSerial: uuid_generate()
+		}
+
+		const emitCallback = (err, com) => {
+			if (err) {
+				return new Error (`Emit request error ${ err.message }`)
+			}
+			
+			if (!com) {
+				return
+			}
+
+			if (com.error === -1) {
+				return
+			}
+
+			if (com.error) {
+				return callback(`Kloak response error ${ com.error }`, null)
+			}
+
+			if (com.subCom === 'append') {
+				callback(null, com)
+			}
+		}
+
+
+		this.encryptTrim(data as Buffer, (err, data) => {
+			if (err) {
+				return console.log(err)
+			}
+
+			if (data) {
+				console.log(data)
+				cmd.Args = [uuid, data]
+				_view.connectInformationMessage.emitRequest ( cmd, emitCallback )
+			}
+		})
+
+		
+	}
+
 	public replaceHistory = (files: history, callback?: Function) => {
 		return this.databaseWorker.replaceHistory(files, callback ? callback : null)
 	}
@@ -406,7 +535,7 @@ class StorageHelper {
 	}
 
 	public getHistory = (callback?: Function) => {
-		return this.databaseWorker.decryptLoad("history", (err, data) => {
+		return this.databaseWorker.getDecryptLoad("history", (err, data) => {
 			if (err) {
 				return callback(err, null)
 			}
@@ -414,12 +543,12 @@ class StorageHelper {
 		})
 	} 
 
-	public decryptLoad = (uuid: string | number, callback: Function) => {
-		return this.databaseWorker.decryptLoad(uuid, callback)
+	public getDecryptLoad = (uuid: string | number, callback: Function) => {
+		return this.databaseWorker.getDecryptLoad(uuid, callback)
 	}
 
 	public getIndex = (uuid: string, callback: Function) => {
-		return this.databaseWorker.decryptLoad(uuid, (err, data) => {
+		return this.databaseWorker.getDecryptLoad(uuid, (err, data) => {
 			callback(null, JSON.parse(Buffer.from(data).toString()))
 		})
 	}

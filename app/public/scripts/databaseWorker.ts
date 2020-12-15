@@ -63,8 +63,8 @@ class DatabaseWorker {
 		})
 	}
 
-	public encryptSave(uuid: string, data, callback: Function) {
-		const buffer = Buffer.from ( data )
+	public encryptSave(uuid: string, data: string | ArrayBuffer, callback: Function) {
+		const buffer = Buffer.from(data as string)
 
 		if (!uuid) {
 			uuid = uuid_generate()
@@ -99,7 +99,7 @@ class DatabaseWorker {
 		)
 	}
 
-	public decryptLoad(uuid: string | number, callback: Function) {
+	public getDecryptLoad(uuid: string | number, callback: Function) {
 		let t0 = performance.now()
 		const pgpStart = '-----BEGIN PGP MESSAGE-----\n\n'
 			const pgpEnd = '\n-----END PGP MESSAGE-----'
@@ -165,7 +165,7 @@ class DatabaseWorker {
 	}
 
 	public async saveFileHistory(file: fileHistory, callback?: Function) {
-		this.decryptLoad('history', (err, data) => {
+		this.getDecryptLoad('history', (err, data) => {
 			let history = {}
 			if (data) {
 				const json = JSON.parse(Buffer.from(data).toString())
@@ -185,6 +185,6 @@ class DatabaseWorker {
 	}
 
 	public getHistory(callback: Function) {
-		this.decryptLoad('history', callback)
+		this.getDecryptLoad('history', callback)
 	}
 }

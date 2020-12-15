@@ -383,8 +383,9 @@ script#kloakVideoPlayer( type = "text/html" )
 				button.skipAdButton(data-bind="style: {'display': canPlay() ? 'initial' : 'none'}, click: () => { skipAd() }, clickBubble: false" style="cursor: pointer; font-size: 11px" href="#")="Skip Ad"
 		<!-- /ko -->
 		
-		video.kloakVideo#kloakVideo(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="background-color: black; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100" preload)
-		.kloakVideoOverlay(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="display: flex; align-items: flex-end; width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; z-index: 101;")
+		video.kloakVideo#kloakVideo(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="background-color: black; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100; object-fit: inherit" preload)
+		img.kloakVideoMP3Cover#kloakVideoMP3Cover(style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; object-fit: contain; display: none")
+		.kloakVideoOverlay(data-bind="style: {'visibility': skipAdvertisements() ? 'visible' : 'hidden'}" style="display: flex; align-items: flex-end; width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; left: 0; z-index: 101;")
 			.kloakVideoControls(style="width: 100%; position: absolute; z-index:102; bottom: 0;")
 				.kloakVideoSeekBar#kloakVideoSeekBar(style="width: 100%; height: 5px; display: flex; align-items: flex-end; cursor: pointer")
 					.kloakFullBar#kloakFullBar(style="width: 100%; position: relative; background-color: rgba(120,120,120,1)")
@@ -415,24 +416,30 @@ script#fileStoragePlaylistPlayer( type = "text/html" )
 	.fileStorageCurrentPlayingContainer
 		audio.fileStorageAudioPlayer#fileStorageAudioPlayer
 		.fileStoragePlayingInformation
-			.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder.placeholderGradient(style="height: 10rem; width: 10rem")
 			p.fileStoragePlayingText#audioPlayingText
 		.fileStoragePlayingControls
 			<!-- ko if: loading() -->
 			.ui.active.centered.inline.loader
 			<!-- /ko -->
 			<!-- ko if: !loading() -->
-			.fileStoragePlayingControl#audioPlayingPrevious
-				i.step.backward.icon
-			.fileStoragePlayingControl.fileStoragePlayButton#audioPausePlay
-				<!-- ko if: !isPlaying() -->
-				i.play.icon(style="transform: translateX(3px); font-size: 1.75rem !important; margin: 0 15px !important;")
-				<!-- /ko -->
-				<!-- ko if: isPlaying() -->
-				i.pause.icon(style="transform: translateX(3px); font-size: 1.75rem !important; margin: 0 15px !important;")
-				<!-- /ko -->
-			.fileStoragePlayingControl#audioPlayingNext
-				i.step.forward.icon
+			.playlistWrapperLeft
+				.fileStoragePlayingControl(data-bind="click: () => { currentPlaylist.mode() === 'shuffle' ? currentPlaylist.mode('normal') : currentPlaylist.mode('shuffle') }")
+					i.random.icon(data-bind="style: {color: currentPlaylist.mode() === 'shuffle' ? '#00E5FF' : 'white'}")
+			.playlistWrapperMiddle(style="display: flex; align-items: center; justify-content: center; margin: .5rem 0;")
+				.fileStoragePlayingControl#audioPlayingPrevious
+					i.step.backward.icon
+				.fileStoragePlayingControl.fileStoragePlayButton#audioPausePlay(style="background-color: #ef5350; border-radius: 50%; height: 3.5rem; width: 3.5rem; display: flex; justify-content: center; align-items: center;")
+					<!-- ko if: !isPlaying() -->
+					i.play.icon(style="margin: 0 0 0 2px !important;")
+					<!-- /ko -->
+					<!-- ko if: isPlaying() -->
+					i.pause.icon(style="margin: 0 !important;")
+					<!-- /ko -->
+				.fileStoragePlayingControl#audioPlayingNext
+					i.step.forward.icon
+			.playlistWrapperRight
+				.fileStoragePlayingControl(data-bind="click: () => { currentPlaylist.mode() === 'repeat' ? currentPlaylist.mode('normal') : currentPlaylist.mode('repeat') }")
+					i.sync.alternative.icon(data-bind="style: {color: currentPlaylist.mode() === 'repeat' ? '#00E5FF' : 'white'}")
 			<!-- /ko -->
 		<!-- ko if: !loading() -->
 		.fileStoragePlayingProgressBar#audioPlayingProgress

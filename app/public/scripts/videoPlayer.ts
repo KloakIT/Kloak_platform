@@ -2,12 +2,14 @@ class VideoPlayer {
 	private mediaSource: MediaSource = null
 	private downloadQueue: DownloadQueue = null
 	public currentPlaylist: {
+		uuid: string,
 		playlistName: string,
 		playlist: KnockoutObservableArray<fileHistory>, 
 		current: KnockoutObservable<number>, 
 		next: KnockoutObservable<number>,
 		mode: KnockoutObservable<string>,
 		lastShuffle: number} = {
+		uuid: "",
 		playlistName: "",
 		playlist: ko.observableArray([]),
 		current: ko.observable(0),
@@ -17,6 +19,7 @@ class VideoPlayer {
 	}
 	private isPlaying: KnockoutObservable<boolean> = ko.observable(false)
 	private canPlay: KnockoutObservable<boolean> = ko.observable(false)
+	private canSkip: KnockoutObservable<boolean> = ko.observable(false)
 	private skipAdvertisements: KnockoutObservable<boolean> = ko.observable(false)
 	private adPlaying = ko.observable(false)
 	private loading = ko.observable(true)
@@ -179,13 +182,13 @@ class VideoPlayer {
 		callback()
 	}
 
-	setupMediaSource = (mimeType: {video?: string, audio?: string}, callback: Function) => {
+	setupMediaSource = (mimeType: {video?: string, audio?: string}, target: HTMLElement, callback: Function) => {
 		console.log("setting up media source!")
 		if (!MediaSource) {
 			return console.log("Your browser does not support MediaSource!")
 		}
 		this.mediaSource = new MediaSource()
-		this.playerElements.kloakVideo['src'] = URL.createObjectURL(this.mediaSource)
+		target['src'] = URL.createObjectURL(this.mediaSource)
 		this.mediaSource.addEventListener("sourceopen", () => { this.sourceOpen(mimeType, () => {
 			callback()
 			}) 
@@ -293,7 +296,7 @@ class VideoPlayer {
 	}
 
 	getVideoIndex = (uuid: string, callback?:Function) => {
-		_view.storageHelper.decryptLoad(uuid, (err, data) => {
+		_view.storageHelper.getDecryptLoad(uuid, (err, data) => {
 			if (err) {
 				return
 			}
@@ -367,7 +370,7 @@ class VideoPlayer {
 			this.playerElements['kloakVideo'].addEventListener("needBuffer", () => {
 				console.log("NEED BUFFER")
 				if (downloadUuidQueue.length) {
-					_view.storageHelper.decryptLoad(downloadUuidQueue.shift(), (err, data) => {
+					_view.storageHelper.getDecryptLoad(downloadUuidQueue.shift(), (err, data) => {
 						if (err) return
 							if (data) {
 								this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
@@ -436,7 +439,7 @@ class VideoPlayer {
 				})
 			}
 
-			this.setupMediaSource({video: format['mimeType'] || 'video/mp4; codecs="avc1.64001F, mp4a.40.2"'}, () => {
+			this.setupMediaSource({video: format['mimeType'] || 'video/mp4; codecs="avc1.64001F, mp4a.40.2"'}, this.playerElements.kloakVideo, () => {
 				this.setupPlayer()
 
 				// this.checkFileExistence(youtubeId, (uuid) => {
@@ -462,6 +465,7 @@ class VideoPlayer {
 					filename: com.downloadFilename,
 					fileExtension: extension,
 					totalLength: com.totalLength ? com.totalLength : null,
+					online: false,
 					contentType: com.contentType,
 					pieces: downloadedPieces,
 					finished: com.eof
@@ -482,6 +486,7 @@ class VideoPlayer {
 					time_stamp: date,
 					last_viewed: date,
 					path: "",
+					location: 'local',
 					url: streamingData ? `https://www.youtube.com/watch?v=${streamingData['videoDetails']['videoId']}` : "",
 					tags: ['youtube', extension, 'video'],
 					size: com.totalLength ? com.totalLength : null,
@@ -550,7 +555,7 @@ class VideoPlayer {
 		}
 		if (sourceBuffer) {
 			if (pieces.length) {
-				_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+				_view.storageHelper.getDecryptLoad(pieces.shift(), (err, data) => {
 					if (err) {
 						return
 					}
@@ -594,7 +599,7 @@ class VideoPlayer {
 			let pieces = []
 			let timestamps = []
 			let currentFetchTimestamps = []
-			let tags: Array<string> = ko.isObservable(fileHistory.tag) ? fileHistory.tag() : fileHistory.tag
+			let tags: Array<string> = ko.isObservable(fileHistory.tags) ? fileHistory.tags() : fileHistory.tags
 
 			const appendNext = (pieces, sourceBuffer: SourceBuffer, from?: number) => {
 				if (sourceBuffer) {
@@ -614,7 +619,7 @@ class VideoPlayer {
 					// 	}
 					// }
 					if (pieces.length) {
-						_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+						_view.storageHelper.getDecryptLoad(pieces.shift(), (err, data) => {
 							if (err) {
 								return
 							}
@@ -657,6 +662,10 @@ class VideoPlayer {
 				// this.sourceBuffers['video'].abort()
 				// this.playerElements.kloakVideo['currentTime'] = percent * this.mediaSource.duration
 			})
+
+			this.playerElements['kloakVideo'].addEventListener('ended', () => {
+				console.log("VIDEO ENDEDDDDD")
+			})
 			
 
 			switch (true) {
@@ -667,7 +676,7 @@ class VideoPlayer {
 						}
 						if (data) {
 							index = data
-							this.setupMediaSource(fileHistory['youtube'].mimeType, () => {
+							this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
 								this.mediaSource.duration = fileHistory['youtube'].duration
 								this.setupPlayer()
 								this.isPlaying(true)
@@ -708,7 +717,7 @@ class VideoPlayer {
 							}
 							getIndex(fileHistory.uuid[1], (index) => {
 								audioIndex = index
-								this.setupMediaSource(fileHistory['youtube'].mimeType, () => {
+								this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
 									this.mediaSource.duration = fileHistory['youtube'].duration
 									this.setupPlayer()
 									this.playerElements['kloakVideo']['poster'] = _view.storageHelper.dataURItoBlob(fileHistory['youtube']['thumbnail']['data'], fileHistory['youtube']['thumbnail']['mime'])
@@ -730,6 +739,7 @@ class VideoPlayer {
 	}
 
 	uploadedVideo = (fileHistory) => {
+		document.getElementById("kloakVideoMP3Cover") ? URL.revokeObjectURL(document.getElementById("kloakVideoMP3Cover")['src']) : null
 		this.retrievePlayerElements(() => {
 
 			this.playerElements['kloakVideo'].addEventListener("needBuffer", () => {
@@ -760,10 +770,16 @@ class VideoPlayer {
 				}
 				if (data) {
 					index = data
-					this.setupMediaSource({video: fileHistory['videoData'].mimeType, audio: null}, () => {
-						this.mediaSource.duration = fileHistory['videoData'].duration
+					this.setupMediaSource({video: fileHistory['media'].mimeType, audio: null}, this.playerElements.kloakVideo, () => {
+						this.mediaSource.duration = fileHistory['media'].duration
 						this.setupPlayer(() => {
-							if (fileHistory['videoData'].mimeType.split("/")[0] === "audio") {
+							if (fileHistory['media'].mimeType.split("/")[0] === "audio") {
+								const thumbnailImage = document.getElementById("kloakVideoMP3Cover")
+								const {data, mime} = fileHistory['media'].thumbnail
+								if (data && mime && thumbnailImage) {
+									thumbnailImage.style.display = 'initial'
+									return thumbnailImage['src'] = _view.storageHelper.dataURItoBlob(data, mime)
+								}
 								this.playerElements.kloakVideo.classList.add("placeholderGradient")
 								this.playerElements.kloakVideo.style.opacity = "1"
 							}
@@ -776,15 +792,19 @@ class VideoPlayer {
 		})
 	}
 
-	playlistPlayer = (playlistName: string, playlistItems: Array<string>, mode?: string) => {
+	playlistPlayer = (playlistUuid: string, playlistName: string, playlistItems: Array<string>, playlistThumbnails: Array<{data: string, mime: string}>, mode?: string) => {
+		this.currentPlaylist.uuid = playlistUuid;
 		this.currentPlaylist.playlistName = playlistName;
+		let index: kloakIndex = null
+
 		if (mode) {
 			this.currentPlaylist.mode(mode)
 		}
+
 		const random = () => {
 			const num = Math.floor(Math.random() * (this.currentPlaylist.playlist().length)) + 1
-			if (this.currentPlaylist.lastShuffle === num) {
-				console.log("should return")
+			console.log(num)
+			if (this.currentPlaylist.lastShuffle === num && this.currentPlaylist.playlist().length !== 1) {
 				return random()
 			}
 			this.currentPlaylist.lastShuffle = num
@@ -812,10 +832,16 @@ class VideoPlayer {
 			})
 
 			this.playlistPlayerElements.prevBtn.addEventListener("click", () => {
+				if (this.loading()) {
+					return
+				}
 				getTrackFile('previous')
 			})
 
 			this.playlistPlayerElements.nextBtn.addEventListener("click", () => {
+				if (this.loading()) {
+					return
+				}
 				getTrackFile('next')
 			})
 
@@ -828,12 +854,10 @@ class VideoPlayer {
 				this.isPlaying(true)
 			})
 
-			this.playlistPlayerElements.audio['preload'] = 'metadata'
-			this.playlistPlayerElements.audio.onloadedmetadata = () => {
-				duration = this.playlistPlayerElements.audio['duration']
-			}
+			
 
 			this.playlistPlayerElements.audio.addEventListener("timeupdate", e => {
+				!this.canSkip() ? this.canSkip(true) : null
 				const formatTime = (seconds: number) => {
 					let date = new Date(null)
 					let s: number | string = parseInt(seconds.toString(), 10)
@@ -847,8 +871,13 @@ class VideoPlayer {
 				}
 				try {
 					const currentTime = this.playlistPlayerElements.audio['currentTime']
+					console.log(currentTime, this.mediaSource.duration)
 					// this.playerElements.kloakDurationText.textContent = `${formatTime(currentTime)} / ${formatTime(this.mediaSource.duration)}`
-					this.playlistPlayerElements.progressCompleteBar.style.width = `${(currentTime / duration) * 100}%`
+					this.playlistPlayerElements.progressCompleteBar.style.width = `${(currentTime / this.mediaSource.duration) * 100}%`
+					if (Math.ceil(currentTime) == Math.ceil(this.mediaSource.duration)) {
+						this.playlistPlayerElements.audio['currentTime'] = 0
+						getTrackFile('next')
+					}
 				} catch (e) {
 					return
 				}
@@ -859,13 +888,21 @@ class VideoPlayer {
 				const full = this.playlistPlayerElements.progressBar.clientWidth
 				console.log(e)
 				const percent = (x / full)
-				const currentTime = percent * duration
+				const currentTime = percent * this.mediaSource.duration
 				this.playlistPlayerElements.audio['currentTime'] = currentTime
 			})
 
-			this.playlistPlayerElements.audio.onended = () => {
-				getTrackFile("next")
-			}
+			this.playlistPlayerElements.audio.addEventListener('ended', () => {
+				console.log("KSDSDKHSDFKHFKUHKHADKF")
+				// getTrackFile("next")
+			})
+
+			// this.mediaSource.readyState
+
+			// this.playlistPlayerElements.audio.onended = () => {
+			// 	console.log("should get next")
+			// 	getTrackFile("next")
+			// }
 
 			callback()
 		}
@@ -881,15 +918,21 @@ class VideoPlayer {
 		}
 
 		const getTrackFile = (direction?: string) => {
+			this.canSkip(false)
+			this.loading(true)
+			this.isPlaying(false)
 			this.playlistPlayerElements.audio ? URL.revokeObjectURL(this.playlistPlayerElements.audio['src']) : null
 			this.playlistPlayerElements.textDisplay ? this.playlistPlayerElements.textDisplay.textContent = "" : null
 			if (this.currentPlaylist.mode() === 'shuffle') {
+				console.log("AM I HERE?")
 				const num = random()
 				this.currentPlaylist.current(num)
 			} else {
 				switch (direction) {
 					case 'next':
+						console.log(this.currentPlaylist.current(),this.currentPlaylist.playlist().length)
 						if (this.currentPlaylist.current() === this.currentPlaylist.playlist().length) {
+							console.log("END OF PLAYLIST REPEAT")
 							this.currentPlaylist.current(1)
 							this.currentPlaylist.next(2)
 						} else {
@@ -911,20 +954,39 @@ class VideoPlayer {
 				}
 			}
 
-			this.loading(true)
-			this.isPlaying(false)
 			this.currentPlaylist.lastShuffle = this.currentPlaylist.current()
 			const track = this.currentPlaylist.playlist()[this.currentPlaylist.current() - 1]
-			new Assembler(track['uuid'][0], null, (err, data) => {
-				let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
+			_view.storageHelper.getIndex(track['uuid'][0], (err, data) => {
+				index = data
+				let pieces = index.pieces as string[]
+				console.log(pieces)
 				this.loading(false)
-					console.log("should setup?")
-					setupPlayer(() => {
-						this.playlistPlayerElements.audio['src'] = url
-						this.playlistPlayerElements.textDisplay.textContent = track.filename
+				setupPlayer(() => {
+					this.setupMediaSource({audio: 'audio/mpeg'}, this.playlistPlayerElements.audio, () => {
+						pieces.map(piece => {
+							_view.storageHelper.getDecryptLoad(piece, (err, data) => {
+								this.mediaSource.duration = parseInt(track.media.duration as string)
+								this.playlistPlayerElements.textDisplay.textContent = track.filename
+								this.sourceBuffers.audio.appendBuffer(data)
+								this.isPlaying(true)
+							})
+						})
 					})
-				this.isPlaying(true)
+				})
 			})
+
+
+
+			// new Assembler(track['uuid'][0], null, (err, data) => {
+			// 	let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
+			// 	this.loading(false)
+			// 		console.log("should setup?")
+			// 		setupPlayer(() => {
+			// 			this.playlistPlayerElements.audio['src'] = url
+			// 			this.playlistPlayerElements.textDisplay.textContent = track.filename
+			// 		})
+			// 	this.isPlaying(true)
+			// })
 			// _view.storageHelper.createAssembler(track['uuid'][0], (err, data) => {
 			// 	let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
 			// 	this.loading(false)

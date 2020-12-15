@@ -7,10 +7,14 @@
 				.fileStorageLeftPanel
 
 					.fileStorageDesktopMenu.fileStorageNavigation
+						.desktopMenuItem(data-bind="click: () => { backToMain() }, clickBubble: false" style="z-index: 99")
+							.menuLeft(style="display: flex; align-items: center")
+								i.home.icon.desktopMenuIcon
+								p.desktopMenuText="Kloak"
 						<!-- ko foreach: ['files', 'playlists', 'downloads'] -->
 						.desktopMenuItem(data-bind="css: {desktopMenuActive: $parent.currentPage()[0] === $data}, click: () => { $parent.currentPage([$data]) } ")
 							.menuLeft(style="display: flex; align-items: center")
-								i.file.icon.desktopMenuIcon
+								i.file.icon.desktopMenuIcon(data-bind="css: {'file': $data === 'files', 'list': $data === 'playlists', 'ul': $data === 'playlists', 'download': $data === 'downloads'}")
 								p.desktopMenuText(data-bind="text: $data")
 							<!-- ko if: $parent.allHistory()[$data] -->
 							.menuRight
@@ -26,6 +30,7 @@
 							.menuLeft(style="display: flex; align-items: center")
 								i.camera.icon.desktopMenuIcon
 								p.desktopMenuText="record"
+								
 					<!-- ko if: playlistPlayer() -->
 					<!-- ko template: { 'name': 'fileStoragePlaylistPlayer', 'data': playlistPlayer } --><!-- /ko -->
 					<!-- /ko -->
@@ -72,8 +77,9 @@
 										p(style="margin: 0 !important; width: 10ch;")="Favorites"
 										p.fileItemCounterText(data-bind="text: favoriteFiles().length")
 									p(data-bind="click: () => { showSublist.favorites(!showSublist.favorites()) },text: showSublist.favorites() ? 'Hide' : 'Show'" style="margin: 0 !important; color: #01579B; text-decoration: underline; cursor: pointer ")
-								<!-- ko foreach: showSublist.favorites() && favoriteFiles -->
-								.fileStorageListItem(data-bind="click: (data, event) => { $parent.selectedFile() == data ? null : $parent.selectedFile(data); $parent.selectedPlaylist(null); $parent.isRightPanelOpen(true); $parent.showEditTag(false); $parent.currentEditTags(''); $parent.videoPlayer(null) }")
+								<!-- ko if: showSublist.favorites() -->
+								<!-- ko foreach: favoriteFiles -->
+								.fileStorageListItem(data-bind="click: (data, event) => { $parent.actionHandler(data, null, 'selectFile') }, clickBubble: false")
 									<!-- ko if: $parent.showCheckboxSelection() -->
 									input.fileStorageListItemCheckbox(type="checkbox" data-bind="click: (data, event) => { $parent.actionHandler(data, null, 'checked'); return true}, checked: $parent.checkedFiles().includes($data.uuid[0]), clickBubble: false " )
 									.fileStorageSpacer
@@ -93,12 +99,17 @@
 										p.fileStorageProgressText(data-bind="text: `${$root.storageHelper.currentAssembly()[$data.uuid].progress()}%`")
 									<!-- /ko -->
 								<!-- /ko -->
+								<!-- /ko -->
 							<!-- /ko -->
-							.fileStorageListContent(style="margin-top: 2rem;")
-								.fileStorageListHeader
-									p(style="margin: 0 !important; width: 10ch;")="All Files"
+							
+							.fileStorageListContent
+								.fileStorageListHeader(data-bind="style: {'margin-top': favoriteFiles().length && !showCheckboxSelection() ? '50px' : '0'}")
+									.fileStorageListHeaderText
+										p(style="margin: 0 !important; width: 10ch;")="All Files"
+									p(data-bind="click: () => { showSublist.files(!showSublist.files()) },text: showSublist.files() ? 'Hide' : 'Show'" style="margin: 0 !important; color: #01579B; text-decoration: underline; cursor: pointer ")
+								<!-- ko if: showSublist.files() -->
 								<!-- ko foreach: displayedFiles -->
-								.fileStorageListItem(data-bind="click: (data, event) => { $parent.selectedFile() == data ? null : $parent.selectedFile(data); $parent.selectedPlaylist(null); $parent.isRightPanelOpen(true); $parent.showEditTag(false); $parent.currentEditTags(''); $parent.videoPlayer(null) }")
+								.fileStorageListItem(data-bind="click: (data, event) => { $parent.actionHandler(data, null, 'selectFile') }, clickBubble: false")
 									<!-- ko if: $parent.showCheckboxSelection() -->
 									input.fileStorageListItemCheckbox(type="checkbox" data-bind="click: (data, event) => { $parent.actionHandler(data, null, 'checked'); return true}, checked: $parent.checkedFiles().includes($data.uuid[0]), clickBubble: false " )
 									.fileStorageSpacer
@@ -127,15 +138,16 @@
 										p.fileStorageProgressText(data-bind="text: `${$root.storageHelper.uploadPool()[$data.uuid].progress()}%`")
 									<!-- /ko -->
 								<!-- /ko -->
-
+								<!-- /ko -->
 							<!-- ko if: checkedFiles().includes($data['uuid']) -->
 							<!-- /ko -->
+							
 						<!-- /ko -->
 
 						<!-- ko if: currentPage()[0] === 'playlists' && currentPage().length === 1 -->
 						.fileStorageContentContainer
 							.fileStorageListItem.fileStoragePlaylistItem(data-bind="click: () => { showCreatePlaylist(true) }")
-								.fileStoragePlaylistThumbnail.fileStorageAddPlaylistButton
+								.fileStoragePlaylistThumbnail(style="display: flex;").fileStorageAddPlaylistButton
 									i.plus.icon.addPlaylistIcon
 								.fileStorageListItemTexts
 									<!-- ko if: showCreatePlaylist() -->
@@ -151,10 +163,21 @@
 							<!-- ko foreach: displayedPlaylists -->
 							.fileStorageListItem.fileStoragePlaylistItem(data-bind="click: (data, event) => { $parent.selectedPlaylist(data) == data ? null : $parent.selectedPlaylist(data); $parent.selectedFile(null); $parent.isRightPanelOpen(true); }")
 								//- .fileStoragePlaylistThumbnail(data-bind="css: {'fileStoragePlaylistPlaceholder': !$data.list().length}")
-								.fileStoragePlaylistThumbnail.fileStoragePlaylistPlaceholder
-								.fileStorageListItemTexts
-									p.fileStoragePlaylistItemTitle(data-bind="text: $data.name")
-									p.fileStoragePlaylistItemDate(data-bind="text: 'Date created: ' + $parent.getDate($data.date_created,'full')")
+								.itemLeft(style="display: flex; align-items: center;")
+									.fileStoragePlaylistThumbnail(data-bind="css: {'fileStoragePlaylistPlaceholder': !$data.thumbnails().length}")
+										<!-- ko if: $data.thumbnails().length -->
+										<!-- ko foreach: $data.thumbnails() -->
+										<!-- ko if: $data.data && $data.mime -->
+										img.fileStoragePlaylistThumbnailImage(data-bind="attr: {'src' : `data:${$data.mime};base64,${$data.data}`}")
+										<!-- /ko -->
+										<!-- /ko -->
+										<!-- /ko -->
+									.fileStorageListItemTexts
+										p.fileStoragePlaylistItemTitle(data-bind="text: $data.name")
+										p.fileStoragePlaylistItemDate(data-bind="text: 'Date created: ' + $parent.getDate($data.date_created,'full')")
+								.itemRight
+									button.deletePlaylistButton(data-bind="click: () => { $parent.actionHandler( $data, null, 'deletePlaylist' ) }, clickBubble: false")
+										i.times.circle.icon.fileStorageListItemIcon(style="color: #757575; font-size: 1.5rem !important;")
 							<!-- /ko -->
 						<!-- /ko -->
 
@@ -182,48 +205,58 @@
 					//- <!-- /ko -->
 
 
-					<!-- ko if: selectedFile() || selectedPlaylist() -->			
-					.fileStorageRightPanelButton(data-bind="click: () => { selectedFile(null); selectedPlaylist(null)}")
-						i.caret.right.icon(style="margin: 0 !important; height: 1.18em")
-					<!-- /ko -->
-
-					<!-- ko if: selectedFile() || selectedPlaylist() -->	
-					.fileStorageRightPanel(data-bind="style: {'width': isRightPanelOpen() ? '100%' : '0', 'padding': isRightPanelOpen() ? '3rem 20px 2rem 20px' : '0'}")
-						<!-- ko if: selectedFile() -->
+					.fileStorageRightPanel(data-bind="style: {padding: currentPage()[0] === 'files' ? '1.5rem 20px 2rem 20px' : '0rem'}")
+						<!-- ko if: currentPage()[0] === 'files' -->
 						.fileStorageDetailHeader
+							<!-- ko if: selectedFile() -->
 							i.file.outline.icon.fileStorageListItemIcon(data-bind="class: fileType( selectedFile().filename() )" style="font-size: 2rem !important")
 							p.fileStorageDetailHeaderTitle(data-bind="text: selectedFile().filename()")
+							<!-- /ko -->
 						//- <!-- ko if: filePreview(selectedFile().filename()) -->
 						.fileStorageDetailPreview#fileStorageDetailPreview
+							<!-- ko if: !selectedFile() -->
+							p="Select a file to view details"
+							<!-- /ko -->
+							<!-- ko if: selectedFile() -->
 							<!-- ko if: ['powerpoint', 'excel', 'word', 'archive', ''].includes(fileType(selectedFile().filename())) -->
-							.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder(data-bind="style: {display: isRightPanelOpen() ? 'flex' : 'initial'}" style="width: 100%; object-fit: cover; height: 20rem; justify-content: center; align-items: center;")
+							.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder(style="width: 100%; object-fit: cover; height: 15rem; justify-content: center; align-items: center;")
 								i.file.outline.icon.fileStorageListItemIcon(data-bind="class: fileType(selectedFile().filename())" style="font-size: 6rem !important")
 							<!-- /ko -->
 							//- <!-- ko if: selectedFile().youtube -->
 							//- <!-- /ko -->
 
 							<!-- ko if: fileType(selectedFile().filename()) === 'pdf' -->
-							iframe.fileStoragePreviewItem#previewPdf(data-bind="attr: {'src': getPreview(selectedFile(), 'pdf')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; height: 20rem" frameborder="0")
+							iframe.fileStoragePreviewItem#previewPdf(data-bind="attr: {'src': getPreview(selectedFile(), 'pdf')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; height: 15rem" frameborder="0")
 							<!-- /ko -->
 
 							<!-- ko if: fileType(selectedFile().filename()) === 'image'-->
-							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'image')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 20rem; object-position: top;")
+							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'image')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 15rem; object-position: top;")
 							<!-- /ko -->
 
 							<!-- ko if: fileType(selectedFile().filename()) === 'video' || fileType(selectedFile().filename()) === 'audio' -->
 
 							<!-- ko if: selectedFile().youtube -->
-							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'youtube')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 20rem; object-position: top;")
-							i.play.icon.fileStoragePreviewPlay(data-bind="click: () => {actionHandler(selectedFile(), null, 'playVideo')}")
+							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'youtube')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 15rem; object-position: top;")
+							.fileStoragePreviewPlay
+								i.play.icon.fileStoragePreviewPlayIcon(data-bind="click: () => { actionHandler(selectedFile(), null, 'playVideo')} ")
 							<!-- /ko -->
 
-							<!-- ko if: selectedFile().videoData -->
-							.fileStoragePreviewPlaceholder.placeholderGradient#fileStoragePreviewPlaceholder(style="width: 100%; object-fit: cover; height: 20rem; justify-content: center; align-items: center;")
-							i.play.icon.fileStoragePreviewPlay(data-bind="click: () => {actionHandler(selectedFile(), null, 'playVideo')}")
+							<!-- ko if: selectedFile().media && selectedFile().media.fastStart -->
+							.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder(data-bind="css: {'placeholderGradient': !selectedFile().media.thumbnail.data || !selectedFile().media.thumbnail.mime}" style="width: 100%; object-fit: cover; height: 15rem; justify-content: center; align-items: center;")
+								<!-- ko if: selectedFile().media.thumbnail.data && selectedFile().media.thumbnail.mime -->
+								img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'media')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: contain; height: 15rem; object-position: center;")
+								<!-- /ko -->
+							.fileStoragePreviewPlay
+								i.play.icon.fileStoragePreviewPlayIcon(data-bind="click: () => { actionHandler(selectedFile(), null, 'playVideo')} ")
+							<!-- /ko -->
+							<!-- ko if: selectedFile().media && !selectedFile().media.fastStart -->
+							.fileStoragePreviewPlaceholder#fileStoragePreviewPlaceholder(style="width: 100%; object-fit: cover; height: 15rem; display: flex; justify-content: center; align-items: center;")
+								i.file.outline.icon.fileStorageListItemIcon(data-bind="class: fileType(selectedFile().filename())" style="font-size: 6rem !important")
 							<!-- /ko -->
 							<!-- /ko -->
 							<!-- ko if: videoPlayer() -->
 							<!-- ko template: { 'name': 'kloakVideoPlayer', 'data': videoPlayer } --><!-- /ko -->
+							<!-- /ko -->
 							<!-- /ko -->
 							//- <!-- ko if: selectedFile().youtube -->
 							//- <!-- ko if: videoPlayer() -->
@@ -236,7 +269,8 @@
 							<!-- /ko -->
 
 						//- <!-- /ko -->
-						.fileStorageDetailInformation(data-bind="style: {'padding': isRightPanelOpen() ? '1.5rem 1.5rem 0 1.5rem' : '0'}")
+						<!-- ko if: selectedFile() -->
+						.fileStorageDetailInformation
 							<!-- ko if: fileType(selectedFile().filename()) -->
 							.fileStorageDetailRow
 								p.fileStorageDetailTitle="Type:"
@@ -248,9 +282,9 @@
 							.fileStorageDetailRow
 								p.fileStorageDetailTitle="Size:"
 								p.fileStorageDetailText(data-bind="text: formatDetailSize(selectedFile().size)")
-							.fileStorageDetailRow
-								p.fileStorageDetailTitle="Source:"
-								p.fileStorageDetailText(data-bind="text: selectedFile().domain")
+							//- .fileStorageDetailRow
+							//- 	p.fileStorageDetailTitle="Source:"
+							//- 	p.fileStorageDetailText(data-bind="text: selectedFile().domain")
 							.fileStorageDetailRow
 								p.fileStorageDetailTitle="Last viewed:"
 								p.fileStorageDetailText(data-bind="text: getDate(selectedFile().last_viewed(), 'full')")
@@ -282,31 +316,44 @@
 									.fileStorageDetailAction(style="color: #E57373" data-bind="click: () => { actionHandler(selectedFile(), null, 'delete' )}")
 										i.trash.icon.detailAction
 						<!-- /ko -->
-
-						<!-- ko if: selectedPlaylist() -->
+						<!-- /ko -->
+						<!-- ko if: selectedPlaylist() && currentPage()[0] === 'playlists' -->
 						.fileStoragePlaylistDetail
 							.fileStoragePlaylistTop
-								.fileStorageDetailPlaylistThumbnail.fileStoragePlaylistPlaceholder
+								.fileStorageDetailPlaylistThumbnail(data-bind="css: {'fileStoragePlaylistPlaceholder': !selectedPlaylist().thumbnails().length}")
+									<!-- ko if: selectedPlaylist().thumbnails().length -->
+									img.fileStoragePlaylistThumbnailImage(data-bind="attr: {'src' : `data:${selectedPlaylist().thumbnails()[0].mime};base64,${selectedPlaylist().thumbnails()[0].data}`}")
+									<!-- /ko -->
+									.fileStorageThumbnailHeader
+										p.fileStorageDetailPlaylistHeader="Playlist"
+										p.fileStorageDetailPlaylistTitle(data-bind="text: selectedPlaylist().name")
+										button.fileStoragePlaylistButton.fileStoragePlaylistPlayButton(data-bind="click: () => { actionHandler(null, null, 'playPlaylist') }")
+											i.play.icon(style="margin: 2px 0 0 4px !important")
 								//- .fileStorageDetailPlaylistThumbnail(data-bind="css: {fileStoragePlaylistPlaceholder: !selectedPlaylist().list().length}")
-								p.fileStorageDetailPlaylistHeader="Playlist"
-								p.fileStorageDetailPlaylistTitle(data-bind="text: selectedPlaylist().name")
-								.fileStoragePlaylistActions
-									button.ui.primary.basic.button.fileStoragePlaylistButton(data-bind="click: () => { actionHandler(null, null, 'playPlaylist') }")="Play"
-									button.ui.positive.basic.button.fileStoragePlaylistButton(data-bind="click: () => { actionHandler(null, null, 'shufflePlaylist') }" style="margin-left: 10px;")="Shuffle"
+								//- p.fileStorageDetailPlaylistHeader="Playlist"
 							.fileStoragePlaylistBottom
-								p.playlistContentHeader="Playlist List"
+								.fileStoragePlaylistActions
+									button.fileStoragePlaylistButton(data-bind="click: () => { actionHandler(null, null, 'repeatPlaylist') }")
+										i.sync.alternate.icon
+									button.fileStoragePlaylistButton(data-bind="click: () => { actionHandler(null, null, 'shufflePlaylist') }")
+										i.random.icon
+								//- p.playlistContentHeader="Playlist List"
 								.fileStoragePlaylistContent
 									<!-- ko foreach: selectedPlaylist().list() -->
 									.fileStoragePlaylistContentItem
-										<!-- ko if: $parent.fileType($parent.retrieveFromAllFileHistory($data, 'filename')) === 'audio' -->
-										i.file.music.icon.fileStorageListItemIcon(style="font-size: 1.25rem !important")
-										<!-- /ko -->
-										p(data-bind="text: $parent.retrieveFromAllFileHistory($data, 'filename')" style="margin-left: 10px;")
+										.fileStoragePlaylistContentRight
+											<!-- ko if: $parent.fileType($parent.retrieveFromAllFileHistory($data, 'filename')) === 'audio' -->
+											i.file.music.icon.fileStorageListItemIcon(style="font-size: 1.25rem !important; color: #eceff1")
+											<!-- /ko -->
+											.playlistTrackText(style="margin-left: 20px;")
+												p.playlistTrackName(data-bind="text: $parent.retrieveFromAllFileHistory($data, 'filename')")
+												p.playlistTrackArtist(data-bind="text: 'Artist: ' + ($parent.retrieveFromAllFileHistory($data, 'media').artist || 'Unknown')")
+										.fileStoragePlaylistContentRight
+											p.playlistTrackDuration(data-bind="text: $parent.formatTime($parent.retrieveFromAllFileHistory($data, 'media').duration)")
 									<!-- /ko -->
 								.fileStoragePlaylistContentButtons()
 									button.ui.primary.button(data-bind="text: currentPage().length === 1 ? 'Edit' : 'Save', click: () => { actionHandler(null, null, 'editPlaylist')}")
 						<!-- /ko -->
-					<!-- /ko -->
 					
 
 

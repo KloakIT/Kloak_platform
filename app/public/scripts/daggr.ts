@@ -190,7 +190,7 @@ private currentYoutubeObj = null
 			return this.saveDaggrPreperences ()
 		}
 		
-		return _view.storageHelper.decryptLoad ( user.chatDataUUID, ( err, data ) => {
+		return _view.storageHelper.getDecryptLoad ( user.chatDataUUID, ( err, data ) => {
 			if ( err ) {
 				return _view.connectInformationMessage.showErrorMessage ( err )
 			}
@@ -256,7 +256,7 @@ private currentYoutubeObj = null
 	}
 
 	private getDaggrPreferences () {
-		return _view.storageHelper.decryptLoad ( this.daggr_preperences_save_UUID, ( err, data ) => {
+		return _view.storageHelper.getDecryptLoad ( this.daggr_preperences_save_UUID, ( err, data ) => {
 
 			if ( err ) {
 				return _view.connectInformationMessage.showErrorMessage ( err )
@@ -653,7 +653,7 @@ private currentYoutubeObj = null
 
 		const user = this.currentUser()[ index ]
 
-		return _view.storageHelper.decryptLoad ( user.chatDataUUID, ( err, data ) => {
+		return _view.storageHelper.getDecryptLoad ( user.chatDataUUID, ( err, data ) => {
 			if ( err ) {
 				return _view.connectInformationMessage.showErrorMessage ( err )
 			}

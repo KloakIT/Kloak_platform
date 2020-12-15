@@ -426,7 +426,7 @@ var view_layout;
             });
         }
         getSystemPreferences(CallBack) {
-            return this.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
+            return this.storageHelper.getDecryptLoad(this.localServerConfig().account, (err, data) => {
                 if (err) {
                     return this.connectInformationMessage.showErrorMessage(err);
                 }
@@ -579,7 +579,7 @@ var view_layout;
                 const message = obj.Args[1];
                 const sender = message.senderKeyID;
                 message.isSelf = false;
-                return _view.storageHelper.decryptLoad(this.systemPreferences.daggr_UUID, (err, data) => {
+                return _view.storageHelper.getDecryptLoad(this.systemPreferences.daggr_UUID, (err, data) => {
                     if (err) {
                         return _view.connectInformationMessage.showErrorMessage(err);
                     }
@@ -598,7 +598,7 @@ var view_layout;
                         if (err) {
                             return _view.connectInformationMessage.showErrorMessage(err);
                         }
-                        return _view.storageHelper.decryptLoad(contact.chatDataUUID, (err, data) => {
+                        return _view.storageHelper.getDecryptLoad(contact.chatDataUUID, (err, data) => {
                             if (err) {
                                 return _view.connectInformationMessage.showErrorMessage(err);
                             }
@@ -624,7 +624,7 @@ var view_layout;
             const index = mainMenuArray.findIndex(n => n.name === 'daggr');
             if (index > 0) {
                 const daggr = mainMenuArray[index];
-                _view.storageHelper.decryptLoad(this.localServerConfig().account, (err, data) => {
+                _view.storageHelper.getDecryptLoad(this.localServerConfig().account, (err, data) => {
                     if (err) {
                         return _view.connectInformationMessage.showErrorMessage(err);
                     }

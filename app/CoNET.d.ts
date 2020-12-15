@@ -732,6 +732,7 @@ interface kloakIndex {
 	filename: string
 	fileExtension: string
 	totalLength: number
+	online: boolean
 	contentType: string
 	pieces: Array<string> | {[offset:number]: string}
 	finished: boolean
@@ -770,14 +771,20 @@ interface history {
 }
 
 interface playlist {
+	uuid: string
 	name: string
 	date_created: Date
 	list?: Array<string>
+	thumbnails?: Array<{
+		data: string
+		mime: string
+	}>
 }
 
 interface fileHistory {
 	uuid: Array<string>
 	filename: string
+	location: 'local' | 'online'
 	time_stamp?: Date
 	last_viewed?: Date | any
 	path?: string
@@ -785,10 +792,16 @@ interface fileHistory {
 	tags?: string[]
 	size?: number
 	favorite?: boolean
-	videoData?: {
+	media?: {
 		duration: string | number,
 		mimeType: string,
-		fastStart: boolean
+		fastStart: boolean,
+		artist?: string,
+		album?: string
+		thumbnail?: {
+			data: string,
+			mime: string
+		}
 	}
 	youtube?: {
 		id?: string,

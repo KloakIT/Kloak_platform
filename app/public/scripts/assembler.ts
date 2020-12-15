@@ -4,6 +4,7 @@ class Assembler {
 	private progressIndicator = null
 	private filePieces = null
 	private totalPieces: number = null
+	private isOnline = false
 	private assembler: Worker
 	private magicNumber: string
 	private callback: Function
@@ -26,6 +27,7 @@ class Assembler {
 			try {
 				this.log(`File: ${this.requestUuid} got index.`)
 				this.downloadIndex = data
+				this.isOnline = this.downloadIndex.online
 				this.filePieces = this.downloadIndex.pieces
 				this.totalPieces = this.filePieces.length
 				this.updateProgress()
@@ -100,11 +102,19 @@ class Assembler {
 		}
 	}
 
-	retrieveData = (uuid: string) => {
+	retrieveData = (uuid) => {
 		if (!uuid) {
 			return
 		}
-		_view.storageHelper.decryptLoad(uuid, (err, data) => {
+
+		// if (this.isOnline) {
+		// 	_view.storageHelper.decryptRetrieveOnline(piece as string[], (err, data) => {
+		// 		console.log(data)
+		// 	})
+		// 	console.log(piece)
+		// 	console.log("ONLINE")
+		// } else {
+			_view.storageHelper.getDecryptLoad(uuid as string, (err, data) => {
 			if (err) {
 				this.callback(err, null)
 				return
@@ -112,6 +122,7 @@ class Assembler {
 			this.assembler.postMessage({cmd: 'DATA', payload: {uuid, buffer: data, eof: this.filePieces.length === 0}}, [data])
 		})
 	}
+	// }
 
 	messageChannel = async (e) => {
 		const command = e.data.cmd

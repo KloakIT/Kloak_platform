@@ -123,6 +123,7 @@ class MediaViewer {
 				filename: com.downloadFilename,
 				fileExtension: extension,
 				totalLength: com.totalLength ? com.totalLength : null,
+				online: false,
 				contentType: com.contentType,
 				pieces: [...downloadedPieces],
 				finished: com.eof
@@ -142,10 +143,9 @@ class MediaViewer {
 				time_stamp: date,
 				last_viewed: date,
 				path: "",
+				location: 'local',
 				url: `https://www.youtube.com/watch?v=${youtubeStreamingData['videoDetails']['videoId']}`,
-				domain: "https://www.youtube.com",
-				tag: ['youtube', extension, 'video'],
-				color: null,
+				tags: ['youtube', extension, 'video'],
 				size: com.totalLength ? com.totalLength : null,
 				youtube: {
 					id: youtubeId,
@@ -156,11 +156,11 @@ class MediaViewer {
 				}
 			}
 
-			_view.storageHelper.saveHistory(history, (err, data) => {
-				if (err) {
-					return console.log(err)
-				}
-			})
+			// _view.storageHelper.replaceHistory(history, (err, data) => {
+			// 	if (err) {
+			// 		return console.log(err)
+			// 	}
+			// })
 		}
 
 		let history = false
@@ -218,7 +218,7 @@ class MediaViewer {
 		console.log(this.sourceBuffers['video'].buffered)
 		console.log(this.customPlayer.player['currentTime'])
 		console.log(pieces)
-		_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+		_view.storageHelper.getDecryptLoad(pieces.shift(), (err, data) => {
 			if (err) {
 				return console.log(err)
 			}
@@ -284,7 +284,7 @@ class MediaViewer {
 			callback(true)
 			return
 		}
-		_view.storageHelper.decryptLoad(pieces.shift(), (err, data) => {
+		_view.storageHelper.getDecryptLoad(pieces.shift(), (err, data) => {
 			if (data) {
 				sourceBuffer.appendBuffer(data)
 				console.log(data)

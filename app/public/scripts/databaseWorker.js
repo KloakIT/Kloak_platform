@@ -83,7 +83,7 @@ class DatabaseWorker {
             });
         });
     }
-    decryptLoad(uuid, callback) {
+    getDecryptLoad(uuid, callback) {
         let t0 = performance.now();
         const pgpStart = '-----BEGIN PGP MESSAGE-----\n\n';
         const pgpEnd = '\n-----END PGP MESSAGE-----';
@@ -146,7 +146,7 @@ class DatabaseWorker {
         });
     }
     async saveFileHistory(file, callback) {
-        this.decryptLoad('history', (err, data) => {
+        this.getDecryptLoad('history', (err, data) => {
             let history = {};
             if (data) {
                 const json = JSON.parse(Buffer.from(data).toString());
@@ -165,6 +165,6 @@ class DatabaseWorker {
         });
     }
     getHistory(callback) {
-        this.decryptLoad('history', callback);
+        this.getDecryptLoad('history', callback);
     }
 }

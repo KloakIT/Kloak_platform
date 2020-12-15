@@ -3,6 +3,7 @@ class Assembler {
         this.progressIndicator = null;
         this.filePieces = null;
         this.totalPieces = null;
+        this.isOnline = false;
         this.getIndex = (uuid) => {
             _view.storageHelper.getIndex(uuid, (err, data) => {
                 if (err) {
@@ -13,6 +14,7 @@ class Assembler {
                 try {
                     this.log(`File: ${this.requestUuid} got index.`);
                     this.downloadIndex = data;
+                    this.isOnline = this.downloadIndex.online;
                     this.filePieces = this.downloadIndex.pieces;
                     this.totalPieces = this.filePieces.length;
                     this.updateProgress();
@@ -85,7 +87,14 @@ class Assembler {
             if (!uuid) {
                 return;
             }
-            _view.storageHelper.decryptLoad(uuid, (err, data) => {
+            // if (this.isOnline) {
+            // 	_view.storageHelper.decryptRetrieveOnline(piece as string[], (err, data) => {
+            // 		console.log(data)
+            // 	})
+            // 	console.log(piece)
+            // 	console.log("ONLINE")
+            // } else {
+            _view.storageHelper.getDecryptLoad(uuid, (err, data) => {
                 if (err) {
                     this.callback(err, null);
                     return;
@@ -93,6 +102,7 @@ class Assembler {
                 this.assembler.postMessage({ cmd: 'DATA', payload: { uuid, buffer: data, eof: this.filePieces.length === 0 } }, [data]);
             });
         };
+        // }
         this.messageChannel = async (e) => {
             const command = e.data.cmd;
             const payload = e.data.payload;
