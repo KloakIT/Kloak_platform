@@ -104,7 +104,7 @@ block jumbotron1
 					.ui.four.cards
 						<!-- ko foreach: mainManuItems -->
 						//-.ui.middle.aligned.item
-						.card( style = "background-color: rgba(0,0,0,0);box-shadow: none;")
+						.card( data-bind = "style: { 'opacity': ( online && $root.networkConnect() === true || ! online ) ? '100%' : '40%' }" style = "background-color: rgba(0,0,0,0);box-shadow: none;")
 							a( href = "#" data-bind = " click: () => { if ( online && $root.networkConnect() === true || !online ) { $root.appClick ( $index());} }" )
 								.svg( data-bind = "html: img ")
 								<!-- ko if: notice() > 0 -->

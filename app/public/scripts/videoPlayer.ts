@@ -38,7 +38,6 @@ class VideoPlayer {
 		kloakBufferedBar?: HTMLElement,
 		kloakCurrentTimeBar?: HTMLElement,
 		kloakDurationText?: HTMLElement,
-		kloakVideoSpeed?: HTMLElement,
 		kloakPlayButton?: HTMLElement,
 		kloakStopButton?: HTMLElement,
 		kloakFastForwardButton?: HTMLElement,
@@ -64,21 +63,6 @@ class VideoPlayer {
 			if (this.playlistPlayerElements?.audio) {
 				playing ? this.playlistPlayerElements?.audio['play']() : this.playlistPlayerElements?.audio['pause']()
 			}
-		})
-
-		this.playbackSpeed.subscribe(speed => {
-			this.playerElements['kloakVideo']['playbackRate'] = speed
-			this.playerElements['kloakVideoSpeed'].textContent = `${speed}x`
-			// switch (speed) {
-			// 	case 1:
-			// 		this.playerElements['kloakVideo']['playbackRate'] = speed
-			// 		this.playerElements['kloakVideoSpeed'].textContent = `${speed}x`
-			// 		break;
-			// 	case 2:
-			// 		this.playerElements['kloakVideo']['playbackRate'] = speed
-			// 		this.playerElements['kloakVideoSpeed'].textContent = `${speed}x`
-			// 		break;
-			// 	}
 		})
 	}
 
@@ -145,7 +129,6 @@ class VideoPlayer {
 			kloakBufferedBar: document.getElementById("kloakBufferedBar"),
 			kloakCurrentTimeBar: document.getElementById("kloakCurrentTimeBar"),
 			kloakDurationText: document.getElementById("kloakVideoDuration"),
-			kloakVideoSpeed: document.getElementById("kloakVideoSpeed"),
 			kloakPlayButton: document.getElementById("kloakVideoPlay"),
 			kloakStopButton: document.getElementById("kloakVideoStop"),
 			kloakFastForwardButton: document.getElementById("kloakFastForward"),
@@ -304,20 +287,6 @@ class VideoPlayer {
 		})
 	}
 
-	// checkFileExistence = (youtubeId: string, callback: Function) => {
-	// 	_view.storageHelper.getFileHistory((err, data: Array<fileHistory>) => {
-	// 		if (err) {
-	// 			return err
-	// 		}
-	// 		for(let i = 0; i < data.length; i++) {
-	// 			if (data[i]['youtube']['id'] === youtubeId) {
-	// 				return callback(data[i].uuid)
-	// 			}
-	// 		}
-	// 		return callback(null)
-	// 	})
-	// }
-
 	// streamingData object from ytplayer.config.args
 
 	youtubePlayer = (streamingData, watchUrl?: string) => {
@@ -331,10 +300,7 @@ class VideoPlayer {
 		}
 		let url = null
 		let offset = 0
-
-		console.log(streamingData)
 		
-
 		this.retrievePlayerElements(() => {
 			this.loading(false)
 
@@ -377,7 +343,6 @@ class VideoPlayer {
 							}
 					})
 				}
-				// appendNext(timestamps, index.pieces, this.sourceBuffers['video'])
 			})
 
 			const beginDownloadQueue = (url, range?: string, callback?: Function) => {
@@ -390,7 +355,6 @@ class VideoPlayer {
 						if (!this.canPlay()) {
 							console.log("SHOULD APPEND")
 							this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
-							// this.appendNext([downloadUuidQueue.shift()], this.sourceBuffers['video'])
 						}
 					}
 				}, (requestUuid, com: kloak_downloadObj, data) => {
@@ -403,7 +367,6 @@ class VideoPlayer {
 					time = time ? time : 0
 					downloadedPieces[offset] = com.downloadUuid
 					offset = com['currentStartOffset'] + com['currentlength']
-					// downloadedPieces[time] = com.downloadUuid
 					if (!history) {
 						if (!duration) {
 							duration = this.hmsToSecondsOnly(com['duration'])
@@ -419,18 +382,11 @@ class VideoPlayer {
 
 					_view.storageHelper.save(com.downloadUuid, data, (err, data) => {
 						if (data) {
-							// if (range) {
-							// 	callback(com, data)
-							// } else {
 								createUpdateIndex(requestUuid, com, () => {
 									if (this.canPlay()) {
 										downloadUuidQueue.push(com.downloadUuid)
 									}
-									// if (!this.canPlay() && !this.sourceBuffers['video'].updating) {
-									// 	this.appendNext([downloadUuidQueue.shift()], this.sourceBuffers['video'])
-									// }
 								})
-							// }
 						}
 					})
 					if (com.eof) {
@@ -441,23 +397,7 @@ class VideoPlayer {
 
 			this.setupMediaSource({video: format['mimeType'] || 'video/mp4; codecs="avc1.64001F, mp4a.40.2"'}, this.playerElements.kloakVideo, () => {
 				this.setupPlayer()
-
-				// this.checkFileExistence(youtubeId, (uuid) => {
-				// 	let index = null
-				// 	if (uuid) {
-				// 		this.getVideoIndex(uuid[0], (data) => {
-				// 			index = data
-				// 			downloadedPieces = index.pieces
-				// 			downloadUuidQueue = Object.values(downloadedPieces)
-				// 			this.appendNext(downloadUuidQueue, this.sourceBuffers['video'])
-				// 			// if (!index.finished) {
-				// 			// 	beginDownloadQueue(`https://www.youtube.com/watch?v=${youtubeId}`, `bytes=${Object.keys(downloadedPieces)[downloadUuidQueue.length - 1]}-${index.totalLength}`)
-				// 			// }
-				// 		})
-				// 	} else {
-						beginDownloadQueue(url, null)
-				// 	}
-				// })
+				beginDownloadQueue(url, null)
 			})
 
 			const createUpdateIndex = (requestUuid, com: kloak_downloadObj, done: Function) => {
@@ -511,44 +451,6 @@ class VideoPlayer {
 		})
 	}
 
-	
-
-	// Youtube stream with URL
-
-	// youtubeStream = (url: string) => {
-	// 	let downloadedPieces = []
-	// 	let downloadUuidQueue = []
-
-	// 	const cmd = {
-	// 		command: 'CoSearch',
-	// 		Args: [ url ],
-	// 		error: null,
-	// 		subCom: 'youtube_getVideoMp4',
-	// 		requestSerial: uuid_generate()
-	// 	}
-
-	// 	this.retrievePlayerElements(() => {
-	// 		this.loading(false)
-
-	// 		if (!this.adPlaying()) {
-	// 			this.playAds("play")
-	// 		}
-	// 	})
-
-	// 	this.playerElements['kloakVideo'].addEventListener("needBuffer", () => {
-	// 		console.log("NEED BUFFER")
-	// 		if (downloadUuidQueue.length) {
-	// 			_view.storageHelper.decryptLoad(downloadUuidQueue.shift(), (err, data) => {
-	// 				if (err) return
-	// 					if (data) {
-	// 						this.sourceBuffers['video'].appendBuffer(Buffer.from(data))
-	// 					}
-	// 			})
-	// 		}
-	// 		// appendNext(timestamps, index.pieces, this.sourceBuffers['video'])
-	// 	})
-	// }
-
 	appendNext = (pieces, sourceBuffer: SourceBuffer) => {
 		if (!pieces.length) {
 			this.endOfStream()
@@ -576,58 +478,27 @@ class VideoPlayer {
 	}
 
 	downloadedYoutube = (fileHistory) => {
-
-		// Testing shuffle
-		const shuffle = (array) => {
-			for (let i = array.length - 1; i > 0; i--) {
-			  let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-		  
-			  // swap elements array[i] and array[j]
-			  // we use "destructuring assignment" syntax to achieve that
-			  // you'll find more details about that syntax in later chapters
-			  // same can be written as:
-			  // let t = array[i]; array[i] = array[j]; array[j] = t
-			  [array[i], array[j]] = [array[j], array[i]];
-			}
-		  }
-
 		this.retrievePlayerElements(() => {
 
 			this.skipAdvertisements(true)
 			this.loading(false)
 			let index = null
 			let pieces = []
-			let timestamps = []
-			let currentFetchTimestamps = []
 			let tags: Array<string> = ko.isObservable(fileHistory.tags) ? fileHistory.tags() : fileHistory.tags
 
-			const appendNext = (pieces, sourceBuffer: SourceBuffer, from?: number) => {
+			const appendNext = (sourceBuffer: SourceBuffer) => {
 				if (sourceBuffer) {
-					// if (from) {
-					// 	const n = pieces.slice(from - 1)
-					// 	console.log(n)
-					// 	return
-					// }
-					// if (from) {
-					// 	for(let i = timestamps.length; i >= 0; i++) {
-					// 		if (timestamps[i] > from) {
-					// 			continue
-					// 		} else {
-					// 			currentFetchTimestamps = timestamps.slice(i)
-					// 			return
-					// 		}
-					// 	}
-					// }
 					if (pieces.length) {
-						_view.storageHelper.getDecryptLoad(pieces.shift(), (err, data) => {
+						let yyy = ''
+						_view.storageHelper.getDecryptLoad(yyy = pieces.shift(), (err, data) => {
 							if (err) {
 								return
 							}
 							if (data) {
-								console.log(Buffer.from(data))
+								console.log(`piece UUID = ${yyy}`,Buffer.from(data))
 								sourceBuffer.appendBuffer(Buffer.from(data))
 								if (this.mediaSource.duration < 180) {
-									appendNext(pieces, sourceBuffer)
+									appendNext(sourceBuffer)
 								}
 							}
 						})
@@ -643,7 +514,7 @@ class VideoPlayer {
 				if (this.mediaSource.readyState === 'ended' || this.mediaSource.duration < 180) {
 					return
 				}
-				appendNext(pieces, this.sourceBuffers['video'])
+				appendNext(this.sourceBuffers['video'])
 			})
 
 			this.playerElements['kloakSeekBar'].addEventListener("click", (e) => {
@@ -652,22 +523,10 @@ class VideoPlayer {
 				const percent = (x / full)
 				const currentTime = percent * this.mediaSource.duration
 				this.playerElements['kloakVideo']['currentTime'] = currentTime
-				const n = pieces.slice((((currentTime * fileHistory['youtube']['bitrate']) / 8) / 1048576) - 1)
-				appendNext(n, this.sourceBuffers['video'])
-				// this.sourceBuffers['video'].abort()
-
-				// console.log(index.pieces)
-				// FIX HEREEEEE
-				// appendNext()
-				// this.sourceBuffers['video'].abort()
-				// this.playerElements.kloakVideo['currentTime'] = percent * this.mediaSource.duration
-			})
-
-			this.playerElements['kloakVideo'].addEventListener('ended', () => {
-				console.log("VIDEO ENDEDDDDD")
+				// const n = pieces.slice((((currentTime * fileHistory['youtube']['bitrate']) / 8) / 1048576) - 1)
+				appendNext(this.sourceBuffers['video'])
 			})
 			
-
 			switch (true) {
 				case ['youtube', 'mp4'].every(val => tags.includes(val)):
 					_view.storageHelper.getIndex(fileHistory.uuid[0], (err, data) => {
@@ -681,59 +540,55 @@ class VideoPlayer {
 								this.setupPlayer()
 								this.isPlaying(true)
 								pieces = Object.values(index.pieces)
-								// let temp = timestamps.splice(0,3)
-								// let n = timestamps.splice(3)
-								// shuffle(n)
-								// timestamps = [...temp, ...n]
-								appendNext(Object.values(pieces), this.sourceBuffers['video'])
+								appendNext(this.sourceBuffers['video'])
 							})
 						}
 					})
 					break;
-				case ['youtube', 'audio'].every(val => tags.includes(val)):
-				case ['youtube', 'webm'].every(val => tags.includes(val)):
-					if (fileHistory.uuid.length > 1) {
-						console.log(fileHistory)
-						let videoIndex = null
-						let audioIndex = null
-						const getIndex = (uuid, callback: Function) => {
-							if (uuid) {
-								_view.storageHelper.getIndex(uuid, (err, data) => {
-									if (err) {
-										return
-									}
-									if (data) {
-										callback(JSON.parse(Buffer.from(data).toString()))
-									}
-								})
-							} else {
-								callback()
-							}
-						}
+				// case ['youtube', 'audio'].every(val => tags.includes(val)):
+				// case ['youtube', 'webm'].every(val => tags.includes(val)):
+				// 	if (fileHistory.uuid.length > 1) {
+				// 		console.log(fileHistory)
+				// 		let videoIndex = null
+				// 		let audioIndex = null
+				// 		const getIndex = (uuid, callback: Function) => {
+				// 			if (uuid) {
+				// 				_view.storageHelper.getIndex(uuid, (err, data) => {
+				// 					if (err) {
+				// 						return
+				// 					}
+				// 					if (data) {
+				// 						callback(JSON.parse(Buffer.from(data).toString()))
+				// 					}
+				// 				})
+				// 			} else {
+				// 				callback()
+				// 			}
+				// 		}
 		
-						getIndex(fileHistory.uuid[0], (index) => {
-							if (index) {
-								videoIndex = index
-							}
-							getIndex(fileHistory.uuid[1], (index) => {
-								audioIndex = index
-								this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
-									this.mediaSource.duration = fileHistory['youtube'].duration
-									this.setupPlayer()
-									this.playerElements['kloakVideo']['poster'] = _view.storageHelper.dataURItoBlob(fileHistory['youtube']['thumbnail']['data'], fileHistory['youtube']['thumbnail']['mime'])
-									this.isPlaying(true)
-									if (videoIndex) {
-										appendNext(videoIndex['pieces'], this.sourceBuffers['video'])
-									}
-									if (audioIndex) {
-										appendNext(audioIndex['pieces'], this.sourceBuffers['audio'])
-									}
-								})
-							})
-						});
-						return
-					}
-					break;
+				// 		getIndex(fileHistory.uuid[0], (index) => {
+				// 			if (index) {
+				// 				videoIndex = index
+				// 			}
+				// 			getIndex(fileHistory.uuid[1], (index) => {
+				// 				audioIndex = index
+				// 				this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
+				// 					this.mediaSource.duration = fileHistory['youtube'].duration
+				// 					this.setupPlayer()
+				// 					this.playerElements['kloakVideo']['poster'] = _view.storageHelper.dataURItoBlob(fileHistory['youtube']['thumbnail']['data'], fileHistory['youtube']['thumbnail']['mime'])
+				// 					this.isPlaying(true)
+				// 					if (videoIndex) {
+				// 						appendNext(videoIndex['pieces'], this.sourceBuffers['video'])
+				// 					}
+				// 					if (audioIndex) {
+				// 						appendNext(audioIndex['pieces'], this.sourceBuffers['audio'])
+				// 					}
+				// 				})
+				// 			})
+				// 		});
+				// 		return
+				// 	}
+				// 	break;
 			}
 		})
 	}
@@ -756,12 +611,6 @@ class VideoPlayer {
 				const percent = (x / full)
 				const currentTime = percent * this.mediaSource.duration
 				this.playerElements['kloakVideo']['currentTime'] = currentTime
-
-				console.log(index.pieces)
-				// FIX HEREEEEE
-				// appendNext()
-				// this.sourceBuffers['video'].abort()
-				// this.playerElements.kloakVideo['currentTime'] = percent * this.mediaSource.duration
 			})
 
 			_view.storageHelper.getIndex(fileHistory.uuid[0], (err, data) => {
@@ -858,17 +707,6 @@ class VideoPlayer {
 
 			this.playlistPlayerElements.audio.addEventListener("timeupdate", e => {
 				!this.canSkip() ? this.canSkip(true) : null
-				const formatTime = (seconds: number) => {
-					let date = new Date(null)
-					let s: number | string = parseInt(seconds.toString(), 10)
-					date.setSeconds(s)
-					let time = date.toISOString().substr(11,8).split(":")
-					if (time[0] === '00') {
-						return [time[1], time[2]].join(":")
-					} else {
-						return time.join(":")
-					}
-				}
 				try {
 					const currentTime = this.playlistPlayerElements.audio['currentTime']
 					console.log(currentTime, this.mediaSource.duration)
@@ -891,18 +729,6 @@ class VideoPlayer {
 				const currentTime = percent * this.mediaSource.duration
 				this.playlistPlayerElements.audio['currentTime'] = currentTime
 			})
-
-			this.playlistPlayerElements.audio.addEventListener('ended', () => {
-				console.log("KSDSDKHSDFKHFKUHKHADKF")
-				// getTrackFile("next")
-			})
-
-			// this.mediaSource.readyState
-
-			// this.playlistPlayerElements.audio.onended = () => {
-			// 	console.log("should get next")
-			// 	getTrackFile("next")
-			// }
 
 			callback()
 		}
@@ -974,43 +800,11 @@ class VideoPlayer {
 					})
 				})
 			})
-
-
-
-			// new Assembler(track['uuid'][0], null, (err, data) => {
-			// 	let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
-			// 	this.loading(false)
-			// 		console.log("should setup?")
-			// 		setupPlayer(() => {
-			// 			this.playlistPlayerElements.audio['src'] = url
-			// 			this.playlistPlayerElements.textDisplay.textContent = track.filename
-			// 		})
-			// 	this.isPlaying(true)
-			// })
-			// _view.storageHelper.createAssembler(track['uuid'][0], (err, data) => {
-			// 	let url = _view.storageHelper.createBlob(data['buffer'], data['contentType'])
-			// 	this.loading(false)
-			// 		console.log("should setup?")
-			// 		setupPlayer(() => {
-			// 			this.playlistPlayerElements.audio['src'] = url
-			// 			this.playlistPlayerElements.textDisplay.textContent = track.filename
-			// 		})
-			// 	this.isPlaying(true)
-			// })
 		}
 
 		init((playlist) => {
 			this.currentPlaylist.playlist(playlist)
 			getTrackFile("next")
-			// getNextFile(track['uuid'][0], (url) => {
-			// 	this.loading(false)
-			// 	setupPlayer(() => {
-			// 		this.playlistPlayerElements.audio['src'] = url
-			// 		this.playlistPlayerElements.textDisplay.textContent = track.filename
-			// 		console.log(this.playlistPlayerElements.audio['duration'])
-			// 		this.isPlaying(true)
-			// 	})
-			// })
 		})
 	}
 

@@ -532,7 +532,7 @@ private currentYoutubeObj = null
 		const now = new Date ()
 		this.emojiPanel = null
 		this.showEmojiPanel ( false )
-
+		
 		const message: messageContent = {
 			uuid: uuid_generate (),
 			_create: now.toISOString(),
@@ -700,17 +700,18 @@ private currentYoutubeObj = null
 			subCom: 'youtube_search',
 			requestSerial: null
 		}
-		_view.appScript().search_form()
+		_view.appScript().search_form ()
 	}
 
 	public getLinkClick ( index ) {
 		const currentItem = this.searchItemsArray()[ index ]
-		console.log(currentItem)
+
 		if ( currentItem ['showError']()) {
 			currentItem ['showLoading'](0)
 			return currentItem ['showError']( false )
 			
 		}
+		const user = this.currentChat ()
 		const url = currentItem ['url']
 		const youtubeObj = {
 			url: url,
@@ -721,7 +722,7 @@ private currentYoutubeObj = null
 			showLoading: ko.observable (0),
 			showError: ko.observable ( false )
 		}
-		this.resetYoutubeSearchData()
+
 		const now = new Date ()
 		const message: messageContent = {
 			uuid: uuid_generate (),
@@ -741,11 +742,40 @@ private currentYoutubeObj = null
 			showDelete: ko.observable ( false )
 			
 		}
-		const user = this.currentChat ()
+		const com: QTGateAPIRequestCommand = {
+			command: 'daggr',
+			Args: [ user.account, message ],
+			error: null,
+			subCom: 'sendMessage',
+			requestSerial: uuid_generate ()
+		}
+
 		user.chatData.unshift ( message )
-		setTimeout(() => {
-			resizeInputTextArea ()
-		}, 500 )
+		this.showYoutube ( false )
+		this.showInputMenu (false )
+		resizeInputTextArea ()
+		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
+
+			if ( err ) {
+				console.log ( `_view.connectInformationMessage.emitRequest Error`, err )
+				return this.errorProcess ( err )
+			}
+
+			if ( !com ) {
+				console.log ( `_view.connectInformationMessage.emitRequest !com` )
+				return message.create = ko.observable ( null )
+			}
+
+			if ( com.error === -1 ) {
+				console.log ( `_view.connectInformationMessage.emitRequest com.error === -1` )
+				const now = new Date()
+				message.delivered ( now )
+				message._delivered = now.toISOString ()
+				this.saveChatData ()
+				return console.dir (`_view.connectInformationMessage.emitRequest return success!`)
+			}
+			console.log ( `_view.connectInformationMessage.emitRequest com = `, com.Args )
+		})
 	}
 
 	public resetYoutubeSearchData () {

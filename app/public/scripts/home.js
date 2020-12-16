@@ -784,7 +784,7 @@ const mainMenuArray = [
         extra: null,
         click: daggr,
         htmlTemp: 'daggrHtml',
-        online: false,
+        online: true,
         notice: ko.observable(0)
     },
     {
