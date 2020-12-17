@@ -1143,7 +1143,6 @@ class imapPeer extends Event.EventEmitter {
                 const _subject = attr.split(/\r?\n/)[0];
                 if (subject === _subject) {
                     console.log(`\n\nthis.replyPing [${_subject}]\n\n this.ping.uuid = [${this.pingUuid}]`);
-                    this.emit('CoNETConnected', attr);
                     return this.replyPing(subject);
                 }
                 return console.log(`new attr\n${_subject}\n subject [${_subject} [${JSON.stringify(subject)}]]!== attr 【${JSON.stringify(_subject)}】`);
