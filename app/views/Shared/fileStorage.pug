@@ -116,11 +116,11 @@
 									<!-- /ko -->
 									i.file.outline.icon.fileStorageListItemIcon(data-bind="class: $parent.fileType($data.filename())")
 									.fileStorageListItemTexts
-										p.fileStorageListItemTitle(data-bind="text: $data.filename()")
+										p.fileStorageListItemTitle(data-bind="text: $parent.formatFilename($data.filename(), 50)")
 										p.fileStorageListItemDate(data-bind="text: 'Last viewed: ' + $parent.getDate($data.last_viewed() || $data.time_stamp(),'full')")
 									.fileStorageListItemButtons
-										button.fileStorageListItemButton(data-bind="click: (data, event) => { $parent.actionHandler(data, event, 'favorite') }, clickBubble: false")
-											i.star.icon.fileStorageListItemIcon(style="font-size: 1.5rem !important" data-bind="style: {color: $data.favorite() ? '#29B6F6' : '#e3e3e3'}")
+										//- button.fileStorageListItemButton(data-bind="click: (data, event) => { $parent.actionHandler(data, event, 'favorite') }, clickBubble: false")
+										//- 	i.star.icon.fileStorageListItemIcon(style="font-size: 1.5rem !important" data-bind="style: {color: $data.favorite() ? '#29B6F6' : '#e3e3e3'}")
 									<!-- ko if: $parent.currentProcessFile() === $data.uuid[0] -->
 									.ui.active.inline.loader
 									<!-- /ko -->
@@ -237,8 +237,8 @@
 
 							<!-- ko if: selectedFile().youtube -->
 							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'youtube')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 15rem; object-position: top;")
-							.fileStoragePreviewPlay
-								i.play.icon.fileStoragePreviewPlayIcon(data-bind="click: () => { actionHandler(selectedFile(), null, 'playVideo')} ")
+							.fileStoragePreviewPlay(data-bind="click: () => { actionHandler(selectedFile(), null, 'playVideo')} ")
+								i.play.icon.fileStoragePreviewPlayIcon
 							<!-- /ko -->
 
 							<!-- ko if: selectedFile().media && selectedFile().media.fastStart -->

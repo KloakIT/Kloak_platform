@@ -274,11 +274,11 @@ class fileStorage {
             });
             return result.filter(res => res !== null);
         };
-        this.formatFilename = (fileData) => {
+        this.formatFilename = (fileData, length) => {
             if (typeof fileData === 'string') {
-                return fileData.length <= 30 ? fileData : fileData.slice(0, 10) + '...' + fileData.slice(-10);
+                return fileData.length <= length ? fileData : fileData.slice(0, length / 3) + '...' + fileData.slice(-(length / 3));
             }
-            if (fileData.filename.length <= 30) {
+            if (fileData.filename.length <= length) {
                 return fileData.filename;
             }
             return fileData.tag.includes('snapshot') ? fileData.filename.slice(0, 25) : fileData.filename.slice(0, 10) + '...' + fileData.filename.slice(-10);
