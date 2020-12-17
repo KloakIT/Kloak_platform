@@ -106,7 +106,7 @@ class sharedAppClass {
             /**
              * 		empty search results!
              */
-            if (!com.Args || !com.Args.Result || !com.Args.Result.length) {
+            if (!com.Args) {
                 return this.showInputTextAreaError('emptyResult');
             }
             return this.searchItemList_build(com, true);

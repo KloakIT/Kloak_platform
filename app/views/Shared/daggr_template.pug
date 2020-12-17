@@ -11,7 +11,7 @@ script#messgae_content( type = "text/html" )
 	<!-- /ko -->
 	<!-- ko if: youtubeObj -->
 		<!-- ko with: youtubeObj -->
-			.ui.header( data-bind = "attr: { 'id': $parent.uuid + '_title' }, style : { 'color' : $parents[2].isSelf ? 'white' : 'black'  }" style = "font-size: unset; text-align: center; padding-top: 0.7rem;")
+			.ui.header( data-bind = "attr: { 'id': $parent.uuid + '_title' }" style = "font-size: unset; text-align: center; padding-top: 0.7rem;color: inherit;")
 				<!-- ko text: title --><!-- /ko -->
 
 			<!-- ko if: !showLoading ()-->

@@ -1078,9 +1078,11 @@ class Mp4LocalServerUrl {
 			return console.log (`All buffer had transfer`)
 		}
 
-		const currentBuffer = Buffer.from ( this.BufferArray.shift ())
 
-		if ( !currentBuffer ) {
+		const data = this.BufferArray.shift ()
+
+
+		if ( !data || !data.length ) {
 			/**
 			 * 		END of stream
 			 */
@@ -1095,7 +1097,7 @@ class Mp4LocalServerUrl {
 			}
 			return console.log (`currentBuffer null waiting next buffer!!`)
 		}
-
+		const currentBuffer = Buffer.from ( data )
 		this.posting = true
 		this.currentStartPoint += currentBuffer.length
 
