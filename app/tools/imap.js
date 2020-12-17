@@ -1125,24 +1125,25 @@ class imapPeer extends Event.EventEmitter {
         const subject = exports.getMailSubject(email);
         const attr = exports.getMailAttached(email);
         this.checklastAccessTime();
+        if (subject === this.pingUuid) {
+            this.pingUuid = null;
+            this.connected = true;
+            this.pinging = false;
+            timers_1.clearTimeout(this.waitingReplyTimeOut);
+            return this.emit('CoNETConnected', attr);
+        }
         if (subject) {
             /**
              *
              *
              *
              */
-            if (subject === this.pingUuid) {
-                this.pingUuid = null;
-                this.connected = true;
-                this.pinging = false;
-                timers_1.clearTimeout(this.waitingReplyTimeOut);
-                return this.emit('CoNETConnected', attr);
-            }
             if (attr.length < 40) {
                 console.log(`new attr\n${attr}\n`);
                 const _subject = attr.split(/\r?\n/)[0];
                 if (subject === _subject) {
-                    console.log(`\n\nthis.replyPing [${_subject}]\n\n`);
+                    console.log(`\n\nthis.replyPing [${_subject}]\n\n this.ping.uuid = [${this.pingUuid}]`);
+                    this.emit('CoNETConnected', attr);
                     return this.replyPing(subject);
                 }
                 return console.log(`new attr\n${_subject}\n subject [${_subject} [${JSON.stringify(subject)}]]!== attr 【${JSON.stringify(_subject)}】`);

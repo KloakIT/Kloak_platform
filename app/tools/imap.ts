@@ -1405,6 +1405,17 @@ export class imapPeer extends Event.EventEmitter {
         const attr = getMailAttached ( email )
        
         this.checklastAccessTime ()
+
+		if ( subject === this.pingUuid ) {
+			this.pingUuid = null
+			
+			this.connected = true
+			this.pinging = false
+			clearTimeout ( this.waitingReplyTimeOut )
+
+			return this.emit ('CoNETConnected', attr )
+		}
+
 		if ( subject ) {
 
             /**
@@ -1412,21 +1423,14 @@ export class imapPeer extends Event.EventEmitter {
              * 
              * 
              */
-            if ( subject === this.pingUuid ) {
-                this.pingUuid = null
-                
-                this.connected = true
-                this.pinging = false
-                clearTimeout ( this.waitingReplyTimeOut )
-
-                return this.emit ('CoNETConnected', attr )
-			}
+            
 
 			if ( attr.length < 40 ) {
 				console.log (`new attr\n${ attr }\n`)
 				const _subject = attr.split (/\r?\n/)[0]
 				if ( subject === _subject ) {
-					console.log (`\n\nthis.replyPing [${_subject }]\n\n`)
+					console.log (`\n\nthis.replyPing [${_subject }]\n\n this.ping.uuid = [${ this.pingUuid }]`)
+					this.emit ('CoNETConnected', attr )
 					return this.replyPing ( subject )
 				}
 				return console.log (`new attr\n${ _subject }\n subject [${ _subject } [${ JSON.stringify ( subject ) }]]!== attr 【${ JSON.stringify ( _subject )}】`)
@@ -1437,6 +1441,10 @@ export class imapPeer extends Event.EventEmitter {
             return this.newMail ( attr, subject )
 
 		}
+
+		
+
+
 		
         console.log (`get mail have not subject\n\n`, email.toString() )
 

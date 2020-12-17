@@ -88,6 +88,7 @@ class default_1 extends Imap.imapPeer {
             //console.log ( publicKey )
             clearTimeout(this.timeoutWaitAfterSentrequestMail);
             this.connectStage = 4;
+            this.socket.emit('tryConnectCoNETStage', null, 4, publicKey);
             return nameSpace.emit('tryConnectCoNETStage', null, 4, publicKey);
         });
         this.on('pingTimeOut', () => {

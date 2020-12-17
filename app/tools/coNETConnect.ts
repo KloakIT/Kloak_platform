@@ -119,7 +119,7 @@ export default class extends Imap.imapPeer {
 			//console.log ( publicKey )
 			clearTimeout ( this.timeoutWaitAfterSentrequestMail )
 			this.connectStage = 4
-			
+			this.socket.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
 			return nameSpace.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
 
 		})
