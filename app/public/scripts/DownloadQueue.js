@@ -849,7 +849,7 @@ class Mp4LocalServerUrl {
                     .done(() => {
                     console.log(`transferData END success,`);
                     this.posting = false;
-                    return console.log(`BufferArray length [${this.BufferArray.length}] ( this.currentStartPoint[${this.currentStartPoint, endPoint}], endPoint ${endPoint}) null stop transferData!`);
+                    return console.log(`BufferArray length [${this.BufferArray.length}] null stop transferData!`);
                 });
             }
             return console.log(`currentBuffer null waiting next buffer!!`);

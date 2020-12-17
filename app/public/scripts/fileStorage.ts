@@ -541,8 +541,9 @@ class fileStorage {
 		let pieces = null
 		this.currentProcessFile(uuid)
 		_view.storageHelper.getIndex(uuid, (err, index) => {
-			pieces = index ? index.pieces : []
+			pieces = index ? Object.values(index.pieces) : []
 			const del = () => {
+				console.log(pieces)
 				const piece = pieces.shift()
 				if (piece) {
 					_view.storageHelper.delete(piece, (err, data) => {
