@@ -193,7 +193,7 @@ class connectInformationMessage {
 				}
 				_view.localServerConnected ( true )
 				//console.dir (`getServerPublicKey success!`)
-				if ( _view.imapData ) {
+				if ( _view.imapData() ) {
 					_view.connectToNode ()
 				}
 			})
@@ -243,14 +243,21 @@ class connectInformationMessage {
 								}
 								return _view.storeDaggrNotice ( obj )
 							}
-							case 'typing' :{
+							case 'typing' : {
 								if ( this._view.appScript() && typeof this._view.appScript().getTyping === 'function' ) {
 									return this._view.appScript().getTyping ( obj )
 								}
 								return
 							}
+
+							case 'user_profiles_update': {
+								if ( this._view.appScript() && typeof this._view.appScript().getTyping === 'function' ) {
+									return this._view.appScript().updateprofile ( obj.Args )
+								}
+								return console.log (`user_profiles_update\n`, obj)
+							}
 							default: {
-								return self.showErrorMessage ( `unknow command from node! daggr-obj.subCom [${ obj.subCom }]` )
+								return console.log ( `unknow command from node! daggr-obj.subCom [${ JSON.stringify( obj ) }]` )
 							}
 						}
 						
@@ -334,7 +341,7 @@ class connectInformationMessage {
 		}
 		const publicKey = this._view.keyPair().publicKey
 		const self = this
-		return this.sockEmit ( 'keypair', publicKey, async ( err, data ) => {
+		return this.sockEmit ( 'keypair', publicKey, async ( err, data, connect: boolean ) => {
 			if ( err ) {
 				self.showErrorMessage ( err )
 				return CallBack ( err )
@@ -342,7 +349,7 @@ class connectInformationMessage {
 			self.localServerPublicKey = data
 			
 			self._view.keyPair()["localserverPublicKey"] = data
-			return self._view.sharedMainWorker.localSeverPublicKey ( data, CallBack )
+			self._view.sharedMainWorker.localSeverPublicKey ( data, CallBack )
 			
 		})
 	}

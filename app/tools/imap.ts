@@ -42,7 +42,7 @@ const debugOut = ( text: string, isIn: boolean, serialID: string ) => {
 
 }
 
-const idleInterval = 1000 * 30      // 3 mins
+const idleInterval = 1000 * 60 * 15    // 5 mins
 
 class ImapServerSwitchStream extends Stream.Transform {
 
@@ -271,6 +271,10 @@ class ImapServerSwitchStream extends Stream.Transform {
                         return this.imapServer.emit ( 'ready' )
                     }
 
+					if ( this.imapServer.skipOldMail ) {
+						return this.skipAllUnreadMail ()
+					}
+
                     if ( newMail && typeof this.imapServer.newMail === 'function') {
                         
                         //this.imapServer.emit ( 'ready' )
@@ -285,6 +289,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                     this.imapServer.emit ( 'ready' )
                 })
             }
+
             this.ready = true
             this.imapServer.emit ( 'ready' )
         }
@@ -314,6 +319,42 @@ class ImapServerSwitchStream extends Stream.Transform {
             
         return this.imapServer.destroyAll( null)
     }
+
+	private skipAllUnreadMail () {
+
+		return this.seachUnseen (( err, newMailIds, havemore ) => {
+			if ( newMailIds ) {
+				
+
+				return Async.series ([
+					next => this.flagsDeleted ( newMailIds, next ),
+					next => this.expunge ( next )
+				], err => {
+					this.runningCommand = null
+						this.imapServer.emit ( 'ready' )
+						return this.idleNoop()
+				})
+				/*
+				return Async.eachSeries ( uids, ( n: string , next ) => {
+                    
+					if ( n && n.length ) {
+						return this.flagsDeleted ( n, next )
+					}
+					return next ( false )
+                }, err => {
+					return this.expunge ( err => {
+						this.runningCommand = null
+						this.imapServer.emit ( 'ready' )
+						return this.idleNoop()
+					})
+				})
+				*/
+			}
+			this.runningCommand = null
+			this.imapServer.emit ( 'ready' )
+			return this.idleNoop()
+		})
+	}
 
     public doNewMail ( UID = '' ) {
 
@@ -527,7 +568,7 @@ class ImapServerSwitchStream extends Stream.Transform {
                         return next ( null, this.cmd + '\r\n' )
                     }
                         
-                    this.imapServer.destroyAll(null)
+                    this.imapServer.destroyAll ( null )
                 }
                 //
                 return _callback ()
@@ -708,7 +749,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 		}
 		
 
-        let out = `Content-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${ Uuid.v4() }@>${ this.imapServer.domainName }\r\n${ subject ? 'Subject: '+ subject + '\r\n' : '' }Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n${ text }`
+        let out = `Date: ${ new Date().toUTCString()}\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${ Uuid.v4() }@>${ this.imapServer.domainName }\r\n${ subject ? 'Subject: '+ subject + '\r\n' : '' }Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n${ text }`
 
         this.commandProcess = ( text1: string, cmdArray: string[], next, _callback ) => {
             switch ( cmdArray[0] ) {
@@ -788,7 +829,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         }
 
 
-        const out = `Content-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${ Uuid.v4() }@>${ this.imapServer.domainName }\r\n${ subject ? 'Subject: '+ subject + '\r\n' : '' }Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n`
+        const out = `Date: ${ new Date().toUTCString()}\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${ Uuid.v4() }@>${ this.imapServer.domainName }\r\n${ subject ? 'Subject: '+ subject + '\r\n' : '' }Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n`
         
 		this.commandProcess = ( text1: string, cmdArray: string[], next, _callback ) => {
 			switch ( cmdArray[0] ) {
@@ -1137,7 +1178,7 @@ export class qtGateImap extends Event.EventEmitter {
 
     }
 
-    constructor ( public IMapConnect: imapConnect, public listenFolder: string, public deleteBoxWhenEnd: boolean, public writeFolder: string, private debug: boolean, public newMail: ( mail ) => void ) {
+    constructor ( public IMapConnect: imapConnect, public listenFolder: string, public deleteBoxWhenEnd: boolean, public writeFolder: string, private debug: boolean, public newMail: ( mail ) => void, private skipOldMail = true ) {
         super ()
         this.connect ()
         this.once ( `error`, err => {
@@ -1231,9 +1272,9 @@ export class qtGateImapRead extends qtGateImap {
 
     private openBox = false
 
-    constructor ( IMapConnect: imapConnect, listenFolder: string, deleteBoxWhenEnd: boolean, newMail: ( mail ) => void ) {
+    constructor ( IMapConnect: imapConnect, listenFolder: string, deleteBoxWhenEnd: boolean, newMail: ( mail ) => void, skipOldMail = false ) {
 
-        super ( IMapConnect, listenFolder, deleteBoxWhenEnd, null, debug, newMail )
+        super ( IMapConnect, listenFolder, deleteBoxWhenEnd, null, debug, newMail, skipOldMail )
         this.once ( 'ready', () => {
             this.openBox = true
         })
@@ -1339,7 +1380,7 @@ interface mailPool {
 	uuid: string
 }
 
-const resetConnectTimeLength = 1000 * 60 * 15
+const resetConnectTimeLength = 1000 * 60 * 30
 
 export class imapPeer extends Event.EventEmitter {
 
@@ -1349,10 +1390,8 @@ export class imapPeer extends Event.EventEmitter {
     private doingDestroy = false
     
     public peerReady = false
-    public newMail: ( data: any, subject ) => void
     private makeRImap = false
 	public needPingTimeOut = null
-    public lastAccessTime = new Date ().getTime()
     
     public pinging = false
     public connected = false
@@ -1361,41 +1400,32 @@ export class imapPeer extends Event.EventEmitter {
 
     private restart_rImap () {
         
-
+		console.dir ('restart_rImap')
         if ( this.rImap_restart ) {
-            return 
+            return console.log (`already restart_rImap STOP!`)
         }
-        console.log (`restart_rImap!`)
-        console.trace ()
+
         this.rImap_restart = true
 
-        if ( this.makeRImap ) {
-            console.log (`this.makeRImap = true STOP rImap_restart!`)
-            return
-        }
-
-		if ( typeof this.rImap.imapStream.loginoutWithCheck === 'function') {
-			this.rImap.imapStream.loginoutWithCheck (() => {
-
+		if ( typeof this.rImap?.imapStream?.loginoutWithCheck === 'function') {
+			return this.rImap.imapStream.loginoutWithCheck (() => {
+				if ( typeof this.exit === 'function') {
+					this.exit (0)
+				}
 			})
 		}
-        
-        
-		this.rImap.emit ('end')
-		setTimeout (() => {
-			return this.newReadImap ()
-		}, 500 )
+		if ( typeof this.exit === 'function') {
+			this.exit (0)
+		}
 		
         
     }
 
     public checklastAccessTime () {
-        const now = new Date().getTime ()
-        if ( now - this.lastAccessTime > resetConnectTimeLength ) {
-            
-            this.restart_rImap ()
-        }
-        this.lastAccessTime = now
+        clearTimeout ( this.checkSocketConnectTime )
+		return this.checkSocketConnectTime = setTimeout (() => {
+			return this.restart_rImap ()
+		}, resetConnectTimeLength )
     }
 
     private mail ( email: Buffer ) {
@@ -1403,9 +1433,12 @@ export class imapPeer extends Event.EventEmitter {
 		//console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = getMailSubject ( email )
         const attr = getMailAttached ( email )
-       
-        this.checklastAccessTime ()
+		console.log ( email.toString () )
+        
 
+		/**
+		 * 			PING get PONG
+		 */
 		if ( subject === this.pingUuid ) {
 			this.pingUuid = null
 			
@@ -1427,33 +1460,43 @@ export class imapPeer extends Event.EventEmitter {
 
 			if ( attr.length < 40 ) {
 				console.log (`new attr\n${ attr }\n`)
-				const _subject = attr.split (/\r?\n/)[0]
-				if ( subject === _subject ) {
-					console.log (`\n\nthis.replyPing [${_subject }]\n\n this.ping.uuid = [${ this.pingUuid }]`)
+				const _attr = attr.split (/\r?\n/)[0]
+
+				if ( !this.connected && !this.pinging ) {
+					this.Ping ( false )
+				}
+
+				if ( subject === _attr ) {
+					console.log (`\n\nthis.replyPing [${_attr }]\n\n this.ping.uuid = [${ this.pingUuid }]`)
 					
 					return this.replyPing ( subject )
 				}
-				return console.log (`new attr\n${ _subject }\n subject [${ _subject } [${ JSON.stringify ( subject ) }]]!== attr 【${ JSON.stringify ( _subject )}】`)
+				console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
+				return console.log (`new attr\n${ _attr }\n _attr [${ Buffer.from (_attr).toString ('hex') }] subject [${ Buffer.from ( subject ).toString ('hex') }]]!== attr 【${ JSON.stringify ( _attr )}】`)
 			}
 			
+			
+			
+            
 
-            //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
+			/**
+			 * 			ignore old mail
+			 */
+			if ( !this.connected ) {
+				return 
+			}
+
             return this.newMail ( attr, subject )
 
-		}
-
-		
-
-
-		
+		}		
         console.log (`get mail have not subject\n\n`, email.toString() )
 
     }
 
 
     private replyPing ( uuid ) {
-		console.log (`\n\nreplyPing\n\n`)
-        return this.AppendWImap1 ( '', uuid, err => {
+		console.log (`\n\nreplyPing = [${ uuid }]\n\n`)
+        return this.AppendWImap1 ( uuid, uuid, err => {
             if ( err ) {
                 debug ? saveLog (`reply Ping ERROR! [${ err.message ? err.message : null }]`): null 
             }
@@ -1463,18 +1506,21 @@ export class imapPeer extends Event.EventEmitter {
 
     private AppendWImap1 ( mail: string, uuid: string, CallBack ) {
         
-        return seneMessageToFolder ( this.imapData, this.writeBox, mail, uuid, !this.connected, CallBack )
+        return seneMessageToFolder ( this.imapData, this.writeBox, mail, uuid, false, CallBack )
         
     }
 
     private setTimeOutOfPing ( sendMail: boolean ) {
-        //console.trace (`setTimeOutOfPing`)
+        console.trace (`setTimeOutOfPing [${ this.pingUuid }]`)
         clearTimeout ( this.waitingReplyTimeOut )
         clearTimeout ( this.needPingTimeOut )
 		debug ? saveLog ( `Make Time Out for a Ping, ping ID = [${ this.pingUuid }]`, true ): null
 		
         return this.waitingReplyTimeOut = setTimeout (() => {
-            debug ? saveLog ( `ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true ): null
+            debug ? saveLog ( `ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) pingID = [${ this.pingUuid }] `, true ): null
+			this.pingUuid = null
+			this.connected = false
+			this.pinging = false
             return this.emit ( 'pingTimeOut' )
         }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut )
     }
@@ -1482,26 +1528,22 @@ export class imapPeer extends Event.EventEmitter {
     public Ping ( sendMail: boolean ) {
         
         if ( this.pinging ) {
-            return console.trace ('pinging = true !')
+            return console.trace ('Ping stopd! pinging = true !')
         }
         this.pinging = true
-
-        if ( this.pingUuid && !sendMail ) {
-
-            return debug ? saveLog ( `Ping already waiting other ping, STOP!\nthis.pingUuid = [${ this.pingUuid }], sendMail = [${ sendMail }]`, ): null
-        }
-        
 		
 		this.emit ( 'ping' )
 
         this.pingUuid = Uuid.v4 ()
+        debug ? saveLog ( `doing ping test! this.pingUuid = [${ this.pingUuid }], sendMail = [${ sendMail }]`, ): null
         
         return this.AppendWImap1 ( null, this.pingUuid, err => {
-            this.pinging = false
+           
             if ( err ) {
+				this.pinging = false
                 this.pingUuid = null
                 console.dir ( `PING this.AppendWImap1 Error [${ err.message }]`)
-                return this.destroy ( err )
+                return this.Ping ( sendMail )
             }
             return this.setTimeOutOfPing ( sendMail )
         })
@@ -1520,12 +1562,14 @@ export class imapPeer extends Event.EventEmitter {
 
         this.rImap = new qtGateImapRead ( this.imapData, this.listenBox, debug, email => {
             this.mail ( email )
-        })
+        }, true )
 
         this.rImap.once ( 'ready', () => {
+			this.emit ( 'ready' )
             this.makeRImap = this.rImap_restart = false
             //debug ? saveLog ( `this.rImap.once on ready `): null
 			this.Ping ( false )
+			this.checklastAccessTime ()
         })
 
         this.rImap.on ( 'error', err => {
@@ -1545,14 +1589,15 @@ export class imapPeer extends Event.EventEmitter {
             this.rImap.removeAllListeners ()
             this.rImap = null
             this.makeRImap = false
-
+			clearTimeout ( this.waitingReplyTimeOut )
             if ( this.rImap_restart ) {
-                return console.dir (`rImap.on ( 'end' ) this.rImap_restart = TRUE`, err )
+                console.dir (`rImap.on ( 'end' ) this.rImap_restart = TRUE`, err )
             }
 
 
             if ( typeof this.exit === 'function') {
                 debug ? saveLog (`imapPeer rImap on END!`): null
+
                 this.exit ( err )
                 return this.exit = null
             }
@@ -1562,11 +1607,12 @@ export class imapPeer extends Event.EventEmitter {
         })
     }
 
-    constructor ( public imapData: imapConnect, private listenBox: string, private writeBox: string, public exit: ( err?: number ) => void ) {
+    constructor ( public imapData: imapConnect, private listenBox: string, private writeBox: string, public newMail, public exit: ( err?: number ) => void ) {
         super ()
         debug ? saveLog ( `doing peer account [${ imapData.imapUserName }] listen with[${ listenBox }], write with [${ writeBox }] `): null
-
+		console.dir ( `newMail = ${typeof newMail}` )
         this.newReadImap ()
+		
     }
 
     public destroy ( err?: number ) {
@@ -1587,6 +1633,7 @@ export class imapPeer extends Event.EventEmitter {
             return this.rImap.imapStream.loginoutWithCheck (() => {
 				if ( typeof this.exit === 'function' ) {
 					this.exit ( err )
+					this.exit = null
 				}
 				
 			})

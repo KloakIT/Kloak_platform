@@ -930,7 +930,7 @@ class DownloadQueue {
 		console.log (`[${ now.toLocaleTimeString()}:${ now.getMilliseconds()}]  [${ this.title }] ${ args }`)
 	}
 
-	constructor ( downloadUrl: string, private title: string, private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: string, com, data ) => void = null, private range?: string ) {
+	constructor ( downloadUrl: string, private title: string, movflags: boolean,  private CallBack, private dataCallBackBeforeDecryptoCallBack: ( requestUuid: string, com, data ) => void = null, private range?: string ) {
 		this.Log (`new DownloadQueue UUID [${ this.requestUUID }]`)
 
 		if (! downloadUrl) {
@@ -954,7 +954,7 @@ class DownloadQueue {
 			command: 'CoSearch',
 			Args: [ downloadUrl, this.range ],
 			error: null,
-			subCom: 'youtube_getVideoMp4',
+			subCom: movflags ? 'youtube_getVideoMp4_move' : 'youtube_getVideoMp4',
 			requestSerial: this.requestUUID
 
 		} : {
@@ -991,7 +991,7 @@ class DownloadQueue {
 				return this.stopProcess ( err )
 			}
 	
-			if ( com.subCom === 'downloadFile' || com.subCom === 'youtube_getVideoMp4' ) {
+			if ( /downloadFile|youtube_getVideoMp4/.test ( com.subCom ) ) {
 				const downloadObj: kloak_downloadObj = com.Args[0]
 				this.totalLength = downloadObj.totalLength
 				if ( downloadObj.order !== this.currentIndex ) {

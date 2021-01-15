@@ -26,6 +26,7 @@ const Imap = require("./tools/imap");
 const coNETConnect_1 = require("./tools/coNETConnect");
 const mime = require("mime-types");
 const bodyParser = require("body-parser");
+const Util = require("util");
 const Package = require('../package.json');
 let logFileFlag = 'w';
 const saveLog = (err) => {
@@ -86,6 +87,7 @@ class localServer {
         this.destoryConnectTimePool = new Map();
         this.lengthPool = new Map();
         this.requestStreamUrlSocketPool = new Map();
+        this.makeNewImap = false;
         //Express.static.mime.define({ 'message/rfc822' : ['mhtml','mht'] })
         //Express.static.mime.define ({ 'multipart/related' : ['mhtml','mht'] })
         Express.static.mime.define({ 'application/x-mimearchive': ['mhtml', 'mht'] });
@@ -196,6 +198,16 @@ class localServer {
             console.dir(`response.write success res.end ()`);
             return res.end();
         });
+        this.expressServer.post(`${folderName}/connectCoNET`, (req, res) => {
+            const imapData = req.body['imapData'];
+            if (!imapData || !imapData) {
+                res.status(404);
+                return res.end();
+            }
+            console.log(`this.expressServer.post /connectCoNET\n`, Util.inspect(imapData, false, 3, true));
+            res.status(200);
+            res.jsonp(null);
+        });
         workspaces.on('connection', (socket) => {
             return this.listenAfterPassword(socket);
         });
@@ -228,15 +240,18 @@ class localServer {
         console.log(`Get response from CoNET uuid [${uuid}] length [${mail.length}]`);
         const socket = this.requestPool.get(uuid);
         if (!socket) {
+            console.log(`catchCmd [${uuid}] have not socket!`);
             const nameSpace = this.socketServer.of(uuid);
             const clients = await nameSpace.allSockets();
-            console.dir(clients);
+            console.log(`catch [${uuid}] client = [${clients}]`);
             const keys = Object.keys(clients);
             if (!keys) {
                 return console.dir(`catchCmd nameSpace.clients request [${uuid}] have not client!`);
             }
+            console.log(`nameSpace.emit [${uuid}] client = [${clients}]`);
             return nameSpace.emit(uuid, mail);
         }
+        console.log(`catchCmd [${uuid}] doingRequest !`);
         socket.emit('doingRequest', mail, uuid);
     }
     tryConnectCoNET(socket, imapData, sendMail) {
@@ -250,10 +265,14 @@ class localServer {
         }
         const _exitFunction = async (err) => {
             console.log(`makeConnect on _exitFunction err this.CoNETConnectCalss destroy!`, err);
+            if (this.makeNewImap) {
+                console.trace('_exitFunction');
+                return console.log(`makeConnect STOP because this.makeNewImap = true! `);
+            }
+            this.makeNewImap = true;
             const allSockets = socket.nsp;
             const uuu = await allSockets["allSockets"]();
-            console.log(typeof uuu, '\n\n', uuu.size);
-            if (uuu.size) {
+            if (uuu.size || Object.keys(uuu).length) {
                 return makeConnect();
             }
             /*
@@ -274,9 +293,14 @@ class localServer {
             //return makeConnect ()
         };
         const makeConnect = () => {
-            ConnectCalss = new coNETConnect_1.default(keyID, imapData, this.socketServer, socket, (mail, uuid) => {
+            console.trace('makeConnect');
+            ConnectCalss = new coNETConnect_1.default(keyID, imapData, socket, (mail, uuid) => {
                 return this.catchCmd(mail, uuid);
             }, _exitFunction);
+            ConnectCalss.once('ready', () => {
+                console.dir(`makeConnect CoNETConnectCalss on ready!`);
+                this.makeNewImap = false;
+            });
             return this.imapConnectPool.set(keyID, socket['userConnet'] = ConnectCalss);
         };
         return makeConnect();
@@ -442,10 +466,15 @@ class localServer {
                 socket["keypair"] = data;
                 socket["keyID"] = keyID;
                 console.dir(`client join room 【${keyID}】`);
-                socket.emit(_uuid, null, this.localKeyPair.publicKey);
                 if (workspace.name.toLocaleUpperCase() !== `/${keyID}`) {
-                    console.log(`workspace.name.toLocaleUpperCase()[${workspace.name.toLocaleUpperCase()}] !== /${keyID}`);
+                    socket.emit(_uuid, `Error! your client key ID [${keyID}] not match !`);
+                    return console.log(`workspace.name.toLocaleUpperCase()[${workspace.name.toLocaleUpperCase()}] !== /${keyID}`);
                 }
+                let ConnectCalss = this.imapConnectPool.get(keyID);
+                if (!ConnectCalss) {
+                    return socket.emit(_uuid, null, this.localKeyPair.publicKey, false);
+                }
+                return socket.emit(_uuid, null, this.localKeyPair.publicKey, true);
             });
         });
         socket.once('disconnect', async () => {
@@ -471,8 +500,7 @@ class localServer {
                         });
                     }
                 }
-                console.log(`ERROR!\n\n`);
-                console.dir(`socket.once ( 'disconnect') keyID = [${keyID}] connect = ${connect} `);
+                console.dir(`socket.once ( 'disconnect') keyID = [${keyID}] have no any connect = ${connect} `);
             }
         });
         socket.on('requestStreamUrl', (_length, CallBack1) => {

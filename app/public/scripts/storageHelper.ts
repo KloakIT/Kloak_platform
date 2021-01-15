@@ -98,7 +98,7 @@ class StorageHelper {
 			})
 		}
 
-		new DownloadQueue(url, title, (err, data) => {
+		new DownloadQueue(url, title, true, (err, data) => {
 			console.log(err, data)
 		}, (requestUuid, com: kloak_downloadObj, data) => {
 			console.log(com)
@@ -221,7 +221,7 @@ class StorageHelper {
 		}
 		
 		if (videoURL) {
-			let videoDownload = new DownloadQueue(videoURL, title, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
+			let videoDownload = new DownloadQueue(videoURL, title, true, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
 				if (!downloadRequestUuid['video']) {
 					downloadRequestUuid['video'] = requestUuid
 				}
@@ -259,7 +259,7 @@ class StorageHelper {
 		}
 
 		if (audioURL) {
-			let audioDownload = new DownloadQueue(audioURL, title, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
+			let audioDownload = new DownloadQueue(audioURL, title, true, () => {}, (requestUuid, com: kloak_downloadObj, data) => {
 				if (!downloadRequestUuid['audio']) {
 					downloadRequestUuid['audio'] = requestUuid
 				}

@@ -54,17 +54,18 @@ class default_1 extends Imap.imapPeer {
         })
     }
     */
-    constructor(keyID, imapData, server, socket, cmdResponse, _exit) {
-        super(imapData, imapData.clientFolder, imapData.serverFolder, err => {
+    constructor(keyID, imapData, socket, newMail, _exit) {
+        super(imapData, imapData.clientFolder, imapData.serverFolder, newMail, err => {
             console.debug(`imapPeer doing exit! err =`, err);
-            nameSpace.emit('tryConnectCoNETStage', null, -2);
+            socket.emit('tryConnectCoNETStage', null, -2, () => {
+                console.log(`nameSpace emit tryConnectCoNETStage -2 get response!`);
+            });
             return this.exit1(err);
         });
         this.keyID = keyID;
         this.imapData = imapData;
-        this.server = server;
         this.socket = socket;
-        this.cmdResponse = cmdResponse;
+        this.newMail = newMail;
         this._exit = _exit;
         this.CoNETConnectReady = false;
         this.connectStage = -1;
@@ -73,30 +74,28 @@ class default_1 extends Imap.imapPeer {
         this.timeoutCount = {};
         this.socketPool = [];
         this.checkSocketConnectTime = null;
-        let nameSpace = socket.nsp;
-        if (typeof nameSpace.emit !== 'function') {
-            nameSpace = socket;
-        }
         saveLog(`=====================================  new CoNET connect()`, true);
-        nameSpace.emit('tryConnectCoNETStage', null, 5);
-        this.newMail = (mail, hashCode) => {
-            return this.cmdResponse(mail, hashCode);
-        };
+        socket.emit('tryConnectCoNETStage', null, 5, () => {
+            saveLog(`socket emit tryConnectCoNETStage 5 get response!`);
+        });
         this.on('CoNETConnected', publicKey => {
             this.CoNETConnectReady = true;
             saveLog('Connected CoNET!', true);
             //console.log ( publicKey )
             clearTimeout(this.timeoutWaitAfterSentrequestMail);
             this.connectStage = 4;
-            this.socket.emit('tryConnectCoNETStage', null, 4, publicKey);
-            return nameSpace.emit('tryConnectCoNETStage', null, 4, publicKey);
+            return socket.emit('tryConnectCoNETStage', null, 4, publicKey, () => {
+                saveLog(`socket emit tryConnectCoNETStage 4 get response!`);
+            });
         });
         this.on('pingTimeOut', () => {
-            console.log(`class CoNETConnect on pingTimeOut`);
-            return nameSpace.emit('pingTimeOut');
+            saveLog(`class CoNETConnect on pingTimeOut`);
+            return socket.emit('pingTimeOut');
         });
         this.on('ping', () => {
-            nameSpace.emit('tryConnectCoNETStage', null, 2);
+            socket.emit('tryConnectCoNETStage', null, 2, () => {
+                saveLog(`socket emit tryConnectCoNETStage 2 get response!`);
+            });
             //this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
         });
         this.socketPool.push(socket);

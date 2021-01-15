@@ -11,6 +11,13 @@ const resizeInputTextArea = () => {
     elm1.style.paddingTop = document.getElementById('daggr_bottomInputArea').clientHeight + 30 + 'px';
     scrollTop();
 };
+const resizeElmTextareaHeight = (elm) => {
+    if (!elm) {
+        return;
+    }
+    elm.style.height = '0px';
+    elm.style.height = elm.scrollHeight + 'px';
+};
 const scrollTop = () => {
     const height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
     window.scrollTo(0, height);
@@ -66,11 +73,19 @@ class daggr extends sharedAppClass {
             '检索用户昵称或邮箱地址或ID', 'ユーザネックネーム又はEmail又はIDを検索', 'Search user by nickname or Email or key ID', '檢索用戶暱稱或郵箱地址或ID'
         ];
         this.addUserInfo = [
-            '加入用户', 'ユーザを追加', 'Add user', '加入用戶'
+            '好友请求', '友達請求', 'Friend request', '好友請求'
         ];
         this.information = {
             delivered: ['已送达', '到着した', 'Delivered', '已送達'],
-            online: ['在线', 'オンライン', 'Online', '在線']
+            online: ['在线', 'オンライン', 'Online', '在線'],
+            connectingCount: ['好友', '友達', 'Friends', '好友'],
+            sendRequest: ['送信', '送信', 'Send', '送信'],
+            cancel: ['放弃', 'キャンセル', 'Cancel', '放棄'],
+            addUser: ['加入好友', '友達を追加', 'Add to friends', '加入好友'],
+            delUser: ['删除好友', '友達を削除', 'Delete friend', '刪除好友'],
+            muteUser: ['安静模式', 'ミュート', 'Mute', '安靜模式'],
+            blockkUser: ['屏蔽', 'ブロック', 'Block', '屏蔽'],
+            WaitingConfirm: ['正在等待好友确认', '友達確認を待っている', 'Friend permit waiting', '正在等待好友確認']
         };
         this.errorProcess = (err) => {
             return console.log(err);
@@ -143,13 +158,13 @@ class daggr extends sharedAppClass {
                         }
                     });
                 }
-                user.forEach(n => {
-                    n['showAddUserbutton'] = ko.observable(this.currentUser().findIndex(_n => n.keyID === _n.keyID) > 0 ? false : true);
-                    n['showAddUserbutton'] = ko.observable(n.keyID !== this.myKeyID);
-                    if (this.tempOnlineStorage.length) {
-                        const index = this.tempOnlineStorage.findIndex(_n => _n[0] === n.keyID);
-                        n['online'] = ko.observable(index > 0 ? this.tempOnlineStorage[index][1] : false);
-                    }
+                user.forEach((n, i) => {
+                    n['showAddUserbutton'] = ko.observable(true);
+                    n['getFocus'] = ko.observable(true);
+                    n['textInput'] = ko.observable('');
+                    n['onlineListeing'] = n['onlineListeing'] || [];
+                    n.userAutoAdded = n.userAutoAdded || false;
+                    n.isAddUserWaitingConfirm = ko.observable(false);
                 });
                 this.searchResultUsers(user);
                 return this.showUserInfor(true);
@@ -198,13 +213,47 @@ class daggr extends sharedAppClass {
                 return;
             }
         }
-        user['typing'] = ko.observable(false);
-        user['_notice'] = 0;
-        user['notice'] = ko.observable(0);
-        user['online'] = ko.observable(false);
+        user.typing = ko.observable(false);
+        user._notice = 0;
+        user.notice = ko.observable(0);
+        user.online = ko.observable(false);
+        user.mute = ko.observable(false);
+        user.isMute = false;
+        user.showDeleteUserConfirm = ko.observable(false);
+        user.showBlockUserConfirm = ko.observable(false);
+        user.isAddUserWaitingConfirm = ko.observable(user.userAutoAdded ? true : false);
         this.currentUser.unshift(user);
         this.userData()['contacts'] = this.currentUser();
         this.saveDaggrPreperences();
+        const request = {
+            command: 'daggr',
+            Args: [user.account, user.keyID],
+            error: null,
+            subCom: 'add_user',
+            requestSerial: uuid_generate()
+        };
+        /*
+
+        return _view.connectInformationMessage.emitRequest ( request, ( err, com: QTGateAPIRequestCommand ) => {
+
+            if ( err ) {
+                console.log ( `sendDelUser Error`, err )
+                return this.errorProcess ( err )
+            }
+
+            if ( !com ) {
+                console.log ( `sendDelUser !com` )
+                return
+            }
+
+            if ( com.error === -1 ) {
+                
+                return console.dir (`sendDelUser success!`)
+            }
+
+            console.log ( `_sendDelUser `, com.Args )
+        })
+        */
     }
     startChat(index) {
         const user = this.currentUser()[this.currentChatIndex = index];
@@ -212,6 +261,9 @@ class daggr extends sharedAppClass {
         if (!user?.chatDataUUID) {
             user['chatDataUUID'] = uuid_generate();
             return this.saveDaggrPreperences();
+        }
+        if (!user.isAddUserWaitingConfirm()) {
+            return;
         }
         return _view.storageHelper.getDecryptLoad(user.chatDataUUID, (err, data) => {
             if (err) {
@@ -267,6 +319,9 @@ class daggr extends sharedAppClass {
             this.showSendBottom(false);
         });
     }
+    editUsers(index) {
+        const user = this.currentUser()[index];
+    }
     getDaggrPreferences() {
         return _view.storageHelper.getDecryptLoad(this.daggr_preperences_save_UUID, (err, data) => {
             if (err) {
@@ -280,9 +335,13 @@ class daggr extends sharedAppClass {
                 return _view.connectInformationMessage.showErrorMessage(err);
             }
             if (userData?.keyInfo) {
-                userData?.contacts?.forEach(n => {
+                userData?.contacts?.forEach((n) => {
                     n['notice'] = ko.observable(n._notice);
                     n['online'] = ko.observable(false);
+                    n['showDeleteUserConfirm'] = ko.observable(false);
+                    n['showBlockUserConfirm'] = ko.observable(false);
+                    n['mute'] = ko.observable(n['isMute']);
+                    n.isAddUserWaitingConfirm = ko.observable(n.userAutoAdded);
                 });
                 this.currentUser(userData.contacts ? userData.contacts : []);
                 this.myKeyID = userData.keyInfo.publicKeyID;
@@ -344,12 +403,12 @@ class daggr extends sharedAppClass {
         return console.log(`updateprofile get unknow result!`, JSON.stringify(Args));
     }
     updateAllUserProfile() {
-        if (!this.currentUser()) {
+        if (!this.currentUser().length) {
             return;
         }
         const com = {
             command: 'daggr',
-            Args: [this.currentUser().map(n => n.keyID)],
+            Args: [this.currentUser().map(n => n.keyID), this.userData().keyInfo.publicKeyID],
             error: null,
             subCom: 'user_profiles_update',
             requestSerial: uuid_generate()
@@ -398,7 +457,9 @@ class daggr extends sharedAppClass {
             publicKey: _profile.publicKey,
             phoneNumber: _profile.phoneNumber,
             email: _profile.email,
-            nickname: _profile.nickname
+            nickname: _profile.nickname,
+            canbefind: _profile.canbefind,
+            userAutoAdded: _profile.userAutoAdded
         };
         const com = {
             command: 'daggr',
@@ -446,7 +507,7 @@ class daggr extends sharedAppClass {
         };
         const com = {
             command: 'daggr',
-            Args: [user.account, message],
+            Args: [[user.account, message]],
             error: null,
             subCom: 'sendMessage',
             requestSerial: uuid_generate()
@@ -496,7 +557,20 @@ class daggr extends sharedAppClass {
         item.showDelete(true);
     }
     getMessage(obj) {
-        const message = obj.Args[1];
+        const messages = obj.Args;
+        const loopAllMessages = () => {
+            const message = messages.shift();
+            if (!message) {
+                return;
+            }
+            return this.putMessage(message, () => {
+                return loopAllMessages();
+            });
+        };
+        return loopAllMessages();
+    }
+    putMessage(mesObj, CallBack) {
+        const message = mesObj[2];
         const messageUserID = message.senderKeyID;
         message['isSelf'] = false;
         message['showDelete'] = ko.observable(false);
@@ -508,32 +582,43 @@ class daggr extends sharedAppClass {
         message['create'] = ko.observable(new Date(message._create));
         if (this.currentChat() && this.currentChat().keyID === messageUserID) {
             const index = this.currentChat().chatData().findIndex(n => n.uuid === message.uuid);
+            /**
+             * 		Message already have
+             */
             if (index > -1) {
-                return;
+                return CallBack();
             }
             this.currentChat().chatData.unshift(message);
             this.currentChat().typing(false);
             scrollTop();
-            return this.saveChatData();
+            this.saveChatData();
+            return CallBack();
         }
         const index = this.currentUser().findIndex(n => n.keyID === messageUserID);
+        /**
+         * 			New connecting
+         */
         if (index < 0) {
-            return;
+            if (!mesObj[3]) {
+                return CallBack();
+            }
         }
         const user = this.currentUser()[index];
         return _view.storageHelper.getDecryptLoad(user.chatDataUUID, (err, data) => {
             if (err) {
+                CallBack();
                 return _view.connectInformationMessage.showErrorMessage(err);
             }
             try {
                 user.chatDataArray = JSON.parse(Buffer.from(data).toString());
             }
             catch (ex) {
+                CallBack();
                 return user.chatDataArray = null;
             }
             const index = user.chatDataArray.findIndex(n => n.uuid === message.uuid);
             if (index > -1) {
-                return;
+                return CallBack();
             }
             const index1 = mainMenuArray.findIndex(n => n.name === 'daggr');
             const daggr = mainMenuArray[index1];
@@ -543,6 +628,7 @@ class daggr extends sharedAppClass {
             this.saveDaggrPreperences();
             user.chatDataArray.unshift(message);
             return _view.storageHelper.encryptSave(user.chatDataUUID, JSON.stringify(user.chatDataArray), err => {
+                CallBack();
                 if (err) {
                     return _view.connectInformationMessage.showErrorMessage(err);
                 }
@@ -640,7 +726,7 @@ class daggr extends sharedAppClass {
         /**
          * 			start downloadQuere
          */
-        const downloadQuere = new DownloadQueue(currentItem.youtubeObj.url, currentItem.youtubeObj.title, (err, buffer) => {
+        const downloadQuere = new DownloadQueue(currentItem.youtubeObj.url, currentItem.youtubeObj.title, false, (err, buffer) => {
             /**
              * 		can skip Ad
              */
@@ -763,5 +849,41 @@ class daggr extends sharedAppClass {
         self.snedMessage();
         self.lottiePanel(false);
         self.showInputMenu(false);
+    }
+    sendDelUser(user) {
+        const request = {
+            command: 'daggr',
+            Args: [user.account, user.keyID],
+            error: null,
+            subCom: 'del_user',
+            requestSerial: uuid_generate()
+        };
+        return _view.connectInformationMessage.emitRequest(request, (err, com) => {
+            if (err) {
+                console.log(`sendDelUser Error`, err);
+                return this.errorProcess(err);
+            }
+            if (!com) {
+                console.log(`sendDelUser !com`);
+                return;
+            }
+            if (com.error === -1) {
+                return console.dir(`sendDelUser success!`);
+            }
+            console.log(`_sendDelUser `, com.Args);
+        });
+    }
+    searchResultUsersaAfterRender(elm) {
+        const jj = $(elm).find('.searchResultUsersTextarea');
+        if (!jj.length) {
+            return;
+        }
+        jj[0].style.height = '0px';
+        jj[0].style.height = jj[0].scrollHeight + 'px';
+    }
+    delUser(index) {
+        const user = this.currentUser.splice(index, 1)[0];
+        this.sendDelUser(user);
+        this.saveDaggrPreperences();
     }
 }

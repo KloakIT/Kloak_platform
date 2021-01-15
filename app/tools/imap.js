@@ -38,7 +38,7 @@ const debugOut = (text, isIn, serialID) => {
     const log = `【${new Date().toISOString()}】【${serialID}】${isIn ? '<=' : '=>'} 【${text}】`;
     console.log(log);
 };
-const idleInterval = 1000 * 30; // 3 mins
+const idleInterval = 1000 * 60 * 15; // 5 mins
 class ImapServerSwitchStream extends Stream.Transform {
     constructor(imapServer, exitWithDeleteBox, debug) {
         super();
@@ -223,6 +223,9 @@ class ImapServerSwitchStream extends Stream.Transform {
                         this.ready = true;
                         return this.imapServer.emit('ready');
                     }
+                    if (this.imapServer.skipOldMail) {
+                        return this.skipAllUnreadMail();
+                    }
                     if (newMail && typeof this.imapServer.newMail === 'function') {
                         //this.imapServer.emit ( 'ready' )
                         //console.log (`[${ this.imapServer.imapSerialID }]capability doing newMail = true`)
@@ -259,6 +262,38 @@ class ImapServerSwitchStream extends Stream.Transform {
             return this.push(this.cmd + '\r\n');
         }
         return this.imapServer.destroyAll(null);
+    }
+    skipAllUnreadMail() {
+        return this.seachUnseen((err, newMailIds, havemore) => {
+            if (newMailIds) {
+                return Async.series([
+                    next => this.flagsDeleted(newMailIds, next),
+                    next => this.expunge(next)
+                ], err => {
+                    this.runningCommand = null;
+                    this.imapServer.emit('ready');
+                    return this.idleNoop();
+                });
+                /*
+                return Async.eachSeries ( uids, ( n: string , next ) => {
+                    
+                    if ( n && n.length ) {
+                        return this.flagsDeleted ( n, next )
+                    }
+                    return next ( false )
+                }, err => {
+                    return this.expunge ( err => {
+                        this.runningCommand = null
+                        this.imapServer.emit ( 'ready' )
+                        return this.idleNoop()
+                    })
+                })
+                */
+            }
+            this.runningCommand = null;
+            this.imapServer.emit('ready');
+            return this.idleNoop();
+        });
     }
     doNewMail(UID = '') {
         this.reNewCount--;
@@ -571,7 +606,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             console.log(`[${this.imapServer.listenFolder || this.imapServer.imapSerialID}] append doCommandCallback `, err);
             return CallBack(err, info);
         };
-        let out = `Content-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${Uuid.v4()}@>${this.imapServer.domainName}\r\n${subject ? 'Subject: ' + subject + '\r\n' : ''}Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n${text}`;
+        let out = `Date: ${new Date().toUTCString()}\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${Uuid.v4()}@>${this.imapServer.domainName}\r\n${subject ? 'Subject: ' + subject + '\r\n' : ''}Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n${text}`;
         this.commandProcess = (text1, cmdArray, next, _callback) => {
             switch (cmdArray[0]) {
                 case '*':
@@ -636,7 +671,7 @@ class ImapServerSwitchStream extends Stream.Transform {
             }
             CallBack();
         };
-        const out = `Content-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${Uuid.v4()}@>${this.imapServer.domainName}\r\n${subject ? 'Subject: ' + subject + '\r\n' : ''}Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n`;
+        const out = `Date: ${new Date().toUTCString()}\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment\r\nMessage-ID:<${Uuid.v4()}@>${this.imapServer.domainName}\r\n${subject ? 'Subject: ' + subject + '\r\n' : ''}Content-Transfer-Encoding: base64\r\nMIME-Version: 1.0\r\n\r\n`;
         this.commandProcess = (text1, cmdArray, next, _callback) => {
             switch (cmdArray[0]) {
                 case '*':
@@ -866,7 +901,7 @@ class ImapServerSwitchStream extends Stream.Transform {
 }
 const connectTimeOut = 10 * 1000;
 class qtGateImap extends Event.EventEmitter {
-    constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, writeFolder, debug, newMail) {
+    constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, writeFolder, debug, newMail, skipOldMail = true) {
         super();
         this.IMapConnect = IMapConnect;
         this.listenFolder = listenFolder;
@@ -874,6 +909,7 @@ class qtGateImap extends Event.EventEmitter {
         this.writeFolder = writeFolder;
         this.debug = debug;
         this.newMail = newMail;
+        this.skipOldMail = skipOldMail;
         this.imapStream = new ImapServerSwitchStream(this, this.deleteBoxWhenEnd, this.debug);
         this.newSwitchRet = null;
         this.newSwitchError = null;
@@ -988,8 +1024,8 @@ const seneMessageToFolder = (IMapConnect, writeFolder, message, subject, createF
 };
 exports.seneMessageToFolder = seneMessageToFolder;
 class qtGateImapRead extends qtGateImap {
-    constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, newMail) {
-        super(IMapConnect, listenFolder, deleteBoxWhenEnd, null, debug, newMail);
+    constructor(IMapConnect, listenFolder, deleteBoxWhenEnd, newMail, skipOldMail = false) {
+        super(IMapConnect, listenFolder, deleteBoxWhenEnd, null, debug, newMail, skipOldMail);
         this.openBox = false;
         this.once('ready', () => {
             this.openBox = true;
@@ -1069,13 +1105,14 @@ const imapGetMediaFile = (IMapConnect, fileName, CallBack) => {
 };
 exports.imapGetMediaFile = imapGetMediaFile;
 const pingPongTimeOut = 1000 * 15;
-const resetConnectTimeLength = 1000 * 60 * 15;
+const resetConnectTimeLength = 1000 * 60 * 30;
 class imapPeer extends Event.EventEmitter {
-    constructor(imapData, listenBox, writeBox, exit) {
+    constructor(imapData, listenBox, writeBox, newMail, exit) {
         super();
         this.imapData = imapData;
         this.listenBox = listenBox;
         this.writeBox = writeBox;
+        this.newMail = newMail;
         this.exit = exit;
         this.domainName = this.imapData.imapUserName.split('@')[1];
         this.waitingReplyTimeOut = null;
@@ -1084,47 +1121,46 @@ class imapPeer extends Event.EventEmitter {
         this.peerReady = false;
         this.makeRImap = false;
         this.needPingTimeOut = null;
-        this.lastAccessTime = new Date().getTime();
         this.pinging = false;
         this.connected = false;
         this.rImap_restart = false;
         this.checkSocketConnectTime = null;
         this.rImap = null;
         debug ? exports.saveLog(`doing peer account [${imapData.imapUserName}] listen with[${listenBox}], write with [${writeBox}] `) : null;
+        console.dir(`newMail = ${typeof newMail}`);
         this.newReadImap();
     }
     restart_rImap() {
+        console.dir('restart_rImap');
         if (this.rImap_restart) {
-            return;
+            return console.log(`already restart_rImap STOP!`);
         }
-        console.log(`restart_rImap!`);
-        console.trace();
         this.rImap_restart = true;
-        if (this.makeRImap) {
-            console.log(`this.makeRImap = true STOP rImap_restart!`);
-            return;
-        }
-        if (typeof this.rImap.imapStream.loginoutWithCheck === 'function') {
-            this.rImap.imapStream.loginoutWithCheck(() => {
+        if (typeof this.rImap?.imapStream?.loginoutWithCheck === 'function') {
+            return this.rImap.imapStream.loginoutWithCheck(() => {
+                if (typeof this.exit === 'function') {
+                    this.exit(0);
+                }
             });
         }
-        this.rImap.emit('end');
-        timers_1.setTimeout(() => {
-            return this.newReadImap();
-        }, 500);
+        if (typeof this.exit === 'function') {
+            this.exit(0);
+        }
     }
     checklastAccessTime() {
-        const now = new Date().getTime();
-        if (now - this.lastAccessTime > resetConnectTimeLength) {
-            this.restart_rImap();
-        }
-        this.lastAccessTime = now;
+        timers_1.clearTimeout(this.checkSocketConnectTime);
+        return this.checkSocketConnectTime = timers_1.setTimeout(() => {
+            return this.restart_rImap();
+        }, resetConnectTimeLength);
     }
     mail(email) {
         //console.log (`imapPeer new mail:\n\n${ email.toString()} this.pingUuid = [${ this.pingUuid  }]`)
         const subject = exports.getMailSubject(email);
         const attr = exports.getMailAttached(email);
-        this.checklastAccessTime();
+        console.log(email.toString());
+        /**
+         * 			PING get PONG
+         */
         if (subject === this.pingUuid) {
             this.pingUuid = null;
             this.connected = true;
@@ -1140,55 +1176,65 @@ class imapPeer extends Event.EventEmitter {
              */
             if (attr.length < 40) {
                 console.log(`new attr\n${attr}\n`);
-                const _subject = attr.split(/\r?\n/)[0];
-                if (subject === _subject) {
-                    console.log(`\n\nthis.replyPing [${_subject}]\n\n this.ping.uuid = [${this.pingUuid}]`);
+                const _attr = attr.split(/\r?\n/)[0];
+                if (!this.connected && !this.pinging) {
+                    this.Ping(false);
+                }
+                if (subject === _attr) {
+                    console.log(`\n\nthis.replyPing [${_attr}]\n\n this.ping.uuid = [${this.pingUuid}]`);
                     return this.replyPing(subject);
                 }
-                return console.log(`new attr\n${_subject}\n subject [${_subject} [${JSON.stringify(subject)}]]!== attr 【${JSON.stringify(_subject)}】`);
+                console.log(`this.pingUuid = [${this.pingUuid}] subject [${subject}]`);
+                return console.log(`new attr\n${_attr}\n _attr [${buffer_1.Buffer.from(_attr).toString('hex')}] subject [${buffer_1.Buffer.from(subject).toString('hex')}]]!== attr 【${JSON.stringify(_attr)}】`);
             }
-            //console.log ( `this.pingUuid = [${ this.pingUuid  }] subject [${ subject }]`)
+            /**
+             * 			ignore old mail
+             */
+            if (!this.connected) {
+                return;
+            }
             return this.newMail(attr, subject);
         }
         console.log(`get mail have not subject\n\n`, email.toString());
     }
     replyPing(uuid) {
-        console.log(`\n\nreplyPing\n\n`);
-        return this.AppendWImap1('', uuid, err => {
+        console.log(`\n\nreplyPing = [${uuid}]\n\n`);
+        return this.AppendWImap1(uuid, uuid, err => {
             if (err) {
                 debug ? exports.saveLog(`reply Ping ERROR! [${err.message ? err.message : null}]`) : null;
             }
         });
     }
     AppendWImap1(mail, uuid, CallBack) {
-        return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, !this.connected, CallBack);
+        return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, false, CallBack);
     }
     setTimeOutOfPing(sendMail) {
-        //console.trace (`setTimeOutOfPing`)
+        console.trace(`setTimeOutOfPing [${this.pingUuid}]`);
         timers_1.clearTimeout(this.waitingReplyTimeOut);
         timers_1.clearTimeout(this.needPingTimeOut);
         debug ? exports.saveLog(`Make Time Out for a Ping, ping ID = [${this.pingUuid}]`, true) : null;
         return this.waitingReplyTimeOut = timers_1.setTimeout(() => {
-            debug ? exports.saveLog(`ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) `, true) : null;
+            debug ? exports.saveLog(`ON setTimeOutOfPing this.emit ( 'pingTimeOut' ) pingID = [${this.pingUuid}] `, true) : null;
+            this.pingUuid = null;
+            this.connected = false;
+            this.pinging = false;
             return this.emit('pingTimeOut');
         }, sendMail ? pingPongTimeOut * 8 : pingPongTimeOut);
     }
     Ping(sendMail) {
         if (this.pinging) {
-            return console.trace('pinging = true !');
+            return console.trace('Ping stopd! pinging = true !');
         }
         this.pinging = true;
-        if (this.pingUuid && !sendMail) {
-            return debug ? exports.saveLog(`Ping already waiting other ping, STOP!\nthis.pingUuid = [${this.pingUuid}], sendMail = [${sendMail}]`) : null;
-        }
         this.emit('ping');
         this.pingUuid = Uuid.v4();
+        debug ? exports.saveLog(`doing ping test! this.pingUuid = [${this.pingUuid}], sendMail = [${sendMail}]`) : null;
         return this.AppendWImap1(null, this.pingUuid, err => {
-            this.pinging = false;
             if (err) {
+                this.pinging = false;
                 this.pingUuid = null;
                 console.dir(`PING this.AppendWImap1 Error [${err.message}]`);
-                return this.destroy(err);
+                return this.Ping(sendMail);
             }
             return this.setTimeOutOfPing(sendMail);
         });
@@ -1201,11 +1247,13 @@ class imapPeer extends Event.EventEmitter {
         //saveLog ( `=====> newReadImap!`, true )
         this.rImap = new qtGateImapRead(this.imapData, this.listenBox, debug, email => {
             this.mail(email);
-        });
+        }, true);
         this.rImap.once('ready', () => {
+            this.emit('ready');
             this.makeRImap = this.rImap_restart = false;
             //debug ? saveLog ( `this.rImap.once on ready `): null
             this.Ping(false);
+            this.checklastAccessTime();
         });
         this.rImap.on('error', err => {
             this.makeRImap = false;
@@ -1221,8 +1269,9 @@ class imapPeer extends Event.EventEmitter {
             this.rImap.removeAllListeners();
             this.rImap = null;
             this.makeRImap = false;
+            timers_1.clearTimeout(this.waitingReplyTimeOut);
             if (this.rImap_restart) {
-                return console.dir(`rImap.on ( 'end' ) this.rImap_restart = TRUE`, err);
+                console.dir(`rImap.on ( 'end' ) this.rImap_restart = TRUE`, err);
             }
             if (typeof this.exit === 'function') {
                 debug ? exports.saveLog(`imapPeer rImap on END!`) : null;
@@ -1247,6 +1296,7 @@ class imapPeer extends Event.EventEmitter {
             return this.rImap.imapStream.loginoutWithCheck(() => {
                 if (typeof this.exit === 'function') {
                     this.exit(err);
+                    this.exit = null;
                 }
             });
         }

@@ -347,7 +347,7 @@ class VideoPlayer {
 
 			const beginDownloadQueue = (url, range?: string, callback?: Function) => {
 				console.log(url, range)
-				this.downloadQueue = new DownloadQueue(url, 'video', (err, data) => {
+				this.downloadQueue = new DownloadQueue(url, 'video', true, (err, data) => {
 					if (err) {
 						return console.log(err)
 					}

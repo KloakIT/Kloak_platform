@@ -60,50 +60,69 @@
 
 
 
-			<!-- ko if: searchResultUsers()?.length -->
-				.ui.unstackable.cards.searchItems( style = "margin-top: 6rem!important;max-width: 44em!important;" )
-					<!-- ko foreach: searchResultUsers -->
-						.card
-							.content
+			<!-- ko if: searchResultUsers()?.length && ! keyPairGenerateForm () -->
+				.searchItems.CoContent.content
+					.ui.divided.unstackable.items( style = "margin-top: 6rem!important;max-width: 44em!important;" )
+						<!-- ko foreach: { data: searchResultUsers, afterRender: searchResultUsersaAfterRender }-->
+							.item
 								<!-- ko if: image -->
-									img.right.floated.tiny.ui.image.circular( data-bind="attr: { src: image }")
+									img.right.floated.tiny.ui.image.circular( data-bind = "attr: { src: image }, css: { 'Kloak_Daggr_online': online, 'Kloak_Daggr_ofline': !online }" style="width: 80px!important;;height: 80px!important;")
 								<!-- /ko  -->
 								<!-- ko ifnot: image -->
-									button.ui.circular.blue.icon.button
+									.circular.blue.icon( data-bind = "css: { 'Kloak_Daggr_online': online, 'Kloak_Daggr_ofline': !online}" )
 										i.icon.user.secret
 								<!-- /ko  -->
-								<!-- ko if: nickname -->
-									.header( data-bind = " text: nickname " )
-								<!-- /ko  -->
-								.meta
-									<!-- ko if: phoneNumber -->
-										p( data-bind = "text: phoneNumber")
-									<!-- /ko  -->
-									<!-- ko if: email -->
-										p( data-bind = "text: email" )
-									<!-- /ko  -->
-									
-									p( data-bind = "text: keyID" style="margin-bottom: 0;")
-								<!-- ko if: bio -->
-									.description
-										textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; color: grey; border: none; background-color: white;" )
-								<!-- /ko  -->
-								<!-- ko if: showAddUserbutton -->
-								.extra
-									button.ui.primary.button( data-bind = "click: function() { $parent.addUser($index()) }, text: $parent.addUserInfo[ $root.languageIndex()]")
-								<!-- /ko  -->
-					<!-- /ko  -->
+								.content( style="margin-left: 1rem;" )
+									.header.kloak_color_DarkBlue
+										<!-- ko if: nickname -->
+											span( data-bind = " text: nickname " style = "margin-right: 0.5rem;")
+										<!-- /ko  -->
+										span( data-bind = " text: keyID " style = "font-size: small;")
+									.meta( style="color: grey; margin: unset;" )
+										<!-- ko if: phoneNumber -->
+											span( data-bind = "text: phoneNumber")
+										<!-- /ko  -->
+										<!-- ko if: email -->
+											span( data-bind = "text: email" )
+										<!-- /ko  -->
+									.description( style="margin-top: 0px; color: grey; " )
+										<!-- ko if: bio -->
+											textarea.searchResultUsersTextarea( data-bind = " value : bio " rows = "5" readOnly disabled style = " width: 100%; resize: none; color: grey; border: none; background-color: white;" )
+										<!-- /ko  -->
+										<!-- ko if: onlineListeing && onlineListeing.length -->
+											span( data-bind = "text: $parent.information.connectingCount [ $root.languageIndex() ]" style="margin-right: 0.5rem;")
+											span( data-bind = "text: onlineListeing.length ")
+
+										<!-- /ko  -->
+									.extra( style = "margin: unset;")
+										<!-- ko if: showAddUserbutton -->
+											<!-- ko ifnot: userAutoAdded -->
+												button.ui.basic.grey.button.mini( data-bind = "click: () => { showAddUserbutton( false ); getFocus ( true );}, text: $parent.addUserInfo [ $root.languageIndex()]")
+											<!-- /ko  -->
+											<!-- ko if: userAutoAdded -->
+												button.ui.basic.grey.button.mini( data-bind = "click: () => { $parent.addUser ( $index())}, text: $parent.information.addUser [ $root.languageIndex()]")
+											<!-- /ko  -->
+										<!-- /ko  -->
+										<!-- ko ifnot: showAddUserbutton -->
+											
+											textarea.daggrInputTextarea( data-bind = " hasFocus: getFocus, textInput: textInput" rows="4" style = "padding: 0.5rem;")
+											.ui.buttons
+												.ui.button( data-bind = "click: () => {showAddUserbutton( true )}, text: $parent.information.cancel [ $root.languageIndex()]" )
+												.or
+												button.ui.primary.button.mini( data-bind = " click: () => { $parent.addUser ( $index())}, text: $parent.information.sendRequest [$root.languageIndex()] ")
+										<!-- /ko  -->
+						<!-- /ko  -->
 			<!-- /ko  -->
 
 			<!-- ko if: !searchResultUsers()?.length && currentUser()?.length && ! keyPairGenerateForm() -->
 				.searchItems.CoContent.content
 					.ui.divided.unstackable.items( style = "margin-top: 6rem!important;max-width: 44em!important;" )
-						<!-- ko foreach: currentUser -->
+						<!-- ko foreach: { data: currentUser, afterRender: searchResultUsersaAfterRender } -->
 							.item
-								a( data-bind="click: () => { $parent.startChat ($index()) }" style= "width: 80px!important;position: relative;")
+								a( data-bind=" click: () => { $parent.startChat ( $index()) }" style= "width: 80px!important;position: relative;")
 
 									<!-- ko if: image -->
-										img.ui.circular.image.tiny( data-bind="css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}, attr: { src: image }" style="border-radius: 500rem!important;")
+										img.ui.circular.image.tiny( data-bind = "css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}, attr: { src: image }" style="border-radius: 500rem!important;")
 									<!-- /ko  -->
 									<!-- ko ifnot: image -->
 										button.ui.circular.blue.icon.massive.button( data-bind = "css: { 'Kloak_Daggr_online': online(), 'Kloak_Daggr_ofline': !online()}" style= "margin-left: 0.5rem;")
@@ -115,11 +134,10 @@
 								.content( style= "margin-left: 1rem;" )
 									a.header( data-bind = "css: { 'kloak_color_DarkBlue': online, 'kloak_color_lightGrey': !online() }, click: () => { $parent.startChat ($index()) }" )
 										<!-- ko if: nickname -->
-											<!-- ko text: nickname --><!-- /ko  -->
+											span( data-bind = "text: nickname " style = "padding-right: 0.5rem;")
 										<!-- /ko  -->
-										<!-- ko ifnot: nickname -->
-											<!-- ko text: keyID --><!-- /ko  -->
-										<!-- /ko  -->
+										span( data-bind = " text: keyID" style = " font-size: small;")
+										
 									.meta( style = "color: grey; margin: unset;" )
 										<!-- ko if: phoneNumber -->
 											span( data-bind = "text: phoneNumber" )
@@ -129,44 +147,53 @@
 										<!-- /ko  -->
 
 									<!-- ko if: bio -->
-									.description( style = "margin-top: 0px; color: grey; ")
-										textarea.searchResultUsersTextarea( data-bind = " value : bio" rows = "3" readOnly disabled style = " width: 100%; resize: none; border: none; background-color: rgba(0,0,0,0);" )
+										.description( style = "margin-top: 0px; color: grey; ")
+											textarea.searchResultUsersTextarea( data-bind = " value : bio" rows = "3" readOnly disabled style = " width: 100%; resize: none; border: none; background-color: rgba(0,0,0,0);" )
 									<!-- /ko  -->
-									
-						<!-- /ko  -->
-					//-.ui.unstackable.cards.searchItems( style = "margin-top: 6rem!important;max-width: 44em!important;" )
-						<!-- ko foreach: currentUser -->
-						
-							//-.card
-								.content
-									<!-- ko if: image -->
-										img.right.floated.tiny.ui.image.circular.image-link( data-bind="click: () => { $parent.startChat ($index()) }, attr: { src: image }")
-									<!-- /ko  -->
-									<!-- ko ifnot: image -->
-										button.ui.circular.blue.icon.button
-											i.icon.user.secret
-									<!-- /ko  -->
-									<!-- ko if: nickname -->
-										.header( data-bind = " text: nickname " )
-									<!-- /ko  -->
-									
-									.meta
-										p( data-bind = "text: keyID" style="margin-bottom: 0;")
-										<!-- ko if: phoneNumber -->
-											p( data-bind = "text: phoneNumber")
+									.extra
+										
+										<!-- ko if: !showDeleteUserConfirm() && !showBlockUserConfirm() -->
+											.ui.mini.basic.icon.buttons
+												button.ui.button( data-bind = "click: () => { showDeleteUserConfirm ( true )}")
+													i.red.icon.trash.alternate.outline
+												button.ui.button( data-bind = "click: () => { showBlockUserConfirm ( true )}")
+													i.red.icon.exclamation.triangle
+												<!-- ko if: isAddUserWaitingConfirm -->
+													button.ui.button( data-bind = " click: () => { mute ( !mute ())}")
+														<!-- ko if: mute -->
+															i.icon.bell.slash.red.outline
+														<!-- /ko  -->
+														<!-- ko ifnot: mute -->
+															i.icon.green.bell.outline
+														<!-- /ko  -->
+												<!-- /ko  -->
 										<!-- /ko  -->
-										<!-- ko if: email -->
-											p( data-bind = "text: email" )
+
+										<!-- ko if: showDeleteUserConfirm -->
+											.ui.mini.buttons
+												button.ui.button( data-bind = "click: () => { showDeleteUserConfirm ( false )}, text: $parent.information.cancel [ $root.languageIndex() ]" )
+												.or
+												button.ui.red.button( data-bind = "click: () => { $parent.delUser ($index())},text: $parent.information.delUser [ $root.languageIndex() ]" )
 										<!-- /ko  -->
-									<!-- ko if: bio -->
-									.description
-										textarea.searchResultUsersTextarea( data-bind = "  value : bio" rows = "5" readOnly disabled style = " width: 100%; resize: none; padding: 0.5rem; color: grey; border: none; text-align-last: center; background-color: white;" )
-									<!-- /ko  -->
-									<!-- ko if: notice -->
-										.floating.ui.red.circular.label( data-bind = "text: notice()" style = "font-size: large;")
-									<!-- /ko  -->
+
+										
+										<!-- ko if: showBlockUserConfirm -->
+											.ui.mini.buttons
+												button.ui.button( data-bind = "click: () => { showBlockUserConfirm ( false )}, text: $parent.information.cancel [ $root.languageIndex() ]" )
+												.or
+												button.ui.red.button( data-bind = "text: $parent.information.blockkUser [ $root.languageIndex() ]" )
+										<!-- /ko  -->
+										
+										
+
+										<!-- ko if: !isAddUserWaitingConfirm() && !showDeleteUserConfirm() && !showBlockUserConfirm() -->
+											span( data-bind = " text:$parent.information. WaitingConfirm [ $root.languageIndex() ]" style = "color: red;")
+										<!-- /ko  -->
+
+									
 
 						<!-- /ko  -->
+					
 			<!-- /ko -->
 
 			<!-- ko if: keyPairGenerateForm -->

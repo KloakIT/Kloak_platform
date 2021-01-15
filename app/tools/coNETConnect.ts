@@ -90,27 +90,25 @@ export default class extends Imap.imapPeer {
 		})
 	}
 	*/
-	constructor ( public keyID, public imapData: IinputData, public server: SocketIO.Server, public socket: SocketIO.Socket,
-		private cmdResponse: ( mail: string, hashCode: string ) => void, public _exit: ( err ) => void ) {
+	constructor ( public keyID, public imapData: IinputData, public socket: SocketIO.Socket,
+		public newMail: ( mail: string, hashCode: string ) => void, public _exit: ( err ) => void ) {
 			
-		super ( imapData, imapData.clientFolder, imapData.serverFolder, err => {
+		super ( imapData, imapData.clientFolder, imapData.serverFolder, newMail, err => {
 			console.debug ( `imapPeer doing exit! err =`, err )
 
-			nameSpace.emit ( 'tryConnectCoNETStage', null, -2 )
+			socket.emit ( 'tryConnectCoNETStage', null, -2 , () => {
+				console.log (`nameSpace emit tryConnectCoNETStage -2 get response!`)
+			})
 			return this.exit1 ( err )
 		})
 
-		let nameSpace: SocketIO.Namespace | SocketIO.Socket = socket.nsp
-		if ( typeof nameSpace.emit !== 'function') {
-			nameSpace = socket
-		}
 
 		saveLog (`=====================================  new CoNET connect()`, true )
-		nameSpace.emit ( 'tryConnectCoNETStage', null, 5 )
 		
-		this.newMail = ( mail: string, hashCode: string ) => {
-			return this.cmdResponse ( mail, hashCode )
-		}
+		socket.emit ( 'tryConnectCoNETStage', null, 5, () => {
+			saveLog (`socket emit tryConnectCoNETStage 5 get response!`)
+		})
+
 
 		this.on ( 'CoNETConnected', publicKey => {
 			
@@ -119,22 +117,24 @@ export default class extends Imap.imapPeer {
 			//console.log ( publicKey )
 			clearTimeout ( this.timeoutWaitAfterSentrequestMail )
 			this.connectStage = 4
-			this.socket.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
-			return nameSpace.emit ( 'tryConnectCoNETStage', null, 4, publicKey )
-
+			return socket.emit ( 'tryConnectCoNETStage', null, 4, publicKey, () => {
+				saveLog (`socket emit tryConnectCoNETStage 4 get response!`)
+			})
 		})
 
 		this.on ( 'pingTimeOut', () => {
 
-			console.log ( `class CoNETConnect on pingTimeOut` )
+			saveLog( `class CoNETConnect on pingTimeOut` )
 			
-			return nameSpace.emit ( 'pingTimeOut' )
+			return socket.emit ( 'pingTimeOut' )
 			
 
 		})
 
 		this.on ( 'ping', () => {
-			nameSpace.emit ( 'tryConnectCoNETStage', null, 2 )
+			socket.emit ( 'tryConnectCoNETStage', null, 2, () => {
+				saveLog (`socket emit tryConnectCoNETStage 2 get response!`)
+			})
 			//this.sockerServer.emit ( 'tryConnectCoNETStage', null, 2 )
 		})
 

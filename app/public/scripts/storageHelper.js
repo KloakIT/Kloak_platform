@@ -90,7 +90,7 @@ class StorageHelper {
                     }
                 });
             };
-            new DownloadQueue(url, title, (err, data) => {
+            new DownloadQueue(url, title, true, (err, data) => {
                 console.log(err, data);
             }, (requestUuid, com, data) => {
                 console.log(com);
@@ -201,7 +201,7 @@ class StorageHelper {
                 }
             };
             if (videoURL) {
-                let videoDownload = new DownloadQueue(videoURL, title, () => { }, (requestUuid, com, data) => {
+                let videoDownload = new DownloadQueue(videoURL, title, true, () => { }, (requestUuid, com, data) => {
                     if (!downloadRequestUuid['video']) {
                         downloadRequestUuid['video'] = requestUuid;
                     }
@@ -235,7 +235,7 @@ class StorageHelper {
                 });
             }
             if (audioURL) {
-                let audioDownload = new DownloadQueue(audioURL, title, () => { }, (requestUuid, com, data) => {
+                let audioDownload = new DownloadQueue(audioURL, title, true, () => { }, (requestUuid, com, data) => {
                     if (!downloadRequestUuid['audio']) {
                         downloadRequestUuid['audio'] = requestUuid;
                     }

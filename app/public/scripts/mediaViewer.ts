@@ -165,7 +165,7 @@ class MediaViewer {
 
 		let history = false
 
-		this.download = new DownloadQueue(url, 'video', (err, data) => {
+		this.download = new DownloadQueue(url, 'video', true, (err, data) => {
 			if (err) {
 				return console.log(err)
 			}

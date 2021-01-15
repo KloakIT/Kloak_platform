@@ -68,6 +68,8 @@ interface keypair {
 	image: string
 	phoneNumber?: string
 	bio?: string
+	canbefind?: boolean
+	userAutoAdded?: boolean
 }
 
 interface StringValidator {
@@ -756,7 +758,7 @@ interface kloakFileInstance {
 	requestSerial: string
 	filename?: string
 	progress: KnockoutObservable<number> | Function
-	instance?: Downloader | Assembler | Uploader
+	instance?: Assembler | Uploader
 }
 
 interface finishedDownload {
@@ -820,19 +822,27 @@ interface fileHistory {
 interface currentUser {
 	bio: string
 	chatDataUUID: string
-	chatData: KnockoutObservableArray < messageContent >
+	
 	chatDataArray: messageContent []
 	keyID: string
 	title: string
 	image: string
+	userAutoAdded: boolean
 	phoneNumber: string
 	email: string
 	nickname: string
-	notice: KnockoutObservable < number >
 	_notice: number
-	typing: KnockoutObservable < boolean >
 	account: string
 	online: any
+	isMute: boolean
+	
+	chatData: KnockoutObservableArray < messageContent >
+	mute: KnockoutObservable < boolean >
+	notice: KnockoutObservable < number >
+	typing: KnockoutObservable < boolean >
+	showDeleteUserConfirm: KnockoutObservable < boolean >
+	showBlockUserConfirm: KnockoutObservable < boolean >
+	isAddUserWaitingConfirm: KnockoutObservable < boolean >
 }
 
 interface messageYoutubeObj {

@@ -561,14 +561,17 @@ module view_layout {
 		public connectToNode () {
 
 			this.networkConnect ( 2 )
-			return this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified,
-				( err ) => {
-					if ( typeof err === 'number' && err > -1 ) {
-						this.CoNETConnectClass = null
-						return this.showImapSetup()
-					}
-					this.networkConnect ( true )
-				})
+			if ( !this.CoNETConnectClass ) {
+				return this.CoNETConnectClass = new CoNETConnect ( this, this.keyPair().verified,
+					( err ) => {
+						if ( typeof err === 'number' && err > -1 ) {
+							this.CoNETConnectClass = null
+							return this.showImapSetup()
+						}
+						this.networkConnect ( true )
+					})
+			}
+			console.log (`CoNETConnectClass already created!`)
 			
 		}
 

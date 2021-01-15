@@ -645,7 +645,7 @@
 // 	}
 // }
 class DownloadQueue {
-    constructor(downloadUrl, title, CallBack, dataCallBackBeforeDecryptoCallBack = null, range) {
+    constructor(downloadUrl, title, movflags, CallBack, dataCallBackBeforeDecryptoCallBack = null, range) {
         this.title = title;
         this.CallBack = CallBack;
         this.dataCallBackBeforeDecryptoCallBack = dataCallBackBeforeDecryptoCallBack;
@@ -673,7 +673,7 @@ class DownloadQueue {
             command: 'CoSearch',
             Args: [downloadUrl, this.range],
             error: null,
-            subCom: 'youtube_getVideoMp4',
+            subCom: movflags ? 'youtube_getVideoMp4_move' : 'youtube_getVideoMp4',
             requestSerial: this.requestUUID
         } : {
             command: 'CoSearch',
@@ -701,7 +701,7 @@ class DownloadQueue {
                 const err = `Kloak response error ${com.error}`;
                 return this.stopProcess(err);
             }
-            if (com.subCom === 'downloadFile' || com.subCom === 'youtube_getVideoMp4') {
+            if (/downloadFile|youtube_getVideoMp4/.test(com.subCom)) {
                 const downloadObj = com.Args[0];
                 this.totalLength = downloadObj.totalLength;
                 if (downloadObj.order !== this.currentIndex) {

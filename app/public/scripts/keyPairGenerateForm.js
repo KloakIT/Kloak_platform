@@ -91,6 +91,8 @@ class keyPairGenerateForm {
         this.delete_btn_view = ko.observable(false);
         this.doingProcessBarTime = null;
         this.keyPairGenerateFormMessage = ko.observable(false);
+        this.canbefind = ko.observable(false);
+        this.userAutoAdded = ko.observable(false);
         this.message_cancel = ko.observable(false);
         this.message_keyPairGenerateError = ko.observable(false);
         this.message_keyPairGenerateSuccess = ko.observable(false);
@@ -113,6 +115,12 @@ class keyPairGenerateForm {
         this.userID = [
             '用户ID: ', 'ユーザーID: ', 'User ID: ', '用戶ID: '
         ];
+        this.allows = {
+            canBeSearch: ['能够通过昵称，Email等被找到', 'ニックネームやEmailで検索ができます', 'Find me can by nickname or Email', '能夠通過暱稱，Email等被找到'],
+            canNotBeSearch: ['只有用户ID才能联系', 'ユーザーIDしか検索ができません', 'Find me by user ID only', '只有用戶ID才能聯繫'],
+            canAutoAdded: ['允许自动加入好友', '友だちへの追加を許可', 'Allow other users to automatically friend me', '允許自動加入好友'],
+            canNotAutoAdded: ['好友加入需确认', '友だちへの追加は確認が必要', 'Friend me need my permit', '好友加入需確認']
+        };
         const self = this;
         this.DaggrUser(_daggrUser);
         this.SystemAdministratorEmailAddress.subscribe(function (newValue) {
@@ -129,6 +137,8 @@ class keyPairGenerateForm {
             this.avatarImage(_daggrUser.image);
             this.SystemAdministratorPhone(_daggrUser.phoneNumber);
             this.SystemAdministratorNiekname(_daggrUser.nickname);
+            this.canbefind(_daggrUser.canbefind);
+            this.userAutoAdded(_daggrUser.userAutoAdded);
             this.bio(_daggrUser.bio);
         }
     }
@@ -193,6 +203,8 @@ class keyPairGenerateForm {
             this._daggrUser.phoneNumber = this.SystemAdministratorPhone();
             this._daggrUser.nickname = this.SystemAdministratorNiekname();
             this._daggrUser.bio = this.bio();
+            this._daggrUser.userAutoAdded = this.userAutoAdded();
+            this._daggrUser.canbefind = this.canbefind();
             return self.exit(this._daggrUser);
         }
         return _view.sharedMainWorker.NewKeyPair(sendData, (err, data) => {
@@ -210,6 +222,8 @@ class keyPairGenerateForm {
                     _data.phoneNumber = this.SystemAdministratorPhone();
                     _data.nickname = this.SystemAdministratorNiekname();
                     _data.bio = this.bio();
+                    _data.canbefind = this.canbefind();
+                    _data.userAutoAdded = this.userAutoAdded();
                     return self.exit(_data);
                 });
             }
@@ -263,6 +277,7 @@ class keyPairGenerateForm {
         this.bioEdit(false);
         this.SystemAdministratorEmailAddressEdit(false);
         this.SystemAdministratorNieknameEdit(false);
+        return true;
     }
     inputClick() {
         return;

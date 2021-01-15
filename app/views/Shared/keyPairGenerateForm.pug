@@ -19,11 +19,11 @@
 					.field
 						H3.ui.header.title.blue( data-bind = "animationTextIn: infoDefine [ $root.languageIndex() ].home_index_view.daggrUserTitle" style = "color: rgba(30, 123, 200,0.9)")
 					.field
-						.item( data-bind = " click: endEdit " style = "width: 100%;")
+						.item( style = "width: 100%;")
 							<!-- ko if: publicKey -->
 								.ui.top.attached.segment.tertiary.blue.inverted.center.aligned( data-bind=" text: userID [ $root.languageIndex() ] + publicKey" )
 							<!-- /ko -->
-							.ui.attached.segment.center.aligned( style = "padding: 0.5rem; color: grey;")
+							.ui.attached.segment.center.aligned( data-bind = " click: endEdit " style = "padding: 0.5rem; color: grey;")
 								.ui.top.aligned.image
 									
 									<!-- ko if: avatarImage -->
@@ -74,7 +74,16 @@
 									<!-- ko if: bioEdit -->
 										textarea( data-bind = " hasFocus: bioEditFcous, click: inputClick, clickBubble: false, value : bio, attr: {  placeholder: boiPlaceholder [ $root.languageIndex() ]} " rows = "4" tabindex="3" style = " width: 100%; color: grey; " )
 									<!-- /ko -->
-								
+							.ui.blue.attached.segment.center.aligned
+								.center.aligned
+									.ui.checkbox
+										input( data-bind = "checked: canbefind" type = "checkbox" )
+										label( data-bind = "text: canbefind() ? allows.canBeSearch [ $root.languageIndex() ] : allows.canNotBeSearch [ $root.languageIndex() ] " style="color: grey;" )
+								.center.aligned( style = "padding-top: 1rem;")
+									.ui.checkbox
+										input( data-bind = "checked: userAutoAdded" type = "checkbox" )
+										label( data-bind = "text: userAutoAdded() ? allows.canAutoAdded [ $root.languageIndex() ] : allows.canNotAutoAdded [ $root.languageIndex() ] " style="color: grey;" )
+
 					
 					
 				<!-- /ko -->

@@ -32,7 +32,6 @@ class CoNETConnect {
         this.infoTextArray = ko.observableArray([]);
         this.keyPairSign = ko.observable(null);
         this.imapData = this.view.imapData();
-        this.nodeEmail = "nodeTest@Kloak.app";
         this.inSendMail = false;
         const self = this;
         /*
@@ -79,7 +78,7 @@ class CoNETConnect {
              */
             case 0: {
                 self.Loading(false);
-                this.view.networkConnect(1);
+                _view.networkConnect(1);
                 self.showSendConnectMail(true);
                 return self.infoTextArray.push({ text: ko.observable('timeOut'), err: ko.observable(true) });
             }
@@ -90,7 +89,8 @@ class CoNETConnect {
                 this.Loading(false);
                 this.showConnectCoNETProcess(false);
                 this.connectedCoNET(true);
-                _view.connectInformationMessage.socketIo.removeListener('tryConnectCoNETStage', this.listenFun);
+                _view.networkConnect(true);
+                //_view.connectInformationMessage.socketIo.removeListener ( 'tryConnectCoNETStage', this.listenFun )
                 /*
                 if ( ! this.isKeypairBeSign ) {
                     if ( ! this.keyPairSign ()) {
@@ -105,9 +105,9 @@ class CoNETConnect {
                     return
                 }
                 */
-                _view.sharedMainWorker.decryptJsonWithAPKey(publicKeyMessage, err => {
+                return _view.sharedMainWorker.decryptJsonWithAPKey(publicKeyMessage, err => {
+                    return this.ready(null);
                 });
-                return this.ready(null);
             }
             /**
              * 	connectToMailServer
@@ -120,7 +120,7 @@ class CoNETConnect {
              */
             case -1: {
                 this.Loading(false);
-                _view.connectInformationMessage.socketIo.removeListener('tryConnectCoNETStage', this.listenFun);
+                //_view.connectInformationMessage.socketIo.removeListener ( 'tryConnectCoNETStage', this.listenFun )
                 return this.infoTextArray.push({ text: ko.observable('systemError'), err: ko.observable(true) });
             }
             /**
@@ -159,8 +159,13 @@ class CoNETConnect {
             const localCommand = {
                 message: data,
                 imapData: _view.imapData(),
-                toMail: self.nodeEmail,
-                subject: 'nodeTest'
+                toMail: 'node@Kloak.app',
+                subject: 'node'
+                /**
+                 * 		testNode
+                 */
+                //subject: 'nodeTest' 
+                //toMail: 'nodeTest@Kloak.app'
             };
             return _view.connectInformationMessage.emitLocalCommand('sendRequestMail', localCommand, err => {
             });
@@ -188,8 +193,11 @@ class CoNETConnect {
             this.connetcError(-1);
             this.Loading(true);
             //return this.test ()
-            this.listenFun = (err, stage, message) => {
+            this.listenFun = (err, stage, message, callback) => {
                 console.log(`on tryConnectCoNETStage`, err, stage);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
                 return self.listingConnectStage(err, stage, message);
             };
             _view.connectInformationMessage.socketIo.on('tryConnectCoNETStage', this.listenFun);
