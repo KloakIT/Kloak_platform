@@ -243,6 +243,7 @@ class VideoPlayer {
                     youtubeId = streamingData['videoDetails']['videoId'];
                     format = streamingData['formats'].filter(format => format.itag === 22 || format.itag === 18).pop();
                     console.log(format);
+                    // console.log(streamingData, format['approxDurationMs'])
                     duration = streamingData['duration'] || parseInt(format['approxDurationMs'].toString()) / 1000 || null;
                     extension = format['mimeType'].split(" ")[0].replace(";", "").split("/")[1];
                     url = format['url'];
@@ -298,7 +299,10 @@ class VideoPlayer {
                             if (!duration) {
                                 duration = this.hmsToSecondsOnly(com['duration']);
                             }
-                            this.mediaSource.duration = parseInt(duration.toString());
+                            console.log(duration);
+                            if (!isNaN(duration.toString())) {
+                                this.mediaSource.duration = parseInt(duration.toString());
+                            }
                             createHistory(requestUuid, com, format['bitrate']);
                             history = true;
                         }
