@@ -17,7 +17,7 @@ Kloakプラットフォームは複数のAPPを提供して[CoNET](https://githu
 
 Kloak平台集成了一系列應用來使用[CoNET](https://github.com/QTGate/CoNET)網絡
 
-![http protocol](/resources/kloak_platform_100.png?raw=true)
+![http protocol](/resources/coreTech.png?raw=true)
 
 Kloak Platform is a high-security, cross platform OS that is designed to run in any browser environment.
 The different layers of Kloak OS include the frontend user interface, which is responsible for delivering a great user experience. The main process deals with the internal functions and features of the Kloak platform. Bundled together is Open PGP, which encrypts and signs data to ensure that data cannot be compromised by malicious individuals.
