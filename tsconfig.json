@@ -8,7 +8,7 @@
 		"index.ts",
 		"cli.ts",
 		"main.ts",
-		"tools/**/*.ts",
+		"app/tools/**/*.ts",
 		"app/public/scripts/**/*.ts",
 		"app/*.ts"
 	]
