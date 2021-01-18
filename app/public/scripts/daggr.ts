@@ -4,9 +4,6 @@ const showTypingKeepTimes = 1000 * 60 * 0.5
 
 declare const EmojiPanel
 
-
-
-
 const resizeInputTextArea = () => {
 	const elm = document.getElementById ( 'daggrInput' )
 	if ( elm ) {
@@ -403,10 +400,15 @@ private currentYoutubeObj = null
 			
 			const com: QTGateAPIRequestCommand = {
 				command: 'daggr',
-				Args: [ user.keyID, true ],
+				Args: [ true ],
 				error: null,
 				subCom: 'typing',
-				requestSerial: uuid_generate ()
+				requestSerial: uuid_generate (),
+				account: _view.localServerConfig().account,
+				daggrKeyID: this.userData().keyInfo.publicKeyID,
+				targetAccount: user.account,
+				targetDaggrID: user.keyID
+				
 			}
 
 			return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
@@ -563,7 +565,7 @@ private currentYoutubeObj = null
 		const profile = {
 			bio: _profile.bio,
 			image: _profile.image,
-			publicKey: _profile.publicKey,
+			publickeyArmor: _profile.publicKey,
 			phoneNumber: _profile.phoneNumber,
 			email: _profile.email,
 			nickname: _profile.nickname,
@@ -573,10 +575,14 @@ private currentYoutubeObj = null
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'daggr',
-			Args: [ Buffer.from ( JSON.stringify ( profile )).toString('base64') ],
+			Args: [ Buffer.from ( JSON.stringify ( profile )).toString( 'base64' )],
 			error: null,
 			subCom: 'userProfile',
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate (),
+			account: _view.localServerConfig().account,
+			daggrKeyID: this.userData().keyInfo.publicKeyID,
+			DaggrPublickeyArmor: this.userData().keyInfo.publicKey
+			
 		}
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 
@@ -624,10 +630,14 @@ private currentYoutubeObj = null
 
 		const com: QTGateAPIRequestCommand = {
 			command: 'daggr',
-			Args: [[user.account, message] ],
+			Args: [ message ],
 			error: null,
 			subCom: 'sendMessage',
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate (),
+			account: _view.localServerConfig().account,
+			daggrKeyID: this.userData().keyInfo.publicKeyID,
+			targetAccount: user.account,
+			targetDaggrID: user.keyID
 		}
 
 		user.chatData.unshift ( message )
@@ -655,7 +665,7 @@ private currentYoutubeObj = null
 				return message.create = ko.observable ( null )
 			}
 
-			if ( com.error === -1 ) {
+			if ( !com.error ) {
 				console.log ( `_view.connectInformationMessage.emitRequest com.error === -1` )
 				const now = new Date()
 				message.delivered ( now )
@@ -673,7 +683,7 @@ private currentYoutubeObj = null
 
 	public getTyping ( obj: QTGateAPIRequestCommand ) {
 
-		if ( !this.currentChat() || this.currentChat().keyID !== obj.account ) {
+		if ( !this.currentChat() || this.currentChat().keyID !== obj.daggrKeyID ) {
 			return
 		}
 
@@ -694,24 +704,15 @@ private currentYoutubeObj = null
 	}
 
 	public getMessage (  obj: QTGateAPIRequestCommand ) {
-		const messages: any[] = obj.Args
-		const loopAllMessages = () => {
-			const message = messages.shift ()
-			if ( !message ) {
-				return
-			}
-
-			return this.putMessage ( message, () => {
-				return loopAllMessages ()
-			})
-		}
-		return loopAllMessages ()
+		const messages = obj.Args[0]
+		
+		return this.putMessage ( messages )
 
 	}
 
-	public putMessage ( mesObj, CallBack ) {
+	public putMessage ( message: messageContent ) {
 		
-		const message: messageContent = mesObj [2]
+
 		const messageUserID = message.senderKeyID
 		message ['isSelf'] = false
 		message ['showDelete'] = ko.observable ( false )
@@ -730,14 +731,14 @@ private currentYoutubeObj = null
 			 * 		Message already have
 			 */
 			if ( index > -1 ) {
-				return CallBack ()
+				return 
 			}
 
 			this.currentChat ().chatData.unshift ( message )
 			this.currentChat().typing ( false )
 			scrollTop ()
 			this.saveChatData ()
-			return CallBack ()
+			
 		}
 
 		const index = this.currentUser().findIndex ( n => n.keyID === messageUserID )
@@ -746,7 +747,7 @@ private currentYoutubeObj = null
 		 */
 		if ( index < 0 ) {
 			if ( !mesObj [3]) {
-				return CallBack ()
+				return 
 			}
 			
 		}
@@ -755,19 +756,19 @@ private currentYoutubeObj = null
 
 		return _view.storageHelper.getDecryptLoad ( user.chatDataUUID, ( err, data ) => {
 			if ( err ) {
-				CallBack ()
+				
 				return _view.connectInformationMessage.showErrorMessage ( err )
 			}
 			try {
 				user.chatDataArray = JSON.parse ( Buffer.from ( data ).toString () )
 			} catch ( ex ) {
-				CallBack ()
+				
 				return user.chatDataArray = null
 			}
 			const index = user.chatDataArray.findIndex ( n =>  n.uuid === message.uuid )
 
 			if ( index > -1 ) {
-				return CallBack ()
+				return 
 			}
 			
 			const index1 = mainMenuArray.findIndex ( n => n.name === 'daggr')
@@ -783,7 +784,7 @@ private currentYoutubeObj = null
 			
 
 			return _view.storageHelper.encryptSave ( user.chatDataUUID, JSON.stringify ( user.chatDataArray ), err => {
-				CallBack ()
+				
 				if ( err ) {
 
 					return _view.connectInformationMessage.showErrorMessage ( err )
@@ -857,7 +858,7 @@ private currentYoutubeObj = null
 
 		user.chatData.unshift ( message )
 		this.showYoutube ( false )
-		this.showInputMenu (false )
+		this.showInputMenu ( false )
 		resizeInputTextArea ()
 		return _view.connectInformationMessage.emitRequest ( com, ( err, com: QTGateAPIRequestCommand ) => {
 

@@ -209,6 +209,10 @@ interface QTGateAPIRequestCommand {
 	region?: string
 	CallBack?: any
 	serial?: string
+	daggrKeyID?: string
+	targetAccount?: string
+	targetDaggrID?: string
+	DaggrPublickeyArmor?: string
 }
 
 interface QTGateCommand {

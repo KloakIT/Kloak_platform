@@ -117,10 +117,14 @@ class daggr extends sharedAppClass {
             const user = this.currentChat();
             const com = {
                 command: 'daggr',
-                Args: [user.keyID, true],
+                Args: [true],
                 error: null,
                 subCom: 'typing',
-                requestSerial: uuid_generate()
+                requestSerial: uuid_generate(),
+                account: _view.localServerConfig().account,
+                daggrKeyID: this.userData().keyInfo.publicKeyID,
+                targetAccount: user.account,
+                targetDaggrID: user.keyID
             };
             return _view.connectInformationMessage.emitRequest(com, (err, com) => {
                 if (err) {
@@ -454,7 +458,7 @@ class daggr extends sharedAppClass {
         const profile = {
             bio: _profile.bio,
             image: _profile.image,
-            publicKey: _profile.publicKey,
+            publickeyArmor: _profile.publicKey,
             phoneNumber: _profile.phoneNumber,
             email: _profile.email,
             nickname: _profile.nickname,
@@ -466,7 +470,10 @@ class daggr extends sharedAppClass {
             Args: [Buffer.from(JSON.stringify(profile)).toString('base64')],
             error: null,
             subCom: 'userProfile',
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
+            account: _view.localServerConfig().account,
+            daggrKeyID: this.userData().keyInfo.publicKeyID,
+            DaggrPublickeyArmor: this.userData().keyInfo.publicKey
         };
         return _view.connectInformationMessage.emitRequest(com, (err, com) => {
             if (err) {
@@ -507,10 +514,14 @@ class daggr extends sharedAppClass {
         };
         const com = {
             command: 'daggr',
-            Args: [[user.account, message]],
+            Args: [message],
             error: null,
             subCom: 'sendMessage',
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
+            account: _view.localServerConfig().account,
+            daggrKeyID: this.userData().keyInfo.publicKeyID,
+            targetAccount: user.account,
+            targetDaggrID: user.keyID
         };
         user.chatData.unshift(message);
         this.lastSenttypingTime = null;
@@ -531,7 +542,7 @@ class daggr extends sharedAppClass {
                 console.log(`_view.connectInformationMessage.emitRequest !com`);
                 return message.create = ko.observable(null);
             }
-            if (com.error === -1) {
+            if (!com.error) {
                 console.log(`_view.connectInformationMessage.emitRequest com.error === -1`);
                 const now = new Date();
                 message.delivered(now);
@@ -543,7 +554,7 @@ class daggr extends sharedAppClass {
         });
     }
     getTyping(obj) {
-        if (!this.currentChat() || this.currentChat().keyID !== obj.account) {
+        if (!this.currentChat() || this.currentChat().keyID !== obj.daggrKeyID) {
             return;
         }
         this.currentChat().typing(true);
@@ -557,20 +568,10 @@ class daggr extends sharedAppClass {
         item.showDelete(true);
     }
     getMessage(obj) {
-        const messages = obj.Args;
-        const loopAllMessages = () => {
-            const message = messages.shift();
-            if (!message) {
-                return;
-            }
-            return this.putMessage(message, () => {
-                return loopAllMessages();
-            });
-        };
-        return loopAllMessages();
+        const messages = obj.Args[0];
+        return this.putMessage(messages);
     }
-    putMessage(mesObj, CallBack) {
-        const message = mesObj[2];
+    putMessage(message) {
         const messageUserID = message.senderKeyID;
         message['isSelf'] = false;
         message['showDelete'] = ko.observable(false);
@@ -586,13 +587,12 @@ class daggr extends sharedAppClass {
              * 		Message already have
              */
             if (index > -1) {
-                return CallBack();
+                return;
             }
             this.currentChat().chatData.unshift(message);
             this.currentChat().typing(false);
             scrollTop();
             this.saveChatData();
-            return CallBack();
         }
         const index = this.currentUser().findIndex(n => n.keyID === messageUserID);
         /**
@@ -600,25 +600,23 @@ class daggr extends sharedAppClass {
          */
         if (index < 0) {
             if (!mesObj[3]) {
-                return CallBack();
+                return;
             }
         }
         const user = this.currentUser()[index];
         return _view.storageHelper.getDecryptLoad(user.chatDataUUID, (err, data) => {
             if (err) {
-                CallBack();
                 return _view.connectInformationMessage.showErrorMessage(err);
             }
             try {
                 user.chatDataArray = JSON.parse(Buffer.from(data).toString());
             }
             catch (ex) {
-                CallBack();
                 return user.chatDataArray = null;
             }
             const index = user.chatDataArray.findIndex(n => n.uuid === message.uuid);
             if (index > -1) {
-                return CallBack();
+                return;
             }
             const index1 = mainMenuArray.findIndex(n => n.name === 'daggr');
             const daggr = mainMenuArray[index1];
@@ -628,7 +626,6 @@ class daggr extends sharedAppClass {
             this.saveDaggrPreperences();
             user.chatDataArray.unshift(message);
             return _view.storageHelper.encryptSave(user.chatDataUUID, JSON.stringify(user.chatDataArray), err => {
-                CallBack();
                 if (err) {
                     return _view.connectInformationMessage.showErrorMessage(err);
                 }

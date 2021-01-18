@@ -1,6 +1,6 @@
 {
 	"name": "kloak_platform",
-	"version": "0.2.20",
+	"version": "0.2.21",
 	"license": "MIT",
 	"description": "Kloak platform",
 	"scripts": {
@@ -30,7 +30,7 @@
 		"@types/snapsvg": "^0.5.0",
 		"@types/socket.io": "^2.1.12",
 		"@types/socket.io-client": "^1.4.34",
-		"electron": "^11.1.1",
+		"electron": "^11.2.0",
 		"emojipanel": "^1.0.0",
 		"jimp": "^0.16.1",
 		"jquery": "^3.5.1",
