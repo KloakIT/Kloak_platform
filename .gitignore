@@ -1,15 +1,16 @@
 .tmp
 .log
-.DS_Store?
+.DS_Store
+.gitignore
 ._*
 .snyk
 .Spotlight-V100
 .Trashes
 .vscode
+.travis.yml
 .npmignore
 .gitignore
 _config.yml
-.travis.yml
 ehthumbs.db
 Thumbs.db
 crets
@@ -20,4 +21,4 @@ node_modules
 yarn.lock
 package-lock.json
 _config.yml
-
+.vscode
