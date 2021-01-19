@@ -47,7 +47,7 @@ const InitKeyPair = () => {
     };
     return keyPair;
 };
-exports.checkUrl = (url) => {
+const checkUrl = (url) => {
     const urlCheck = Url.parse(url);
     const ret = /^http:|^https:$/.test(urlCheck.protocol) && !/^localhost|^127.0.0.1/.
         test(urlCheck.hostname);
@@ -56,6 +56,7 @@ exports.checkUrl = (url) => {
     }
     return false;
 };
+exports.checkUrl = checkUrl;
 exports.QTGateFolder = Path.join(!/^android$/i.test(process.platform) ? Os.homedir() : Path.join(__dirname, "../../../../.."), '.CoNET');
 exports.QTGateLatest = Path.join(exports.QTGateFolder, 'latest');
 exports.QTGateTemp = Path.join(exports.QTGateFolder, 'tempfile');
@@ -70,7 +71,7 @@ exports.configPath = Path.join(exports.QTGateFolder, 'config.json');
 //export const packageFile = require ( packageFilePath )
 exports.QTGateSignKeyID = /3acbe3cbd3c1caa9|864662851231B119/i;
 exports.twitterDataFileName = Path.join(exports.QTGateFolder, 'twitterData.pem');
-exports.checkFolder = (folder, CallBack) => {
+const checkFolder = (folder, CallBack) => {
     Fs.access(folder, err => {
         if (err) {
             return Fs.mkdir(folder, err1 => {
@@ -83,7 +84,8 @@ exports.checkFolder = (folder, CallBack) => {
         return CallBack();
     });
 };
-exports.convertByte = (byte) => {
+exports.checkFolder = checkFolder;
+const convertByte = (byte) => {
     if (byte < 1000) {
         return `${byte} B`;
     }
@@ -102,7 +104,8 @@ exports.convertByte = (byte) => {
     const tbyte = Math.round(mbyte / 10) / 100;
     return `${tbyte} TB`;
 };
-exports.getLocalInterface = () => {
+exports.convertByte = convertByte;
+const getLocalInterface = () => {
     const ifaces = Os.networkInterfaces();
     const ret = [];
     Object.keys(ifaces).forEach(n => {
@@ -116,16 +119,19 @@ exports.getLocalInterface = () => {
     });
     return ret;
 };
-exports.getNickName = (str) => {
+exports.getLocalInterface = getLocalInterface;
+const getNickName = (str) => {
     const uu = str.split('<');
     return uu[0];
 };
-exports.getEmailAddress = (str) => {
+exports.getNickName = getNickName;
+const getEmailAddress = (str) => {
     console.dir(str);
     const uu = str.split('<');
     return uu[1].substr(0, uu[1].length - 1);
 };
-exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
+exports.getEmailAddress = getEmailAddress;
+const getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
     if (!publicKey || !privateKey) {
         return CallBack(new Error('publicKey or privateKey empty!'));
     }
@@ -168,7 +174,8 @@ exports.getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
         }
     });
 };
-exports.getPublicKeyInfo = async (publicKey, CallBack) => {
+exports.getKeyPairInfo = getKeyPairInfo;
+const getPublicKeyInfo = async (publicKey, CallBack) => {
     const _key = await OpenPgp.key.readArmored(publicKey);
     const ret = {
         publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
@@ -183,9 +190,11 @@ exports.getPublicKeyInfo = async (publicKey, CallBack) => {
     };
     return CallBack(null, ret);
 };
-exports.createKeyPairObj = () => {
+exports.getPublicKeyInfo = getPublicKeyInfo;
+const createKeyPairObj = () => {
 };
-exports.emitConfig = (config, passwordOK) => {
+exports.createKeyPairObj = createKeyPairObj;
+const emitConfig = (config, passwordOK) => {
     if (!config) {
         return null;
     }
@@ -209,10 +218,12 @@ exports.emitConfig = (config, passwordOK) => {
     ret.keypair.passwordOK = false;
     return ret;
 };
-exports.saveConfig = (config, CallBack) => {
+exports.emitConfig = emitConfig;
+const saveConfig = (config, CallBack) => {
     return Fs.writeFile(exports.configPath, JSON.stringify(config), CallBack);
 };
-exports.newKeyPair = (emailAddress, nickname, password, CallBack) => {
+exports.saveConfig = saveConfig;
+const newKeyPair = (emailAddress, nickname, password, CallBack) => {
     const userId = {
         name: nickname,
         email: emailAddress
@@ -239,7 +250,8 @@ exports.newKeyPair = (emailAddress, nickname, password, CallBack) => {
         return CallBack(err);
     });
 };
-exports.getImapSmtpHost = function (_email) {
+exports.newKeyPair = newKeyPair;
+const getImapSmtpHost = function (_email) {
     const email = _email.toLowerCase();
     const yahoo = (domain) => {
         if (/yahoo.co.jp$/i.test(domain))
@@ -364,6 +376,7 @@ exports.getImapSmtpHost = function (_email) {
     }
     return ret;
 };
+exports.getImapSmtpHost = getImapSmtpHost;
 exports.availableImapServer = /imap\-mail\.outlook\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.gmail\.com$|gmx\.(com|us|net)$|imap\.zoho\.com$/i;
 const doUrl = (url, CallBack) => {
     let ret = '';
@@ -408,7 +421,7 @@ const _smtpVerify = (imapData, CallBack) => {
     console.dir(transporter);
     return transporter.verify(CallBack);
 };
-exports.smtpVerify = (imapData, CallBack) => {
+const smtpVerify = (imapData, CallBack) => {
     let testArray = null;
     let err1 = null;
     if (typeof imapData.smtpPortNumber === 'object') {
@@ -459,7 +472,8 @@ exports.smtpVerify = (imapData, CallBack) => {
         console.log(`smtpVerify already did CallBack!`);
     });
 };
-exports.encryptMessage = (publickeys, privatekeys, message, CallBack) => {
+exports.smtpVerify = smtpVerify;
+const encryptMessage = (publickeys, privatekeys, message, CallBack) => {
     const option = {
         privateKeys: privatekeys,
         publicKeys: publickeys,
@@ -470,6 +484,7 @@ exports.encryptMessage = (publickeys, privatekeys, message, CallBack) => {
         return CallBack(null, ciphertext.data);
     }).catch(CallBack);
 };
+exports.encryptMessage = encryptMessage;
 async function decryptoMessage(keyObject, publickey, message, CallBack) {
     const option = {
         privateKeys: keyObject.privateKey,
@@ -530,7 +545,7 @@ const sendMailAccount = {
     clientIpAddress: null,
     requestPortNumber: null
 };
-exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, CallBack) => {
+const sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);
     const imapData = (/^smtp\-mail\.outlook\.com$/i.test(_imapData.smtpServer) ? sendMailAccount : _imapData);
     return Async.waterfall([
@@ -567,3 +582,4 @@ exports.sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, Ca
         }
     ], CallBack);
 };
+exports.sendCoNETConnectRequestEmail = sendCoNETConnectRequestEmail;
