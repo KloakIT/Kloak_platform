@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const availableImapServer = /imap\-mail\.outlook\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.gmail\.com$|gmx\.(com|us|net)$|imap\.zoho\.com$/i;
+const availableImapServer = /imap\-mail\.outlook\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.ionos\.com$|gmx\.(com|us|net)$|imap\.zoho\.com$/i;
 /**
  * 			getImapSmtpHost
  * 		@param email <string>
@@ -64,6 +64,11 @@ const getImapSmtpHost = function (_email) {
                 'https://support.google.com/accounts/answer/185833?hl=ja',
                 'https://support.google.com/accounts/answer/185833?hl=en'
             ];
+            break;
+        }
+        case 'conettech.ca': {
+            ret.imap = 'imap.ionos.com';
+            ret.smtp = 'smtp.ionos.com';
             break;
         }
         case 'gandi.net': {
@@ -169,7 +174,7 @@ const getImapSmtpHost = function (_email) {
 郵箱帳號: qtgate_test29@icloud.com, APP密碼: tslh-ujpp-gbqj-wejo
  */
 const CoNetTempAccount = [
-    { userName: 'qtgate_test1@icloud.com', passwd: 'yiwg-yrxj-pdhg-tvsk' },
+    { userName: 'qtgate_test1@icloud.com', passwd: 'ogjr-jjik-osyc-boxu' },
     { userName: 'qtgate_test2@icloud.com', passwd: 'cfes-ofqz-khho-dppa' },
     { userName: 'qtgate_test3@icloud.com', passwd: 'wipp-uvkb-cupb-ngnp' },
     { userName: 'qtgate_test4@icloud.com', passwd: 'pnoy-axvy-epdt-racp' },

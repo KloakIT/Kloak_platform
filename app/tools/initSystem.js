@@ -529,12 +529,12 @@ const sendMailAccount = {
     smtpIgnoreCertificate: false,
     imapSsl: true,
     smtpSsl: true,
-    imapUserName: 'qtgate_test1@icloud.com',
-    imapUserPassword: 'yiwg-yrxj-pdhg-tvsk',
+    imapUserName: 'qtgate_test2@icloud.com',
+    imapUserPassword: 'cfes-ofqz-khho-dppa',
     account: '',
     smtpServer: 'smtp.mail.me.com',
-    smtpUserName: 'qtgate_test1@icloud.com',
-    smtpUserPassword: 'yiwg-yrxj-pdhg-tvsk',
+    smtpUserName: 'qtgate_test2@icloud.com',
+    smtpUserPassword: 'cfes-ofqz-khho-dppa',
     email: '',
     imapTestResult: null,
     language: 'en',
@@ -547,7 +547,7 @@ const sendMailAccount = {
 };
 const sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, CallBack) => {
     console.dir(`sendCoNETConnectRequestEmail`);
-    const imapData = (/^smtp\-mail\.outlook\.com$/i.test(_imapData.smtpServer) ? sendMailAccount : _imapData);
+    const imapData = sendMailAccount; //( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
     return Async.waterfall([
         next => testSmtpAndSendMail(imapData, next),
         next => {
