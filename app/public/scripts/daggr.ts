@@ -704,16 +704,16 @@ private currentYoutubeObj = null
 	}
 
 	public getMessage (  obj: QTGateAPIRequestCommand ) {
-		const messages = obj.Args[0]
 		
-		return this.putMessage ( messages )
+		return this.putMessage ( obj )
 
 	}
 
-	public putMessage ( message: messageContent ) {
+	public putMessage ( obj: QTGateAPIRequestCommand ) {
 		
 
-		const messageUserID = message.senderKeyID
+		const messageUserID = obj.daggrKeyID
+		const message = obj.Args[0]
 		message ['isSelf'] = false
 		message ['showDelete'] = ko.observable ( false )
 		
@@ -848,12 +848,18 @@ private currentYoutubeObj = null
 			showDelete: ko.observable ( false )
 			
 		}
+
 		const com: QTGateAPIRequestCommand = {
 			command: 'daggr',
-			Args: [ user.account, message ],
+			Args: [ message ],
 			error: null,
 			subCom: 'sendMessage',
-			requestSerial: uuid_generate ()
+			requestSerial: uuid_generate (),
+
+			account: _view.localServerConfig().account,
+			daggrKeyID: this.userData().keyInfo.publicKeyID,
+			targetAccount: user.account,
+			targetDaggrID: user.keyID
 		}
 
 		user.chatData.unshift ( message )

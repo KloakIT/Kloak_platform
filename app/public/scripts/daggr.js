@@ -568,11 +568,11 @@ class daggr extends sharedAppClass {
         item.showDelete(true);
     }
     getMessage(obj) {
-        const messages = obj.Args[0];
-        return this.putMessage(messages);
+        return this.putMessage(obj);
     }
-    putMessage(message) {
-        const messageUserID = message.senderKeyID;
+    putMessage(obj) {
+        const messageUserID = obj.daggrKeyID;
+        const message = obj.Args[0];
         message['isSelf'] = false;
         message['showDelete'] = ko.observable(false);
         message['youtubeObj'] = message['youtubeObj'] || null;
@@ -679,10 +679,14 @@ class daggr extends sharedAppClass {
         };
         const com = {
             command: 'daggr',
-            Args: [user.account, message],
+            Args: [message],
             error: null,
             subCom: 'sendMessage',
-            requestSerial: uuid_generate()
+            requestSerial: uuid_generate(),
+            account: _view.localServerConfig().account,
+            daggrKeyID: this.userData().keyInfo.publicKeyID,
+            targetAccount: user.account,
+            targetDaggrID: user.keyID
         };
         user.chatData.unshift(message);
         this.showYoutube(false);
