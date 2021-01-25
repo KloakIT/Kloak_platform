@@ -713,7 +713,7 @@ private currentYoutubeObj = null
 		
 
 		const messageUserID = obj.daggrKeyID
-		const message = obj.Args[0]
+		const message:messageContent  = obj.Args[0]
 		message ['isSelf'] = false
 		message ['showDelete'] = ko.observable ( false )
 		
@@ -738,6 +738,10 @@ private currentYoutubeObj = null
 			this.currentChat().typing ( false )
 			scrollTop ()
 			this.saveChatData ()
+			
+		}
+
+		if ( message.mediaData ) {
 			
 		}
 
