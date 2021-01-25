@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const availableImapServer = /imap\-mail\.outlook\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.ionos\.com$|gmx\.(com|us|net)$|imap\.zoho\.com$/i;
+const availableImapServer = /imap\-mail\.outlook\.com$|ionos\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.ionos\.com$|gmx\.(com|us|net)$|zoho\.com$/i;
 /**
  * 			getImapSmtpHost
  * 		@param email <string>
@@ -67,6 +67,11 @@ const getImapSmtpHost = function (_email) {
             break;
         }
         case 'conettech.ca': {
+            if (/^kloak_zoho_test/i.test(emailSplit[0])) {
+                ret.imap = 'imappro.zoho.com';
+                ret.smtp = 'smtp.zoho.com';
+                break;
+            }
             ret.imap = 'imap.ionos.com';
             ret.smtp = 'smtp.ionos.com';
             break;

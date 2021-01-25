@@ -381,7 +381,8 @@ export const getImapSmtpHost = function ( _email: string ) {
 			ret.imap = 'imap.aol.com'
 		}
 		break;
-		
+
+
 		//	outlook.com
 		case 'windowslive.com':
 		case 'hotmail.com': 

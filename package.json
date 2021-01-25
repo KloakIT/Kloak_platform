@@ -1,6 +1,6 @@
 {
 	"name": "kloak_platform",
-	"version": "0.2.26",
+	"version": "0.2.30",
 	"license": "MIT",
 	"description": "Kloak platform",
 	"scripts": {
