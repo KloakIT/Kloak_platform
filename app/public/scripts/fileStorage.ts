@@ -61,6 +61,7 @@ class fileStorage {
 	private selectedInfoFile = ko.observable()
 	private isRecording = ko.observable(false)
 	private videoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
+	private daggrVideoPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
 	private playlistPlayer: KnockoutObservable<VideoPlayer> = ko.observable(null)
 	private recorder: KnockoutObservable<Recorder> = ko.observable()
 	private videoPlaying = ko.observable(false)
@@ -279,21 +280,30 @@ class fileStorage {
 		return filename.split('.').pop()
 	}
 
-	getPreview = (file: fileHistory, type: string) => {
+	getPreview = (file: any, type: string) => {
 		this.previewLoading(true)
 
 		const uuid = file.uuid[0]
 
-		const getFile = (uuid: string, callback: (url) => void) => {
+		const getFile = (uuid: string, callback: (url, base64?: string) => void) => {
 			new Assembler(uuid, null, (err, data) => {
+				console.log("DATA",data)
+				if (file.tags().includes('daggr')) {
+					return callback(null, Buffer.from(data.buffer).toString())
+				}
 				callback(_view.storageHelper.createBlob(data.buffer, data.contentType))
 			})
 		}
 
 		switch (type) {
 			case 'image':
-				getFile(uuid, url => {
+				getFile(uuid, (url, base64) => {
 					const previewImage = document.getElementById("previewImage")
+					if (!url) {
+						console.log(base64)
+						previewImage['src'] = base64
+						return this.previewLoading(false)
+					}
 					previewImage['src'] ? URL.revokeObjectURL(previewImage['src']) : null
 					previewImage['src'] = url
 					this.previewLoading(false)
@@ -891,6 +901,7 @@ class fileStorage {
 				})
 			case "playVideo":
 				this.videoPlayer(null)
+				this.daggrVideoPlayer(null)
 				this.playlistPlayer(null)
 				if (this.selectedVideo() === currentFile['uuid'].filter(uuid => uuid !== null)[0]) {
 					this.selectedVideo(null)
@@ -899,7 +910,11 @@ class fileStorage {
 					return
 				}
 				this.selectedVideo(currentFile['uuid'].filter(uuid => uuid !== null)[0])
-				this.videoPlayer(new VideoPlayer('',() => {}, () => {}))
+				if (currentFile.tags().includes('daggr')) {
+					this.daggrVideoPlayer(new VideoPlayer('',() => {}, () => {}))
+				} else {
+					this.videoPlayer(new VideoPlayer('',() => {}, () => {}))
+				}
 				console.log(currentFile)
 
 				if (currentFile.tags().includes('recording')) {
@@ -907,6 +922,9 @@ class fileStorage {
 				}
 
 				if (currentFile.youtube) {
+					if (currentFile.tags().includes('daggr')) {
+						return this.daggrVideoPlayer().daggrYouTube(currentFile, document.getElementById('daggrVideoPlayer'))
+					}
 					return this.videoPlayer().downloadedYoutube(currentFile)
 				}
 

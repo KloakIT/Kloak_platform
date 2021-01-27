@@ -594,6 +594,10 @@ class daggr extends sharedAppClass {
             scrollTop();
             this.saveChatData();
         }
+        if (message.mediaData) {
+            console.log(message.mediaData);
+            _view.storageHelper.storeBase64(message.mediaData, (err, done) => { });
+        }
         const index = this.currentUser().findIndex(n => n.keyID === messageUserID);
         /**
          * 			New connecting
@@ -724,6 +728,9 @@ class daggr extends sharedAppClass {
         const currentItem = this.currentChat().chatData()[index];
         currentItem.youtubeObj.showLoading(1);
         let mp4Player = null;
+        let history = false;
+        let downloadedPieces = {};
+        let offset = 0;
         /**
          * 			start downloadQuere
          */
@@ -737,6 +744,7 @@ class daggr extends sharedAppClass {
             }
             if (buffer && buffer.length) {
                 console.log(`DownloadQueue return Buffer length = [${buffer.length}]`);
+                console.log(buffer);
                 if (!mp4Player) {
                     mp4Player = new Mp4LocalServerUrl(downloadQuere.totalLength, uuid => {
                         currentItem['blobUUID'] = uuid;
@@ -745,7 +753,62 @@ class daggr extends sharedAppClass {
                 }
                 mp4Player.addBuffer(buffer);
             }
-        }, () => { });
+        }, (requestUuid, com, data) => {
+            console.log(com);
+            const createHistory = () => {
+                const date = new Date();
+                const file = {
+                    uuid: [requestUuid],
+                    filename: `${currentItem.youtubeObj.title}.mp4`,
+                    location: 'local',
+                    time_stamp: date,
+                    last_viewed: date,
+                    size: com.totalLength,
+                    path: "",
+                    url: 'YouTube',
+                    favorite: false,
+                    tags: ['daggr', 'youtube', 'mp4', 'upload', 'local'].filter(tag => tag),
+                    youtube: {
+                        id: '',
+                        mimeType: {
+                            video: 'video/mp4; codecs="avc1.42001E, mp4a.40.2"'
+                        }
+                    }
+                };
+                _view.storageHelper.saveFileHistory(file, (err, data) => {
+                });
+            };
+            if (!history) {
+                createHistory();
+                history = true;
+            }
+            downloadedPieces[offset] = com.downloadUuid;
+            offset = com['currentStartOffset'] + com['currentlength'];
+            const createUpdateIndex = (requestUuid, com, done) => {
+                console.log("CREATE INDEX?!");
+                const index = {
+                    filename: com.downloadFilename,
+                    fileExtension: 'mp4',
+                    totalLength: com.totalLength ? com.totalLength : null,
+                    online: false,
+                    contentType: com.contentType,
+                    pieces: downloadedPieces,
+                    finished: com.eof
+                };
+                _view.storageHelper.createUpdateIndex(requestUuid, index, (err, data) => {
+                    if (err) {
+                        return console.log(err);
+                    }
+                    done();
+                });
+            };
+            _view.storageHelper.save(com.downloadUuid, data, (err, data) => {
+                if (data) {
+                    createUpdateIndex(requestUuid, com, () => {
+                    });
+                }
+            });
+        });
     }
     skipAdclick(index) {
         const currentItem = this.currentChat().chatData()[index];

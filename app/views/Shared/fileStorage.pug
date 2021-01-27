@@ -236,7 +236,9 @@
 							<!-- ko if: fileType(selectedFile().filename()) === 'video' || fileType(selectedFile().filename()) === 'audio' -->
 
 							<!-- ko if: selectedFile().youtube -->
+							<!-- ko if: !selectedFile().tags().includes('daggr') -->
 							img.fileStoragePreviewItem#previewImage(data-bind="attr: {'src': getPreview(selectedFile(), 'youtube')}, style: {'opacity': previewLoading() ? '0' : '1'}" style="width: 100%; object-fit: cover; height: 15rem; object-position: top;")
+							<!-- /ko -->
 							.fileStoragePreviewPlay(data-bind="click: () => { actionHandler(selectedFile(), null, 'playVideo')} ")
 								i.play.icon.fileStoragePreviewPlayIcon
 							<!-- /ko -->
@@ -256,6 +258,12 @@
 							<!-- /ko -->
 							<!-- ko if: videoPlayer() -->
 							<!-- ko template: { 'name': 'kloakVideoPlayer', 'data': videoPlayer } --><!-- /ko -->
+							//- <!-- ko if: daggrVideoPlayer() -->
+							
+							//- <!-- /ko -->
+							<!-- /ko -->
+							<!-- ko if: daggrVideoPlayer() -->
+							<video style="width: 100%; height: 100%; background-color: black" id="daggrVideoPlayer"></video>
 							<!-- /ko -->
 							<!-- /ko -->
 							//- <!-- ko if: selectedFile().youtube -->
@@ -322,7 +330,7 @@
 							.fileStoragePlaylistTop
 								.fileStorageDetailPlaylistThumbnail(data-bind="css: {'fileStoragePlaylistPlaceholder': !selectedPlaylist().thumbnails().length}")
 									<!-- ko if: selectedPlaylist().thumbnails().length -->
-									img.fileStoragePlaylistThumbnailImage(data-bind="attr: {'src' : `data:${selectedPlaylist().thumbnails()[0].mime};base64,${selectedPlaylist().thumbnails()[0].data}`}")
+									img.fileStoragePlaylistThumbnailImage(data-bind="attr: {'src' : `data:${selectedPlaylist().thumbnails()[0].mime};base64,${selectedPlaylist().thumbnails()[0].data}`}" style="height: 18rem")
 									<!-- /ko -->
 									.fileStorageThumbnailHeader
 										p.fileStorageDetailPlaylistHeader="Playlist"

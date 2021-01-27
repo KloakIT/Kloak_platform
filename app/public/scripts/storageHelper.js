@@ -490,6 +490,7 @@ class StorageHelper {
         };
         this.createBlob = (data, contentType) => {
             const blob = new Blob([data], { type: contentType });
+            console.log(blob);
             return URL.createObjectURL(blob);
         };
         this.downloadBlob = (url, filename) => {
@@ -507,6 +508,19 @@ class StorageHelper {
                 });
             }
             return callback(new Error('Unable to detect IndexedDB storage information.'), null);
+        };
+        this.storeBase64 = (base64, callback) => {
+            const filename = `daggr-${new Date().toLocaleDateString().replace(",", "").split(" ").join("_")}.jpeg`;
+            const file = new File([Buffer.from(base64).buffer], filename, { type: 'image/jpeg' });
+            console.log(file);
+            this.createUploader(uuid_generate(), file, "", ['daggr'], (err, data) => {
+                if (err) {
+                    return callback(err, false);
+                }
+                if (data) {
+                    return callback(null, true);
+                }
+            });
         };
     }
 }

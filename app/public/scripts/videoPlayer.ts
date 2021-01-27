@@ -1,5 +1,6 @@
 class VideoPlayer {
 	private mediaSource: MediaSource = null
+	private daggrMP4Local: Mp4LocalServerUrl = null
 	private downloadQueue: DownloadQueue = null
 	public currentPlaylist: {
 		uuid: string,
@@ -118,6 +119,24 @@ class VideoPlayer {
 					}
 			}
 		}
+	}
+
+	daggrYouTube = (file: fileHistory, videoElement: HTMLElement) => {
+		this.daggrMP4Local = new Mp4LocalServerUrl ( parseInt(file.size), uuid => {
+			videoElement['src'] = `/streamUrl?uuid=${ uuid }`
+		})
+		
+		_view.storageHelper.getIndex(file['uuid'][0], (err, data) => {
+			const pieces = Object.values(data.pieces)
+			pieces.forEach((piece: string) => {
+				_view.storageHelper.getDecryptLoad(piece, (err, data) => {
+					if (data) {
+						this.daggrMP4Local.addBuffer(data)
+					}
+				})
+			})
+		})
+		
 	}
 
 	retrievePlayerElements = (callback: Function) => {
@@ -489,7 +508,8 @@ class VideoPlayer {
 			let index = null
 			let pieces = []
 			let tags: Array<string> = ko.isObservable(fileHistory.tags) ? fileHistory.tags() : fileHistory.tags
-
+			console.log(tags)
+			console.log(fileHistory)
 			const appendNext = (sourceBuffer: SourceBuffer) => {
 				if (sourceBuffer) {
 					if (pieces.length) {
@@ -533,14 +553,16 @@ class VideoPlayer {
 			
 			switch (true) {
 				case ['youtube', 'mp4'].every(val => tags.includes(val)):
+					console.log("SHOULD GET INDEX")
 					_view.storageHelper.getIndex(fileHistory.uuid[0], (err, data) => {
 						if (err) {
 							return
 						}
 						if (data) {
+							console.log(data)
 							index = data
 							this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
-								this.mediaSource.duration = fileHistory['youtube'].duration
+								this.mediaSource.duration = fileHistory['youtube'].duration || 0
 								this.setupPlayer()
 								this.isPlaying(true)
 								pieces = Object.values(index.pieces)
@@ -834,4 +856,6 @@ class VideoPlayer {
 			}
 		})
 	}
+
+	
 }

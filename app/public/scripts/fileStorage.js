@@ -48,6 +48,7 @@ class fileStorage {
         this.selectedInfoFile = ko.observable();
         this.isRecording = ko.observable(false);
         this.videoPlayer = ko.observable(null);
+        this.daggrVideoPlayer = ko.observable(null);
         this.playlistPlayer = ko.observable(null);
         this.recorder = ko.observable();
         this.videoPlaying = ko.observable(false);
@@ -177,13 +178,22 @@ class fileStorage {
             const uuid = file.uuid[0];
             const getFile = (uuid, callback) => {
                 new Assembler(uuid, null, (err, data) => {
+                    console.log("DATA", data);
+                    if (file.tags().includes('daggr')) {
+                        return callback(null, Buffer.from(data.buffer).toString());
+                    }
                     callback(_view.storageHelper.createBlob(data.buffer, data.contentType));
                 });
             };
             switch (type) {
                 case 'image':
-                    getFile(uuid, url => {
+                    getFile(uuid, (url, base64) => {
                         const previewImage = document.getElementById("previewImage");
+                        if (!url) {
+                            console.log(base64);
+                            previewImage['src'] = base64;
+                            return this.previewLoading(false);
+                        }
                         previewImage['src'] ? URL.revokeObjectURL(previewImage['src']) : null;
                         previewImage['src'] = url;
                         this.previewLoading(false);
@@ -745,6 +755,7 @@ class fileStorage {
                     });
                 case "playVideo":
                     this.videoPlayer(null);
+                    this.daggrVideoPlayer(null);
                     this.playlistPlayer(null);
                     if (this.selectedVideo() === currentFile['uuid'].filter(uuid => uuid !== null)[0]) {
                         this.selectedVideo(null);
@@ -753,12 +764,20 @@ class fileStorage {
                         return;
                     }
                     this.selectedVideo(currentFile['uuid'].filter(uuid => uuid !== null)[0]);
-                    this.videoPlayer(new VideoPlayer('', () => { }, () => { }));
+                    if (currentFile.tags().includes('daggr')) {
+                        this.daggrVideoPlayer(new VideoPlayer('', () => { }, () => { }));
+                    }
+                    else {
+                        this.videoPlayer(new VideoPlayer('', () => { }, () => { }));
+                    }
                     console.log(currentFile);
                     if (currentFile.tags().includes('recording')) {
                         return this.videoPlayer().recording(currentFile);
                     }
                     if (currentFile.youtube) {
+                        if (currentFile.tags().includes('daggr')) {
+                            return this.daggrVideoPlayer().daggrYouTube(currentFile, document.getElementById('daggrVideoPlayer'));
+                        }
                         return this.videoPlayer().downloadedYoutube(currentFile);
                     }
                     if (currentFile.media) {

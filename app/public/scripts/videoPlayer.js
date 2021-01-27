@@ -4,6 +4,7 @@ class VideoPlayer {
         this.callback = callback;
         this.exit = exit;
         this.mediaSource = null;
+        this.daggrMP4Local = null;
         this.downloadQueue = null;
         this.currentPlaylist = {
             uuid: "",
@@ -72,6 +73,21 @@ class VideoPlayer {
                         }
                 }
             }
+        };
+        this.daggrYouTube = (file, videoElement) => {
+            this.daggrMP4Local = new Mp4LocalServerUrl(parseInt(file.size), uuid => {
+                videoElement['src'] = `/streamUrl?uuid=${uuid}`;
+            });
+            _view.storageHelper.getIndex(file['uuid'][0], (err, data) => {
+                const pieces = Object.values(data.pieces);
+                pieces.forEach((piece) => {
+                    _view.storageHelper.getDecryptLoad(piece, (err, data) => {
+                        if (data) {
+                            this.daggrMP4Local.addBuffer(data);
+                        }
+                    });
+                });
+            });
         };
         this.retrievePlayerElements = (callback) => {
             this.playerElements = {
@@ -407,6 +423,8 @@ class VideoPlayer {
                 let index = null;
                 let pieces = [];
                 let tags = ko.isObservable(fileHistory.tags) ? fileHistory.tags() : fileHistory.tags;
+                console.log(tags);
+                console.log(fileHistory);
                 const appendNext = (sourceBuffer) => {
                     if (sourceBuffer) {
                         if (pieces.length) {
@@ -446,14 +464,16 @@ class VideoPlayer {
                 });
                 switch (true) {
                     case ['youtube', 'mp4'].every(val => tags.includes(val)):
+                        console.log("SHOULD GET INDEX");
                         _view.storageHelper.getIndex(fileHistory.uuid[0], (err, data) => {
                             if (err) {
                                 return;
                             }
                             if (data) {
+                                console.log(data);
                                 index = data;
                                 this.setupMediaSource(fileHistory['youtube'].mimeType, this.playerElements.kloakVideo, () => {
-                                    this.mediaSource.duration = fileHistory['youtube'].duration;
+                                    this.mediaSource.duration = fileHistory['youtube'].duration || 0;
                                     this.setupPlayer();
                                     this.isPlaying(true);
                                     pieces = Object.values(index.pieces);

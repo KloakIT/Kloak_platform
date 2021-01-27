@@ -20,7 +20,7 @@ const Crypto = require("crypto");
 const Async = require("async");
 const Stream = require("stream");
 const EOF = Buffer.from('\r\n\r\n', 'utf8');
-const packetBuffer = (bit0, _serial, id, buffer) => {
+exports.packetBuffer = (bit0, _serial, id, buffer) => {
     const _buffer = Buffer.allocUnsafe(6);
     _buffer.fill(0);
     _buffer.writeUInt8(bit0, 0);
@@ -31,8 +31,7 @@ const packetBuffer = (bit0, _serial, id, buffer) => {
         return Buffer.concat([_buffer, uuid, buffer]);
     return Buffer.concat([_buffer, uuid]);
 };
-exports.packetBuffer = packetBuffer;
-const openPacket = (buffer) => {
+exports.openPacket = (buffer) => {
     const idLength = buffer.readUInt8(5);
     return {
         command: buffer.readUInt8(0),
@@ -41,7 +40,6 @@ const openPacket = (buffer) => {
         buffer: buffer.slice(6 + idLength)
     };
 };
-exports.openPacket = openPacket;
 const HTTP_HEADER = Buffer.from(`HTTP/1.1 200 OK\r\nDate: ${new Date().toUTCString()}\r\nContent-Type: text/html\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nVary: Accept-Encoding\r\n\r\n`, 'utf8');
 const HTTP_EOF = Buffer.from('\r\n\r\n', 'utf8');
 class encryptStream extends Stream.Transform {
