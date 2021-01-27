@@ -758,6 +758,7 @@ const mainMenuArray = [
         htmlTemp: 'tempAppHtml',
         notice: ko.observable(0)
     },
+    /** */
     {
         name: 'fortress',
         img: KloakFortress,
@@ -790,6 +791,7 @@ const mainMenuArray = [
         online: true,
         notice: ko.observable(0)
     },
+    /*
     {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
@@ -804,8 +806,9 @@ const mainMenuArray = [
         click: forYoutube,
         online: true,
         htmlTemp: 'forYoutubeHtml',
-        notice: ko.observable(0)
+        notice: ko.observable ( 0 )
     },
+    
     {
         name: 'voa',
         img: kloak_voa,
@@ -820,7 +823,7 @@ const mainMenuArray = [
         click: fileStorage,
         htmlTemp: 'showFileStorage',
         online: false,
-        notice: ko.observable(0)
+        notice: ko.observable ( 0 )
     },
     {
         name: 'rfa',
@@ -836,8 +839,9 @@ const mainMenuArray = [
         click: fileStorage,
         htmlTemp: 'showFileStorage',
         online: false,
-        notice: ko.observable(0)
-    },
+        notice: ko.observable ( 0 )
+    }
+    /*,
     {
         name: 'mbn',
         img: Kloak_MBN,
@@ -852,7 +856,7 @@ const mainMenuArray = [
         click: fileStorage,
         htmlTemp: 'showFileStorage',
         online: false,
-        notice: ko.observable(0)
+        notice: ko.observable ( 0 )
     },
     /*
     {

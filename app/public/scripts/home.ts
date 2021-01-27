@@ -920,6 +920,7 @@ module view_layout {
 }
 
 const mainMenuArray = [
+	
 	{
 		name: 'librarium',
 		img: kloakSearchIcon_svg,
@@ -936,6 +937,7 @@ const mainMenuArray = [
 		htmlTemp: 'tempAppHtml',
 		notice: ko.observable ( 0 )
 	},
+	/** */
 	{
 		name: 'fortress',
 		img: KloakFortress,
@@ -969,7 +971,7 @@ const mainMenuArray = [
 		online: true,
 		notice: ko.observable ( 0 )
 	},
-	
+	/*
 	{
 		name: 'Kloak_youtube',
 		img: Kloak_youtube,
@@ -1018,7 +1020,8 @@ const mainMenuArray = [
 		htmlTemp: 'showFileStorage',
 		online: false,
 		notice: ko.observable ( 0 )
-	},
+	}
+	/*,
 	{
 		name: 'mbn',
 		img: Kloak_MBN,
