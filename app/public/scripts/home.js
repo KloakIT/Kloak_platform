@@ -791,7 +791,6 @@ const mainMenuArray = [
         online: true,
         notice: ko.observable(0)
     },
-    /*
     {
         name: 'Kloak_youtube',
         img: Kloak_youtube,
@@ -806,9 +805,9 @@ const mainMenuArray = [
         click: forYoutube,
         online: true,
         htmlTemp: 'forYoutubeHtml',
-        notice: ko.observable ( 0 )
+        notice: ko.observable(0)
     },
-    
+    /* *
     {
         name: 'voa',
         img: kloak_voa,
