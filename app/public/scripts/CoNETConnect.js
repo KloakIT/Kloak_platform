@@ -159,13 +159,8 @@ class CoNETConnect {
             const localCommand = {
                 message: data,
                 imapData: _view.imapData(),
-                //toMail: 'node@Kloak.app',
-                //subject: 'node' 
-                /**
-                 * 		testNode
-                 */
-                subject: 'nodeTest',
-                toMail: 'nodeTest@Kloak.app'
+                toMail: 'node@Kloak.app',
+                subject: 'node',
             };
             return _view.connectInformationMessage.emitLocalCommand('sendRequestMail', localCommand, err => {
             });
