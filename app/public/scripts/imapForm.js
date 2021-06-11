@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const availableImapServer = /imap\-mail\.outlook\.com$|ionos\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.ionos\.com$|gmx\.(com|us|net)$|zoho\.com$/i;
+const availableImapServer = /imap\-mail\.outlook\.com$|ionos\.com$|imap\.mail\.yahoo\.(com|co\.jp|co\.uk|au)$|imap\.mail\.me\.com$|imap\.ionos\.com$|gmx\.(com|us|net)$|zoho\.com$|awsapps\.com$|yandex\.com$/i;
 /**
  * 			getImapSmtpHost
  * 		@param email <string>
@@ -39,7 +39,7 @@ const getImapSmtpHost = function (_email) {
     const ret = {
         imap: 'imap.' + domain,
         smtp: 'smtp.' + domain,
-        SmtpPort: [465, 587, 994],
+        SmtpPort: 465,
         ImapPort: 993,
         imapSsl: true,
         smtpSsl: true,
@@ -74,6 +74,14 @@ const getImapSmtpHost = function (_email) {
             }
             ret.imap = 'imap.ionos.com';
             ret.smtp = 'smtp.ionos.com';
+            break;
+        }
+        case 'kloak-io.awsapps.com':
+        case 'kloak.io': {
+            //ret.imap = 'imap.mail.us-east-1.awsapps.com'
+            //ret.smtp = 'smtp.mail.us-east-1.awsapps.com'
+            ret.imap = 'imap.mail.yahoo.com';
+            ret.smtp = 'smtp.bizmail.yahoo.com';
             break;
         }
         case 'gandi.net': {
@@ -147,37 +155,6 @@ const getImapSmtpHost = function (_email) {
     }
     return ret;
 };
-/**
- *       qtgate_test1@icloud.com, APP密碼: xfry-skyx-dpox-jyrh
-郵箱帳號: qtgate_test2@icloud.com, APP密碼: cfes-ofqz-khho-dppa
-郵箱帳號: qtgate_test3@icloud.com, APP密碼: wipp-uvkb-cupb-ngnp
-郵箱帳號: qtgate_test4@icloud.com, APP密碼: pnoy-axvy-epdt-racp
-郵箱帳號: qtgate_test5@icloud.com, APP密碼: uaav-ehgw-mdir-mbcs
-郵箱帳號: qtgate_test6@icloud.com, APP密碼: tnkb-iixm-ewlv-pjsr
-郵箱帳號: qtgate_test7@icloud.com, APP密碼: ymdo-bfoe-qipo-islu
-郵箱帳號: qtgate_test8@icloud.com, APP密碼: qcit-qzjj-bmfn-ooui
-郵箱帳號: qtgate_test9@icloud.com, APP密碼: eajz-mxae-otnt-njmw
-郵箱帳號: qtgate_test10@icloud.com, APP密碼: oimd-qrvx-lelz-mogu
-郵箱帳號: qtgate_test11@icloud.com, APP密碼: ncqg-dadz-doln-udrt
-郵箱帳號: qtgate_test12@icloud.com, APP密碼: vjwe-neje-xinx-czvd
-郵箱帳號: qtgate_test13@icloud.com, APP密碼: uabm-fqnv-xuuz-ixbr
-郵箱帳號: qtgate_test14@icloud.com, APP密碼: ptkd-chac-rzxq-qyvj
-郵箱帳號: qtgate_test15@icloud.com, APP密碼: bunf-hhlr-bhbe-qsjy
-郵箱帳號: qtgate_test16@icloud.com, APP密碼: mfez-kqco-mrxy-lwmx
-郵箱帳號: qtgate_test17@icloud.com, APP密碼: zsyj-yyvq-vekk-sdos
-郵箱帳號: qtgate_test18@icloud.com, APP密碼: ygmt-ftoz-twad-yeeb
-郵箱帳號: qtgate_test19@icloud.com, APP密碼: ajyi-mvqr-cluc-ufxu
-郵箱帳號: qtgate_test20@icloud.com, APP密碼: dgiq-slit-nift-ywgy
-郵箱帳號: qtgate_test21@icloud.com, APP密碼: jflx-eakk-gowq-adwu
-郵箱帳號: qtgate_test22@icloud.com, APP密碼: rcbl-tmrw-skkw-wdnj
-郵箱帳號: qtgate_test23@icloud.com, APP密碼: qppa-hzvj-bcmr-uwxk
-郵箱帳號: qtgate_test24@icloud.com, APP密碼: fcji-uoag-drof-uhqf
-郵箱帳號: qtgate_test25@icloud.com, APP密碼: kvys-eszu-mnnr-nxav
-郵箱帳號: qtgate_test26@icloud.com, APP密碼: idbi-cuyl-ztvv-vogz
-郵箱帳號: qtgate_test27@icloud.com, APP密碼: sdeg-rkck-tzza-qapy
-郵箱帳號: qtgate_test28@icloud.com, APP密碼: etcb-ihzd-rbau-ekol
-郵箱帳號: qtgate_test29@icloud.com, APP密碼: tslh-ujpp-gbqj-wejo
- */
 const CoNetTempAccount = [
     { userName: 'qtgate_test1@icloud.com', passwd: 'ogjr-jjik-osyc-boxu' },
     { userName: 'qtgate_test2@icloud.com', passwd: 'cfes-ofqz-khho-dppa' },

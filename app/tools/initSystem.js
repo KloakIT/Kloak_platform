@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendCoNETConnectRequestEmail = exports.decryptoMessage = exports.encryptMessage = exports.smtpVerify = exports.availableImapServer = exports.getImapSmtpHost = exports.newKeyPair = exports.saveConfig = exports.emitConfig = exports.createKeyPairObj = exports.getPublicKeyInfo = exports.getKeyPairInfo = exports.getEmailAddress = exports.getNickName = exports.getLocalInterface = exports.convertByte = exports.checkFolder = exports.twitterDataFileName = exports.QTGateSignKeyID = exports.configPath = exports.LocalServerPortNumber = exports.CoNET_Home = exports.imapDataFileName1 = exports.CoNETConnectLog = exports.ErrorLogFile = exports.QTGateVideo = exports.QTGateTemp = exports.QTGateLatest = exports.QTGateFolder = exports.checkUrl = void 0;
+exports.sendCoNETConnectRequestEmail = exports.smtpVerify = exports.availableImapServer = exports.getImapSmtpHost = exports.saveConfig = exports.emitConfig = exports.createKeyPairObj = exports.getEmailAddress = exports.getNickName = exports.getLocalInterface = exports.convertByte = exports.checkFolder = exports.twitterDataFileName = exports.QTGateSignKeyID = exports.configPath = exports.LocalServerPortNumber = exports.CoNET_Home = exports.imapDataFileName1 = exports.CoNETConnectLog = exports.ErrorLogFile = exports.QTGateVideo = exports.QTGateTemp = exports.QTGateLatest = exports.QTGateFolder = exports.checkUrl = void 0;
 const Fs = require("fs");
 const Path = require("path");
 const Os = require("os");
 const Async = require("async");
-const OpenPgp = require("openpgp");
 const Http = require("http");
 const Https = require("https");
 const Net = require("net");
@@ -131,66 +130,6 @@ const getEmailAddress = (str) => {
     return uu[1].substr(0, uu[1].length - 1);
 };
 exports.getEmailAddress = getEmailAddress;
-const getKeyPairInfo = async (publicKey, privateKey, password, CallBack) => {
-    if (!publicKey || !privateKey) {
-        return CallBack(new Error('publicKey or privateKey empty!'));
-    }
-    const _privateKey = await OpenPgp.key.readArmored(privateKey);
-    const _publicKey = await OpenPgp.key.readArmored(publicKey);
-    if (_privateKey.err || _publicKey.err) {
-        console.log(`_privateKey.err = [${_privateKey.err}], _publicKey.err [${_publicKey.err}]`);
-        console.log(publicKey);
-        return CallBack(new Error('no key'));
-    }
-    //console.log (`getKeyPairInfo success!\nprivateKey\npublicKey`)
-    const privateKey1 = _privateKey.keys[0];
-    const publicKey1 = _publicKey.keys;
-    const user = publicKey1[0]["users"][0];
-    const ret = InitKeyPair();
-    let didCallback = false;
-    ret.publicKey = publicKey;
-    ret.privateKey = privateKey;
-    ret.nickname = exports.getNickName(user.userId.userid);
-    ret.createDate = privateKey1.primaryKey["created"];
-    ret.email = exports.getEmailAddress(user.userId.userid);
-    ret.verified = getQTGateSign(user);
-    ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase();
-    ret.passwordOK = false;
-    if (!password) {
-        return CallBack(null, ret);
-    }
-    //console.log (`getKeyPairInfo test password!`)
-    return privateKey1.decrypt(password).then(keyOK => {
-        //console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
-        ret.passwordOK = true;
-        ret._password = password;
-        didCallback = true;
-        console.dir(ret);
-        return CallBack(null, ret);
-    }).catch(err => {
-        console.log(`privateKey1.decrypt catch ERROR didCallback = [${didCallback}]`, err);
-        if (!didCallback) {
-            return CallBack(null, ret);
-        }
-    });
-};
-exports.getKeyPairInfo = getKeyPairInfo;
-const getPublicKeyInfo = async (publicKey, CallBack) => {
-    const _key = await OpenPgp.key.readArmored(publicKey);
-    const ret = {
-        publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
-        publicKeys: _key.keys,
-        privateKey: null
-        //nikeName: getNickName ( user.userId.userid ),
-        //email: getEmailAddress ( user.userId.userid ),
-        //keyID: key.primaryKey.getFingerprint().toUpperCase(),
-        //otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
-        //KloakValid: getQTGateSign ( user ),
-        //publicKeys: _key.keys
-    };
-    return CallBack(null, ret);
-};
-exports.getPublicKeyInfo = getPublicKeyInfo;
 const createKeyPairObj = () => {
 };
 exports.createKeyPairObj = createKeyPairObj;
@@ -223,34 +162,6 @@ const saveConfig = (config, CallBack) => {
     return Fs.writeFile(exports.configPath, JSON.stringify(config), CallBack);
 };
 exports.saveConfig = saveConfig;
-const newKeyPair = (emailAddress, nickname, password, CallBack) => {
-    const userId = {
-        name: nickname,
-        email: emailAddress
-    };
-    const option = {
-        passphrase: password,
-        userIds: [userId],
-        curve: "ed25519",
-        aead_protect: true,
-        aead_protect_version: 4
-    };
-    return OpenPgp.generateKey(option).then(async (keypair) => {
-        const _key = await (OpenPgp.key.readArmored(keypair.publicKeyArmored));
-        const ret = {
-            publicKeys: _key.keys,
-            privateKey: (await (OpenPgp.key.readArmored(keypair.privateKeyArmored))).keys,
-            publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
-            publicKey: keypair.publicKeyArmored
-        };
-        await ret.privateKey[0].decrypt(password);
-        return CallBack(null, ret);
-    }).catch(err => {
-        // ERROR
-        return CallBack(err);
-    });
-};
-exports.newKeyPair = newKeyPair;
 const getImapSmtpHost = function (_email) {
     const email = _email.toLowerCase();
     const yahoo = (domain) => {
@@ -473,38 +384,6 @@ const smtpVerify = (imapData, CallBack) => {
     });
 };
 exports.smtpVerify = smtpVerify;
-const encryptMessage = (publickeys, privatekeys, message, CallBack) => {
-    const option = {
-        privateKeys: privatekeys,
-        publicKeys: publickeys,
-        message: OpenPgp.message.fromText(message),
-        compression: OpenPgp.enums.compression.zip
-    };
-    return OpenPgp.encrypt(option).then(ciphertext => {
-        return CallBack(null, ciphertext.data);
-    }).catch(CallBack);
-};
-exports.encryptMessage = encryptMessage;
-async function decryptoMessage(keyObject, publickey, message, CallBack) {
-    const option = {
-        privateKeys: keyObject.privateKey,
-        publicKeys: publickey,
-        message: await OpenPgp.message.readArmored(message)
-    };
-    return OpenPgp.decrypt(option).then(async (data) => {
-        let ret = data.data;
-        try {
-            ret = JSON.parse(ret);
-        }
-        catch (ex) {
-            return CallBack(ex);
-        }
-        return CallBack(null, ret);
-    }).catch(err => {
-        return CallBack(err);
-    });
-}
-exports.decryptoMessage = decryptoMessage;
 const testSmtpAndSendMail = (imapData, CallBack) => {
     let first = false;
     if (typeof imapData === 'object') {
@@ -545,41 +424,35 @@ const sendMailAccount = {
     clientIpAddress: null,
     requestPortNumber: null
 };
-const sendCoNETConnectRequestEmail = (_imapData, toEmail, message, subject, CallBack) => {
-    console.dir(`sendCoNETConnectRequestEmail`);
-    const imapData = sendMailAccount; //( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
-    return Async.waterfall([
-        next => testSmtpAndSendMail(imapData, next),
-        next => {
-            const option = {
-                host: Net.isIP(imapData.smtpServer) ? null : imapData.smtpServer,
-                hostname: Net.isIP(imapData.smtpServer) ? imapData.smtpServer : null,
-                port: imapData.smtpPortNumber,
-                secure: imapData.smtpSsl,
-                auth: {
-                    user: imapData.smtpUserName,
-                    pass: imapData.smtpUserPassword
-                },
-                connectionTimeout: (1000 * 15).toString(),
-                tls: !imapData.smtpSsl ? {
-                    rejectUnauthorized: imapData.smtpIgnoreCertificate,
-                    ciphers: imapData["ciphers"]
-                } : null,
-                debug: true
-            };
-            const transporter = Nodemailer.createTransport(option);
-            //console.log ( Util.inspect ( option ))
-            const mailOptions = {
-                from: imapData.smtpUserName,
-                to: toEmail,
-                subject: subject,
-                attachments: [{
-                        content: message
-                    }]
-            };
-            console.log(`transporter.sendMail`);
-            return transporter.sendMail(mailOptions, next);
-        }
-    ], CallBack);
+const sendCoNETConnectRequestEmail = (imapData, toEmail, message, subject, CallBack) => {
+    //const imapData = sendMailAccount //( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
+    const option = {
+        host: Net.isIP(imapData.smtpServer) ? null : imapData.smtpServer,
+        hostname: Net.isIP(imapData.smtpServer) ? imapData.smtpServer : null,
+        port: imapData.smtpPortNumber,
+        secure: imapData.smtpSsl,
+        auth: {
+            user: imapData.smtpUserName,
+            pass: imapData.smtpUserPassword
+        },
+        connectionTimeout: (1000 * 15).toString(),
+        tls: !imapData.smtpSsl ? {
+            rejectUnauthorized: true,
+            ciphers: 'SSLv3'
+        } : null,
+        debug: true
+    };
+    const transporter = Nodemailer.createTransport(option);
+    //console.log ( Util.inspect ( option ))
+    const mailOptions = {
+        from: imapData.smtpUserName,
+        to: toEmail,
+        subject: subject,
+        attachments: [{
+                content: message
+            }]
+    };
+    console.log(`transporter.sendMail`);
+    return transporter.sendMail(mailOptions, CallBack);
 };
 exports.sendCoNETConnectRequestEmail = sendCoNETConnectRequestEmail;

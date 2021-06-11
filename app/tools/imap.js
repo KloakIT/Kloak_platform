@@ -16,8 +16,6 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.imapPeer = exports.imapGetMediaFile = exports.imapAccountTest = exports.getMailAttachedBase64 = exports.getMailSubject = exports.getMailAttached = exports.qtGateImapRead = exports.seneMessageToFolder = exports.qtGateImap = exports.saveLog = void 0;
-/// 
-const Net = require("net");
 const Tls = require("tls");
 const Stream = require("stream");
 const Event = require("events");
@@ -26,6 +24,7 @@ const Async = require("async");
 const Crypto = require("crypto");
 const timers_1 = require("timers");
 const buffer_1 = require("buffer");
+const Util = require("util");
 const MAX_INT = 9007199254740992;
 const debug = true;
 const NoopLoopWaitingTime = 1000 * 1;
@@ -39,6 +38,17 @@ const debugOut = (text, isIn, serialID) => {
     console.log(log);
 };
 const idleInterval = 1000 * 60 * 15; // 5 mins
+/**
+ * 				watch the socket pipe write speed
+ * 				alert when write timeout
+ */
+class watchWriteToSocket extends Stream.Transform {
+    constructor() {
+        super();
+    }
+    _transform(chunk, encoding, next) {
+    }
+}
 class ImapServerSwitchStream extends Stream.Transform {
     constructor(imapServer, exitWithDeleteBox, debug) {
         super();
@@ -64,6 +74,8 @@ class ImapServerSwitchStream extends Stream.Transform {
         this.newSwitchRet = false;
         this.doingIdle = false;
         this.needLoginout = null;
+        this.fetchEmptyBody = false;
+        this.isFetchBodyFinished = false;
     }
     commandProcess(text, cmdArray, next, callback) { }
     serverCommandError(err, CallBack) {
@@ -98,12 +110,13 @@ class ImapServerSwitchStream extends Stream.Transform {
         return this.imapServer.fetchAddCom = `(${ii ? 'X-GM-THRID X-GM-MSGID X-GM-LABELS ' : ''}${ii1 ? 'MODSEQ ' : ''}BODY[])`;
     }
     preProcessCommane(commandLine, _next, callback) {
-        commandLine = commandLine.replace(/^ +/g, '').replace(/^IDLE\*/, '*');
+        //commandLine = commandLine.replace( /^ +/g,'').replace (/^IDLE\*/, '*')
         const cmdArray = commandLine.split(' ');
         this.debug ? debugOut(`${commandLine}`, true, this.imapServer.listenFolder || this.imapServer.imapSerialID) : null;
         if (this._login) {
             switch (commandLine[0]) {
                 case '+': /////       +
+                case ' ':
                 case '*': { /////       *
                     return this.commandProcess(commandLine, cmdArray, _next, callback);
                 }
@@ -127,26 +140,70 @@ class ImapServerSwitchStream extends Stream.Transform {
                     this.doCommandCallback(new Error(errs));
                     return callback();
                 }
-                default:
-                    return this.serverCommandError(new Error(`_commandPreProcess got switch default error!`), callback);
+                default: {
+                    return this.serverCommandError(new Error(`_commandPreProcess got switch default error!\ncommandLine[0] = ${commandLine[0]}`), callback);
+                }
             }
         }
         return this.login(commandLine, cmdArray, _next, callback);
     }
     checkFetchEnd() {
-        if (this._buffer.length <= this.imapServer.fetching) {
+        //console.log (`checkFetchEnd\n\n_buffer.length = [${ this._buffer.length }]`)
+        if (this._buffer.length < this.imapServer.fetching) {
+            //console.log (` this._buffer.length [${  this._buffer.length }] <= this.imapServer.fetching [${ this.imapServer.fetching  }]`)
             return null;
         }
+        //console.log (this._buffer.toString ('hex'))
+        //console.log (this._buffer.toString ())
         const body = this._buffer.slice(0, this.imapServer.fetching);
-        const uu = this._buffer.slice(this.imapServer.fetching);
-        let index1 = uu.indexOf('\r\n* ');
-        let index = uu.indexOf('\r\nA');
-        index = index < 0 || index1 > 0 && index > index1 ? index1 : index;
-        if (index < 0)
-            return null;
-        this._buffer = uu.slice(index + 2);
-        this.imapServer.fetching = null;
+        this._buffer = this._buffer.slice(this.imapServer.fetching);
+        this.imapServer.fetching = 0;
+        if (/^\)\r\n/.test(this._buffer.toString())) {
+            this._buffer = this._buffer.slice(3);
+        }
         return body;
+    }
+    checkLine(next) {
+        // /console.log (`__CallBack\n\nthis._buffer = [${ this._buffer.toString() }] [${ this._buffer.toString ('hex')}]`)
+        let index = -1;
+        /**
+         * 		check line
+         */
+        if (!this._buffer.length || (index = this._buffer.indexOf('\r\n')) < 0) {
+            //      this is for IDLE do DONE command
+            //		this.emit ( 'hold' )
+            if (!this.callback) {
+                this.callback = true;
+                return next();
+            }
+            //      did next with other function
+            return;
+        }
+        const _buf = this._buffer.slice(0, index);
+        return this.preProcessCommane(_buf.toString(), next, () => {
+            //		delete '\r\n'
+            this._buffer = this._buffer.slice(index + 2);
+            return this.doLine(next);
+        });
+    }
+    doLine(next) {
+        if (this.imapServer.fetching) {
+            //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
+            //console.log ( this._buffer.toString ())
+            //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
+            const _buf1 = this.checkFetchEnd();
+            //  have no fill body must goto  next chunk
+            if (!_buf1) {
+                this.callback = true;
+                return next();
+            }
+            //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
+            //console.log ( `\n\n_buf1.length = [${ _buf1.length }]\n\n` )
+            //console.log ( _buf1.toString ())
+            this.isFetchBodyFinished = true;
+            this.imapServer.newMail(_buf1);
+        }
+        return this.checkLine(next);
     }
     _transform(chunk, encoding, next) {
         this.callback = false;
@@ -154,55 +211,7 @@ class ImapServerSwitchStream extends Stream.Transform {
         //console.log ( chunk.toString ())
         //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
         this._buffer = buffer_1.Buffer.concat([this._buffer, chunk]);
-        const doLine = () => {
-            const __CallBack = () => {
-                let index = -1;
-                if (!this._buffer.length || (index = this._buffer.indexOf('\r\n')) < 0) {
-                    if (!this.callback) {
-                        //      this is for IDLE do DONE command
-                        //this.emit ( 'hold' )
-                        this.callback = true;
-                        return next();
-                    }
-                    //      did next with other function
-                    return;
-                }
-                const _buf = this._buffer.slice(0, index);
-                if (_buf.length) {
-                    return this.preProcessCommane(_buf.toString(), next, () => {
-                        this._buffer = this._buffer.slice(index + 2);
-                        return doLine();
-                    });
-                }
-                if (!this.callback) {
-                    this.callback = true;
-                    return next();
-                }
-                return;
-            };
-            if (this.imapServer.fetching) {
-                //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
-                //console.log ( this._buffer.toString ())
-                //console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
-                const _buf1 = this.checkFetchEnd();
-                //  have no fill body get next chunk
-                if (!_buf1) {
-                    if (!this.callback) {
-                        this.callback = true;
-                        return next();
-                    }
-                    return;
-                }
-                /*
-                console.log ('************************************** ImapServerSwitchStream _transform chunk **************************************')
-                console.log ( _buf1.length )
-                console.log ( _buf1.toString ())
-                */
-                this.imapServer.newMail(_buf1);
-            }
-            return __CallBack();
-        };
-        return doLine();
+        return this.doLine(next);
     }
     capability() {
         this.doCommandCallback = (err) => {
@@ -749,8 +758,21 @@ class ImapServerSwitchStream extends Stream.Transform {
         return this.imapServer.destroyAll(null);
     }
     fetch(fetchNum, callback) {
+        this.fetchEmptyBody = this.isFetchBodyFinished = false;
         this.doCommandCallback = (err) => {
-            console.log(`ImapServerSwitchStream doing doCommandCallback [${this.newSwitchRet}], err [${err}]`);
+            console.log(`ImapServerSwitchStream doing doCommandCallback this.imapServer.fetching = [${this.imapServer.fetching}]`);
+            if (this.fetchEmptyBody) {
+                return timers_1.setTimeout(() => {
+                    console.log(`\n\nError have no body! Try again.`);
+                    return this.fetch(fetchNum, callback);
+                }, 1000);
+            }
+            if (err) {
+                console.log(`\n\n\nfetch Error\n`, err);
+                if (this.isFetchBodyFinished) {
+                    return callback(null, this.newSwitchRet);
+                }
+            }
             return callback(err, this.newSwitchRet);
         };
         this.newSwitchRet = false;
@@ -760,6 +782,13 @@ class ImapServerSwitchStream extends Stream.Transform {
                     if (/^FETCH$/i.test(cmdArray[2])) {
                         if (/\{\d+\}/.test(text1)) {
                             this.imapServer.fetching = parseInt(text1.split('{')[1].split('}')[0]);
+                            /**
+                             * 			SUPPORT ZOHO empty Body!
+                             */
+                            if (!this.imapServer.fetching) {
+                                console.log(`this.imapServer.fetching body = empty!`);
+                                this.fetchEmptyBody = true;
+                            }
                         }
                         //this.debug ? console.log ( `${ text1 } doing length [${ this.imapServer.fetching }]` ) : null
                     }
@@ -768,8 +797,9 @@ class ImapServerSwitchStream extends Stream.Transform {
                     }
                     return _callback();
                 }
-                default:
+                default: {
                     return _callback();
+                }
             }
         };
         //console.log (`ImapServerSwitchStream doing UID FETCH `)
@@ -938,8 +968,11 @@ class qtGateImap extends Event.EventEmitter {
         return this.tagcount = 0;
     }
     connect() {
+        let conn = null;
         const _connect = () => {
             timers_1.clearTimeout(timeout);
+            console.log(Util.inspect(this.socket, false, 2, true));
+            this.socket = conn;
             this.socket.setKeepAlive(true);
             this.socket.pipe(this.imapStream).pipe(this.socket).once('error', err => {
                 return this.destroyAll(err);
@@ -951,13 +984,14 @@ class qtGateImap extends Event.EventEmitter {
         const timeout = timers_1.setTimeout(() => {
             return this.socket.destroy(new Error('connect time out!'));
         }, connectTimeOut);
-        if (!this.IMapConnect.imapSsl) {
-            this.socket = Net.createConnection({ port: this.port, host: this.IMapConnect.imapServer }, _connect);
+        try {
+            conn = Tls.connect({ host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect);
         }
-        else {
-            this.socket = Tls.connect({ rejectUnauthorized: !this.IMapConnect.imapIgnoreCertificate, host: this.IMapConnect.imapServer, servername: this.IMapConnect.imapServer, port: this.port }, _connect);
+        catch (ex) {
+            console.log(ex);
+            return this.connect();
         }
-        return this.socket.on('error', err => {
+        return conn.once('error', err => {
             return this.destroyAll(err);
         });
     }
@@ -985,6 +1019,9 @@ class qtGateImap extends Event.EventEmitter {
         return this.imapStream.loginoutWithCheck(() => {
             if (this.socket && typeof this.socket.end === 'function') {
                 this.socket.end();
+            }
+            else {
+                console.log(`this.socket have not end function!`);
             }
             this.emit('end');
             return _end();
@@ -1206,7 +1243,7 @@ class imapPeer extends Event.EventEmitter {
         });
     }
     AppendWImap1(mail, uuid, CallBack) {
-        return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, false, CallBack);
+        return exports.seneMessageToFolder(this.imapData, this.writeBox, mail, uuid, true, CallBack);
     }
     setTimeOutOfPing(sendMail) {
         console.trace(`setTimeOutOfPing [${this.pingUuid}]`);

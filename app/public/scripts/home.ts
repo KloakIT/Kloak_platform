@@ -114,9 +114,9 @@ ko.bindingHandlers.animationTextLineIn = {
 	},
 }
 
-const makeKeyPairData = ( view: view_layout.view, keypair: keypair ) => {
-	const length = keypair.publicKeyID.length
-	keypair.publicKeyID = keypair.publicKeyID.substr(length - 16)
+const makeKeyPairData = ( view: view_layout.view, keypair: keyInfoShow ) => {
+	
+	
 	view.showKeyPair ( true )
 	let keyPairPasswordClass = new keyPairPassword ( keypair, ( passwd: string, deleteKey: boolean ) => {
 		view.showKeyPair ( false )
@@ -344,7 +344,7 @@ module view_layout {
 			const self = this
 			
 
-			if ( config?.keypair?.publicKeyID ) {
+			if ( config?.keypair?.device_keyid ) {
 				/**
 				 *
 				 *      Key pair ready
@@ -805,39 +805,10 @@ module view_layout {
 		}
 
 		public afterPasswordReady () {
-			const self = this
 
-			return this.sharedMainWorker.getKeyPairInfo ( this.keyPair(), err => {
-				if ( err ) {
-					return console.dir (`sharedMainWorker.getKeyPairInfo return Error!`)
-				}
-				
-				return this.getSystemPreferences (() => {
+			this.showMainPage ( true )
+			this.makeConnect ()
 
-					this.imapData ( this.systemPreferences?.imapData )
-					this.connectInformationMessage = new connectInformationMessage ( this.keyPair().publicKeyID, this )
-					if ( this.imapData ()) {
-						//this.getDaggrNotice ()
-						return this.showMainPage ( true )
-					}
-	
-					return this.showImapSetup ()
-				})
-					
-				
-				/*
-				if ( this.dagge ) {
-					_view.storageHelper.encryptSave ( self.localServerConfig ().account, JSON.stringify ( this.dagge ), err => {
-						if ( err ) {
-							return _view.connectInformationMessage.showErrorMessage ( err )
-						}
-					})
-				}
-				*/
-
-
-				
-			})
 		}
 
 		public hidePlanetElement(elem, onCompleteAll: () => void) {
@@ -915,6 +886,30 @@ module view_layout {
 			//return high + 'rem'
 			const high = d.scrollTop + d.scrollHeight
 			return high + 'px'
+		}
+
+
+
+
+		/**
+		 * 				new versdion
+		 */
+
+		public makeConnect () {
+			const keyInfo: keyInfo = this.keyPair ()
+			const conenctCOntent: connectRequest = {
+				kloak_account_armor: keyInfo.kloak_publickey_armor,
+				device_armor: keyInfo.device_publickey_armor,
+				client_folder_name: uuid_generate (),
+				use_kloak_shared_imap_account: true
+			}
+
+			this.sharedMainWorker.encryptByKloak ( JSON.stringify ( conenctCOntent ), keyInfo.device_privatekey_armor, keyInfo._password, ( err, data ) => {
+				if ( err ) {
+					return this.connectInformationMessage.showErrorMessage ( err )
+				}
+				console.log ( data )
+			})
 		}
 	}
 }
@@ -1142,7 +1137,7 @@ window[`${'indexedDB'}`] =
 gsap.registerPlugin ( MorphSVGPlugin, SplitText )
 const $window = $( window )
 
-$window.on ( 'resize', () => { 
+$window.on ( 'resize', () => {
     _view.resizeMiddleZise ()
 })
 const CoNET_version = '0.1.43'

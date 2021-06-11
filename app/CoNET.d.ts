@@ -14,6 +14,54 @@
  * limitations under the License.
  */
 
+interface keyInfo {
+	kloak_keyid: string
+	kloak_publickey_armor: string
+	kloak_privatekey_armor: string
+	device_keyid: string
+	device_publickey_armor: string
+	device_privatekey_armor: string
+	_password: string
+}
+
+interface keyInfoShow extends keyInfo {
+	keyPairPassword
+	passwordOK
+	showLoginPasswordField: KnockoutObservable < boolean >
+	delete_btn_view: KnockoutObservable < boolean >
+	showConform: KnockoutObservable < boolean >
+	delete_btn_click
+	deleteKeyPairNext
+	showDeleteKeyPairNoite: KnockoutObservable < boolean >
+}
+
+interface imap_setup {
+	imap_username: string
+	imap_user_password: string
+	imap_port_number: string
+	imap_server: string
+}
+
+interface next_time_connect {
+	imap_account: imap_setup
+	server_folder_name: string
+}
+
+interface connectRequest {
+	kloak_account_armor: string
+	device_armor: string
+	client_folder_name: string
+	use_kloak_shared_imap_account: boolean
+	imap_account?: imap_setup
+	next_time_connect?: next_time_connect
+	error?: string
+}
+
+
+/*******************************************************************************************************
+ * 		
+ */
+
 interface ReadonlySet<T> {
 	forEach(
 		callbackfn: (value: T, value2: T, set: ReadonlySet<T>) => void,
@@ -71,6 +119,8 @@ interface keypair {
 	canbefind?: boolean
 	userAutoAdded?: boolean
 }
+
+
 
 interface StringValidator {
 	isAcceptable(s: string): boolean

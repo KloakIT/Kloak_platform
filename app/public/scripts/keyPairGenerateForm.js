@@ -214,23 +214,7 @@ class keyPairGenerateForm {
                 return self.message_keyPairGenerateError(true);
             }
             self.message_keyPairGenerateSuccess(true);
-            if (this.DaggrUser) {
-                return _view.sharedMainWorker.getKeyInfo_Daggr(data, (err, _data) => {
-                    _data.publicKeyID = _data.publicKeyID.substr(24);
-                    _data.email = this.SystemAdministratorEmailAddress();
-                    _data.image = this.avatarImage();
-                    _data.phoneNumber = this.SystemAdministratorPhone();
-                    _data.nickname = this.SystemAdministratorNiekname();
-                    _data.bio = this.bio();
-                    _data.canbefind = this.canbefind();
-                    _data.userAutoAdded = this.userAutoAdded();
-                    return self.exit(_data);
-                });
-            }
-            return _view.sharedMainWorker.getKeyPairInfo(data, (err, _data) => {
-                _data.publicKeyID = _data.publicKeyID.substr(24);
-                return self.exit(_data);
-            });
+            this.exit(data);
         });
     }
     SystemAdministratorNieknameEditClick() {

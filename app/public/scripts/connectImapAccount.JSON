@@ -1,0 +1,46 @@
+[
+	{
+		"provide": "iCloud",
+		"accounts": [
+			{
+				"imap_server": "imap.mail.me.com",
+				"imap_username": "qtgate_test2@icloud.com",
+				"imap_user_password": "cfes-ofqz-khho-dppa",
+				"imap_port_number": 993
+			}
+		]
+	},
+	{
+		"provide": "Yahoo",
+		"accounts": [
+			{
+				"imap_server": "imap.mail.yahoo.com",
+				"imap_username": "connect1@kloak.io",
+				"imap_user_password": "qcjuxlyofnlbluml",
+				"imap_port_number": 993
+			}
+		]
+	},
+	{
+		"provide": "office365",
+		"accounts": [
+			{
+				"imap_server": "outlook.office365.com",
+				"imap_username": "connect1@kloak.app",
+				"imap_user_password": "fdvkgpmhnnqbwjpw",
+				"imap_port_number": 993
+			}
+		]
+	},
+	{
+		"provide": "Zoho",
+		"accounts": [
+			{
+				"imap_server": "imap.zoho.com",
+				"imap_username": "connect_zoho1@kloak.io",
+				"imap_user_password": "mu09QMmf6yTQ",
+				"imap_port_number": 993
+			}
+		]
+	}
+]

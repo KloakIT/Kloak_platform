@@ -22,7 +22,7 @@ class keyPairPassword {
 	public inputFocus = ko.observable ( false )
 	public delete_btn_view = ko.observable ( false )
 	public showConform = ko.observable ( false )
-	constructor ( private keypair: keypair,  private exit: ( passwd: string, deleteKeypair: boolean ) => void ) {
+	constructor ( private keypair: keyInfo,  private exit: ( passwd: string, deleteKeypair: boolean ) => void ) {
 		const self = this
 		this.systemSetup_systemPassword.subscribe ( function ( newValue ) {
 			if ( !newValue || !newValue.length ) {

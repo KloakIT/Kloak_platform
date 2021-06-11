@@ -1,7 +1,7 @@
 
-class sharedWorkerManager {
+class sharedWorkerManager1 {
 	
-	private sharedWorker = typeof SharedWorker === 'function' ? true: false 
+	private sharedWorker = false //typeof SharedWorker === 'function' ? true: false 
 	private worker = this.makeWorker ()
 	public sharedMainWorkerWaitingPool: Map< string, ( err?: Error, cmd? ) => void > = new Map ()
 
@@ -215,4 +215,120 @@ class sharedWorkerManager {
 
 	
 
- }
+}
+
+const getKeyInfo1 = async ( privateKey: string, passwd: string, CallBack: ( err?: Error, data? ) => void ) => {
+
+	const _privateKey = await openpgp.readKey({ armoredKey: privateKey })
+	
+	const ret = {
+		createDate: _privateKey.keyPacket.created.toISOString(),
+		verified: false,
+		keyid: _privateKey.getFingerprint().substr ( 24 )
+	}
+	
+	if ( passwd ) {
+		return _privateKey.decrypt ( passwd ).then ( keyOK => {
+			//console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
+			ret.verified = true
+			return CallBack ( null, ret )
+		}).catch ( ex => {
+			return CallBack ( null, ret )
+		}) 
+	}
+
+	return CallBack ( null, ret )
+	
+}
+const kloakPublicArmor = `
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEYF/6PRYJKwYBBAHaRw8BAQdATMNoTXLMBPzVgMcgwDIJT42QkNuOOwjRLpHF
+K2q58la0G1NFR1VSTyA8aW5mb0BnZXRTRUdVUk8uY29tPoiPBBAWCgAgBQJgX/o9
+BgsJBwgDAgQVCAoCBBYCAQACGQECGwMCHgEAIQkQvJNMcTPisIgWIQQUTeA25O28
+akPm5lO8k0xxM+KwiBVMAP9cMr1pIHb8OHDNU8mW/lfD+YUVH6Qt3xJXSZvw+JUa
+gAEAo+chcb5+h3SYwO7El/etUu3z+VKBaVDc1RvMzeHuug64OARgX/o9EgorBgEE
+AZdVAQUBAQdAAAPmwSs9MVXDEx+c8HB0KRp7OxIGq1RswnQv/GSrbTcDAQgHiHgE
+GBYIAAkFAmBf+j0CGwwAIQkQvJNMcTPisIgWIQQUTeA25O28akPm5lO8k0xxM+Kw
+iEJ8AP9i3ZyodVd7wUnI8e1zuMO4hfImjsXMfp28qXQ6yBHHLQEApdtrLmxHEbwm
+iUatG/EQn9VLAanhlsOMmZApsHnIxwc=
+=u6x5
+-----END PGP PUBLIC KEY BLOCK-----
+`
+class sharedWorkerManager {
+	
+	constructor ( private sharedPath: string ) {}
+
+	public async NewKeyPair ( sendData: INewKeyPair, CallBack ) {
+		const userId = {
+			name: sendData.nikeName,
+			email: sendData.email
+		}
+		const option = {
+			passphrase: sendData.password,
+			userIds: [ userId ],
+			curve: "ed25519",
+			aead_protect: false,
+			//aead_protect_version: 4
+		}
+
+		const option1 = {
+			userIds: [{
+				name: '',
+				email: ''
+			}],
+			curve: "ed25519",
+			aead_protect: false,
+			//aead_protect_version: 4
+		}
+
+		const keypair: keyInfo = {
+			kloak_keyid: null,
+			kloak_publickey_armor: null,
+			kloak_privatekey_armor: null,
+			device_keyid: null,
+			device_publickey_armor: null,
+			device_privatekey_armor: null,
+			_password: sendData.password
+			
+		}
+	
+		return openpgp.generateKey ( option ).then (( data ) => {
+			keypair.device_privatekey_armor = data.privateKeyArmored
+			keypair.device_publickey_armor = data.publicKeyArmored
+			return openpgp.generateKey ( option1 ).then (( data ) => {
+				keypair.kloak_privatekey_armor = data.privateKeyArmored
+				keypair.kloak_publickey_armor = data.publicKeyArmored
+				return getKeyInfo1 ( keypair.device_privatekey_armor, sendData.password, ( err, data ) => {
+					keypair.device_keyid = data.keyid
+					return getKeyInfo1 ( keypair.kloak_privatekey_armor, null,  ( err, data ) => {
+						keypair.kloak_keyid = data.keyid
+						return CallBack ( null, keypair )
+					})
+				})
+			})
+		})
+	}
+
+	public checkKeypairPassword ( keypair: keyInfo, CallBack ) {
+		return getKeyInfo1 ( keypair.device_privatekey_armor, keypair._password, CallBack )
+	}
+
+	public async encryptByKloak ( clearText: string, signPrivatekeyArmor: string, passwd: string, CallBack ) {
+		const option = {
+			privateKeys: await openpgp.readKey({ armoredKey: signPrivatekeyArmor }),
+			publicKeys: await openpgp.readKey({ armoredKey: kloakPublicArmor }),
+			message: await openpgp.Message.fromText( clearText ),
+			compression: openpgp.enums.compression.zip
+		}
+		if ( passwd ) {
+			await option.privateKeys.decrypt( passwd )
+		}
+		return openpgp.encrypt ( option ).then ( n => {
+			return CallBack ( null, n.data )
+		}).catch ( ex => {
+			return CallBack ( 'systemError' )
+		})
+	}
+
+}

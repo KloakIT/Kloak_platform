@@ -20,7 +20,7 @@ self.importScripts ('/scripts/encryptoClass.js')
 self.importScripts ('/scripts/jimp.min.js')
 self.importScripts ('/scripts/jszip.min.js')
 
-openpgp.config.indutny_elliptic_path = '/scripts/lightweight/elliptic.min.js'
+//openpgp.config.indutny_elliptic_path = '/scripts/lightweight/elliptic.min.js'
 //openpgp.config.aead_protect = true
 //openpgp.config.aead_mode = openpgp.enums.aead.experimental_gcm
 
@@ -35,7 +35,7 @@ const returnCommand = ( ports, cmd: sharedWorkerCommand ) => {
 	return ports.postMessage ( jsonData.buffer, [ jsonData.buffer ])
 }
 
-const sharedWorker = typeof self.postMessage === 'function' ? false : true
+const sharedWorker = false//typeof self.postMessage === 'function' ? false : true
 
 const NewKeyPair = ( ports, cmd: sharedWorkerCommand ) => {
 	const uu: INewKeyPair = cmd.args

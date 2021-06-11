@@ -22,22 +22,22 @@ class buttonStatusClass {
 		console.log(_self)
 
 		if ( this.loading () === 5 ) {
+			_view.storageHelper.getDecryptLoad('history', (err, data) => {
+
 				_view.storageHelper.getDecryptLoad('history', (err, data) => {
 
-					_view.storageHelper.getDecryptLoad('history', (err, data) => {
-
-						if (err) {
-							return
-						}
-						if (_view.videoPlayer()) {
-							_view.videoPlayer().terminate()
-							_view.appScript().view.videoCanStart(false)
-						}
-						let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
-						for(let i = 0; i < histories.length; i++) {
-							if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
-								if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
-									_view.videoPlayer(new VideoPlayer("", () => {}, () => {}))
+					if (err) {
+						return
+					}
+					if (_view.videoPlayer()) {
+						_view.videoPlayer().terminate()
+						_view.appScript().view.videoCanStart(false)
+					}
+					let histories = JSON.parse(Buffer.from(data).toString()).reverse() as Array<fileHistory>
+					for(let i = 0; i < histories.length; i++) {
+						if (histories[i]['youtube'].id === this.obj?.videoDetails?.videoId) {
+							if (histories[i]['youtube'].quality === _self['cmd'].Args[1]) {
+								_view.videoPlayer(new VideoPlayer("", () => {}, () => {}))
 								if (_self.cmd.Args[1] === 'audio') {
 									return _view.videoPlayer().downloadedYoutube(histories[i])
 								} else {
@@ -50,7 +50,7 @@ class buttonStatusClass {
 								}
 							}
 						}
-					}
+					}	
 
 				})
 			})

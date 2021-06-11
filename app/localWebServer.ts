@@ -235,52 +235,6 @@ export default class localServer {
 			
 		}
 
-		socket.on ( 'checkImap', ( imapConnectData, CallBack1 ) => {
-			
-			
-			const uuid = checkSocketKeypair ( socket, CallBack1 )
-			if ( !uuid ) {
-				return 
-			}
-			const keyPair: localServerKeyPair = socket ["keypair"]
-			
-			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, imapConnectData, ( err, imapData ) => {
-				if ( err ) {
-					return socket.emit ( uuid, 'localWebsiteDecryptError' )
-				}
-				
-				
-				return this.doingCheckImap ( socket, imapData )
-			})
-			
-		})
-
-		socket.on ( 'tryConnectCoNET', ( imapData: string, CallBack1 ) => {
-
-			console.dir ('【on tryConnectCoNET】')
-			const uuid = checkSocketKeypair ( socket, CallBack1 )
-			if ( !uuid ) {
-				return 
-			}
-
-			const keyPair: localServerKeyPair = socket ["keypair"]
-			
-			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, imapData, ( err, data ) => {
-				if ( err ) {
-					console.log ( 'checkImap Tool.decryptoMessage error\n', err )
-					return socket.emit ( uuid, 'system' )
-				}
-				try {
-
-				} catch ( ex ) {
-					return socket.emit ( uuid, 'system' )
-				}
-				return this.tryConnectCoNET ( socket, data, sendMail )
-			})
-
-			
-			
-		})
 
 		socket.on ( 'doingRequest', ( request_uuid, request, CallBack1 ) => {
 
@@ -309,79 +263,6 @@ export default class localServer {
 
 		})
 
-		socket.on ( 'getFilesFromImap', ( files: string, CallBack1 ) => {
-			const uuid = checkSocketKeypair ( socket, CallBack1 )
-			if ( !uuid ) {
-				return 
-			}
-			const _callBack = ( ...data ) => {
-				socket.emit ( uuid, ...data )
-			}
-			
-
-			const keyPair: localServerKeyPair = socket ["keypair"]
-			const keyID = socket ["keyID"]
-
-			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, files, ( err, data ) => {
-				if ( err ) {
-					return _callBack ( err.message || err )
-				}
-
-				const _files = data
-				
-				//console.log (`socket.on ('getFilesFromImap') _files = [${ _files }] _files.length = [${ _files.length }]`  )
-				
-				
-				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
-
-				if ( !userConnect ) {
-					console.log ( `getFilesFromImap error:![ Have no userConnect ]` )
-					return socket.emit ( 'systemErr' )
-				}
-
-				//console.time ( `getFilesFromImap ${ _files }` )
-				let ret = ''
-				
-				return userConnect.getFileV1 ( _files, ( err, data, subject ) => {
-					//console.timeEnd ( `getFilesFromImap ${ _files } ` )
-					
-					if ( err ) {
-						console.log(err)
-						return _callBack ( err )
-					}
-					return _callBack ( null, data, subject )
-				})
-				
-			})
-			
-			
-		})
-
-		socket.on ( 'sendRequestMail', ( message: string, CallBack1 ) => {
-			console.dir (`socket.on 【( 'sendRequestMail')】`)
-			const uuid = checkSocketKeypair ( socket, CallBack1 )
-			if ( !uuid ) {
-				return 
-			}
-			const keyPair: localServerKeyPair = socket [ "keypair" ]
-			const keyID = socket ["keyID"]
-			return Tool.decryptoMessage ( this.localKeyPair, keyPair.publicKey, message, ( err, data ) => {
-				
-				sendMail = true
-				const userConnect: CoNETConnectCalss = socket [ "userConnet" ] || this.imapConnectPool.get ( keyID )
-				if ( userConnect ) {
-					userConnect.Ping ( true )
-				}
-				return Tool.sendCoNETConnectRequestEmail ( data.imapData, data.toMail, data.message, data.subject, err => {
-					if ( err ) {
-						console.log ( err )
-					}
-					console.log (`Tool.sendCoNETConnectRequestEmail success!`)
-				})
-			})
-			
-
-		})
 
 		socket.on ( 'sendMedia', ( uuid, rawData, CallBack1 ) => {
 			const _uuid = Uuid.v4()
@@ -415,40 +296,7 @@ export default class localServer {
 			return _callBack ( null, y )
 		})
 
-		socket.on ( 'keypair', async ( publicKey, CallBack )=> {
-			
-			const _uuid = Uuid.v4 ()
-			CallBack( _uuid )
-			
-			return Tool.getPublicKeyInfo ( publicKey, ( err, data: localServerKeyPair ) => {
-				
-				if ( err ) {
-					console.log ( `Tool.getPublicKeyInfo ERROR!`, err )
-					return socket.emit ( _uuid, err )
-				}
-				
-				const keyID = data.publicID.slice( 24 ).toLocaleUpperCase()
-				socket [ "keypair" ] = data
-				socket [ "keyID" ] = keyID
 
-				console.dir (`client join room 【${ keyID }】`)
-				
-				
-				if ( workspace.name.toLocaleUpperCase() !== `/${ keyID }`) {
-					socket.emit ( _uuid, `Error! your client key ID [${ keyID }] not match !` )
-					return console.log (`workspace.name.toLocaleUpperCase()[${  workspace.name.toLocaleUpperCase() }] !== /${ keyID }`)
-				}
-				let ConnectCalss: CoNETConnectCalss = this.imapConnectPool.get ( keyID )
-				if ( !ConnectCalss ) {
-					return socket.emit ( _uuid, null, this.localKeyPair.publicKey, false )
-				}
-				
-				return socket.emit ( _uuid, null, this.localKeyPair.publicKey, true )
-			})
-			
-			
-			
-		})
 
 		socket.once ( 'disconnect', async () => {
 
@@ -579,56 +427,8 @@ export default class localServer {
 */
 	}
 
-	private doingCheckImap ( socket: SocketIO.Socket, imapData: IinputData ) {
-		
-		return Async.series ([
-			next => Imap.imapAccountTest ( imapData, err => {
-				if ( err ) {
-					return next ( err )
-				}
-				
-				socket.emit ( 'imapTest' )
-				return next ()
-			}),
-			next => Tool.smtpVerify ( imapData, next )
-		], ( err: Error ) => {
-			
-			if ( err ) {
-				console.log ( `doingCheckImap Async.series Error!`, err )
-				return socket.emit ( 'imapTest', err.message || err )
-			}
-			console.dir (`doingCheckImap finished`)
-			imapData.imapTestResult = true
-			const keyPair = socket ["keypair"]
-			return Tool.encryptMessage ( keyPair.publicKeys, this.localKeyPair.privateKey, JSON.stringify ( imapData ), ( err, data ) => {
-				console.dir (`socket.emit ( 'imapTestFinish'`)
-				return socket.emit ( 'imapTestFinish' , err, data )
-			})
-
-		})
-			
-		
-	}
-
 	private mediaHttpServer () {
 
-	}
-
-	/**
-	 *  Init server OpenPGP key
-	 * 
-	 * @param CallBack 
-	 * 
-	 */
-	private newKeyPair ( CallBack ) {
-		return Tool.newKeyPair ( "admin@Localhost.local", "admin", this.serverKeyPassword, async ( err, data: localServerKeyPair ) => {
-			if ( err ) {
-				return CallBack ( err )
-			}
-
-			this.localKeyPair = data
-			return CallBack ()
-		})
 	}
 
 	constructor ( postNumber: number = 3000, folderName: string = '' ) {
@@ -807,17 +607,12 @@ export default class localServer {
 			return process.exit (1)
 		})
 
-		this.newKeyPair ( err => {
-			
-			if ( err ) {
-				console.dir ( err )
-				return saveServerStartupError ( err )
-			}
-			return this.httpServer.listen ( postNumber, () => {
-				saveServerStartup ( postNumber, localPath )
-			})
-			
+
+		this.httpServer.listen ( postNumber, () => {
+			saveServerStartup ( postNumber, localPath )
 		})
+			
+		
 
 	}
 }

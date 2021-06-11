@@ -20,12 +20,13 @@ import * as Fs from 'fs'
 import * as Path from 'path'
 import * as Os from 'os'
 import * as Async from 'async'
-import * as OpenPgp from 'openpgp'
+
 import * as Http from 'http'
 import * as Https from 'https'
 import * as Net from 'net'
 import * as Nodemailer from 'nodemailer'
 import * as Url from 'url'
+import { inspect } from 'util'
 /**
  * 		define
  */
@@ -143,76 +144,7 @@ export const getEmailAddress = ( str: string ) => {
 }
 
 
-export const getKeyPairInfo = async ( publicKey: string, privateKey: string, password: string, CallBack: ( err?: Error, keyPair?: keypair ) => void ) => {
 
-	if ( ! publicKey || ! privateKey ) {
-		return CallBack ( new Error ('publicKey or privateKey empty!'))
-	}
-	const _privateKey = await OpenPgp.key.readArmored ( privateKey )
-	const _publicKey = await OpenPgp.key.readArmored ( publicKey )
-	if ( _privateKey.err || _publicKey.err ) {
-		console.log (`_privateKey.err = [${ _privateKey.err }], _publicKey.err [${ _publicKey.err }]`)
-		console.log ( publicKey )
-		return CallBack ( new Error ('no key'))
-	}
-	//console.log (`getKeyPairInfo success!\nprivateKey\npublicKey`)
-	const privateKey1 = _privateKey.keys[0]
-	const publicKey1 = _publicKey.keys
-	const user = publicKey1[0]["users"][0]
-	const ret = InitKeyPair()
-	let didCallback = false
-	
-	ret.publicKey = publicKey
-	ret.privateKey = privateKey
-	ret.nickname = getNickName ( user.userId.userid )
-	ret.createDate = privateKey1.primaryKey["created"]
-	ret.email = getEmailAddress ( user.userId.userid )
-	ret.verified = getQTGateSign ( user )
-	ret.publicKeyID = publicKey1[0].primaryKey.getFingerprint().toUpperCase()
-	
-	ret.passwordOK = false
-	if ( !password ) {
-		return CallBack ( null, ret )
-	}
-	//console.log (`getKeyPairInfo test password!`)
-	return privateKey1.decrypt ( password ).then ( keyOK => {
-		//console.log (`privateKey1.decrypt then keyOK [${ keyOK }] didCallback [${ didCallback }]`)
-		ret.passwordOK = true
-		ret._password = password
-		didCallback = true
-
-		console.dir ( ret )
-		return CallBack ( null, ret )
-	}).catch ( err => {
-		console.log (`privateKey1.decrypt catch ERROR didCallback = [${ didCallback }]`, err )
-		if ( !didCallback ) {
-			return CallBack ( null, ret )
-		}
-		
-	})
-	
-}
-
-export const getPublicKeyInfo = async ( publicKey: string, CallBack: ( err?: Error, data?: localServerKeyPair) => void ) => {
-
-	const _key = await OpenPgp.key.readArmored ( publicKey )
-	
-	const ret: localServerKeyPair = {
-		publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
-		publicKeys: _key.keys,
-		privateKey: null
-
-		//nikeName: getNickName ( user.userId.userid ),
-		//email: getEmailAddress ( user.userId.userid ),
-		//keyID: key.primaryKey.getFingerprint().toUpperCase(),
-		//otherValid: user.otherCertifications.map ( n => { return n.issuerKeyId.toHex ().toUpperCase()}),
-		//KloakValid: getQTGateSign ( user ),
-		//publicKeys: _key.keys
-	}
-	
-	return CallBack ( null, ret )
-	
-}
 
 export const createKeyPairObj = ( ) => {
 	
@@ -248,35 +180,7 @@ export const saveConfig = ( config: install_config, CallBack ) => {
 }
 
 
-export const newKeyPair = ( emailAddress: string, nickname: string, password: string, CallBack ) => {
-	const userId = {
-		name: nickname,
-		email: emailAddress
-	}
-	const option = {
-		passphrase: password,
-		userIds: [ userId ],
-		curve: "ed25519",
-		aead_protect: true,
-		aead_protect_version: 4
-	}
 
-
-	return OpenPgp.generateKey ( option ).then ( async ( keypair: { publicKeyArmored, privateKeyArmored }) => {
-		const _key = await ( OpenPgp.key.readArmored ( keypair.publicKeyArmored ))
-		const ret: localServerKeyPair = {
-			publicKeys: _key.keys,
-			privateKey: ( await ( OpenPgp.key.readArmored ( keypair.privateKeyArmored))).keys,
-			publicID: _key.keys[0].primaryKey.getFingerprint().toUpperCase(),
-			publicKey: keypair.publicKeyArmored
-		}
-		await ret.privateKey[0].decrypt( password )
-		return CallBack ( null, ret )
-	}).catch ( err => {
-		// ERROR
-		return CallBack ( err )
-	})
-}
 
 export const getImapSmtpHost = function ( _email: string ) {
 	const email = _email.toLowerCase()
@@ -530,42 +434,7 @@ export const smtpVerify = ( imapData: IinputData, CallBack: ( err? ) => void ) =
 	
 }
 
-export const encryptMessage = ( publickeys, privatekeys, message: string, CallBack ) => {
-	const option = {
-		privateKeys: privatekeys,
-		publicKeys: publickeys,
-		message: OpenPgp.message.fromText ( message ),
-		compression: OpenPgp.enums.compression.zip
-	}
-	
-	return OpenPgp.encrypt ( option ).then ( ciphertext => {
-		
-		return CallBack ( null, ciphertext.data )
-	}).catch ( CallBack )
-}
 
-export async function decryptoMessage ( keyObject: localServerKeyPair, publickey: any, message: string, CallBack ) {
-	const option = {
-		privateKeys: keyObject.privateKey,
-		publicKeys: publickey,
-		message: await OpenPgp.message.readArmored ( message )
-	}
-
-	return OpenPgp.decrypt ( option ).then ( async data => {
-		let ret = data.data
-		
-		try {
-			ret = JSON.parse ( ret )
-		} catch ( ex ) {
-			return CallBack ( ex )
-		}
-		return CallBack ( null, ret )
-		
-	}).catch ( err => {
-		
-		return CallBack ( err )
-	})
-}
 
 const testSmtpAndSendMail = ( imapData, CallBack ) => {
 	let first = false
@@ -609,13 +478,11 @@ const sendMailAccount = {
     requestPortNumber: null
 }
 
-export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: string, message: string, subject: string, CallBack ) => {
-	console.dir (`sendCoNETConnectRequestEmail`)
-	const imapData = sendMailAccount //( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
+export const sendCoNETConnectRequestEmail = ( imapData: IinputData, toEmail: string, message: string, subject: string, CallBack ) => {
+	
+	//const imapData = sendMailAccount //( /^smtp\-mail\.outlook\.com$/i.test ( _imapData.smtpServer ) ? sendMailAccount : _imapData )
 
-	return Async.waterfall ([
-		next => testSmtpAndSendMail ( imapData, next ),
-		next => {
+	
 			const option = {
 				host:  Net.isIP ( imapData.smtpServer ) ? null : imapData.smtpServer,
 				hostname:  Net.isIP ( imapData.smtpServer ) ? imapData.smtpServer : null,
@@ -627,11 +494,13 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 				},
 				connectionTimeout: ( 1000 * 15 ).toString (),
 				tls: !imapData.smtpSsl ? {
-					rejectUnauthorized: imapData.smtpIgnoreCertificate,
-					ciphers: imapData[ "ciphers" ]
+					rejectUnauthorized: true,
+					ciphers: 'SSLv3'
 				} : null,
 				debug: true
 			}
+
+			
 
 			const transporter = Nodemailer.createTransport ( option )
 			//console.log ( Util.inspect ( option ))
@@ -644,9 +513,9 @@ export const sendCoNETConnectRequestEmail = ( _imapData: IinputData, toEmail: st
 				}]
 			}
 			console.log (`transporter.sendMail`)
-			return transporter.sendMail ( mailOptions, next )
-		}
-	], CallBack )
+			return transporter.sendMail ( mailOptions, CallBack )
+		
+	
 
 }
 

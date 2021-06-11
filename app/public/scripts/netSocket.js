@@ -2,7 +2,7 @@ self.importScripts('/scripts/lightweight/openpgp.min.js');
 self.importScripts('/scripts/encryptoClass.js');
 self.importScripts('/scripts/jimp.min.js');
 self.importScripts('/scripts/jszip.min.js');
-openpgp.config.indutny_elliptic_path = '/scripts/lightweight/elliptic.min.js';
+//openpgp.config.indutny_elliptic_path = '/scripts/lightweight/elliptic.min.js'
 //openpgp.config.aead_protect = true
 //openpgp.config.aead_mode = openpgp.enums.aead.experimental_gcm
 window.IDBTransaction = window.IDBTransaction || window["webkitIDBTransaction"] || window["msIDBTransaction"];
@@ -13,7 +13,7 @@ const returnCommand = (ports, cmd) => {
     }
     return ports.postMessage(jsonData.buffer, [jsonData.buffer]);
 };
-const sharedWorker = typeof self.postMessage === 'function' ? false : true;
+const sharedWorker = false; //typeof self.postMessage === 'function' ? false : true
 const NewKeyPair = (ports, cmd) => {
     const uu = cmd.args;
     const userId = {

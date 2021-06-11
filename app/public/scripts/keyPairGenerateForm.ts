@@ -121,6 +121,8 @@ class keyPairGenerateForm {
 	public bioEditFcous = ko.observable ( false )
 	public publicKey = null
 
+	public 
+
 	public boiPlaceholder = [
 		'自我介绍（选项，可不填）','自己紹介（非必須）','Bio ( Option )','自我介紹（選項，可不填）'
 	]
@@ -245,7 +247,7 @@ class keyPairGenerateForm {
 			return self.exit ( this._daggrUser )
 		}
 
-		return _view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keypair ) => {
+		return _view.sharedMainWorker.NewKeyPair ( sendData, ( err, data: keyInfo ) => {
 			self.stopDoingProcessBar ()
 			self.keyPairGenerateFormMessage ( true )
 			if ( err ) {
@@ -253,25 +255,8 @@ class keyPairGenerateForm {
 			}
 			self.message_keyPairGenerateSuccess ( true )
 			
-			if ( this.DaggrUser ) {
-				return _view.sharedMainWorker.getKeyInfo_Daggr ( data, ( err, _data: keypair ) => {
-				
-					_data.publicKeyID = _data.publicKeyID.substr ( 24 )
-					_data.email = this.SystemAdministratorEmailAddress()
-					_data.image = this.avatarImage()
-					_data.phoneNumber = this.SystemAdministratorPhone()
-					_data.nickname = this.SystemAdministratorNiekname ()
-					_data.bio = this.bio()
-					_data.canbefind = this.canbefind ()
-					_data.userAutoAdded = this.userAutoAdded ()
-					return self.exit ( _data )
-				})
-			}
-			return _view.sharedMainWorker.getKeyPairInfo ( data, ( err, _data ) => {
-				
-				_data.publicKeyID = _data.publicKeyID.substr ( 24 )
-				return self.exit ( _data )
-			})
+
+			this.exit ( data )
 			
 			
 		})

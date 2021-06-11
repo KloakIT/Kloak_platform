@@ -78,8 +78,6 @@ ko.bindingHandlers.animationTextLineIn = {
     },
 };
 const makeKeyPairData = (view, keypair) => {
-    const length = keypair.publicKeyID.length;
-    keypair.publicKeyID = keypair.publicKeyID.substr(length - 16);
     view.showKeyPair(true);
     let keyPairPasswordClass = new keyPairPassword(keypair, (passwd, deleteKey) => {
         view.showKeyPair(false);
@@ -285,7 +283,7 @@ var view_layout;
         }
         initConfig(config) {
             const self = this;
-            if (config?.keypair?.publicKeyID) {
+            if (config?.keypair?.device_keyid) {
                 /**
                  *
                  *      Key pair ready
@@ -649,30 +647,8 @@ var view_layout;
             }
         }
         afterPasswordReady() {
-            const self = this;
-            return this.sharedMainWorker.getKeyPairInfo(this.keyPair(), err => {
-                if (err) {
-                    return console.dir(`sharedMainWorker.getKeyPairInfo return Error!`);
-                }
-                return this.getSystemPreferences(() => {
-                    this.imapData(this.systemPreferences?.imapData);
-                    this.connectInformationMessage = new connectInformationMessage(this.keyPair().publicKeyID, this);
-                    if (this.imapData()) {
-                        //this.getDaggrNotice ()
-                        return this.showMainPage(true);
-                    }
-                    return this.showImapSetup();
-                });
-                /*
-                if ( this.dagge ) {
-                    _view.storageHelper.encryptSave ( self.localServerConfig ().account, JSON.stringify ( this.dagge ), err => {
-                        if ( err ) {
-                            return _view.connectInformationMessage.showErrorMessage ( err )
-                        }
-                    })
-                }
-                */
-            });
+            this.showMainPage(true);
+            this.makeConnect();
         }
         hidePlanetElement(elem, onCompleteAll) {
             if (elem.nodeType === 1) {
@@ -737,6 +713,24 @@ var view_layout;
             //return high + 'rem'
             const high = d.scrollTop + d.scrollHeight;
             return high + 'px';
+        }
+        /**
+         * 				new versdion
+         */
+        makeConnect() {
+            const keyInfo = this.keyPair();
+            const conenctCOntent = {
+                kloak_account_armor: keyInfo.kloak_publickey_armor,
+                device_armor: keyInfo.device_publickey_armor,
+                client_folder_name: uuid_generate(),
+                use_kloak_shared_imap_account: true
+            };
+            this.sharedMainWorker.encryptByKloak(JSON.stringify(conenctCOntent), keyInfo.device_privatekey_armor, keyInfo._password, (err, data) => {
+                if (err) {
+                    return this.connectInformationMessage.showErrorMessage(err);
+                }
+                console.log(data);
+            });
         }
     }
     view_layout.view = view;
@@ -928,6 +922,24 @@ const mainMenuArray = [
         htmlTemp: 'showGeneralSpalding',
         notice: ko.observable(0)
     },
+    /*
+    {
+        name: 'canada',
+        img: canadaGov,
+        header: ['加拿大政府', 'カナダ', 'For Canada', '加拿大政府'],
+        description: [
+            '加拿大政府',
+            'カナダ政府',
+            'For Canada',
+            '加拿大政府',
+        ],
+        extra: null,
+        click: Canada,
+        online: false,
+        htmlTemp: 'showCanada',
+        notice: ko.observable ( 0 )
+    },
+    */
 ];
 const _view = new view_layout.view();
 ko.applyBindings(_view, document.getElementById('body'));
