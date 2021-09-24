@@ -100,7 +100,7 @@
 		"mime-types": "^2.1.29",
 		"node-uuid": "^1.4.8",
 		"nodemailer": "^6.5.0",
-		"openpgp": "5.0.0-1",
+		"openpgp": "5.0.0",
 		"pug": "^3.0.2",
 		"snyk": "^1.511.0",
 		"socket.io": "^3.1.2"
